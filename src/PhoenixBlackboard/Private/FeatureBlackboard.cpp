@@ -10,7 +10,7 @@ void FeatureBlackboard::OnPostUpdate(const FeatureUpdateArgs& args)
 {
     IFeature::OnPostUpdate(args);
     
-    FeatureBlackboardDynamicSessionBlock& block = Session->GetBuffer()->GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
+    FeatureBlackboardDynamicSessionBlock& block = Session->GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
     block.Blackboard.SortAndCompact();
 }
 
@@ -24,13 +24,13 @@ void FeatureBlackboard::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArg
 
 SessionBlackboard& FeatureBlackboard::GetGlobalBlackboard(SessionRef session)
 {
-    FeatureBlackboardDynamicSessionBlock& block = session.GetBuffer()->GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
+    FeatureBlackboardDynamicSessionBlock& block = session.GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
     return block.Blackboard;
 }
 
 const SessionBlackboard& FeatureBlackboard::GetGlobalBlackboard(SessionConstRef session)
 {
-    const FeatureBlackboardDynamicSessionBlock& block = session.GetBuffer()->GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
+    const FeatureBlackboardDynamicSessionBlock& block = session.GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
     return block.Blackboard;
 }
 

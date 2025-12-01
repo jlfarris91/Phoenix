@@ -113,6 +113,72 @@ namespace Phoenix
         virtual ~BufferBlockBase() {}
         virtual const TypeDescriptor& GetTypeDescriptor() const = 0;
     };
+
+    template <class T>
+    struct PHOENIXCORE_API BlockBufferOwner
+    {
+        PHX_FORCE_INLINE uint8* GetBlock(const FName& name)
+        {
+            return ThisAsT()->GetBuffer().GetBlock(name);
+        }
+
+        PHX_FORCE_INLINE const uint8* GetBlock(const FName& name) const
+        {
+            return ThisAsT()->GetBuffer().GetBlock(name);
+        }
+
+        template <class TBlock>
+        TBlock* GetBlock(const FName& name)
+        {
+            return reinterpret_cast<TBlock*>(GetBlock(name));
+        }
+
+        template <class TBlock>
+        const TBlock* GetBlock(const FName& name) const
+        {
+            return reinterpret_cast<const TBlock*>(GetBlock(name));
+        }
+
+        template <class TBlock>
+        TBlock* GetBlock()
+        {
+            return reinterpret_cast<TBlock*>(GetBlock(TBlock::StaticTypeName));
+        }
+
+        template <class TBlock>
+        const TBlock* GetBlock() const
+        {
+            return reinterpret_cast<const TBlock*>(GetBlock(TBlock::StaticTypeName));
+        }
+
+        template <class TBlock>
+        TBlock& GetBlockRef()
+        {
+            return *GetBlock<TBlock>();
+        }
+
+        template <class TBlock>
+        const TBlock& GetBlockRef() const
+        {
+            return *GetBlock<TBlock>();
+        }
+
+    private:
+
+        friend T;
+
+        PHX_FORCE_INLINE constexpr T* ThisAsT()
+        {
+            return static_cast<T*>(this);
+        }
+
+        PHX_FORCE_INLINE constexpr const T* ThisAsT() const
+        {
+            return static_cast<const T*>(this);
+        }
+
+        BlockBuffer Buffer;
+    };
 }
 
 #define PHX_DECLARE_BLOCK_BEGIN(block, type) \

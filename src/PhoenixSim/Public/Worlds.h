@@ -34,7 +34,7 @@ namespace Phoenix
         BlockBuffer::CtorArgs Blocks;
     };
 
-    class PHOENIXSIM_API World
+    class PHOENIXSIM_API World : public BlockBufferOwner<World>
     {
     public:
 
@@ -56,45 +56,6 @@ namespace Phoenix
 
         BlockBuffer& GetBuffer();
         const BlockBuffer& GetBuffer() const;
-
-        uint8* GetBlock(const FName& name);
-        const uint8* GetBlock(const FName& name) const;
-
-        template <class TBlock>
-        TBlock* GetBlock(const FName& name)
-        {
-            return reinterpret_cast<TBlock*>(GetBlock(name));
-        }
-
-        template <class TBlock>
-        const TBlock* GetBlock(const FName& name) const
-        {
-            return reinterpret_cast<const TBlock*>(GetBlock(name));
-        }
-
-        template <class TBlock>
-        TBlock* GetBlock()
-        {
-            return reinterpret_cast<TBlock*>(GetBlock(TBlock::StaticTypeName));
-        }
-
-        template <class TBlock>
-        const TBlock* GetBlock() const
-        {
-            return reinterpret_cast<const TBlock*>(GetBlock(TBlock::StaticTypeName));
-        }
-
-        template <class TBlock>
-        TBlock& GetBlockRef()
-        {
-            return *GetBlock<TBlock>();
-        }
-
-        template <class TBlock>
-        const TBlock& GetBlockRef() const
-        {
-            return *GetBlock<TBlock>();
-        }
 
     private:
 

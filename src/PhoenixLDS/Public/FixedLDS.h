@@ -7,12 +7,17 @@
 #include "DLLExport.h"
 #include "Actions.h"
 #include "Platform.h"
+#include "Containers/Array.h"
 #include "Containers/FixedArray.h"
 
 namespace Phoenix::LDS
 {
     enum class ELDSValueType : uint8
     {
+        Unknown,
+
+        // Pod types
+        Bool,
         Int32,
         UInt32,
         Name,
@@ -20,38 +25,16 @@ namespace Phoenix::LDS
         Distance,
         Degrees,
         Speed,
-        Bool,
+
+        // Special types
         Array,
         Object,
         ObjectRef
     };
 
-    inline bool TryParse(const PHXString& string, ELDSValueType& outEnum)
-    {
-#define PARSE(str, e) \
-        if (str == #e) \
-        { \
-            outEnum = ELDSValueType::e; \
-            return true; \
-        }
-        
-        PARSE(string, Int32)
-        PARSE(string, UInt32)
-        PARSE(string, Name)
-        PARSE(string, Value)
-        PARSE(string, Distance)
-        PARSE(string, Degrees)
-        PARSE(string, Speed)
-        PARSE(string, Bool)
-        PARSE(string, Array)
-        PARSE(string, Object)
+    PHOENIX_LDS_API bool TryParse(const PHXString& string, ELDSValueType& outEnum);
 
-#undef PARSE
-
-        return false;
-    }
-
-    union LDSValue
+    PHOENIX_LDS_API union LDSValue
     {
         int32 Int32;
         uint32 UInt32;
@@ -63,13 +46,36 @@ namespace Phoenix::LDS
         bool Bool;
     };
 
-    struct LDSTypedValue
+    PHOENIX_LDS_API struct LDSTypedValue
     {
+        constexpr LDSTypedValue() = default;
+
+        constexpr LDSTypedValue(const LDSValue& value, ELDSValueType type)
+            : Value(value)
+            , Type(type)
+        {
+        }
+
+#define DEFINE_LDSTypedValue_CTOR(type, enumType) \
+        constexpr LDSTypedValue(type value) \
+            : Value{ .enumType = value } \
+            , Type(ELDSValueType::enumType) {}
+
+        DEFINE_LDSTypedValue_CTOR(int32, Int32)
+        DEFINE_LDSTypedValue_CTOR(uint32, UInt32)
+        DEFINE_LDSTypedValue_CTOR(FName, Name)
+        DEFINE_LDSTypedValue_CTOR(Value, Value)
+        // DEFINE_LDSTypedValue_CTOR(Distance, Distance);
+        DEFINE_LDSTypedValue_CTOR(Angle, Degrees)
+        DEFINE_LDSTypedValue_CTOR(Speed, Speed)
+
+#undef DEFINE_LDSTypedValue_CTOR
+
         LDSValue Value = {};
-        ELDSValueType Type = ELDSValueType::Int32;
+        ELDSValueType Type = ELDSValueType::Unknown;
     };
 
-    class LDSRecord
+    PHOENIX_LDS_API class LDSRecord
     {
     public:
         constexpr LDSRecord() = default;
@@ -78,29 +84,26 @@ namespace Phoenix::LDS
         constexpr LDSRecord(const FName& objectId, const FName& propertyId, const LDSTypedValue& value)
             : ObjectId(objectId)
             , PropertyId(propertyId)
-            , ParentId(0)
             , Value(value)
         {
-            ParentId = GetId();
+#if DEBUG
+            RecordId = GetId();
+#endif
         }
 
-        constexpr LDSRecord(const FName& objectId, const FName& propertyId, uint64 parentId, const LDSTypedValue& value)
+        constexpr LDSRecord(const FName& objectId, const FName& propertyId, const LDSValue& value, ELDSValueType valueType)
             : ObjectId(objectId)
             , PropertyId(propertyId)
-            , ParentId(parentId)
-            , Value(value)
+            , Value(LDSTypedValue(value, valueType))
         {
-            ParentId = GetId();
+#if DEBUG
+            RecordId = GetId();
+#endif
         }
 
         constexpr uint64 GetId() const
         {
             return (uint64)(uint32)ObjectId << 32 | (uint32)PropertyId;
-        }
-
-        constexpr uint64 GetParentId() const
-        {
-            return ParentId;
         }
 
         constexpr const FName& GetObjectId() const
@@ -144,12 +147,15 @@ namespace Phoenix::LDS
 
         FName ObjectId;
         FName PropertyId;
-        uint64 ParentId;
         LDSTypedValue Value;
+
+#if DEBUG
+        hash64_t RecordId = 0;
+#endif
     };
 
-    template <size_t N>
-    class TFixedLDS
+    template <class TContainer>
+    PHOENIX_LDS_API class TRecordStore
     {
     public:
 
@@ -196,7 +202,7 @@ namespace Phoenix::LDS
 
         const LDSRecord* FindRecord(hash64_t recordId, hash64_t mask = -1) const
         {
-            return const_cast<TFixedLDS*>(this)->FindRecord(recordId, mask);
+            return const_cast<TRecordStore*>(this)->FindRecord(recordId, mask);
         }
 
         LDSRecord* FindRecord(const FName& objectId, const FName& propertyId)
@@ -255,7 +261,20 @@ namespace Phoenix::LDS
             }
         }
 
-        static constexpr hash64_t ToRecordId(const FName& objectId, const FName& propertyId = FName::None)
+        ELDSValueType GetTypeRecordValueType(const FName& objectId, const FName& propertyId) const
+        {
+            auto record = FindRecord(objectId, propertyId);
+            return record ? record->GetValueType() : ELDSValueType::Unknown;
+        }
+
+        template <class T>
+        const T& GetRecordValueAs(const FName& objectId, const FName& propertyId, const T& defaultValue = {})
+        {
+            auto record = FindRecord(objectId, propertyId);
+            return record ? record->GetValueAs<T>() : defaultValue;
+        }
+
+        PHX_FORCE_INLINE static constexpr hash64_t ToRecordId(const FName& objectId, const FName& propertyId = FName::None)
         {
             return (uint64)(uint32)objectId << 32 | (uint32)propertyId;
         }
@@ -274,7 +293,12 @@ namespace Phoenix::LDS
         }
 
     private:
-        TFixedArray<LDSRecord, N> Records;
+        TContainer Records;
         bool bSorted = false;
     };
+
+    template <size_t N>
+    using TFixedRecordStore = TRecordStore<TFixedArray<LDSRecord, N>>;
+
+    using RecordStore = TRecordStore<TArray2<LDSRecord>>;
 }

@@ -33,12 +33,11 @@ Session::Session(const SessionCtorArgs& args)
         }
     }
 
-    SessionBuffer = MakeUnique<BlockBuffer>(sessionBlockArgs);
+    SessionBuffer = BlockBuffer(sessionBlockArgs);
 }
 
 Session::~Session()
 {
-    SessionBuffer.release();
     FeatureSet.reset();
     WorldManager.reset();
 }
@@ -131,14 +130,19 @@ void Session::Step(const SessionStepArgs& args)
     WorldManager->Step(worldStepArgs);
 }
 
-BlockBuffer* Session::GetBuffer()
+BlockBuffer& Session::GetBuffer()
 {
-    return SessionBuffer.get();
+    return SessionBuffer;
 }
 
-const BlockBuffer* Session::GetBuffer() const
+const BlockBuffer& Session::GetBuffer() const
 {
-    return SessionBuffer.get();
+    return SessionBuffer;
+}
+
+TSharedPtr<IFeature> Session::GetFeature(const FName& featureId) const
+{
+    return FeatureSet->GetFeature(featureId);
 }
 
 sys_clock_t Session::GetCurrTime() const

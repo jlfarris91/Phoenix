@@ -26,7 +26,7 @@ namespace Phoenix
         FName WorldName = FName::None;
     };
 
-    class PHOENIXSIM_API Session
+    class PHOENIXSIM_API Session : public BlockBufferOwner<Session>
     {
     public:
 
@@ -41,8 +41,16 @@ namespace Phoenix
         void Tick(const SessionStepArgs& args);
         void Step(const SessionStepArgs& args);
 
-        BlockBuffer* GetBuffer();
-        const BlockBuffer* GetBuffer() const;
+        BlockBuffer& GetBuffer();
+        const BlockBuffer& GetBuffer() const;
+
+        TSharedPtr<IFeature> GetFeature(const FName& featureId) const;
+
+        template <class TFeature>
+        TSharedPtr<TFeature> GetFeature() const
+        {
+            return FeatureSet->GetFeature<TFeature>();
+        }
 
         sys_clock_t GetCurrTime() const;
         sys_clock_t GetStartTime() const;
@@ -74,7 +82,7 @@ namespace Phoenix
         // Steps per second
         FPSCalc FPSCalc;
 
-        TUniquePtr<BlockBuffer> SessionBuffer;
+        BlockBuffer SessionBuffer;
     };
 
     using SessionPtr = Session*;
