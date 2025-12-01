@@ -217,7 +217,7 @@ namespace Phoenix
                 {
                     Components[i].Offset = TotalSize;
                     TotalSize += Components[i].Size;
-                    Hash = Hashing::FN1VA32Combine(Hash, (hash32_t)Components[i].Id);
+                    Hash = Hashing::FNV1A32Combine(Hash, (hash32_t)Components[i].Id);
                     if (generateId)
                     {
                         Id += Components[i].Id;

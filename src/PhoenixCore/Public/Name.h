@@ -45,8 +45,45 @@ namespace Phoenix
             return Value <=> other.Value;
         }
 
-        FName operator+(const FName& other) const;
-        FName& operator+=(const FName& other);
+        constexpr FName operator+(const FName& other) const
+        {
+            FName result = *this;
+            result += other;
+            return result;
+        }
+
+        constexpr FName& operator+=(const FName& other)
+        {
+            Value = Hashing::FNV1A32Combine(Value, other.Value);
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(Debug, _countof(Debug), "%s+%s", Debug, other.Debug);
+            }
+#endif
+            return *this;
+        }
+
+        template <size_t N>
+        constexpr FName operator+(const char (&chars)[N]) const
+        {
+            FName result = *this;
+            result += chars;
+            return result;
+        }
+
+        template <size_t N>
+        constexpr FName& operator+=(const char (&chars)[N])
+        {
+            Value = Hashing::FNV1A32Append(Value, chars);
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(Debug, _countof(Debug), "%s%s", Debug, chars);
+            }
+#endif
+            return *this;
+        }
 
         constexpr static bool IsNoneOrEmpty(const FName& name)
         {
