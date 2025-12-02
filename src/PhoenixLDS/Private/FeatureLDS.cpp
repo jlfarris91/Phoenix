@@ -66,10 +66,10 @@ const LDSRecord* FeatureLDS::QueryObjectRecord(
     WorldConstPtr world,
     const FName& objectId,
     const FName& propertyId,
-    ELDSRecordFlags flags)
+    ELDSFeatureQueryRecordFlags flags)
 {
     // 1. Check the dynamic world catalog
-    if (world && HasNoneFlags(flags, ELDSRecordFlags::SessionOnly, ELDSRecordFlags::StaticOnly))
+    if (world && HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::SessionOnly, ELDSFeatureQueryRecordFlags::StaticOnly))
     {
         if (const FeatureLDSDynamicBlock* block = world->GetBlock<FeatureLDSDynamicBlock>())
         {
@@ -87,7 +87,7 @@ const LDSRecord* FeatureLDS::QueryObjectRecord(
     }
 
     // 2. Check the static world catalog
-    if (featureLDS && world && HasNoneFlags(flags, ELDSRecordFlags::SessionOnly))
+    if (featureLDS && world && HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::SessionOnly))
     {
         if (TSharedPtr<const Catalog> worldStaticCatalog = featureLDS->GetStaticWorldCatalog(*world))
         {
@@ -99,7 +99,7 @@ const LDSRecord* FeatureLDS::QueryObjectRecord(
     }
 
     // 3. Check the dynamic session catalog
-    if (session && HasNoneFlags(flags, ELDSRecordFlags::StaticOnly))
+    if (session && HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::StaticOnly))
     {
         if (const FeatureLDSStaticBlock* block = session->GetBlock<FeatureLDSStaticBlock>())
         {
@@ -123,7 +123,7 @@ const LDSRecord* FeatureLDS::QueryObjectRecord(
     }
 
     // Search for the same property in the base object
-    if (HasNoneFlags(flags, ELDSRecordFlags::Exact))
+    if (HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::Exact))
     {
         // Find the base object id
         if (const LDSRecord* baseRecord = QueryObjectRecord(session, world, objectId, "/base"_n))
@@ -141,10 +141,10 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     WorldConstPtr world,
     const FName& typeId,
     const FName& propertyId,
-    ELDSRecordFlags flags)
+    ELDSFeatureQueryRecordFlags flags)
 {
     // 1. Check the dynamic world catalog
-    if (world && HasNoneFlags(flags, ELDSRecordFlags::SessionOnly, ELDSRecordFlags::StaticOnly))
+    if (world && HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::SessionOnly, ELDSFeatureQueryRecordFlags::StaticOnly))
     {
         if (const FeatureLDSDynamicBlock* block = world->GetBlock<FeatureLDSDynamicBlock>())
         {
@@ -162,7 +162,7 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     }
 
     // 2. Check the static world catalog
-    if (featureLDS && world && HasNoneFlags(flags, ELDSRecordFlags::SessionOnly))
+    if (featureLDS && world && HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::SessionOnly))
     {
         if (TSharedPtr<const Catalog> worldStaticCatalog = featureLDS->GetStaticWorldCatalog(*world))
         {
@@ -174,7 +174,7 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     }
 
     // 3. Check the dynamic session catalog
-    if (session && HasNoneFlags(flags, ELDSRecordFlags::StaticOnly))
+    if (session && HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::StaticOnly))
     {
         if (const FeatureLDSStaticBlock* block = session->GetBlock<FeatureLDSStaticBlock>())
         {
@@ -198,7 +198,7 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     }
 
     // Search for the same property in the base type
-    if (HasNoneFlags(flags, ELDSRecordFlags::Exact))
+    if (HasNoneFlags(flags, ELDSFeatureQueryRecordFlags::Exact))
     {
         // Find the base type id
         if (const LDSRecord* baseRecord = QueryTypeRecord(session, world, typeId, "/base"_n))

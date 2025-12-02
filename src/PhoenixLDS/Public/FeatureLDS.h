@@ -3,7 +3,7 @@
 
 #include "DLLExport.h"
 #include "Features.h"
-#include "FixedLDS.h"
+#include "LDSRecordStore.h"
 #include "LDSCatalog.h"
 #include "Session.h"
 
@@ -23,7 +23,7 @@ namespace Phoenix::LDS
         TFixedCatalog<8192, 1024> Catalog;
     };
 
-    enum class ELDSRecordFlags : uint8
+    enum class ELDSFeatureQueryRecordFlags : uint8
     {
         None = 0,
 
@@ -63,14 +63,14 @@ namespace Phoenix::LDS
             WorldConstPtr world,
             const FName& objectId,
             const FName& propertyId,
-            ELDSRecordFlags flags = ELDSRecordFlags::None);
+            ELDSFeatureQueryRecordFlags flags = ELDSFeatureQueryRecordFlags::None);
 
         static const LDSRecord* QueryTypeRecord(
             SessionConstPtr session,
             WorldConstPtr world,
             const FName& typeId,
             const FName& propertyId,
-            ELDSRecordFlags flags = ELDSRecordFlags::None);
+            ELDSFeatureQueryRecordFlags flags = ELDSFeatureQueryRecordFlags::None);
 
         // A catalog that holds static LDS data for the session.
         // These catalogs are stored on the heap.

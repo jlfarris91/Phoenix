@@ -29,7 +29,7 @@
 #include "FeatureLua.h"
 
 // Remove me
-#include "FixedLDS.h"
+#include "Json/LDSJson.h"
 
 // SDL impl
 #include "SDL/SDLCamera.h"
@@ -39,7 +39,6 @@
 #include "SDL/SDLViewport.h"
 
 // Test App Tools
-#include "LDSJson.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -167,7 +166,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
 
-    Json::Test();
+    Json::RunLDSTests();
 
     InitSession();
 

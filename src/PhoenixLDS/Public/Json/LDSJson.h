@@ -5,5 +5,5 @@
 
 namespace Phoenix::LDS::Json
 {
-    PHOENIX_LDS_API void Test();
+    PHOENIX_LDS_API void RunLDSTests();
 }

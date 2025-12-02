@@ -28,8 +28,8 @@ namespace Phoenix::LDS
 
         // Special types
         Array,
-        Object,
-        ObjectRef
+        Object,     // A full object definition.
+        ObjectRef   // A reference to another object in the catalog.
     };
 
     PHOENIX_LDS_API bool TryParse(const PHXString& string, ELDSValueType& outEnum);
@@ -49,6 +49,12 @@ namespace Phoenix::LDS
     PHOENIX_LDS_API struct LDSTypedValue
     {
         constexpr LDSTypedValue() = default;
+
+        constexpr LDSTypedValue(ELDSValueType type)
+            : Value({ .UInt32 = (uint32)type })
+            , Type(type)
+        {
+        }
 
         constexpr LDSTypedValue(const LDSValue& value, ELDSValueType type)
             : Value(value)
@@ -155,7 +161,7 @@ namespace Phoenix::LDS
     };
 
     template <class TContainer>
-    PHOENIX_LDS_API class TRecordStore
+    PHOENIX_LDS_API class TLDSRecordStore
     {
     public:
 
@@ -202,7 +208,7 @@ namespace Phoenix::LDS
 
         const LDSRecord* FindRecord(hash64_t recordId, hash64_t mask = -1) const
         {
-            return const_cast<TRecordStore*>(this)->FindRecord(recordId, mask);
+            return const_cast<TLDSRecordStore*>(this)->FindRecord(recordId, mask);
         }
 
         LDSRecord* FindRecord(const FName& objectId, const FName& propertyId)
@@ -298,7 +304,7 @@ namespace Phoenix::LDS
     };
 
     template <size_t N>
-    using TFixedRecordStore = TRecordStore<TFixedArray<LDSRecord, N>>;
+    using TFixedRecordStore = TLDSRecordStore<TFixedArray<LDSRecord, N>>;
 
-    using RecordStore = TRecordStore<TArray2<LDSRecord>>;
+    using RecordStore = TLDSRecordStore<TArray2<LDSRecord>>;
 }

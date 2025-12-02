@@ -1,11 +1,26 @@
 
 #pragma once
-#include "FixedLDS.h"
+#include "Flags.h"
+#include "LDSRecordStore.h"
 
 namespace Phoenix::LDS
 {
+    enum class ELDSObjectRecordQueryFlags : uint8
+    {
+        None = 0,
+        RecurseBaseObjects = 1,
+        ReturnDefaultRecord = 2,
+        Standard = RecurseBaseObjects | ReturnDefaultRecord
+    };
+
+    enum class ELDSTypeRecordQueryFlags : uint8
+    {
+        None = 0,
+        RecurseBaseTypes = 1
+    };
+
     template <class TObjectStore, class TTypeStore>
-    PHOENIX_LDS_API struct TCatalog
+    PHOENIX_LDS_API struct TLDSCatalog
     {
         TObjectStore& GetObjectStore()
         {
@@ -17,14 +32,42 @@ namespace Phoenix::LDS
             return Objects;
         }
 
-        LDSRecord* FindObjectRecord(const FName& objectId, const FName& propertyId)
+        LDSRecord* FindObjectRecord(
+            const FName& objectId,
+            const FName& propertyId,
+            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::Standard)
         {
-            return Objects.FindRecord(objectId, propertyId);
+            FName currObjectId = objectId;
+            while (currObjectId != FName::None)
+            {
+                if (auto record = Objects.FindRecord(currObjectId, propertyId))
+                {
+                    return record;
+                }
+                if (HasNoneFlags(flags, ELDSObjectRecordQueryFlags::RecurseBaseObjects))
+                {
+                    return nullptr;
+                }
+                FName nextObjectId = GetBaseObjectId(currObjectId);
+                if (nextObjectId == FName::None)
+                {
+                    break;
+                }
+                currObjectId = nextObjectId;
+            }
+            if (HasAnyFlags(flags, ELDSObjectRecordQueryFlags::ReturnDefaultRecord))
+            {
+                return FindTypeRecord(currObjectId, propertyId + "/default");
+            }
+            return nullptr;
         }
 
-        const LDSRecord* FindObjectRecord(const FName& objectId, const FName& propertyId) const
+        const LDSRecord* FindObjectRecord(
+            const FName& objectId,
+            const FName& propertyId,
+            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::Standard) const
         {
-            return Objects.FindRecord(objectId, propertyId);
+            return const_cast<TLDSCatalog*>(this)->FindObjectRecord(objectId, propertyId, flags);
         }
 
         bool HasObject(const FName& typeId) const
@@ -65,14 +108,45 @@ namespace Phoenix::LDS
             return Types;
         }
 
-        LDSRecord* FindTypeRecord(const FName& objectId, const FName& propertyId)
+        LDSRecord* FindTypeRecord(
+            const FName& typeId,
+            const FName& propertyId,
+            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::RecurseBaseTypes)
         {
-            return Types.FindRecord(objectId, propertyId);
+            FName currTypeId = typeId;
+            while (currTypeId != FName::None)
+            {
+                if (auto record = Types.FindRecord(currTypeId, propertyId))
+                {
+                    return record;
+                }
+                if (HasNoneFlags(flags, ELDSTypeRecordQueryFlags::RecurseBaseTypes))
+                {
+                    break;
+                }
+                currTypeId = GetBaseTypeId(currTypeId);
+            }
+            return nullptr;
         }
 
-        const LDSRecord* FindTypeRecord(const FName& objectId, const FName& propertyId) const
+        const LDSRecord* FindTypeRecord(
+            const FName& typeId,
+            const FName& propertyId,
+            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::RecurseBaseTypes) const
         {
-            return Types.FindRecord(objectId, propertyId);
+            return const_cast<TLDSCatalog*>(this)->FindTypeRecord(typeId, propertyId, flags);
+        }
+
+        // Returns the first matching type record found of a base type of a given object.
+        LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId)
+        {
+            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::RecurseBaseTypes);
+        }
+
+        // Returns the first matching type record found of a base type of a given object.
+        const LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId) const
+        {
+            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::RecurseBaseTypes);
         }
 
         bool HasType(const FName& typeId) const
@@ -109,18 +183,14 @@ namespace Phoenix::LDS
             Types.Sort();
         }
 
-        // Returns the base ID of the given object or type ID, or FName::None if there is no base.
-        // Note that this returns both base object ids and base type ids.
-        constexpr FName GetBaseId(const FName& objectOrTypeId) const
+        // Returns the base ID of the given object ID, or FName::None if there is no base.
+        // Note that this only returns base object ids, not base type ids.
+        constexpr FName GetBaseObjectId(const FName& objectId) const
         {
-            const LDSRecord* baseRecord = Objects.FindRecord(objectOrTypeId, "/base"_n);
+            const LDSRecord* baseRecord = Objects.FindRecord(objectId, "/base"_n);
             if (!baseRecord)
             {
-                baseRecord = Types.FindRecord(objectOrTypeId, "/base"_n);
-                if (!baseRecord)
-                {
-                    return FName::None;
-                }
+                return FName::None;
             }
 
             return baseRecord->GetValueAs<FName>();
@@ -140,15 +210,31 @@ namespace Phoenix::LDS
             return baseId;
         }
 
-        // Calls the given callback for each base ID of the given object or type ID.
-        template <class T>
-        constexpr void ForEachBaseId(const FName& objectOrTypeId, const T& callback)
+        // Returns the base ID of the given object or type ID, or FName::None if there is no base.
+        // Note that this returns both base object ids and base type ids.
+        constexpr FName GetBaseId(const FName& objectOrTypeId) const
         {
-            FName baseId = GetBaseId(objectOrTypeId);
+            const LDSRecord* baseRecord = Objects.FindRecord(objectOrTypeId, "/base"_n);
+            if (!baseRecord)
+            {
+                baseRecord = Types.FindRecord(objectOrTypeId, "/base"_n);
+                if (!baseRecord)
+                {
+                    return FName::None;
+                }
+            }
+            return baseRecord->GetValueAs<FName>();
+        }
+
+        // Calls the given callback for each base object ID of the given object ID.
+        template <class T>
+        constexpr void ForEachBaseObjectId(const FName& objectId, const T& callback)
+        {
+            FName baseId = GetBaseObjectId(objectId);
             while (baseId != FName::None)
             {
                 callback(baseId);
-                baseId = GetBaseId(baseId);
+                baseId = GetBaseObjectId(baseId);
             }
         }
 
@@ -161,6 +247,18 @@ namespace Phoenix::LDS
             {
                 callback(baseId);
                 baseId = GetBaseTypeId(baseId);
+            }
+        }
+
+        // Calls the given callback for each base object or type ID of the given object or type ID.
+        template <class T>
+        constexpr void ForEachBaseId(const FName& objectOrTypeId, const T& callback)
+        {
+            FName baseId = GetBaseId(objectOrTypeId);
+            while (baseId != FName::None)
+            {
+                callback(baseId);
+                baseId = GetBaseId(baseId);
             }
         }
 
@@ -183,7 +281,7 @@ namespace Phoenix::LDS
     };
 
     template <size_t NObjects, size_t NTypes>
-    using TFixedCatalog = TCatalog<TFixedRecordStore<NObjects>, TFixedRecordStore<NTypes>>;
+    using TFixedCatalog = TLDSCatalog<TFixedRecordStore<NObjects>, TFixedRecordStore<NTypes>>;
 
-    using Catalog = TCatalog<RecordStore, RecordStore>;
+    using Catalog = TLDSCatalog<RecordStore, RecordStore>;
 }

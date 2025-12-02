@@ -10,9 +10,19 @@ namespace Phoenix::LDS::Json
     {
         using json = nlohmann::json;
 
-        JsonCatalogTypeBuilder(TCatalog* catalog)
-            : JsonCatalogBuilderBase<TCatalog>(catalog)
+        JsonCatalogTypeBuilder(const JsonDataSource* dataSource, TCatalog* catalog)
+            : JsonCatalogBuilderBase<TCatalog>(dataSource, catalog)
         {
+        }
+
+        bool RegisterAllTypes()
+        {
+            bool success = true;
+            for (auto && [typeId, typeJson] : this->DataSource->GetRegisteredTypes())
+            {
+                success = RegisterType(typeJson) && success;
+            }
+            return success;
         }
 
         bool RegisterType(const json& typeJson)
@@ -20,79 +30,68 @@ namespace Phoenix::LDS::Json
             auto idIter = typeJson.find("id");
             if (idIter == typeJson.end())
             {
-                // Error bad data
+                this->LogError("", "", "Type is missing required 'id' property.");
                 return false;
             }
 
             PHXString typeIdStr = idIter->get<PHXString>();
-            FName typeId = FName(typeIdStr.data(), typeIdStr.length());
 
-            if (!ProcessObject(typeId, typeId, "", typeJson, ""))
+            if (!ProcessObject(typeIdStr, typeJson, ""))
             {
                 return false;
             }
 
             // Only add the id record if we successfully processed the type
-            this->CatalogPtr->EmplaceTypeRecord(typeId, "/id"_n, LDSTypedValue({ { .Name = typeId }, ELDSValueType::Name }));
+            this->Catalog->EmplaceTypeRecord(typeIdStr, "/id"_n, LDSTypedValue(typeIdStr));
             return true;
         }
 
     private:
 
         bool ProcessObject(
-            const FName& rootObjectId,
-            const FName& objectId,
-            const PHXString& key,
+            const PHXString& rootObjectId,
             const json& jsonObject,
             const PHXString& propertyPath)
         {
             auto typeIter = jsonObject.find("type");
             if (typeIter == jsonObject.end())
             {
-                // Error: expected type property
+                this->LogError(rootObjectId, propertyPath, "Type is missing required 'type' property.");
                 return false;
             }
 
             PHXString typeStr = typeIter->get<PHXString>();
 
-            PHXString newPropertyPath = propertyPath;
-            if (!key.empty())
-            {
-                newPropertyPath += "/" + key;
-            }
-
             // Defining a new object inline
             if (typeStr == "Object")
             {
                 // Record the type
-                PHXString typePropertyPath = newPropertyPath + "/type";
-                FName typePropertyPathId = FName(typePropertyPath.data(), typePropertyPath.length());
-                this->CatalogPtr->EmplaceTypeRecord(rootObjectId, typePropertyPathId, LDSTypedValue({ .UInt32 = (uint32)ELDSValueType::Object }, ELDSValueType::UInt32));
+                PHXString typePropertyPath = propertyPath + "/type";
+                this->Catalog->EmplaceTypeRecord(rootObjectId, typePropertyPath, LDSTypedValue(ELDSValueType::Object));
 
-                return ProcessObjectProperties(rootObjectId, objectId, jsonObject, newPropertyPath);
+                return ProcessObjectProperties(rootObjectId, jsonObject, propertyPath);
             }
 
             // A reference to another object
             // This must come before the inline object check since it is a superset
             if (typeStr.starts_with("ObjectRef"))
             {
-                return ProcessObjectRef(rootObjectId, objectId, jsonObject, typeStr, newPropertyPath);
+                return ProcessObjectRef(rootObjectId, typeStr, propertyPath);
             }
 
-            // Inline object using another defined type
+            // Embedded object using another defined type
             if (typeStr.starts_with("Object"))
             {
-                return ProcessInlineObjectRef(rootObjectId, objectId, jsonObject, typeStr, newPropertyPath);
+                return ProcessEmbeddedObject(rootObjectId, typeStr, propertyPath);
             }
 
             if (typeStr == "Array")
             {
                 // Record the type
-                PHXString typePropertyPath = newPropertyPath + "/type";
-                FName typePropertyPathId = FName(typePropertyPath.data(), typePropertyPath.length());
-                this->CatalogPtr->EmplaceTypeRecord(rootObjectId, typePropertyPathId, LDSTypedValue({ .UInt32 = (uint32)ELDSValueType::Array }, ELDSValueType::UInt32));
+                PHXString typePropertyPath = propertyPath + "/type";
+                this->Catalog->EmplaceTypeRecord(rootObjectId, typePropertyPath, LDSTypedValue(ELDSValueType::Array));
 
-                return ProcessArray(rootObjectId, objectId, jsonObject, newPropertyPath);
+                return ProcessArray(rootObjectId, jsonObject, propertyPath);
             }
 
             // Plain old data value types
@@ -100,39 +99,37 @@ namespace Phoenix::LDS::Json
             if (TryParse(typeStr, valueType))
             {
                 // Record the type
-                PHXString typePropertyPath = newPropertyPath + "/type";
-                FName typePropertyPathId = FName(typePropertyPath.data(), typePropertyPath.length());
-                this->CatalogPtr->EmplaceTypeRecord(rootObjectId, typePropertyPathId, LDSTypedValue({ .UInt32 = (uint32)valueType }, ELDSValueType::UInt32));
+                PHXString typePropertyPath = propertyPath + "/type";
+                this->Catalog->EmplaceTypeRecord(rootObjectId, typePropertyPath, LDSTypedValue(valueType));
 
-                return ProcessPODProperty(rootObjectId, key, jsonObject, valueType, newPropertyPath);
+                return ProcessPODProperty(rootObjectId, jsonObject, valueType, propertyPath);
             }
 
             return false;
         }
 
         bool ProcessObjectProperties(
-            const FName& rootObjectId,
-            const FName& objectId,
+            const PHXString& rootObjectId,
             const json& jsonObject,
             const PHXString& propertyPath)
         {
             auto propsIter = jsonObject.find("properties");
             if (propsIter == jsonObject.end())
             {
-                // Error: object type must have at least one property, right?
-                return false;
+                this->LogWarning(rootObjectId, propertyPath, "Object type is missing expected 'properties' property.");
+                return true;
             }
 
             const json& props = *propsIter;
             if (props.empty())
             {
-                // Error: object type must have at least one property, right?
-                return false;
+                this->LogWarning(rootObjectId, propertyPath, "Object type 'properties' is empty.");
+                return true;
             }
-            
+
             for (auto && [propName, propValue] : props.items())
             {
-                if (!ProcessObject(rootObjectId, objectId, propName, propValue, propertyPath))
+                if (!ProcessObject(rootObjectId, propValue, propertyPath + "/" + propName))
                 {
                     return false;
                 }
@@ -142,34 +139,37 @@ namespace Phoenix::LDS::Json
         }
 
         bool ProcessObjectRef(
-            const FName& rootObjectId,
-            const FName& objectId,
-            const json& json,
+            const PHXString& rootObjectId,
             const PHXString& typeStr,
             const PHXString& propertyPath)
         {
+            if (!this->DataSource)
+            {
+                this->LogError(rootObjectId, propertyPath, "A data source is required for object references.");
+                return false;
+            }
+
             auto indexOfHash = typeStr.find('#');
             if (indexOfHash == Index<size_t>::None)
             {
-                // Error: expected hash character
+                this->LogError(rootObjectId, propertyPath, "Malformed object reference. Expected 'Object#' followed by a type id.");
                 return false;
             }
 
             PHXString refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
-            FName refTypeId = FName(refTypeStr.data(), refTypeStr.length());
 
-            if (!this->CatalogPtr->HasType(refTypeId))
+            const nlohmann::json* typeJson = this->DataSource->FindType(refTypeStr);
+            if (!typeJson)
             {
-                // Error: referenced type does not exist
+                this->LogError(rootObjectId, propertyPath, "Could not find type with id '{}' in data source.", refTypeStr);
                 return false;
             }
 
             // Record the type
             {
                 PHXString typePropertyPath = propertyPath + "/type";
-                FName typePropertyPathId = FName(typePropertyPath.data(), typePropertyPath.length());
-                LDSTypedValue typeValue = { { .Name = refTypeId }, ELDSValueType::ObjectRef };
-                this->CatalogPtr->EmplaceTypeRecord(objectId, typePropertyPathId, typeValue);
+                LDSTypedValue typeValue = { { .Name = refTypeStr }, ELDSValueType::ObjectRef };
+                this->Catalog->EmplaceTypeRecord(rootObjectId, typePropertyPath, typeValue);
             }
 
             // TODO (jfarris): what if we could also allow for inline property overrides on this referenced object?
@@ -180,53 +180,37 @@ namespace Phoenix::LDS::Json
             return true;
         }
 
-        bool ProcessInlineObjectRef(
-            const FName& rootObjectId,
-            const FName& objectId,
-            const json& jsonObject,
+        bool ProcessEmbeddedObject(
+            const PHXString& rootObjectId,
             const PHXString& typeStr,
             const PHXString& propertyPath)
         {
+            if (!this->DataSource)
+            {
+                this->LogError(rootObjectId, propertyPath, "A data source is required for embedded objects.");
+                return false;
+            }
+
             auto indexOfHash = typeStr.find('#');
             if (indexOfHash == Index<size_t>::None)
             {
-                // Error: expected hash character
+                this->LogError(rootObjectId, propertyPath, "Malformed embedded object reference. Expected 'Object#' followed by a type id.");
                 return false;
             }
 
             PHXString refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
-            FName refTypeId = FName(refTypeStr.data(), refTypeStr.length());
 
-            const LDSRecord* refTypeRecord = this->CatalogPtr->FindTypeRecord(refTypeId, "/id"_n);
-            if (!refTypeRecord)
+            const nlohmann::json* typeJson = this->DataSource->FindType(refTypeStr);
+            if (!typeJson)
             {
-                // Error: could not find metadata for referenced type
+                this->LogError(rootObjectId, propertyPath, "Could not find type with id '%s' in data source.", refTypeStr);
                 return false;
             }
 
-            // Record the type
+            if (!ProcessObject(rootObjectId, *typeJson, propertyPath))
             {
-                PHXString typePropertyPath = propertyPath + "/type";
-                FName typePropertyPathId = FName(typePropertyPath.data(), typePropertyPath.length());
-                LDSTypedValue typeValue = LDSTypedValue({ .Name = refTypeId }, ELDSValueType::Object);
-                this->CatalogPtr->EmplaceTypeRecord(rootObjectId, typePropertyPathId, typeValue);
+                return false;
             }
-
-            // Copy records from the referenced type inline
-            // TODO (jfarris): we need to create a new absolute property path given the relative path of the referenced object
-            // To do this we will need the object's original json or utilize some intermediate format
-            // metadata.ForEachRecord(
-            //     refId,
-            //     [&metadata, &rootObjectId, propertyPath](const LDSRecord& record)
-            //     {
-            //         FName fieldId = record.GetPropertyId();
-            //         if (fieldId == "/type"_n)
-            //         {
-            //             return;
-            //         }
-            //
-            //         metadata.EmplaceRecord_GetRef(rootObjectId, fieldId, record.GetValue());
-            //     });
 
             // Process any default values
             // TODO (jfarris): record default values
@@ -235,17 +219,45 @@ namespace Phoenix::LDS::Json
         }
 
         bool ProcessArray(
-            const FName& rootObjectId,
-            const FName& objectId,
+            const PHXString& rootObjectId,
             const json& jsonObject,
             const PHXString& propertyPath)
         {
+            auto itemsIter = jsonObject.find("items");
+            if (itemsIter == jsonObject.end())
+            {
+                this->LogError(rootObjectId, propertyPath, "Array is missing required 'items' property.");
+                return false;
+            }
+
+            const json& items = *itemsIter;
+
+            if (!ProcessObject(rootObjectId, items, propertyPath + "/items"))
+            {
+                return false;
+            }
+
+            auto minItemsIter = jsonObject.find("min_items");
+            if (minItemsIter != jsonObject.end())
+            {
+                uint32 minItems = std::max(minItemsIter->get<int32>(), 0);
+                this->Catalog->EmplaceTypeRecord(rootObjectId, propertyPath + "/min_items", LDSTypedValue(minItems));
+            }
+
+            auto maxItemsIter = jsonObject.find("max_items");
+            if (maxItemsIter != jsonObject.end())
+            {
+                uint32 maxItems = std::max(maxItemsIter->get<int32>(), 0);
+                this->Catalog->EmplaceTypeRecord(rootObjectId, propertyPath + "/max_items", LDSTypedValue(maxItems));
+            }
+
+            // TODO (jfarris): allow user to specify default item values here
+
             return true;
         }
 
         bool ProcessPODProperty(
-            const FName& rootObjectId,
-            const PHXString& propName,
+            const PHXString& rootObjectId,
             const json& propValue,
             ELDSValueType valueType,
             const PHXString& propertyPath)
@@ -272,14 +284,13 @@ namespace Phoenix::LDS::Json
 
             for (auto && [metaName, metaValue] : propValue.items())
             {
-                PHXString fieldPtr = propertyPath + "/" + metaName;
-                FName fieldId = FName(fieldPtr.data(), fieldPtr.length());
+                PHXString fieldId = propertyPath + "/" + metaName;
 
                 if (metaName == "min")
                 {
                     int32 minVal = metaValue.get<int32>();
                     LDSTypedValue value = { LDSValue(minVal), ELDSValueType::Int32 };
-                    this->CatalogPtr->EmplaceTypeRecord(rootObjectId, fieldId, value);
+                    this->Catalog->EmplaceTypeRecord(rootObjectId, fieldId, value);
                 }
 
                 if (metaName == "max")
@@ -287,7 +298,7 @@ namespace Phoenix::LDS::Json
                     LDSTypedValue value;
                     value.Type = ELDSValueType::Int32;
                     value.Value.Int32 = metaValue.get<int32>();
-                    this->CatalogPtr->EmplaceTypeRecord(rootObjectId, fieldId, value);
+                    this->Catalog->EmplaceTypeRecord(rootObjectId, fieldId, value);
                 }
 
                 if (metaName == "default")
@@ -295,11 +306,11 @@ namespace Phoenix::LDS::Json
                     LDSTypedValue value = { {}, valueType };
                     if (!this->GetPropertyValueFromJson(metaValue, valueType, value.Value))
                     {
-                        // Error: default value is not of expected type
+                        this->LogError(rootObjectId, propertyPath, "Unexpected default value type.");
                         return false;
                     }
 
-                    this->CatalogPtr->EmplaceTypeRecord(rootObjectId, fieldId, value);
+                    this->Catalog->EmplaceTypeRecord(rootObjectId, fieldId, value);
                 }
             }
 

@@ -25,6 +25,11 @@ namespace Phoenix
 #endif
         }
 
+        constexpr FName(const PHXString& string)
+            : FName(string.data(), string.length())
+        {
+        }
+
         constexpr explicit operator hash32_t() const
         {
             return Value;
