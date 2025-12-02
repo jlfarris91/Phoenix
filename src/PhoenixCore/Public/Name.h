@@ -59,7 +59,14 @@ namespace Phoenix
 
         constexpr FName& operator+=(const FName& other)
         {
-            Value = Hashing::FNV1A32Combine(Value, other.Value);
+            if (Value == 0)
+            {
+                Value = other.Value;
+            }
+            else
+            {
+                Value = Hashing::FNV1A32Combine(Value, other.Value);
+            }
 #if DEBUG
             if (!std::is_constant_evaluated())
             {
@@ -85,7 +92,14 @@ namespace Phoenix
         constexpr FName Append(const char* str, size_t len) const
         {
             FName result = *this;
-            result.Value = Hashing::FNV1A32Append(result.Value, str, len);
+            if (result.Value == 0)
+            {
+                result.Value = Hashing::FNV1A32(str, len);
+            }
+            else
+            {
+                result.Value = Hashing::FNV1A32Append(result.Value, str, len);
+            }
 #if DEBUG
             if (!std::is_constant_evaluated())
             {
@@ -99,7 +113,14 @@ namespace Phoenix
         constexpr FName Append(const char (&chars)[N]) const
         {
             FName result = *this;
-            result.Value = Hashing::FNV1A32Append(result.Value, chars);
+            if (result.Value == 0)
+            {
+                result.Value = Hashing::FNV1A32(chars);
+            }
+            else
+            {
+                result.Value = Hashing::FNV1A32Append(result.Value, chars);
+            }
 #if DEBUG
             if (!std::is_constant_evaluated())
             {

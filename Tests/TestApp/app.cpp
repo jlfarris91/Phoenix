@@ -29,7 +29,7 @@
 #include "FeatureLua.h"
 
 // Remove me
-#include "Json/LDSJson.h"
+#include "Json/LDSJsonTests.h"
 
 // SDL impl
 #include "SDL/SDLCamera.h"
@@ -129,7 +129,7 @@ void UpdateSessionWorker()
 
     while (!GSessionThreadWantsExit)
     {
-        FrameMarkNamed("Sim");
+        //FrameMarkNamed("Sim");
 
         GSession->Tick(stepArgs);
 
@@ -166,7 +166,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
 
-    Json::RunLDSTests();
+    Json::RunLDSJsonTests();
 
     InitSession();
 

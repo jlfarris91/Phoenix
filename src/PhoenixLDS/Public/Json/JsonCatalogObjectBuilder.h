@@ -38,26 +38,33 @@ namespace Phoenix::LDS::Json
 
             if (this->Catalog->HasObject(rootObjectId))
             {
-                this->LogError("", "", "Object with id '{}' has already been registered.", rootObjectId);
+                this->LogError(rootObjectId, "", "Object with id '{}' has already been registered.", rootObjectId);
                 return false;
             }
 
             auto baseIter = objectJson.find("base");
             if (baseIter == objectJson.end())
             {
-                this->LogError("", "", "Object is missing required 'base' property.");
+                this->LogError(rootObjectId, "", "Object is missing required 'base' property.");
                 return false;
             }
 
             PHXString baseId = baseIter->get<PHXString>();
 
-            if (!this->Catalog->HasObject(baseId) && !this->Catalog->HasType(baseId))
+            this->Catalog->EmplaceObjectRecord(rootObjectId, "/base"_n, LDSTypedValue(baseId));
+
+            const LDSRecord* objectTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, "/type"_n);
+            if (!objectTypeRecord)
             {
-                this->LogError("", "", "No base object or type registered with id '{}'.", baseId);
+                this->LogError(rootObjectId, "", "No base object or type registered with id '{}'.", baseId);
                 return false;
             }
 
-            this->Catalog->EmplaceObjectRecord(rootObjectId, "/base"_n, LDSTypedValue(baseId));
+            if (objectTypeRecord->GetValueType() != ELDSValueType::Object)
+            {
+                this->LogError(rootObjectId, "", "Root objects must be of type Object.");
+                return false;
+            }
 
             return ProcessObject(rootObjectId, objectJson, "", "");
         }
@@ -157,8 +164,13 @@ namespace Phoenix::LDS::Json
                 return false;
             }
 
-            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath + "/size", LDSTypedValue((uint32)json.size()));
+            TOptional<uint32> maxItems;
+            if (const LDSRecord* maxItemsRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/max_items"))
+            {
+                maxItems = maxItemsRecord->GetValueAs<uint32>();
+            }
 
+            uint32 itemCount = 0;
             for (auto && [index, item] : json.items())
             {
                 PHXString itemObjectPath = std::format("{}/{}", jsonPath, index);
@@ -166,7 +178,15 @@ namespace Phoenix::LDS::Json
                 {
                     return false;
                 }
+                ++itemCount;
+                if (maxItems.IsSet() && itemCount == maxItems.Get())
+                {
+                    this->LogWarning(rootObjectId, jsonPath, "Object defines an array with {} items but the max allowed is {}", json.size(), maxItems.Get());
+                    break;
+                }
             }
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath + "/size", LDSTypedValue(itemCount));
 
             return true;
         }
