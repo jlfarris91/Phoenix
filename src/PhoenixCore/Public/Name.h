@@ -72,22 +72,41 @@ namespace Phoenix
         template <size_t N>
         constexpr FName operator+(const char (&chars)[N]) const
         {
-            FName result = *this;
-            result += chars;
-            return result;
+            return Append(chars);
         }
 
         template <size_t N>
         constexpr FName& operator+=(const char (&chars)[N])
         {
-            Value = Hashing::FNV1A32Append(Value, chars);
+            *this = Append(chars);
+            return *this;
+        }
+
+        constexpr FName Append(const char* str, size_t len) const
+        {
+            FName result = *this;
+            result.Value = Hashing::FNV1A32Append(result.Value, str, len);
 #if DEBUG
             if (!std::is_constant_evaluated())
             {
-                (void)snprintf(Debug, _countof(Debug), "%s%s", Debug, chars);
+                (void)snprintf(result.Debug, _countof(result.Debug), "%s%s", result.Debug, str);
             }
 #endif
-            return *this;
+            return result;
+        }
+
+        template <size_t N>
+        constexpr FName Append(const char (&chars)[N]) const
+        {
+            FName result = *this;
+            result.Value = Hashing::FNV1A32Append(result.Value, chars);
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(result.Debug, _countof(result.Debug), "%s%s", result.Debug, chars);
+            }
+#endif
+            return result;
         }
 
         constexpr static bool IsNoneOrEmpty(const FName& name)

@@ -41,8 +41,8 @@ namespace Phoenix::LDS
                 return nullptr;
             }
             char buffer[8];
-            (void)snprintf(buffer, sizeof(buffer), "/%u", index);
-            return Catalog->FindObjectRecord(ObjectId, ArrayId + buffer);
+            size_t len = snprintf(buffer, sizeof(buffer), "/%u", index);
+            return Catalog->FindObjectRecord(ObjectId, ArrayId.Append(buffer, len));
         }
 
         template <class T>

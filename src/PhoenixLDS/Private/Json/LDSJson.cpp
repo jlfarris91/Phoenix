@@ -748,16 +748,14 @@ void Test_IntegrationTest()
     }
 
     {
-        // TODO (jfarris): this doesn't work because we aren't emitting the /size record for the array and we can't do
-        // TODO (jfarrus): that with the current implementation as it uses flat() to flatten the json object first.
-        // TLDSArrayView weaponsArray(&catalog, "Lancer"_n, "/weapons"_n);
-        // PHX_ASSERT(weaponsArray.IsValid());
-        // PHX_ASSERT(weaponsArray.Num() == 1);
-        // auto itemRecord = weaponsArray.GetItemRecord(0);
-        // PHX_ASSERT(itemRecord);
-        // PHX_ASSERT(itemRecord->GetValueType() == ELDSValueType::ObjectRef);
-        // PHX_ASSERT(itemRecord->GetValueAs<FName>() == "LancerWeapon"_n);
-        // PHX_ASSERT(weaponsArray.GetValueAs<FName>(0) == "LancerWeapon"_n);
+        TLDSArrayView weaponsArray(&catalog, "Lancer"_n, "/weapons"_n);
+        PHX_ASSERT(weaponsArray.IsValid());
+        PHX_ASSERT(weaponsArray.Num() == 1);
+        auto itemRecord = weaponsArray.GetItemRecord(0);
+        PHX_ASSERT(itemRecord);
+        PHX_ASSERT(itemRecord->GetValueType() == ELDSValueType::ObjectRef);
+        PHX_ASSERT(itemRecord->GetValueAs<FName>() == "LancerWeapon"_n);
+        PHX_ASSERT(weaponsArray.GetValueAs<FName>(0) == "LancerWeapon"_n);
     }
 }
 

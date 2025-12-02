@@ -34,7 +34,13 @@ namespace Phoenix::LDS::Json
                 return false;
             }
 
-            PHXString objectId = idIter->get<PHXString>();
+            PHXString rootObjectId = idIter->get<PHXString>();
+
+            if (this->Catalog->HasObject(rootObjectId))
+            {
+                this->LogError("", "", "Object with id '{}' has already been registered.", rootObjectId);
+                return false;
+            }
 
             auto baseIter = objectJson.find("base");
             if (baseIter == objectJson.end())
@@ -45,27 +51,136 @@ namespace Phoenix::LDS::Json
 
             PHXString baseId = baseIter->get<PHXString>();
 
-            this->Catalog->EmplaceObjectRecord(objectId, "/base"_n, LDSTypedValue(baseId));
-
-            json flat = objectJson.flatten();
-
-            for (auto && [propertyPath, valueJson] : flat.items())
+            if (!this->Catalog->HasObject(baseId) && !this->Catalog->HasType(baseId))
             {
-                if (propertyPath == "/base" || propertyPath == "/id")
+                this->LogError("", "", "No base object or type registered with id '{}'.", baseId);
+                return false;
+            }
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, "/base"_n, LDSTypedValue(baseId));
+
+            return ProcessObject(rootObjectId, objectJson, "", "");
+        }
+
+        bool ProcessObject(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath)
+        {
+            const LDSRecord* objectTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/type");
+            if (objectTypeRecord == nullptr)
+            {
+                this->LogError(rootObjectId, jsonPath, "Could not find type of object.");
+                return false;
+            }
+
+            ELDSValueType type = objectTypeRecord->GetValueType();
+
+            if (type == ELDSValueType::Object)
+            {
+                return ProcessObjectProperties(rootObjectId, json, jsonPath, typePath);
+            }
+
+            if (type == ELDSValueType::ObjectRef)
+            {
+                return ProcessObjectRef(rootObjectId, json, jsonPath);
+            }
+
+            if (type == ELDSValueType::Array)
+            {
+                return ProcessArray(rootObjectId, json, jsonPath, typePath);
+            }
+            
+            return ProcessPODProperty(rootObjectId, json, jsonPath);
+        }
+
+        bool ProcessObjectProperties(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath)
+        {
+            for (auto && [propName, propValue] : json.items())
+            {
+                if (propName == "base" || propName == "id")
                 {
                     continue;
                 }
 
-                LDSTypedValue value;
-                if (!this->GetPropertyValueFromJson(valueJson, objectId, propertyPath, value))
+                PHXString propertyJsonPath = jsonPath + "/" + propName;
+                PHXString propertyTypePath = typePath + "/" + propName;
+                if (!ProcessObject(rootObjectId, propValue, propertyJsonPath, propertyTypePath))
                 {
-                    this->LogError(objectId, propertyPath, "Failed to read property value.");
                     return false;
                 }
+            }
+            return true;
+        }
 
-                this->Catalog->EmplaceObjectRecord(objectId, propertyPath, value);
+        bool ProcessObjectRef(const PHXString& rootObjectId, const json& json, const PHXString& jsonPath)
+        {
+            if (!json.is_string())
+            {
+                this->LogError(rootObjectId, jsonPath, "Expected object reference to be a string value.");
+                return false;
             }
 
+            const PHXString& valueStr = json.get<PHXString>();
+            FName valueId = FName(valueStr.data(), valueStr.length());
+
+            LDSTypedValue value;
+            value.Type = ELDSValueType::ObjectRef;
+            value.Value.Name = valueId;
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            return true;
+        }
+
+        bool ProcessArray(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath)
+        {
+            if (!json.is_array())
+            {
+                this->LogError(rootObjectId, jsonPath, "Expected array property.");
+                return false;
+            }
+
+            PHXString itemTypePath = typePath + "/items";
+            const LDSRecord* itemsTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, itemTypePath + "/type");
+            if (!itemsTypeRecord)
+            {
+                this->LogError(rootObjectId, jsonPath, "Failed to find items type record.");
+                return false;
+            }
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath + "/size", LDSTypedValue((uint32)json.size()));
+
+            for (auto && [index, item] : json.items())
+            {
+                PHXString itemObjectPath = std::format("{}/{}", jsonPath, index);
+                if (!ProcessObject(rootObjectId, item, itemObjectPath, itemTypePath))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        bool ProcessPODProperty(const PHXString& rootObjectId, const json& json, const PHXString& path)
+        {
+            LDSTypedValue value;
+            if (!this->GetPropertyValueFromJson(json, rootObjectId, path, value))
+            {
+                this->LogError(rootObjectId, path, "Failed to read property value.");
+                return false;
+            }
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, path, value);
             return true;
         }
     };
