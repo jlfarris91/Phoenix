@@ -21,6 +21,7 @@
 #include "MortonCode.h"
 
 // Phoenix features
+#include "FeatureLDS.h"
 #include "FeatureBlackboard.h"
 #include "FeatureECS.h"
 #include "FeatureNavigation.h"
@@ -28,6 +29,11 @@
 #include "FeatureSteering.h"
 #include "FeatureLua.h"
 #include "TestFeature.h"
+
+// Remove me
+#include "Json/LDSJsonTests.h"
+#include "BodyComponent.h"
+#include "SteeringComponent.h"
 
 // SDL impl
 #include "SDL/SDLCamera.h"
@@ -37,14 +43,13 @@
 #include "SDL/SDLViewport.h"
 
 // Test App Tools
-#include "BodyComponent.h"
-#include "SteeringComponent.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
 #include "Tools/NavMeshTool.h"
 
 using namespace Phoenix;
+using namespace Phoenix::LDS;
 using namespace Phoenix::Blackboard;
 using namespace Phoenix::ECS;
 using namespace Phoenix::Physics;
@@ -133,7 +138,7 @@ void UpdateSessionWorker()
 
     while (!GSessionThreadWantsExit)
     {
-        // FrameMarkNamed("Sim");
+        //FrameMarkNamed("Sim");
 
         GSession->Tick(stepArgs);
 
@@ -169,6 +174,8 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     {
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
+
+    Json::RunLDSJsonTests();
 
     InitSession();
 

@@ -25,6 +25,11 @@ namespace Phoenix
 #endif
         }
 
+        constexpr FName(const PHXString& string)
+            : FName(string.data(), string.length())
+        {
+        }
+
         constexpr explicit operator hash32_t() const
         {
             return Value;
@@ -45,8 +50,85 @@ namespace Phoenix
             return Value <=> other.Value;
         }
 
-        FName operator+(const FName& other) const;
-        FName& operator+=(const FName& other);
+        constexpr FName operator+(const FName& other) const
+        {
+            FName result = *this;
+            result += other;
+            return result;
+        }
+
+        constexpr FName& operator+=(const FName& other)
+        {
+            if (Value == 0)
+            {
+                Value = other.Value;
+            }
+            else
+            {
+                Value = Hashing::FNV1A32Combine(Value, other.Value);
+            }
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(Debug, _countof(Debug), "%s+%s", Debug, other.Debug);
+            }
+#endif
+            return *this;
+        }
+
+        template <size_t N>
+        constexpr FName operator+(const char (&chars)[N]) const
+        {
+            return Append(chars);
+        }
+
+        template <size_t N>
+        constexpr FName& operator+=(const char (&chars)[N])
+        {
+            *this = Append(chars);
+            return *this;
+        }
+
+        constexpr FName Append(const char* str, size_t len) const
+        {
+            FName result = *this;
+            if (result.Value == 0)
+            {
+                result.Value = Hashing::FNV1A32(str, len);
+            }
+            else
+            {
+                result.Value = Hashing::FNV1A32Append(result.Value, str, len);
+            }
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(result.Debug, _countof(result.Debug), "%s%s", result.Debug, str);
+            }
+#endif
+            return result;
+        }
+
+        template <size_t N>
+        constexpr FName Append(const char (&chars)[N]) const
+        {
+            FName result = *this;
+            if (result.Value == 0)
+            {
+                result.Value = Hashing::FNV1A32(chars);
+            }
+            else
+            {
+                result.Value = Hashing::FNV1A32Append(result.Value, chars);
+            }
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(result.Debug, _countof(result.Debug), "%s%s", result.Debug, chars);
+            }
+#endif
+            return result;
+        }
 
         constexpr static bool IsNoneOrEmpty(const FName& name)
         {

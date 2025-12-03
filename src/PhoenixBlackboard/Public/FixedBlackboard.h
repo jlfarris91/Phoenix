@@ -73,7 +73,7 @@ namespace Phoenix::Blackboard
 
         PHX_FORCE_INLINE constexpr blackboard_key_t CombineKeyLo(blackboard_key_t key, uint32 lo)
         {
-            hash32_t newLo = Hashing::FN1VA32Combine(GetKeyLo(key), lo);
+            hash32_t newLo = Hashing::FNV1A32Combine(GetKeyLo(key), lo);
             return Create(newLo, GetKeyHi(key), GetKeyType(key));
         }
 

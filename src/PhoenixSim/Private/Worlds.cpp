@@ -76,16 +76,6 @@ const BlockBuffer& World::GetBuffer() const
     return Buffer;
 }
 
-uint8_t* World::GetBlock(const FName& name)
-{
-    return Buffer.GetBlock(name);
-}
-
-const uint8_t* World::GetBlock(const FName& name) const
-{
-    return Buffer.GetBlock(name);
-}
-
 WorldManager::WorldManager(const WorldManagerCtorArgs& args)
     : FeatureSet(args.FeatureSet)
     , OnPostWorldUpdate(args.OnPostWorldUpdate)

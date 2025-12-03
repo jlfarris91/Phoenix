@@ -19,8 +19,8 @@ void FeatureLua::Initialize()
 {
     IFeature::Initialize();
 
-    BlockBuffer* buffer = Session->GetBuffer();
-    FeatureLuaDynamicBlock* dynamicBlock = buffer->GetBlock<FeatureLuaDynamicBlock>();
+    BlockBuffer& buffer = Session->GetBuffer();
+    FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
     if (!dynamicBlock)
     {
         return;
@@ -214,8 +214,8 @@ namespace detail
     template <class TRet, class ...TArgs>
     TOptional<TRet> TryExecuteLuaFunctionRet(Session* session, const char* funcName, TArgs&& ...args)
     {
-        BlockBuffer* buffer = session->GetBuffer();
-        FeatureLuaDynamicBlock* dynamicBlock = buffer->GetBlock<FeatureLuaDynamicBlock>();
+        BlockBuffer& buffer = session->GetBuffer();
+        FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
         if (!dynamicBlock)
         {
             return TOptional<TRet>();
@@ -228,8 +228,8 @@ namespace detail
     template <class ...TArgs>
     bool TryExecuteLuaFunction(Session* session, const char* funcName, TArgs&& ...args)
     {
-        BlockBuffer* buffer = session->GetBuffer();
-        FeatureLuaDynamicBlock* dynamicBlock = buffer->GetBlock<FeatureLuaDynamicBlock>();
+        BlockBuffer& buffer = session->GetBuffer();
+        FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
         if (!dynamicBlock)
         {
             return false;
