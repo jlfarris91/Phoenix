@@ -698,7 +698,8 @@ project "TestApp"
 project "TestRTS"
     kind "ConsoleApp"
     location (projects)
-    targetdir "bin/%{cfg.platform}/%{cfg.buildcfg}/TestRTS"
+    targetdir (projects .. "/bin/%{cfg.platform}/%{cfg.buildcfg}/TestRTS")
+    debugdir (_MAIN_SCRIPT_DIR .. "/tests/TestRTS")
 
     dependson {
         "PhoenixCore",

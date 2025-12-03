@@ -1,5 +1,6 @@
 
 #include <ranges>
+#include <fstream>
 
 // Tracy
 #include "PhoenixTracyImpl.h"
@@ -27,8 +28,6 @@
 #include "FeatureNavigation.h"
 #include "FeaturePhysics.h"
 #include "FeatureSteering.h"
-#include "FeatureLua.h"
-#include "FeatureMapLoad.h"
 
 // Remove me
 #include "Json/LDSJsonTests.h"
@@ -111,6 +110,9 @@ void InitSession()
     sessionArgs.FeatureSetArgs.Features.push_back(steeringFeature);
     // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
+
+    std::ifstream sessionConfig("./Data/DefaultSession.json");
+    nlohmann::json configJson = nlohmann::json::parse(sessionConfig);
 
     GSession = new Session(sessionArgs);
 
