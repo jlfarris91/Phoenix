@@ -1,0 +1,10 @@
+{
+    "id": "FogVisibility",
+    "type": "Enum",
+    "enum": [
+        "Hidden",
+        "Snapshot",
+        "Visible"
+    ],
+    "default": "Visible"
+}

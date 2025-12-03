@@ -27,9 +27,11 @@ workspace "Phoenix"
         project "PhoenixPhysics"
         project "PhoenixSteering"
         project "PhoenixLua"
+        project "PhoenixRTS"
 
     group "Tests"
         project "TestApp"
+        project "TestRTS"
 
     group ""
 
@@ -515,6 +517,80 @@ project "PhoenixLua"
         "4251", "4275"
     }
 
+project "PhoenixRTS"
+    kind "StaticLib"
+    location (projects)
+
+    dependson {
+        "lua",
+        "sol2",
+        "PhoenixCore",
+        "PhoenixSim",
+        "PhoenixLDS",
+        "PhoenixBlackboard",
+        "PhoenixECS",
+        "PhoenixPhysics"
+    }
+
+    -- defines { "PHOENIX_DLL" }
+    -- defines { "PHOENIX_RTS_DLL_EXPORTS" }
+    defines { "PHX_PROFILE_ENABLE" }
+
+    files { 
+        "src/PhoenixRTS/**"
+    }
+
+    includedirs {
+        "src/PhoenixRTS/Public",
+        "src/PhoenixRTS/Private",
+        "src/PhoenixCore/Public",
+        "src/PhoenixSim/Public",
+        "src/PhoenixLDS/Public",
+        "src/PhoenixBlackboard/Public",
+        "src/PhoenixECS/Public",
+        "src/PhoenixPhysics/Public",
+    }
+
+    externalincludedirs {
+        ext,
+        ext .. "/lua/lua-5.4.8/src/",
+        ext .. "/sol/"
+    }
+
+    links {
+        "lua",
+        "PhoenixCore",
+        "PhoenixSim",
+        "PhoenixLDS",
+        "PhoenixBlackboard",
+        "PhoenixECS",
+        "PhoenixPhysics",
+    }
+
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "Off"
+        optimize "speed"
+
+    filter "configurations:ReleaseWithSymbols"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "On"
+        optimize "speed"
+        
+    filter {}
+
+    -- TODO (jfarris): fix
+    disablewarnings {
+        "4251", "4275"
+    }
+
 project "TestApp"
     kind "ConsoleApp"
     location (projects)
@@ -580,6 +656,115 @@ project "TestApp"
         "PhoenixPhysics",
         "PhoenixSteering",
         "PhoenixLua",
+        "SDL3"
+    }
+
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "Off"
+        optimize "speed"
+
+    filter "configurations:ReleaseWithSymbols"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "On"
+        optimize "speed"
+        
+    filter {}
+
+    -- TODO (jfarris): fix
+    disablewarnings {
+        "4251", "4275"
+    }
+    
+    filter "not configurations:ReleaseWithSymbols"
+        postbuildcommands {
+            "xcopy /s /y \"" .. ext .. "\\SDL3\\x64\\%{cfg.buildcfg}\\*.*\" \"$(TargetDir)\""
+        }
+
+    filter "configurations:ReleaseWithSymbols"
+        postbuildcommands {
+            "xcopy /s /y \"" .. ext .. "\\SDL3\\x64\\Release\\*.*\" \"$(TargetDir)\""
+        }
+
+    filter {}
+
+project "TestRTS"
+    kind "ConsoleApp"
+    location (projects)
+    targetdir "bin/%{cfg.platform}/%{cfg.buildcfg}/TestRTS"
+
+    dependson {
+        "PhoenixCore",
+        "PhoenixSim",
+        "PhoenixLDS",
+        "PhoenixECS",
+        "PhoenixBlackboard",
+        "PhoenixPhysics",
+        "PhoenixLua",
+        "PhoenixRTS"
+    }
+
+    -- defines { "PHOENIX_DLL" }
+    defines { "TRACY_ENABLE", "PHX_PROFILE_ENABLE" }
+
+    files {
+        "tests/TestRTS/**.h",
+        "tests/TestRTS/**.inl",
+        "tests/TestRTS/**.cpp",
+        "tests/TestRTS/**.json",
+
+        ext .. "/imgui/*",
+        ext .. "/imgui/backends/imgui_impl_sdl3.h",
+        ext .. "/imgui/backends/imgui_impl_sdl3.cpp",
+        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.h",
+        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.cpp",
+
+        ext .. "/tracy/TracyClient.cpp",
+    }
+
+    includedirs {
+        "src/PhoenixCore/Public",
+        "src/PhoenixSim/Public",
+        "src/PhoenixLDS/Public",
+        "src/PhoenixBlackboard/Public",
+        "src/PhoenixECS/Public",
+        "src/PhoenixPhysics/Public",
+        "src/PhoenixSteering/Public",
+        "src/PhoenixLua/Public",
+        "src/PhoenixRTS/Public"
+    }
+
+    externalincludedirs {
+        ext,
+        ext .. "/imgui/",
+        ext .. "/imgui/**",
+        ext .. "/nlohmann/*",
+        ext .. "/lua/lua-5.4.8/src/",
+        ext .. "/tracy/"
+    }
+
+    libdirs {
+        ext .. "/SDL3/x64/Debug"
+    }
+
+    links {
+        "lua",
+        "PhoenixCore",
+        "PhoenixSim",
+        "PhoenixLDS",
+        "PhoenixBlackboard",
+        "PhoenixECS",
+        "PhoenixPhysics",
+        "PhoenixSteering",
+        "PhoenixLua",
+        "PhoenixRTS",
         "SDL3"
     }
 

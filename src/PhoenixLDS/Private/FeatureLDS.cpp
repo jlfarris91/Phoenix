@@ -46,6 +46,11 @@ void FeatureLDS::OnWorldShutdown(WorldRef world)
     }
 }
 
+TSharedPtr<Catalog> FeatureLDS::GetStaticSessionCatalog()
+{
+    return StaticSessionCatalog;
+}
+
 TSharedPtr<const Catalog> FeatureLDS::GetStaticSessionCatalog() const
 {
     return StaticSessionCatalog;

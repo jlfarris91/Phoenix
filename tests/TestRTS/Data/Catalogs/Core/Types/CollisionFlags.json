@@ -1,0 +1,8 @@
+{
+    "id": "CollisionFlags",
+    "type": "Flags",
+    "items": [
+        { "Ground": 1 },
+        { "Air": 2 }
+    ]
+}

@@ -1,0 +1,15 @@
+{
+    "id": "UnitVitals",
+    "type": "Object",
+    "properties": {
+        "health": {
+            "type": "Object#Vital"
+        },
+        "energy": {
+            "type": "Object#Vital"
+        },
+        "shield": {
+            "type": "Object#Vital"
+        }
+    }
+}

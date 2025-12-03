@@ -1,0 +1,17 @@
+{
+    "id": "UnitBuild",
+    "type": "Object",
+    "properties": {
+        "build_cost": {
+            "type": "Array",
+            "properties": {
+                "type": "Object#ResourceValue"
+            }
+        },
+        "build_time": {
+            "type": "Time",
+            "default": 0.0,
+            "minimum": 0.0
+        }
+    }
+}

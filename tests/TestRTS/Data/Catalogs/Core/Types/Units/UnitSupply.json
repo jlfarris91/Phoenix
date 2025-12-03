@@ -1,0 +1,14 @@
+{
+    "id": "UnitSupply",
+    "type": "Object",
+    "properties": {
+        "supply_provided": {
+            "type": "Value",
+            "default": 0.0
+        },
+        "supply_cost": {
+            "type": "Value",
+            "default": 0.0
+        }
+    }
+}

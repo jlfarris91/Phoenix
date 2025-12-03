@@ -1,0 +1,18 @@
+{
+    "id": "UnitFlags",
+    "type": "Object",
+    "properties": {
+        "uncommandable": {
+            "type": "Boolean",
+            "default": false
+        },
+        "unselectable": {
+            "type": "Boolean",
+            "default": false
+        },
+        "untargetable": {
+            "type": "Boolean",
+            "default": false
+        }
+    }
+}

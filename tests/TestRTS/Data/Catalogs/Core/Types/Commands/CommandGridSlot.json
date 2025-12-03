@@ -1,0 +1,22 @@
+{
+    "id": "CommandGridSlot",
+    "type": "Object",
+    "properties": {
+        "grid_row": {
+            "type": "Integer",
+            "default": 0
+        },
+        "grid_col": {
+            "type": "Integer",
+            "default": 0
+        },
+        "sub_menu": {
+            "type": "Integer",
+            "default": 0
+        },
+        "target_sub_menu": {
+            "type": "Integer",
+            "default": -1
+        }
+    }
+}

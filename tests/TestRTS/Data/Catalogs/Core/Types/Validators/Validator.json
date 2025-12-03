@@ -1,0 +1,18 @@
+{
+    "id": "Validator",
+    "type": "Object",
+    "properties": {
+        "execute": {
+            "type": "Expression#Boolean",
+            "attributes": {
+                "description": "Code to execute for validation. Should return true if valid, false otherwise."
+            }
+        },
+        "error": {
+            "type": "Text",
+            "attributes": {
+                "description": "Error message to display if validation fails."
+            }
+        }
+    }
+}

@@ -61,6 +61,21 @@ namespace Phoenix
         FeatureSet* GetFeatureSet() const;
         WorldManager* GetWorldManager() const;
 
+        // Returns the absolute directory to the session.
+        PHXString GetProjectDirectory() const;
+
+        // Returns the absolute path to the directory containing.
+        PHXString GetSessionsDirectory() const;
+
+        // Returns the absolute directory to the session.
+        PHXString GetSessionDirectory() const;
+
+        // Returns the absolute directory to the worlds directory.
+        PHXString GetWorldsDirectory() const;
+
+        // Returns the absolute directory for a world.
+        PHXString GetWorldDirectory(const FName& worldName) const;
+
     private:
 
         void ProcessActions(simtime_t time);

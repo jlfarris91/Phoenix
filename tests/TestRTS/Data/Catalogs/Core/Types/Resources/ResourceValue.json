@@ -1,0 +1,12 @@
+{
+    "id": "ResourceValue",
+    "type": "Object",
+    "properties": {
+        "key": {
+            "type": "ObjectRef#Resource"
+        },
+        "value": {
+            "type": "Value"
+        }
+    }
+}

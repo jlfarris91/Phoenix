@@ -1,0 +1,9 @@
+{
+    "id": "UnitActor",
+    "type": "Object",
+    "properties": {
+        "asset": {
+            "type": "Asset#Actor"
+        }
+    }
+}

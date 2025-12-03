@@ -1,0 +1,18 @@
+{
+    "id": "UnitDeath",
+    "type": "Object",
+    "properties": {
+        "expiration_time": {
+            "type": "Time",
+            "default": 60.0
+        },
+        "num_corpses_spawned": {
+            "type": "Integer",
+            "default": 1,
+            "minimum": 0
+        },
+        "corpse_actor": {
+            "type": "Asset#CorpseActor"
+        }
+    }
+}

@@ -39,20 +39,15 @@ namespace Phoenix::LDS
 
     class PHOENIX_LDS_API FeatureLDS : public IFeature
     {
-    public:
-
         PHX_FEATURE_BEGIN(FeatureLDS)
             FEATURE_SESSION_BLOCK(FeatureLDSStaticBlock)
             FEATURE_SESSION_BLOCK(FeatureLDSDynamicBlock)
         PHX_FEATURE_END()
 
-        void Initialize() override;
-        void Shutdown() override;
-
-        void OnWorldInitialize(WorldRef world) override;
-        void OnWorldShutdown(WorldRef world) override;
+    public:
 
         // Gets the static session-level catalog.
+        TSharedPtr<Catalog> GetStaticSessionCatalog();
         TSharedPtr<const Catalog> GetStaticSessionCatalog() const;
 
         // Gets the static catalog for a given world.
@@ -71,6 +66,14 @@ namespace Phoenix::LDS
             const FName& typeId,
             const FName& propertyId,
             ELDSFeatureQueryRecordFlags flags = ELDSFeatureQueryRecordFlags::None);
+
+    protected:
+
+        void Initialize() override;
+        void Shutdown() override;
+
+        void OnWorldInitialize(WorldRef world) override;
+        void OnWorldShutdown(WorldRef world) override;
 
         // A catalog that holds static LDS data for the session.
         // These catalogs are stored on the heap.

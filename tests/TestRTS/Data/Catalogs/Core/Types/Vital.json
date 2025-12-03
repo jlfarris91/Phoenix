@@ -1,0 +1,24 @@
+{
+    "id": "Vital",
+    "type": "Object",
+    "properties": {
+        "starting": {
+            "type": "Value",
+            "default": 100.0,
+            "minimum": 0.0,
+            "maximum": 50000.0
+        },
+        "max": {
+            "type": "Value",
+            "default": 100.0,
+            "minimum": 0.0,
+            "maximum": 50000.0
+        },
+        "regen": {
+            "type": "Value",
+            "default": 0.0,
+            "minimum": -50000.0,
+            "maximum": 50000.0
+        }
+    }
+}

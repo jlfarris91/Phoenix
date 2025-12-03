@@ -1,0 +1,83 @@
+{
+    "id": "Unit",
+    "type": "Object",
+    "implements": [ "Tech" ],
+    "properties": {
+        "actor": {
+            "type": "Object#UnitActor"
+        },
+        "armor": {
+            "type": "Object#UnitArmor"
+        },
+        "buffs": {
+            "type": "Array",
+            "items": {
+                "type": "Object#Buff"
+            }
+        },
+        "build_stats": {
+            "type": "Object#UnitBuild"
+        },
+        "cargo_stats": {
+            "type": "Object#UnitCargo"
+        },
+        "collision": {
+            "type": "Object#CollisionFlags",
+            "default": "Ground"
+        },
+        "commands": {
+            "type": "Array",
+            "items": {
+                "type": "Object#Command"
+            }
+        },
+        "components": {
+            "type": "Array",
+            "items": {
+                "type": "Object#Component"
+            }
+        },
+        "death_stats": {
+            "type": "Object#UnitDeath"
+        },
+        "effects": {
+            "type": "Object#UnitEffects"
+        },
+        "faction": {
+            "type": "ObjectRef#Faction"
+        },
+        "flags": {
+            "type": "Object#UnitFlags"
+        },
+        "fog": {
+            "type": "Object#FogVisibility"
+        },
+        "info": {
+            "type": "Object#UnitInfo"
+        },
+        "placement": {
+            "type": "Object#UnitPlacement"
+        },
+        "starting_tags": {
+            "type": "Array",
+            "items": {
+                "type": "ObjectRef#Tag"
+            }
+        },
+        "supply": {
+            "type": "Object#UnitSupply"
+        },
+        "vision": {
+            "type": "Object#UnitVision"
+        },
+        "vitals": {
+            "type": "Object#UnitVitals"
+        },
+        "weapons": {
+            "type": "Array",
+            "items": {
+                "type": "ObjectRef#Weapon"
+            }
+        }
+    }
+}

@@ -180,6 +180,31 @@ WorldManager* Session::GetWorldManager() const
     return WorldManager.get();
 }
 
+PHXString Session::GetProjectDirectory() const
+{
+    return PHXString();
+}
+
+PHXString Session::GetSessionsDirectory() const
+{
+    return GetProjectDirectory() + "/Sessions";
+}
+
+PHXString Session::GetSessionDirectory() const
+{
+    return GetProjectDirectory() + "/Sessions";
+}
+
+PHXString Session::GetWorldsDirectory() const
+{
+    return GetProjectDirectory() + "/Worlds";
+}
+
+PHXString Session::GetWorldDirectory(const FName& worldName) const
+{
+    return GetProjectDirectory() + "/Worlds/";
+}
+
 void Session::ProcessActions(simtime_t time)
 {
     PHX_PROFILE_ZONE_SCOPED;

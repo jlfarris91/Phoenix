@@ -1,0 +1,21 @@
+{
+    "id": "UnitProperNames",
+    "type": "Object",
+    "properties": {
+        "names": {
+            "type": "Array",
+            "items": {
+                "type": "Object",
+                "properties": {
+                    "weight": {
+                        "type": "Value",
+                        "default": 1.0
+                    },
+                    "name": {
+                        "type": "Text"
+                    }
+                }
+            }
+        }
+    }
+}

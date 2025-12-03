@@ -1,0 +1,9 @@
+{
+    "id": "Core",
+    "types": [
+        "./Types"
+    ],
+    "objects": [
+        "./Objects"
+    ]
+}

@@ -1,0 +1,140 @@
+{
+    "id": "UnitMovement",
+    "type": "Object",
+    "properties": {
+        "acceleration_time": {
+            "type": "Time",
+            "default": 0.0,
+            "minimum": 0.0,
+            "attributes": {
+                "description": "The time it takes to reach full speed from a standstill."
+            }
+        },
+        "deceleration_time": {
+            "type": "Time",
+            "default": 0.0,
+            "minimum": 0.0,
+            "attributes": {
+                "description": "The time it takes to come to a complete stop from full speed."
+            }
+        },
+        "flocking": {
+            "type": "Object",
+            "properties": {
+                "separation_delay": {
+                    "type": "Time",
+                    "default": 0.5,
+                    "maximum": 2.0
+                },
+                "separation_radius": {
+                    "type": "Distance",
+                    "default": 0.0,
+                    "maximum": 4.0
+                },
+                "separation_strength": {
+                    "type": "Value",
+                    "default": 1.0,
+                    "maximum": 32.0
+                }
+            }
+        },
+        "height": {
+            "type": "Distance",
+            "attributes": {
+                "description": "The height of the unit from the ground."
+            }
+        },
+        "lock_facing": {
+            "type": "Boolean",
+            "default": false,
+            "attributes": {
+                "description": "If true, this unit will not change its facing when moving."
+            }
+        },
+        "pathing_mode": {
+            "type": "Enum",
+            "values": [
+                "Ground",
+                "Air",
+                "Hover"
+            ],
+            "default": "Ground",
+            "attributes": {
+                "description": "The pathing mode used by this unit."
+            }
+        },
+        "push_settings": {
+            "type": "Object",
+            "push_priority_any": {
+                "type": "Integer",
+                "default": 0,
+                "minimum": 0,
+                "maximum": 3,
+                "attributes": {
+                    "description": "The priority of this unit when being pushed by any other unit. Higher priority units will push lower priority units out of the way."
+                }
+            },
+            "push_priority_ally": {
+                "type": "Integer",
+                "default": 0,
+                "minimum": 0,
+                "maximum": 3,
+                "attributes": {
+                    "description": "The priority of this unit when being pushed by an allied unit. If push_priority_any is higher it will be used instead."
+                }
+            },
+            "unpushable": {
+                "type": "Boolean",
+                "default": false,
+                "attributes": {
+                    "description": "If true, this unit cannot be pushed by other units."
+                }
+            }
+        },
+        "speed": {
+            "type": "Speed",
+            "default": 1.5,
+            "minimum": 0.0,
+            "maximum": 64.0,
+            "attributes": {
+                "description": "The maximum movement speed of the unit."
+            }
+        },
+        "turning": {
+            "type": "Object",
+            "turn_time_idle": {
+                "type": "Time",
+                "default": 0.0,
+                "minimum": 0.0,
+                "attributes": {
+                    "description": "The time it takes to complete a 180 degree turn while idle."
+                }
+            },
+            "turn_time_moving": {
+                "type": "Time",
+                "default": 0.0,
+                "minimum": 0.0,
+                "attributes": {
+                    "description": "The time it takes to complete a 180 degree turn while moving."
+                }
+            },
+            "turn_radius": {
+                "type": "Distance",
+                "default": 0.0,
+                "minimum": 0.0,
+                "attributes": {
+                    "description": "The radius of the turn arc. A larger radius results in smoother turns."
+                }
+            },
+            "turn_slow_rate": {
+                "type": "Value",
+                "default": 0.0,
+                "minimum": 0.0,
+                "maximum": 1.0,
+                "attributes": {
+                    "description": "The fraction of the unit's speed at which it will start to slow down in order to make a turn."
+                }
+            }
+        }
+    }
+}

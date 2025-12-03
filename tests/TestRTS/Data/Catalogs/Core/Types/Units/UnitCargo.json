@@ -1,0 +1,19 @@
+{
+    "id": "UnitCargo",
+    "type": "Object",
+    "properties": {
+        "cargo_size": {
+            "type": "Enum",
+            "enum": [
+                "Zero",
+                "One",
+                "Two",
+                "Four",
+                "Eight"
+            ],
+            "attributes": {
+                "description": "The amount of cargo capacity a unit takes up."
+            }
+        }
+    }
+}
