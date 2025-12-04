@@ -42,6 +42,8 @@ namespace Phoenix::LDS
         PHX_FEATURE_BEGIN(FeatureLDS)
             FEATURE_SESSION_BLOCK(FeatureLDSStaticBlock)
             FEATURE_SESSION_BLOCK(FeatureLDSDynamicBlock)
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
         PHX_FEATURE_END()
 
     public:
@@ -71,6 +73,8 @@ namespace Phoenix::LDS
 
         void Initialize() override;
         void Shutdown() override;
+
+        static bool LoadCatalog(const PHXString& catalogRelativePath, Catalog& catalog);
 
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;

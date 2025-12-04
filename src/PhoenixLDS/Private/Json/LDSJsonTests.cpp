@@ -93,7 +93,7 @@ void Test_RegisterType_ObjectType_WarnsWhenPropertiesIsMissing()
 
     PHX_ASSERT(success);
 
-    auto warnings = typeBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Warning);
+    auto warnings = typeBuilder.GetLogs(ELogLevel::Warning);
     PHX_ASSERT(warnings.size() == 1);
     PHX_ASSERT(warnings.back().Id == "TestType");
     PHX_ASSERT(warnings.back().PropertyPath.empty());
@@ -117,7 +117,7 @@ void Test_RegisterType_ObjectType_WarnsWhenPropertiesIsEmpty()
 
     PHX_ASSERT(success);
 
-    auto warnings = typeBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Warning);
+    auto warnings = typeBuilder.GetLogs(ELogLevel::Warning);
     PHX_ASSERT(warnings.size() == 1);
     PHX_ASSERT(warnings.back().Id == "TestType");
     PHX_ASSERT(warnings.back().PropertyPath.empty());
@@ -243,7 +243,7 @@ void Test_RegisterType_ObjectType_WithInlineObjectProperty_WarnsWhenPropertiesIs
 
     PHX_ASSERT(success);
 
-    auto warnings = typeBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Warning);
+    auto warnings = typeBuilder.GetLogs(ELogLevel::Warning);
     PHX_ASSERT(warnings.size() == 1);
     PHX_ASSERT(warnings.back().Id == "TestType");
     PHX_ASSERT(warnings.back().PropertyPath == "/testObjectInline");
@@ -272,7 +272,7 @@ void Test_RegisterType_ObjectType_WithInlineObjectProperty_WarnsWhenPropertiesIs
 
     PHX_ASSERT(success);
 
-    auto warnings = typeBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Warning);
+    auto warnings = typeBuilder.GetLogs(ELogLevel::Warning);
     PHX_ASSERT(warnings.size() == 1);
     PHX_ASSERT(warnings.back().Id == "TestType");
     PHX_ASSERT(warnings.back().PropertyPath == "/testObjectInline");
@@ -615,7 +615,7 @@ void Test_RegisterObject_FailsWhenNoIdPropertyIsDefined()
     bool success = objectBuilder.RegisterObject(testObjectJson);
 
     PHX_ASSERT(!success);
-    auto errors = objectBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Error);
+    auto errors = objectBuilder.GetLogs(ELogLevel::Error);
     PHX_ASSERT(errors.size() == 1);
     PHX_ASSERT(errors.back().Id.empty());
     PHX_ASSERT(errors.back().PropertyPath.empty());
@@ -646,7 +646,7 @@ void Test_RegisterObject_FailsWhenNoBasePropertyIsDefined()
     bool success = objectBuilder.RegisterObject(testObjectJson);
 
     PHX_ASSERT(!success);
-    auto errors = objectBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Error);
+    auto errors = objectBuilder.GetLogs(ELogLevel::Error);
     PHX_ASSERT(errors.size() == 1);
     PHX_ASSERT(errors.back().Id == "TestObject");
     PHX_ASSERT(errors.back().PropertyPath.empty());
@@ -679,7 +679,7 @@ void Test_RegisterObject_FailsWhenObjectWithSameIdIsAlreadyRegistered()
     bool success = objectBuilder.RegisterObject(testObjectJson);
 
     PHX_ASSERT(!success);
-    auto errors = objectBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Error);
+    auto errors = objectBuilder.GetLogs(ELogLevel::Error);
     PHX_ASSERT(errors.size() == 1);
     PHX_ASSERT(errors.back().Id == "TestObject");
     PHX_ASSERT(errors.back().PropertyPath.empty());
@@ -702,7 +702,7 @@ void Test_RegisterObject_FailsWhenBaseIsNotRegistered()
     bool success = objectBuilder.RegisterObject(testObjectJson);
 
     PHX_ASSERT(!success);
-    auto errors = objectBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Error);
+    auto errors = objectBuilder.GetLogs(ELogLevel::Error);
     PHX_ASSERT(errors.size() == 1);
     PHX_ASSERT(errors.back().Id == "TestObject");
     PHX_ASSERT(errors.back().PropertyPath.empty());
@@ -734,7 +734,7 @@ void Test_RegisterObject_FailsWhenNonObjectType()
     bool success = objectBuilder.RegisterObject(testObjectJson);
 
     PHX_ASSERT(!success);
-    auto errors = objectBuilder.GetLogs(EJsonCatalogBuilderLogLevel::Error);
+    auto errors = objectBuilder.GetLogs(ELogLevel::Error);
     PHX_ASSERT(errors.size() == 1);
     PHX_ASSERT(errors.back().Id == "TestPOD");
     PHX_ASSERT(errors.back().PropertyPath.empty());

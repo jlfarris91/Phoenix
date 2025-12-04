@@ -13,13 +13,13 @@ namespace Phoenix
 
         static void Schedule(WorldRef world, TTaskFunc&& func)
         {
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
             taskQueue->Enqueue(std::move(func));
         }
 
         static void Schedule(WorldRef world, const Task& task)
         {
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
             taskQueue->Enqueue(task);
         }
 
@@ -55,7 +55,7 @@ namespace Phoenix
         template <class ...TArgs>
         static void Schedule(WorldRef world, const std::function<void(WorldRef, TArgs...)>& func, TArgs&& ...args)
         {
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
             auto worldPtr = &world;
             taskQueue->Enqueue([=]
             {
@@ -66,7 +66,7 @@ namespace Phoenix
         static void ScheduleParallelRange(WorldRef world, uint32 total, uint32 minRange, TParallelRangeFunc&& func)
         {
             auto worldPtr = &world;
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
             std::vector<Task>& taskGroup = taskQueue->BeginGroup();
 
@@ -96,7 +96,7 @@ namespace Phoenix
         {
             PHX_PROFILE_ZONE_SCOPED;
 
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
             // Submit any pending jobs and pause the thread until they finish.
             taskQueue->Flush();

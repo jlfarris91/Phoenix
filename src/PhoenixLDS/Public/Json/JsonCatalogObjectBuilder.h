@@ -30,7 +30,7 @@ namespace Phoenix::LDS::Json
             auto idIter = objectJson.find("id");
             if (idIter == objectJson.end())
             {
-                this->LogError("", "", "Object is missing required 'id' property.");
+                this->LogError("Object is missing required 'id' property.");
                 return false;
             }
 
@@ -38,14 +38,14 @@ namespace Phoenix::LDS::Json
 
             if (this->Catalog->HasObject(rootObjectId))
             {
-                this->LogError(rootObjectId, "", "Object with id '{}' has already been registered.", rootObjectId);
+                this->LogError("Object with id '{}' has already been registered.", rootObjectId).Context(rootObjectId);
                 return false;
             }
 
             auto baseIter = objectJson.find("base");
             if (baseIter == objectJson.end())
             {
-                this->LogError(rootObjectId, "", "Object is missing required 'base' property.");
+                this->LogError("Object is missing required 'base' property.").Context(rootObjectId);
                 return false;
             }
 
@@ -56,13 +56,13 @@ namespace Phoenix::LDS::Json
             const LDSRecord* objectTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, "/type"_n);
             if (!objectTypeRecord)
             {
-                this->LogError(rootObjectId, "", "No base object or type registered with id '{}'.", baseId);
+                this->LogError("No base object or type registered with id '{}'.", baseId).Context(rootObjectId);
                 return false;
             }
 
             if (objectTypeRecord->GetValueType() != ELDSValueType::Object)
             {
-                this->LogError(rootObjectId, "", "Root objects must be of type Object.");
+                this->LogError("Root objects must be of type Object.").Context(rootObjectId);
                 return false;
             }
 
@@ -78,7 +78,7 @@ namespace Phoenix::LDS::Json
             const LDSRecord* objectTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/type");
             if (objectTypeRecord == nullptr)
             {
-                this->LogError(rootObjectId, jsonPath, "Could not find type of object.");
+                this->LogError("Could not find type of object.").Context(rootObjectId, jsonPath);
                 return false;
             }
 
@@ -129,7 +129,7 @@ namespace Phoenix::LDS::Json
         {
             if (!json.is_string())
             {
-                this->LogError(rootObjectId, jsonPath, "Expected object reference to be a string value.");
+                this->LogError("Expected object reference to be a string value.").Context(rootObjectId, jsonPath);
                 return false;
             }
 
@@ -152,7 +152,7 @@ namespace Phoenix::LDS::Json
         {
             if (!json.is_array())
             {
-                this->LogError(rootObjectId, jsonPath, "Expected array property.");
+                this->LogError("Expected array property.").Context(rootObjectId, jsonPath);
                 return false;
             }
 
@@ -160,7 +160,7 @@ namespace Phoenix::LDS::Json
             const LDSRecord* itemsTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, itemTypePath + "/type");
             if (!itemsTypeRecord)
             {
-                this->LogError(rootObjectId, jsonPath, "Failed to find items type record.");
+                this->LogError("Failed to find items type record.").Context(rootObjectId, jsonPath);
                 return false;
             }
 
@@ -181,7 +181,7 @@ namespace Phoenix::LDS::Json
                 ++itemCount;
                 if (maxItems.IsSet() && itemCount == maxItems.Get())
                 {
-                    this->LogWarning(rootObjectId, jsonPath, "Object defines an array with {} items but the max allowed is {}", json.size(), maxItems.Get());
+                    this->LogWarning("Object defines an array with {} items but the max allowed is {}", json.size(), maxItems.Get()).Context(rootObjectId, jsonPath);
                     break;
                 }
             }
@@ -196,7 +196,7 @@ namespace Phoenix::LDS::Json
             LDSTypedValue value;
             if (!this->GetPropertyValueFromJson(json, rootObjectId, path, value))
             {
-                this->LogError(rootObjectId, path, "Failed to read property value.");
+                this->LogError("Failed to read property value.").Context(rootObjectId, path);
                 return false;
             }
 

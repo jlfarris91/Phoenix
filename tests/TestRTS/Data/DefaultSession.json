@@ -1,19 +1,16 @@
 {
     "id": "DefaultSession",
-    "features": [
-        {
-            "id": "FeatureRTS",
+    "features": {
+        "FeatureRTS": {
             "enabled": true
         },
-        {
-            "id": "FeatureLDS",
-            "catalogs": [ "./Catalogs/Core/Catalog.json" ]
+        "FeatureLDS": {
+            "catalog": "./Catalogs/Core/Catalog.json"
         }
-    ],
-    "worlds": [
-        {
-            "id": "DefaultWorld",
+    },
+    "worlds": {
+        "DefaultWorld": {
             "config": "./Worlds/DefaultWorld.json"
         }
-    ]
+    }
 }

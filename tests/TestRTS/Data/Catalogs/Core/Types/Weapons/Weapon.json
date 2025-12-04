@@ -28,7 +28,7 @@
             }
         },
         "flags": {
-            "type": "EnumFlags",
+            "type": "Flags",
             "enum": [
                 "melee",
                 "channeled"
@@ -104,7 +104,7 @@
             "type": "Asset#WeaponComponent"
         },
         "effect": {
-            "tType": "ObjectRef#GameEffect"
+            "type": "ObjectRef#Effect"
         },
         "validator": {
             "type": "ObjectRef#Validator"

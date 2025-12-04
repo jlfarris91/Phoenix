@@ -19,7 +19,7 @@ void FeatureMapLoad::Initialize()
 
     TSharedPtr<Catalog> sessionCatalog = featureLDS->GetStaticSessionCatalog();
 
-    PHXString projectDir = Session->GetProjectDirectory();
+    PHXString projectDir = Session->GetDataDirectory();
 
     Json::JsonDataSource dataSource;
     // dataSource.LoadFromDirectory(sessionDir)
@@ -29,7 +29,7 @@ void FeatureMapLoad::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
 
-    FName worldName = world.GetName();
+    FName worldName = world.GetId();
 
     
 }

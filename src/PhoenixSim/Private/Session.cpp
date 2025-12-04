@@ -10,17 +10,38 @@
 #include <unistd.h>   // For usleep
 #endif
 
+#include <fstream>
+
 #include "Profiling.h"
 
 using namespace Phoenix;
 
 Session::Session(const SessionCtorArgs& args)
 {
+    DataDirectory = std::filesystem::absolute(args.DataDirectory);
+    ConfigName = args.ConfigName;
+
+    if (args.CustomConfig.IsSet())
+    {
+        CustomConfig = args.CustomConfig.Get();
+    }
+
+    auto featuresIter = Config.find("features");
+    if (featuresIter != Config.end())
+    {
+        for (auto && [featureId, featureConfig] : featuresIter->items())
+        {
+            FeatureConfigs.emplace(FName(featureId), featureConfig);
+        }
+    }
+
     FeatureSet = std::make_shared<Phoenix::FeatureSet>(args.FeatureSetArgs);
 
     WorldManagerCtorArgs worldManagerArgs;
+    worldManagerArgs.Session = this;
     worldManagerArgs.FeatureSet = FeatureSet;
     worldManagerArgs.OnPostWorldUpdate = args.OnPostWorldUpdate;
+    worldManagerArgs.Config = Config["worlds"];
     WorldManager = std::make_shared<Phoenix::WorldManager>(worldManagerArgs);
 
     BlockBuffer::CtorArgs sessionBlockArgs;
@@ -44,6 +65,8 @@ Session::~Session()
 
 void Session::Initialize()
 {
+    LoadConfig();
+
     for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
     {
         feature->Session = this;
@@ -180,29 +203,74 @@ WorldManager* Session::GetWorldManager() const
     return WorldManager.get();
 }
 
-PHXString Session::GetProjectDirectory() const
+PHXString Session::GetDataDirectory() const
 {
-    return PHXString();
-}
-
-PHXString Session::GetSessionsDirectory() const
-{
-    return GetProjectDirectory() + "/Sessions";
-}
-
-PHXString Session::GetSessionDirectory() const
-{
-    return GetProjectDirectory() + "/Sessions";
+    return DataDirectory.generic_string();
 }
 
 PHXString Session::GetWorldsDirectory() const
 {
-    return GetProjectDirectory() + "/Worlds";
+    return (DataDirectory / "Worlds").generic_string();
 }
 
-PHXString Session::GetWorldDirectory(const FName& worldName) const
+PHXString Session::GetWorldDirectory(const PHXString& worldType) const
 {
-    return GetProjectDirectory() + "/Worlds/";
+    return (DataDirectory / "Worlds" / worldType).generic_string();
+}
+
+void Session::LoadConfig()
+{
+    Config.clear();
+
+    std::ifstream configStream(DataDirectory / (ConfigName + ".json"));
+    if (!configStream.is_open())
+    {
+        return;
+    }
+
+    nlohmann::json configJson = nlohmann::json::parse(configStream);
+    if (!configJson.is_discarded())
+    {
+        Config = configJson;
+    }
+
+    if (CustomConfig.IsSet())
+    {
+        Config.merge_patch(CustomConfig.Get());
+    }
+
+    FeatureConfigs.clear();
+
+    auto featuresIter = Config.find("features");
+    if (featuresIter != Config.end())
+    {
+        for (auto && [featureId, featureConfig] : featuresIter->items())
+        {
+            FeatureConfigs.emplace(FName(featureId), featureConfig);
+        }
+    }
+
+    ApplyConfig();
+}
+
+void Session::ApplyConfig()
+{
+    for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
+    {
+        feature->Config.clear();
+
+        auto featureConfigIter = FeatureConfigs.find(feature->GetName());
+        if (featureConfigIter != FeatureConfigs.end())
+        {
+            feature->Config = featureConfigIter->second;
+        }
+    }
+
+    auto worldsIter = Config.find("worlds");
+    if (worldsIter != Config.end())
+    {
+        WorldManager->LoadConfig(*worldsIter);
+    }
 }
 
 void Session::ProcessActions(simtime_t time)

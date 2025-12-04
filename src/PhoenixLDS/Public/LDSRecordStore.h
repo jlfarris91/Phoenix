@@ -25,11 +25,19 @@ namespace Phoenix::LDS
         Distance,
         Degrees,
         Speed,
+        Time,
+
+        // Localized string
+        Text,
+
+        // Asset reference
+        Asset,
 
         // Special types
         Array,
         Object,     // A full object definition.
-        ObjectRef   // A reference to another object in the catalog.
+        ObjectRef,  // A reference to another object in the catalog.
+        Expression  // A reference to code.
     };
 
     PHOENIX_LDS_API bool TryParse(const PHXString& string, ELDSValueType& outEnum);
@@ -43,6 +51,7 @@ namespace Phoenix::LDS
         Distance Distance;
         Angle Degrees;
         Speed Speed;
+        Time Time;
         bool Bool;
     };
 

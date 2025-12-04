@@ -96,6 +96,7 @@ void OnPostWorldUpdate(WorldConstRef world);
 void InitSession()
 {
     TSharedPtr<FeatureBlackboard> blackboardFeature = std::make_shared<FeatureBlackboard>();
+    TSharedPtr<FeatureLDS> ldsFeature = std::make_shared<FeatureLDS>();
     TSharedPtr<FeatureECS> ecsFeature = std::make_shared<FeatureECS>();
     TSharedPtr<FeatureNavigation> navMeshFeature = std::make_shared<FeatureNavigation>();
     TSharedPtr<FeaturePhysics> physicsFeature = std::make_shared<FeaturePhysics>();
@@ -103,7 +104,10 @@ void InitSession()
     // TSharedPtr<FeatureLua> luaFeature = std::make_shared<FeatureLua>();
     
     SessionCtorArgs sessionArgs;
+    sessionArgs.DataDirectory = "./Data";
+    sessionArgs.ConfigName = "DefaultSession";
     sessionArgs.FeatureSetArgs.Features.push_back(blackboardFeature);
+    sessionArgs.FeatureSetArgs.Features.push_back(ldsFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(ecsFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(navMeshFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(physicsFeature);
@@ -111,16 +115,13 @@ void InitSession()
     // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
 
-    std::ifstream sessionConfig("./Data/DefaultSession.json");
-    nlohmann::json configJson = nlohmann::json::parse(sessionConfig);
-
     GSession = new Session(sessionArgs);
 
     GSession->Initialize();
 
     WorldManager* worldManager = GSession->GetWorldManager();
 
-    auto primaryWorld = worldManager->NewWorld("TestWorld"_n);
+    auto primaryWorld = worldManager->NewWorld({ "DefaultWorld"_n, "TestWorld"_n });
 
     FeatureECS::RegisterArchetypeDefinition<TransformComponent, BodyComponent, SteeringComponent, SeekComponent>(*primaryWorld, "Unit"_n);
     

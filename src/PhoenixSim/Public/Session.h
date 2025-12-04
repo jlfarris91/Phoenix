@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <shared_mutex>
+#include <nlohmann/json.hpp>
 
 #include "Features.h"
 #include "FPSCalc.h"
@@ -16,6 +17,10 @@ namespace Phoenix
     {
         FeatureSetCtorArgs FeatureSetArgs;
         PostWorldUpdateDelegate OnPostWorldUpdate;
+
+        PHXString DataDirectory;
+        PHXString ConfigName;
+        TOptional<nlohmann::json> CustomConfig;
     };
 
     struct PHOENIXSIM_API SessionStepArgs
@@ -61,26 +66,30 @@ namespace Phoenix
         FeatureSet* GetFeatureSet() const;
         WorldManager* GetWorldManager() const;
 
-        // Returns the absolute directory to the session.
-        PHXString GetProjectDirectory() const;
+        // Returns the absolute directory to the session data.
+        PHXString GetDataDirectory() const;
 
-        // Returns the absolute path to the directory containing.
-        PHXString GetSessionsDirectory() const;
-
-        // Returns the absolute directory to the session.
-        PHXString GetSessionDirectory() const;
-
-        // Returns the absolute directory to the worlds directory.
+        // Returns the absolute directory to the Worlds directory.
         PHXString GetWorldsDirectory() const;
 
         // Returns the absolute directory for a world.
-        PHXString GetWorldDirectory(const FName& worldName) const;
+        PHXString GetWorldDirectory(const PHXString& worldType) const;
 
     private:
+
+        void LoadConfig();
+        void ApplyConfig();
 
         void ProcessActions(simtime_t time);
 
         void UpdateSession(simtime_t time, uint32 stepHz) const;
+
+        std::filesystem::path DataDirectory;
+
+        PHXString ConfigName;
+        nlohmann::json Config;
+        TOptional<nlohmann::json> CustomConfig;
+        TMap<FName, nlohmann::json> FeatureConfigs;
 
         TSharedPtr<FeatureSet> FeatureSet;
         TSharedPtr<WorldManager> WorldManager;

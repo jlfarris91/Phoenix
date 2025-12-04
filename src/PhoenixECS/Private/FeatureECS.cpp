@@ -169,7 +169,7 @@ void FeatureECS::OnWorldInitialize(WorldRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
     
-    TaskQueue::CreateTaskQueue((uint32)world.GetName());
+    TaskQueue::CreateTaskQueue((uint32)world.GetId());
 
     for (const TSharedPtr<ISystem>& system : Systems)
     {
@@ -186,7 +186,7 @@ void FeatureECS::OnWorldShutdown(WorldRef world)
         system->OnWorldShutdown(world);
     }
     
-    TaskQueue::ReleaseTaskQueue((uint32)world.GetName());
+    TaskQueue::ReleaseTaskQueue((uint32)world.GetId());
 }
 
 void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)

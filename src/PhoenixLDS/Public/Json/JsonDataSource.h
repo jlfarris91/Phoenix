@@ -3,16 +3,17 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Logging.h"
 #include "Platform.h"
 
 namespace Phoenix::LDS::Json
 {
-    class JsonDataSource
+    class JsonDataSource : ILogger<LogMessage>
     {
     public:
 
-        // Loads a JsonDataSource from the specified directory.
-        static TSharedPtr<JsonDataSource> LoadFromDirectory(const PHXString& directoryPath);
+        // Loads a JsonDataSource from the specified catalog file.
+        static TSharedPtr<JsonDataSource> LoadFromCatalog(const PHXString& catalogPath);
 
         // Gets or sets the parent data source.
         // If a type or object is not found in this data source, the parent data source will be queried.
@@ -32,6 +33,14 @@ namespace Phoenix::LDS::Json
         // If the type is not found in this data source, the parent data source will be queried.
         const nlohmann::json* FindType(const PHXString& typeId) const;
 
+        void RegisterInterface(const PHXString& interfaceId, const PHXString& typeId);
+
+        const TArray<PHXString>& GetInterfacesOfType(const PHXString& typeId) const;
+        const TArray<PHXString>& GetTypesImplementingInterface(const PHXString& interfaceId) const;
+
+        // Returns true if the data source contains a given type or interface id.
+        bool HasTypeOrInterface(const PHXString& typeOrInterfaceId) const;
+
         // Registers an object with this data source.
         bool RegisterObject(const nlohmann::json& objectJson);
 
@@ -44,7 +53,9 @@ namespace Phoenix::LDS::Json
 
     private:
         TSharedPtr<JsonDataSource> Parent;
-        TMap<PHXString, nlohmann::json> Objects;
         TMap<PHXString, nlohmann::json> Types;
+        TMap<PHXString, nlohmann::json> Objects;
+        TMap<PHXString, TArray<PHXString>> TypeIdToInterfaceIds;
+        TMap<PHXString, TArray<PHXString>> InterfaceToTypeIds;
     };
 }

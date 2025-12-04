@@ -1,10 +1,14 @@
 ﻿#pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "Actions.h"
+#include "Optional.h"
 #include "Containers/BlockBuffer.h"
 
 namespace Phoenix
 {
+    class Session;
     struct IDebugRenderer;
 }
 
@@ -30,8 +34,10 @@ namespace Phoenix
     
     struct PHOENIXSIM_API WorldCtorArgs
     {
-        FName Name;
+        FName WorldId;
+        FName WorldType;
         BlockBuffer::CtorArgs Blocks;
+        nlohmann::json Config;
     };
 
     class PHOENIXSIM_API World : public BlockBufferOwner<World>
@@ -43,7 +49,11 @@ namespace Phoenix
         World(World&& other) noexcept;
         ~World() = default;
 
-        FName GetName() const;
+        FName GetId() const;
+        FName GetType() const;
+
+        const nlohmann::json& GetConfig() const;
+        const nlohmann::json* GetFeatureConfig(const PHXString& featureId) const;
 
         bool IsInitialized() const;
         bool IsShutDown() const;
@@ -61,9 +71,11 @@ namespace Phoenix
 
         friend class WorldManager;
         
-        FName Name;
+        FName Id;
+        FName Type;
         BlockBuffer Buffer;
         EWorldFlags Flags = EWorldFlags::None;
+        nlohmann::json Config;
     };
 
     typedef World* WorldPtr;
@@ -78,8 +90,17 @@ namespace Phoenix
 
     struct PHOENIXSIM_API WorldManagerCtorArgs
     {
+        Session* Session;
         TSharedPtr<FeatureSet> FeatureSet;
         PostWorldUpdateDelegate OnPostWorldUpdate;
+        nlohmann::json Config;
+    };
+
+    struct PHOENIXSIM_API NewWorldArgs
+    {
+        FName WorldType;
+        TOptional<FName> Id;
+        TOptional<nlohmann::json> Config;
     };
 
     struct PHOENIXSIM_API WorldStepArgs
@@ -107,9 +128,13 @@ namespace Phoenix
         WorldManager(const WorldManagerCtorArgs& args);
         ~WorldManager();
 
-        WorldSharedPtr NewWorld(const FName& name);
+        // Create a new world.
+        WorldSharedPtr NewWorld(const NewWorldArgs& args);
+
+        // Gets a world by the given name. Returns nullptr if not found.
         WorldSharedPtr GetWorld(const FName& name) const;
 
+        // Gets the first world created by the session.
         WorldSharedPtr GetPrimaryWorld() const;
 
         void Step(const WorldStepArgs& args);
@@ -118,14 +143,27 @@ namespace Phoenix
 
     private:
 
+        friend class Session;
+
+        bool LoadConfig(const nlohmann::json& config);
+        bool LoadWorldConfig(const PHXString& worldType, const PHXString& configPath);
+
+        FName GenerateNewWorldId(const FName& worldType);
+
         void InitializeWorld(WorldRef world) const;
         void ShutdownWorld(WorldRef world) const;
         void UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const;
         void SendActionToWorld(WorldRef world, const Action& action) const;
 
+        Session* Session;
         TSharedPtr<FeatureSet> FeatureSet;
         TArray<WorldSharedPtr> Worlds;
         BlockBuffer::CtorArgs WorldBufferBlockArgs;
+
+        uint32 WorldIdGen = 0;
+
+        nlohmann::json Config;
+        TMap<FName, nlohmann::json> WorldConfigs;
 
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };

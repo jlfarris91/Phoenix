@@ -85,7 +85,7 @@ namespace Phoenix
     {
     public:
 
-        virtual ~IFeature() {};
+        virtual ~IFeature() {}
 
         // Gets the name of the feature.
         virtual FName GetName() const;
@@ -151,6 +151,7 @@ namespace Phoenix
         friend class Session;
 
         Session* Session = nullptr;
+        nlohmann::json Config;
     };
 
     typedef IFeature* FeaturePtr;

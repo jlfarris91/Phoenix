@@ -430,7 +430,7 @@ namespace Phoenix
             template <class TJob>
             static void Schedule(WorldRef world, const TJob& job)
             {
-                TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+                TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
                 FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
                 WorldPtr worldPtr = &world;
@@ -459,7 +459,7 @@ namespace Phoenix
             {
                 PHX_PROFILE_ZONE_SCOPED;
 
-                TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetName());
+                TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
                 FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
                 WorldPtr worldPtr = &world;

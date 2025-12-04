@@ -2,36 +2,71 @@
 #include "Worlds.h"
 
 #include <algorithm>
+#include <fstream>
 #include <memory>
 
 #include "Features.h"
 #include "Flags.h"
 #include "Profiling.h"
+#include "Session.h"
 
 
 using namespace Phoenix;
 
 World::World(const WorldCtorArgs& args)
-    : Name(args.Name)
+    : Id(args.WorldId)
+    , Type(args.WorldType)
     , Buffer(args.Blocks)
+    , Config(args.Config)
 {
 }
 
 World::World(const World& other)
-    : Name(other.Name)
+    : Id(other.Id)
+    , Type(other.Type)
     , Buffer(other.Buffer)
+    , Config(other.Config)
 {
 }
 
 World::World(World&& other) noexcept
-    : Name(other.Name)
+    : Id(other.Id)
+    , Type(other.Type)
     , Buffer(std::move(other.Buffer))
+    , Config(std::move(other.Config))
 {
 }
 
-FName World::GetName() const
+FName World::GetId() const
 {
-    return Name;
+    return Id;
+}
+
+FName World::GetType() const
+{
+    return Type;
+}
+
+const nlohmann::json& World::GetConfig() const
+{
+    return Config;
+}
+
+const nlohmann::json* World::GetFeatureConfig(const PHXString& featureId) const
+{
+    auto featuresIter = Config.find("features");
+    if (featuresIter == Config.end())
+    {
+        return nullptr;
+    }
+
+    auto featureIter = featuresIter->find(featureId);
+    if (featureIter == featuresIter->end())
+    {
+        return nullptr;
+    }
+
+    return &*featureIter;
 }
 
 bool World::IsInitialized() const
@@ -56,13 +91,19 @@ simtime_t World::GetSimTime() const
 
 World& World::operator=(const World& other)
 {
+    Id = other.Id;
+    Type = other.Type;
     Buffer = other.Buffer;
+    Config = other.Config;
     return *this;
 }
 
 World& World::operator=(World&& other) noexcept
 {
+    Id = other.Id;
+    Type = other.Type;
     Buffer = std::move(other.Buffer);
+    Config = std::move(other.Config);
     return *this;
 }
 
@@ -77,9 +118,12 @@ const BlockBuffer& World::GetBuffer() const
 }
 
 WorldManager::WorldManager(const WorldManagerCtorArgs& args)
-    : FeatureSet(args.FeatureSet)
+    : Session(args.Session)
+    , FeatureSet(args.FeatureSet)
     , OnPostWorldUpdate(args.OnPostWorldUpdate)
 {
+    LoadConfig(args.Config);
+
     WorldBufferBlockArgs.RegisterBlock<WorldDynamicBlock>();
 
     for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
@@ -96,20 +140,35 @@ WorldManager::~WorldManager()
 {
 }
 
-WorldSharedPtr WorldManager::NewWorld(const FName& name)
+WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
 {
-    WorldSharedPtr world = GetWorld(name);
-    if (world)
+    if (args.Id.IsSet())
     {
-        // TODO (jfarris): world with this name already exists!
-        return world;
+        // TODO (jfarris): report an error that a world with that id already exists
+        if (WorldSharedPtr existingWorld = GetWorld(args.Id.Get()))
+        {
+            return nullptr;
+        }
+    }
+
+    FName worldId = args.Id.GetValue(FName::None);
+    if (FName::IsNoneOrEmpty(worldId))
+    {
+        worldId = GenerateNewWorldId(args.WorldType);
     }
 
     WorldCtorArgs worldCtorArgs;
-    worldCtorArgs.Name = name;
+    worldCtorArgs.WorldId = worldId;
+    worldCtorArgs.WorldType = args.WorldType;
     worldCtorArgs.Blocks = WorldBufferBlockArgs;
 
-    world = std::make_shared<World>(worldCtorArgs);
+    auto worldConfigIter = WorldConfigs.find(args.WorldType);
+    if (worldConfigIter != WorldConfigs.end())
+    {
+        worldCtorArgs.Config = worldConfigIter->second;
+    }
+
+    WorldSharedPtr world = std::make_shared<World>(worldCtorArgs);
     Worlds.push_back(world);
 
     return world;
@@ -119,7 +178,7 @@ WorldSharedPtr WorldManager::GetWorld(const FName& name) const
 {
     for (const WorldSharedPtr& world : Worlds)
     {
-        if (world->GetName() == name)
+        if (world->GetId() == name)
             return world;
     }
     return nullptr;
@@ -182,6 +241,69 @@ void WorldManager::SendAction(const WorldSendActionArgs& args)
     {
         SendActionToWorld(*world, args.Action);
     }
+}
+
+bool WorldManager::LoadConfig(const nlohmann::json& config)
+{
+    Config = config;
+    WorldConfigs.clear();
+
+    bool anyFailed = false;
+    for (auto && [worldType, worldConfig] : Config.items())
+    {
+        auto configIter = worldConfig.find("config");
+        if (configIter == worldConfig.end())
+        {
+            // TODO (jfarris): report warning
+            anyFailed = true;
+            continue;
+        }
+
+        PHXString configPath = configIter->get<PHXString>();
+
+        if (!LoadWorldConfig(worldType, configPath))
+        {
+            anyFailed = true;
+        }
+    }
+
+    return anyFailed == false;
+}
+
+bool WorldManager::LoadWorldConfig(const PHXString& worldType, const PHXString& configPath)
+{
+    std::filesystem::path dataDir = Session->GetDataDirectory();
+    std::filesystem::path worldConfigPath = absolute(dataDir / configPath);
+    if (!exists(worldConfigPath))
+    {
+        // TODO (jfarris): report warning
+        return false;
+    }
+
+    std::ifstream worldConfigStream(worldConfigPath);
+    if (!worldConfigStream.is_open())
+    {
+        // TODO (jfarris): report warning
+        return false;
+    }
+
+    nlohmann::json worldConfigJson = nlohmann::json::parse(worldConfigStream);
+    if (worldConfigJson.is_discarded())
+    {
+        // TODO (jfarris): report error
+        return false;
+    }
+
+    WorldConfigs.emplace(FName(worldType), worldConfigJson);
+    return true;
+}
+
+FName WorldManager::GenerateNewWorldId(const FName& worldType)
+{
+    ++WorldIdGen;
+    char buffer[16];
+    size_t len = snprintf(buffer, sizeof(buffer), "%u", WorldIdGen);
+    return worldType.Append(buffer, len);
 }
 
 void WorldManager::InitializeWorld(WorldRef world) const

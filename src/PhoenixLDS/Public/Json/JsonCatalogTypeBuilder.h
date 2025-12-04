@@ -30,19 +30,41 @@ namespace Phoenix::LDS::Json
             auto idIter = typeJson.find("id");
             if (idIter == typeJson.end())
             {
-                this->LogError("", "", "Type is missing required 'id' property.");
+                this->LogError("Type is missing required 'id' property.");
                 return false;
             }
 
-            PHXString typeIdStr = idIter->get<PHXString>();
+            PHXString typeId = idIter->get<PHXString>();
 
-            if (!ProcessObject(typeIdStr, typeJson, ""))
+            if (this->Catalog->HasType(typeId))
+            {
+                this->LogError("Type with id '{}' has already been registered.", typeId).Context(typeId);
+                return false;
+            }
+
+            if (this->DataSource)
+            {
+                const auto& implements = this->DataSource->GetInterfacesOfType(typeId);
+                if (!implements.empty())
+                {
+                    this->Catalog->EmplaceTypeRecord(typeId, "/implements/size"_n, LDSTypedValue((uint32)implements.size()));
+                    uint32 index = 0;
+                    for (const PHXString& implementId : implements)
+                    {
+                        char buffer[16];
+                        size_t len = snprintf(buffer, 16, "/implements/%u", index++);
+                        this->Catalog->EmplaceTypeRecord(typeId, FName(buffer, len), LDSTypedValue(implementId));
+                    }
+                }
+            }
+
+            if (!ProcessObject(typeId, typeJson, ""))
             {
                 return false;
             }
 
             // Only add the id record if we successfully processed the type
-            this->Catalog->EmplaceTypeRecord(typeIdStr, "/id"_n, LDSTypedValue(typeIdStr));
+            this->Catalog->EmplaceTypeRecord(typeId, "/id"_n, LDSTypedValue(typeId));
             return true;
         }
 
@@ -56,7 +78,7 @@ namespace Phoenix::LDS::Json
             auto typeIter = jsonObject.find("type");
             if (typeIter == jsonObject.end())
             {
-                this->LogError(rootObjectId, propertyPath, "Type is missing required 'type' property.");
+                this->LogError("Type is missing required 'type' property.").Context(rootObjectId, propertyPath);
                 return false;
             }
 
@@ -85,6 +107,30 @@ namespace Phoenix::LDS::Json
                 return ProcessEmbeddedObject(rootObjectId, typeStr, propertyPath);
             }
 
+            if (typeStr.starts_with("Asset"))
+            {
+                // TODO (jfarris): implement assets?
+                return ProcessPODProperty(rootObjectId, jsonObject, ELDSValueType::Asset, propertyPath);
+            }
+
+            if (typeStr.starts_with("Expression"))
+            {
+                // TODO (jfarris): implement expressions
+                return true;
+            }
+
+            if (typeStr == "Enum")
+            {
+                // TODO (jfarris): implement enum
+                return true;
+            }
+
+            if (typeStr == "Flags")
+            {
+                // TODO (jfarris): implement enum flags
+                return true;
+            }
+
             if (typeStr == "Array")
             {
                 // Record the type
@@ -105,6 +151,7 @@ namespace Phoenix::LDS::Json
                 return ProcessPODProperty(rootObjectId, jsonObject, valueType, propertyPath);
             }
 
+            this->LogError("Unknown object type {}", typeStr);
             return false;
         }
 
@@ -116,14 +163,14 @@ namespace Phoenix::LDS::Json
             auto propsIter = jsonObject.find("properties");
             if (propsIter == jsonObject.end())
             {
-                this->LogWarning(rootObjectId, propertyPath, "Object type is missing expected 'properties' property.");
+                this->LogWarning("Object type is missing expected 'properties' property.").Context(rootObjectId, propertyPath);
                 return true;
             }
 
             const json& props = *propsIter;
             if (props.empty())
             {
-                this->LogWarning(rootObjectId, propertyPath, "Object type 'properties' is empty.");
+                this->LogWarning("Object type 'properties' is empty.").Context(rootObjectId, propertyPath);
                 return true;
             }
 
@@ -145,23 +192,22 @@ namespace Phoenix::LDS::Json
         {
             if (!this->DataSource)
             {
-                this->LogError(rootObjectId, propertyPath, "A data source is required for object references.");
+                this->LogError("A data source is required for object references.").Context(rootObjectId, propertyPath);
                 return false;
             }
 
             auto indexOfHash = typeStr.find('#');
             if (indexOfHash == Index<size_t>::None)
             {
-                this->LogError(rootObjectId, propertyPath, "Malformed object reference. Expected 'Object#' followed by a type id.");
+                this->LogError("Malformed object reference. Expected 'Object#' followed by a type id.").Context(rootObjectId, propertyPath);
                 return false;
             }
 
             PHXString refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
 
-            const nlohmann::json* typeJson = this->DataSource->FindType(refTypeStr);
-            if (!typeJson)
+            if (!this->DataSource->HasTypeOrInterface(refTypeStr))
             {
-                this->LogError(rootObjectId, propertyPath, "Could not find type with id '{}' in data source.", refTypeStr);
+                this->LogError("Could not find type with id '{}' in data source.", refTypeStr).Context(rootObjectId, propertyPath);
                 return false;
             }
 
@@ -187,14 +233,14 @@ namespace Phoenix::LDS::Json
         {
             if (!this->DataSource)
             {
-                this->LogError(rootObjectId, propertyPath, "A data source is required for embedded objects.");
+                this->LogError("A data source is required for embedded objects.").Context(rootObjectId, propertyPath);
                 return false;
             }
 
             auto indexOfHash = typeStr.find('#');
             if (indexOfHash == Index<size_t>::None)
             {
-                this->LogError(rootObjectId, propertyPath, "Malformed embedded object reference. Expected 'Object#' followed by a type id.");
+                this->LogError("Malformed embedded object reference. Expected 'Object#' followed by a type id.").Context(rootObjectId, propertyPath);
                 return false;
             }
 
@@ -203,7 +249,7 @@ namespace Phoenix::LDS::Json
             const nlohmann::json* typeJson = this->DataSource->FindType(refTypeStr);
             if (!typeJson)
             {
-                this->LogError(rootObjectId, propertyPath, "Could not find type with id '%s' in data source.", refTypeStr);
+                this->LogError("Could not find type with id '{}' in data source.", refTypeStr).Context(rootObjectId, propertyPath);
                 return false;
             }
 
@@ -226,7 +272,7 @@ namespace Phoenix::LDS::Json
             auto itemsIter = jsonObject.find("items");
             if (itemsIter == jsonObject.end())
             {
-                this->LogError(rootObjectId, propertyPath, "Array is missing required 'items' property.");
+                this->LogError("Array is missing required 'items' property.").Context(rootObjectId, propertyPath);
                 return false;
             }
 
@@ -272,6 +318,8 @@ namespace Phoenix::LDS::Json
                 case ELDSValueType::Speed:
                 case ELDSValueType::Name:
                 case ELDSValueType::Bool:
+                case ELDSValueType::Text:
+                case ELDSValueType::Asset:
                     break;
                 case ELDSValueType::Array:
                 case ELDSValueType::Object:
@@ -306,7 +354,7 @@ namespace Phoenix::LDS::Json
                     LDSTypedValue value = { {}, valueType };
                     if (!this->GetPropertyValueFromJson(metaValue, valueType, value.Value))
                     {
-                        this->LogError(rootObjectId, propertyPath, "Unexpected default value type.");
+                        this->LogError("Unexpected default value type.").Context(rootObjectId, propertyPath);
                         return false;
                     }
 

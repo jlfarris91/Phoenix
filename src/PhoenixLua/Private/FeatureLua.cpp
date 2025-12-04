@@ -292,42 +292,42 @@ void FeatureLua::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
 
-    detail::TryExecuteLuaFunction(Session, "OnWorldInitialize", world.GetName());
+    detail::TryExecuteLuaFunction(Session, "OnWorldInitialize", world.GetId());
 }
 
 void FeatureLua::OnWorldShutdown(WorldRef world)
 {
     IFeature::OnWorldShutdown(world);
 
-    detail::TryExecuteLuaFunction(Session, "OnWorldShutdown", world.GetName());
+    detail::TryExecuteLuaFunction(Session, "OnWorldShutdown", world.GetId());
 }
 
 void FeatureLua::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     IFeature::OnPreWorldUpdate(world, args);
 
-    detail::TryExecuteLuaFunction(Session, "OnPreWorldUpdate", world.GetName());
+    detail::TryExecuteLuaFunction(Session, "OnPreWorldUpdate", world.GetId());
 }
 
 void FeatureLua::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     IFeature::OnWorldUpdate(world, args);
 
-    detail::TryExecuteLuaFunction(Session, "OnWorldUpdate", world.GetName());
+    detail::TryExecuteLuaFunction(Session, "OnWorldUpdate", world.GetId());
 }
 
 void FeatureLua::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     IFeature::OnPostWorldUpdate(world, args);
 
-    detail::TryExecuteLuaFunction(Session, "OnPostWorldUpdate", world.GetName());
+    detail::TryExecuteLuaFunction(Session, "OnPostWorldUpdate", world.GetId());
 }
 
 bool FeatureLua::OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
 {
     IFeature::OnPreHandleWorldAction(world, action);
 
-    TOptional<bool> result = detail::TryExecuteLuaFunctionRet<bool>(Session, "OnPreHandleWorldAction", world.GetName(), action.Action);
+    TOptional<bool> result = detail::TryExecuteLuaFunctionRet<bool>(Session, "OnPreHandleWorldAction", world.GetId(), action.Action);
 
     return result.GetValue(false);
 }
@@ -336,7 +336,7 @@ bool FeatureLua::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& ac
 {
     IFeature::OnHandleWorldAction(world, action);
 
-    TOptional<bool> result = detail::TryExecuteLuaFunctionRet<bool>(Session, "OnHandleWorldAction", world.GetName(), action.Action);
+    TOptional<bool> result = detail::TryExecuteLuaFunctionRet<bool>(Session, "OnHandleWorldAction", world.GetId(), action.Action);
 
     return result.GetValue(false);
 }
@@ -345,7 +345,7 @@ bool FeatureLua::OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs
 {
     IFeature::OnPostHandleWorldAction(world, action);
 
-    TOptional<bool> result = detail::TryExecuteLuaFunctionRet<bool>(Session, "OnPostHandleWorldAction", world.GetName(), action.Action);
+    TOptional<bool> result = detail::TryExecuteLuaFunctionRet<bool>(Session, "OnPostHandleWorldAction", world.GetId(), action.Action);
 
     return result.GetValue(false);
 }

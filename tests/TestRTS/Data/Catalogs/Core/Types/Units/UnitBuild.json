@@ -4,7 +4,7 @@
     "properties": {
         "build_cost": {
             "type": "Array",
-            "properties": {
+            "items": {
                 "type": "Object#ResourceValue"
             }
         },

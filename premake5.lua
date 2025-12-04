@@ -155,6 +155,11 @@ project "PhoenixSim"
         "src/PhoenixSim/Public",
     }
 
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
+    }
+
     links {
         "PhoenixCore"
     }
@@ -263,6 +268,11 @@ project "PhoenixBlackboard"
         "PhoenixSim"
     }
 
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
+    }
+
     filter "configurations:Debug"
         defines { "DEBUG" }
         runtime "Debug"
@@ -306,6 +316,11 @@ project "PhoenixECS"
         "src/PhoenixCore/Public",
         "src/PhoenixSim/Public",
         "src/PhoenixBlackboard/Public"
+    }
+
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
     }
 
     links {
@@ -358,6 +373,11 @@ project "PhoenixPhysics"
         "src/PhoenixSim/Public",
         "src/PhoenixBlackboard/Public",
         "src/PhoenixECS/Public"
+    }
+
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
     }
 
     links {
@@ -413,6 +433,11 @@ project "PhoenixSteering"
         "src/PhoenixECS/Public",
         "src/PhoenixPhysics/Public",
         "src/PhoenixSteering/Public",
+    }
+
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
     }
 
     links {
@@ -480,6 +505,7 @@ project "PhoenixLua"
 
     externalincludedirs {
         ext,
+        ext .. "/nlohmann/*",
         ext .. "/lua/lua-5.4.8/src/",
         ext .. "/sol/"
     }
@@ -553,8 +579,7 @@ project "PhoenixRTS"
 
     externalincludedirs {
         ext,
-        ext .. "/lua/lua-5.4.8/src/",
-        ext .. "/sol/"
+        ext .. "/nlohmann/*"
     }
 
     links {

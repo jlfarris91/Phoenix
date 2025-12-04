@@ -3,28 +3,27 @@
 
 #include "DLLExport.h"
 #include "LDSCatalog.h"
+#include "Logging.h"
 
 namespace Phoenix::LDS::Json
 {
     class JsonDataSource;
 
-    enum class EJsonCatalogBuilderLogLevel : uint8
-    {
-        Info,
-        Warning,
-        Error,
-        COUNT
-    };
-
-    struct JsonCatalogBuilderLogMessage
+    struct JsonCatalogBuilderLogMessage : LogMessage
     {
         PHXString Id;
         PHXString PropertyPath;
-        PHXString Message;
+
+        JsonCatalogBuilderLogMessage& Context(const PHXString& id, const PHXString& path = {})
+        {
+            Id = id;
+            PropertyPath = path;
+            return *this;
+        }
     };
 
     template <class TCatalog>
-    PHOENIX_LDS_API struct JsonCatalogBuilderBase
+    PHOENIX_LDS_API struct JsonCatalogBuilderBase : ILogger<JsonCatalogBuilderLogMessage>
     {
         using json = nlohmann::json;
 
@@ -33,11 +32,6 @@ namespace Phoenix::LDS::Json
             , DataSource(dataSource)
         {
             PHX_ASSERT(catalog);
-        }
-
-        const TArray<JsonCatalogBuilderLogMessage>& GetLogs(EJsonCatalogBuilderLogLevel level) const
-        {
-            return Logs[(uint8)level];
         }
 
     protected:
@@ -116,6 +110,13 @@ namespace Phoenix::LDS::Json
                     return true;
                 }
                 break;
+            case ELDSValueType::Time:
+                if (json.is_number())
+                {
+                    outValue.Time = json.get<double>();
+                    return true;
+                }
+                break;
             case ELDSValueType::Bool:
                 if (json.is_boolean())
                 {
@@ -123,10 +124,20 @@ namespace Phoenix::LDS::Json
                     return true;
                 }
                 break;
+            case ELDSValueType::Text:
+            case ELDSValueType::Asset:
+                if (json.is_string())
+                {
+                    const auto& str = json.get<PHXString>();
+                    outValue.Name = Hashing::FNV1A32(str.data(), str.length());
+                    return true;
+                }
+                break;
+            case ELDSValueType::Unknown:
+            case ELDSValueType::Array:
             case ELDSValueType::Object:
             case ELDSValueType::ObjectRef:
-            case ELDSValueType::Array:
-            case ELDSValueType::Unknown:
+            case ELDSValueType::Expression:
                 PHX_ASSERT(0); // Unexpected type
                 break;
             }
@@ -138,7 +149,7 @@ namespace Phoenix::LDS::Json
         {
             if (!json.is_string())
             {
-                this->LogError("", "", "Expected object reference to be a string value.");
+                this->LogError("Expected object reference to be a string value.");
                 return false;
             }
 
@@ -218,50 +229,7 @@ namespace Phoenix::LDS::Json
             return GetPropertyValueFromJson(json, objectId, propertyPath, 0, end, outValue);
         }
 
-        template <class ...TArgs>
-        void LogInfo(
-            const PHXString& id,
-            const PHXString& propertyPath,
-            const std::format_string<TArgs...>& fmt,
-            TArgs&&... args)
-        {
-            Log(EJsonCatalogBuilderLogLevel::Info, id, propertyPath, fmt, std::forward<TArgs>(args)...);
-        }
-
-        template <class ...TArgs>
-        void LogWarning(
-            const PHXString& id,
-            const PHXString& propertyPath,
-            const std::format_string<TArgs...>& fmt,
-            TArgs&&... args)
-        {
-            Log(EJsonCatalogBuilderLogLevel::Warning, id, propertyPath, fmt, std::forward<TArgs>(args)...);
-        }
-
-        template <class ...TArgs>
-        void LogError(
-            const PHXString& id,
-            const PHXString& propertyPath,
-            const std::format_string<TArgs...>& fmt,
-            TArgs&&... args)
-        {
-            Log(EJsonCatalogBuilderLogLevel::Error, id, propertyPath, fmt, std::forward<TArgs>(args)...);
-        }
-
-        template <class ...TArgs>
-        void Log(
-            EJsonCatalogBuilderLogLevel level,
-            const PHXString& id,
-            const PHXString& propertyPath,
-            const std::format_string<TArgs...>& fmt,
-            TArgs&&... args)
-        {
-            PHXString message = std::format(fmt, std::forward<TArgs>(args)...);
-            Logs[(uint8)level].emplace_back(id, propertyPath, message);
-        }
-
         TCatalog* Catalog;
         const JsonDataSource* DataSource;
-        TArray<JsonCatalogBuilderLogMessage> Logs[(uint8)EJsonCatalogBuilderLogLevel::COUNT];
     };
 }

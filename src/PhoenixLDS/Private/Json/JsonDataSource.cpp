@@ -1,15 +1,116 @@
 
 #include "Json/JsonDataSource.h"
 
-using namespace Phoenix::LDS::Json;
+#include <fstream>
 
-Phoenix::TSharedPtr<JsonDataSource> JsonDataSource::LoadFromDirectory(const PHXString& directoryPath)
+using namespace Phoenix;
+using namespace Phoenix::LDS::Json;
+namespace fs = std::filesystem;
+
+TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& catalogPath)
 {
-    // TODO (jfarris): implement loading from directory.
-    return MakeShared<JsonDataSource>();
+    auto dataSource = MakeShared<JsonDataSource>();
+
+    fs::path absoluteCatalogPath = fs::absolute(catalogPath);
+    fs::path absoluteCatalogDir = absoluteCatalogPath.parent_path();
+
+    std::ifstream catalogStream(absoluteCatalogPath);
+    if (!catalogStream.is_open())
+    {
+        dataSource->LogError("Failed to open Catalog file '{}'", catalogPath);
+        return nullptr;
+    }
+
+    nlohmann::json catalogJson;
+
+    try
+    {
+        catalogJson = nlohmann::json::parse(catalogStream, nullptr, false);
+    }
+    catch (const nlohmann::detail::exception& ex)
+    {
+        dataSource->LogError("Failed to parse Catalog file '{}': {}", catalogPath, ex.what());
+        return nullptr;
+    }
+
+    auto typesIter = catalogJson.find("types");
+    if (typesIter != catalogJson.end())
+    {
+        for (auto&& typesPath : typesIter->items())
+        {
+            auto typeDir = absolute(absoluteCatalogDir / typesPath.value().get<PHXString>());
+            for (const auto& filePath : fs::recursive_directory_iterator(typeDir))
+            {
+                if (!filePath.is_regular_file())
+                {
+                    continue;
+                }
+
+                std::ifstream fileStream(filePath.path());
+                if (!fileStream.is_open())
+                {
+                    dataSource->LogError("Failed to open Type file '{}'", filePath.path().generic_string());
+                    continue;
+                }
+
+                nlohmann::json typeJson;
+
+                try
+                {
+                    typeJson = nlohmann::json::parse(fileStream, nullptr, false);
+                }
+                catch (const nlohmann::detail::exception& ex)
+                {
+                    dataSource->LogError("Failed to parse Type file '{}': {}", filePath.path().generic_string(), ex.what());
+                    return nullptr;
+                }
+
+                dataSource->RegisterType(typeJson);
+            }
+        }
+    }
+
+    auto objectsIter = catalogJson.find("objects");
+    if (objectsIter != catalogJson.end())
+    {
+        for (auto&& objectsPath : objectsIter->items())
+        {
+            auto objectsDir = absolute(absoluteCatalogDir / objectsPath.value().get<PHXString>());
+            for (const auto& filePath : fs::recursive_directory_iterator(objectsDir))
+            {
+                if (!filePath.is_regular_file())
+                {
+                    continue;
+                }
+
+                std::ifstream fileStream(filePath.path());
+                if (!fileStream.is_open())
+                {
+                    dataSource->LogError("Failed to open Object file '{}'", filePath.path().generic_string());
+                    continue;
+                }
+
+                nlohmann::json objectJson;
+
+                try
+                {
+                    objectJson = nlohmann::json::parse(fileStream, nullptr, false);
+                }
+                catch (const nlohmann::detail::exception& ex)
+                {
+                    dataSource->LogError("Failed to parse Object file '{}': {}", filePath.path().generic_string(), ex.what());
+                    return nullptr;
+                }
+
+                dataSource->RegisterObject(objectJson);
+            }
+        }
+    }
+
+    return dataSource;
 }
 
-Phoenix::TSharedPtr<JsonDataSource> JsonDataSource::GetParent() const
+TSharedPtr<JsonDataSource> JsonDataSource::GetParent() const
 {
     return Parent;
 }
@@ -24,22 +125,36 @@ bool JsonDataSource::RegisterType(const nlohmann::json& typeJson)
     auto idIter = typeJson.find("id");
     if (idIter == typeJson.end())
     {
-        // Error: no id property
+        this->LogError("Type is missing required 'id' property.");
         return false;
     }
 
-    PHXString id = idIter->get<PHXString>();
-    if (Types.contains(id))
+    PHXString typeId = idIter->get<PHXString>();
+    if (Types.contains(typeId))
     {
-        // Error: type with id already exists
+        this->LogError("Type with id '{}' has already been registered.", typeId);
         return false;
     }
 
-    Types.emplace(id, typeJson);
+    Types.emplace(typeId, typeJson);
+
+    auto implementsIter = typeJson.find("implements");
+    if (implementsIter != typeJson.end())
+    {
+        const nlohmann::json& implementsArray = *implementsIter;
+        for (const auto& implementIdJson : implementsArray)
+        {
+            PHXString implementId = implementIdJson.get<PHXString>();
+
+            TypeIdToInterfaceIds[typeId].push_back(implementId);
+            InterfaceToTypeIds[implementId].push_back(typeId);
+        }
+    }
+
     return true;
 }
 
-const Phoenix::TMap<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredTypes() const
+const TMap<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredTypes() const
 {
     return Types;
 }
@@ -56,6 +171,30 @@ const nlohmann::json* JsonDataSource::FindType(const PHXString& typeId) const
         return Parent->FindType(typeId);
     }
     return nullptr;
+}
+
+void JsonDataSource::RegisterInterface(const PHXString& interfaceId, const PHXString& typeId)
+{
+    InterfaceToTypeIds[interfaceId].push_back(typeId);
+}
+
+const TArray<PHXString>& JsonDataSource::GetInterfacesOfType(const PHXString& typeId) const
+{
+    static TArray<PHXString> EmptyArray;
+    auto iter = TypeIdToInterfaceIds.find(typeId);
+    return iter != TypeIdToInterfaceIds.end() ? iter->second : EmptyArray;
+}
+
+const TArray<PHXString>& JsonDataSource::GetTypesImplementingInterface(const PHXString& interfaceId) const
+{
+    static TArray<PHXString> EmptyArray;
+    auto iter = InterfaceToTypeIds.find(interfaceId);
+    return iter != InterfaceToTypeIds.end() ? iter->second : EmptyArray;
+}
+
+bool JsonDataSource::HasTypeOrInterface(const PHXString& typeOrInterfaceId) const
+{
+    return FindType(typeOrInterfaceId) || InterfaceToTypeIds.contains(typeOrInterfaceId);
 }
 
 const nlohmann::json* JsonDataSource::FindObject(const PHXString& objectId) const
@@ -77,22 +216,22 @@ bool JsonDataSource::RegisterObject(const nlohmann::json& objectJson)
     auto idIter = objectJson.find("id");
     if (idIter == objectJson.end())
     {
-        // Error: no id property
+        this->LogError("Object is missing required 'id' property.");
         return false;
     }
 
-    PHXString id = idIter->get<PHXString>();
-    if (Objects.contains(id))
+    PHXString rootObjectId = idIter->get<PHXString>();
+    if (Objects.contains(rootObjectId))
     {
-        // Error: object with id already exists
+        this->LogError("Object with id '{}' has already been registered.", rootObjectId);
         return false;
     }
 
-    Objects.emplace(id, objectJson);
+    Objects.emplace(rootObjectId, objectJson);
     return true;
 }
 
-const Phoenix::TMap<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredObjects() const
+const TMap<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredObjects() const
 {
     return Objects;
 }
