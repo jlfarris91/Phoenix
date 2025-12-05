@@ -34,6 +34,7 @@ namespace Phoenix
     
     struct PHOENIXSIM_API WorldCtorArgs
     {
+        TWeakPtr<Session> Session;
         FName WorldId;
         FName WorldType;
         BlockBuffer::CtorArgs Blocks;
@@ -48,6 +49,8 @@ namespace Phoenix
         World(const World& other);
         World(World&& other) noexcept;
         ~World() = default;
+
+        TWeakPtr<Session> GetSession() const;
 
         FName GetId() const;
         FName GetType() const;
@@ -70,7 +73,8 @@ namespace Phoenix
     private:
 
         friend class WorldManager;
-        
+
+        TWeakPtr<Session> Session;
         FName Id;
         FName Type;
         BlockBuffer Buffer;
@@ -90,8 +94,8 @@ namespace Phoenix
 
     struct PHOENIXSIM_API WorldManagerCtorArgs
     {
-        Session* Session;
-        TSharedPtr<FeatureSet> FeatureSet;
+        TWeakPtr<Session> Session;
+        TWeakPtr<FeatureSet> FeatureSet;
         PostWorldUpdateDelegate OnPostWorldUpdate;
         nlohmann::json Config;
     };
@@ -155,8 +159,8 @@ namespace Phoenix
         void UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const;
         void SendActionToWorld(WorldRef world, const Action& action) const;
 
-        Session* Session;
-        TSharedPtr<FeatureSet> FeatureSet;
+        TWeakPtr<Session> Session;
+        TWeakPtr<FeatureSet> FeatureSet;
         TArray<WorldSharedPtr> Worlds;
         BlockBuffer::CtorArgs WorldBufferBlockArgs;
 

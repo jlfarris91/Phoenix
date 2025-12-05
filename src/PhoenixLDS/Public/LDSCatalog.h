@@ -1,24 +1,11 @@
 
 #pragma once
 #include "Flags.h"
+#include "LDSObjectModel.h"
 #include "LDSRecordStore.h"
 
 namespace Phoenix::LDS
 {
-    enum class ELDSObjectRecordQueryFlags : uint8
-    {
-        None = 0,
-        RecurseBaseObjects = 1,
-        ReturnDefaultRecord = 2,
-        Standard = RecurseBaseObjects | ReturnDefaultRecord
-    };
-
-    enum class ELDSTypeRecordQueryFlags : uint8
-    {
-        None = 0,
-        RecurseBaseTypes = 1
-    };
-
     template <class TObjectStore, class TTypeStore>
     PHOENIX_LDS_API struct TLDSCatalog
     {
@@ -35,7 +22,7 @@ namespace Phoenix::LDS
         LDSRecord* FindObjectRecord(
             const FName& objectId,
             const FName& propertyId,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::Standard)
+            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
         {
             FName currObjectId = objectId;
             while (currObjectId != FName::None)
@@ -44,7 +31,7 @@ namespace Phoenix::LDS
                 {
                     return record;
                 }
-                if (HasNoneFlags(flags, ELDSObjectRecordQueryFlags::RecurseBaseObjects))
+                if (HasNoneFlags(flags, ELDSObjectRecordQueryFlags::Exact))
                 {
                     return nullptr;
                 }
@@ -55,7 +42,7 @@ namespace Phoenix::LDS
                 }
                 currObjectId = nextObjectId;
             }
-            if (HasAnyFlags(flags, ELDSObjectRecordQueryFlags::ReturnDefaultRecord))
+            if (HasNoneFlags(flags, ELDSObjectRecordQueryFlags::IgnoreDefaultValue))
             {
                 return FindTypeRecord(currObjectId, propertyId + "/default");
             }
@@ -65,7 +52,7 @@ namespace Phoenix::LDS
         const LDSRecord* FindObjectRecord(
             const FName& objectId,
             const FName& propertyId,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::Standard) const
+            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None) const
         {
             return const_cast<TLDSCatalog*>(this)->FindObjectRecord(objectId, propertyId, flags);
         }
@@ -111,7 +98,7 @@ namespace Phoenix::LDS
         LDSRecord* FindTypeRecord(
             const FName& typeId,
             const FName& propertyId,
-            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::RecurseBaseTypes)
+            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::None)
         {
             FName currTypeId = typeId;
             while (currTypeId != FName::None)
@@ -120,7 +107,7 @@ namespace Phoenix::LDS
                 {
                     return record;
                 }
-                if (HasNoneFlags(flags, ELDSTypeRecordQueryFlags::RecurseBaseTypes))
+                if (HasAnyFlags(flags, ELDSTypeRecordQueryFlags::Exact))
                 {
                     break;
                 }
@@ -132,7 +119,7 @@ namespace Phoenix::LDS
         const LDSRecord* FindTypeRecord(
             const FName& typeId,
             const FName& propertyId,
-            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::RecurseBaseTypes) const
+            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::None) const
         {
             return const_cast<TLDSCatalog*>(this)->FindTypeRecord(typeId, propertyId, flags);
         }
@@ -140,13 +127,13 @@ namespace Phoenix::LDS
         // Returns the first matching type record found of a base type of a given object.
         LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId)
         {
-            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::RecurseBaseTypes);
+            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::None);
         }
 
         // Returns the first matching type record found of a base type of a given object.
         const LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId) const
         {
-            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::RecurseBaseTypes);
+            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::None);
         }
 
         bool HasType(const FName& typeId) const

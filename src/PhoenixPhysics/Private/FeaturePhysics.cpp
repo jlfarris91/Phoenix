@@ -80,3 +80,18 @@ void FeaturePhysics::AddForce(WorldRef world, EntityId entityId, const Vec2& for
 
     bodyComponent->Force += force;
 }
+
+bool FeaturePhysics::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
+{
+    if (action.Action.Verb == "push_entities_in_range"_n)
+    {
+        Vec2 pos = { action.Action.Data[0].Distance, action.Action.Data[1].Distance };
+        Distance range = action.Action.Data[2].Distance;
+        Value force = action.Action.Data[3].Distance;
+        AddExplosionForceToEntitiesInRange(world, pos, range, force);
+
+        return true;
+    }
+
+    return false;
+}

@@ -4,7 +4,7 @@
     "properties": {
         "cargo_size": {
             "type": "Enum",
-            "enum": [
+            "items": [
                 "Zero",
                 "One",
                 "Two",

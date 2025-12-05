@@ -400,6 +400,79 @@ void Test_RegisterType_ObjectType_WithObjectRefProperty()
     PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testObjectRef/type"_n) == "RefType"_n);
 }
 
+void Test_RegisterType_ObjectType_WithEnumProperty()
+{
+    LDSCatalog catalog;
+    JsonCatalogTypeBuilder typeBuilder(nullptr, &catalog);
+
+    json testTypeJson = R"(
+    {
+        "id": "TestType",
+        "type": "Object",
+        "properties": {
+            "testEnum": {
+                "type": "Enum",
+                "items": [
+                    "TestEnumValue0",
+                    "TestEnumValue1",
+                    "TestEnumValue2"
+                ]
+            }
+        }
+    }
+    )"_json;
+
+    bool success = typeBuilder.RegisterType(testTypeJson);
+
+    PHX_ASSERT(success);
+    PHX_ASSERT(catalog.GetTypeRecordValueType("TestType"_n, "/testEnum/type"_n) == ELDSValueType::Enum);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<ELDSValueType>("TestType"_n, "/testEnum/underlying_type"_n) == ELDSValueType::Name);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/size"_n) == 3);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/0/key"_n) == "TestEnumValue0"_n);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/0/value"_n) == 0);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/1/key"_n) == "TestEnumValue1"_n);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/1/value"_n) == 1);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/2/key"_n) == "TestEnumValue2"_n);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/2/value"_n) == 2);
+}
+
+void Test_RegisterType_ObjectType_WithEnumProperty_WithUnderlyingType()
+{
+    LDSCatalog catalog;
+    JsonCatalogTypeBuilder typeBuilder(nullptr, &catalog);
+
+    json testTypeJson = R"(
+    {
+        "id": "TestType",
+        "type": "Object",
+        "properties": {
+            "testEnum": {
+                "type": "Enum",
+                "items": [
+                    { "TestEnumValue0": 1.11 },
+                    { "TestEnumValue1": 2.22 },
+                    { "TestEnumValue2": 3.33 }
+                ],
+                "underlying_type": "Distance"
+            }
+        }
+    }
+    )"_json;
+
+    bool success = typeBuilder.RegisterType(testTypeJson);
+
+    PHX_ASSERT(success);
+    PHX_ASSERT(catalog.GetTypeRecordValueType("TestType"_n, "/testEnum/type"_n) == ELDSValueType::Enum);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<ELDSValueType>("TestType"_n, "/testEnum/underlying_type"_n) == ELDSValueType::Distance);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/size"_n) == 3);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/0/key"_n) == "TestEnumValue0"_n);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<Distance>("TestType"_n, "/testEnum/items/0/value"_n) == 1.11);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/1/key"_n) == "TestEnumValue1"_n);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<Distance>("TestType"_n, "/testEnum/items/1/value"_n) == 2.22);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/2/key"_n) == "TestEnumValue2"_n);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<Distance>("TestType"_n, "/testEnum/items/2/value"_n) == 3.33);
+}
+
 void Test_RegisterType_ObjectType_WithArrayProperty_WithPodItemType()
 {
     LDSCatalog catalog;
@@ -1484,6 +1557,9 @@ void Json::RunLDSJsonTests()
     Test_RegisterType_ObjectType_WithEmbeddedObjectProperty();
 
     Test_RegisterType_ObjectType_WithObjectRefProperty();
+
+    Test_RegisterType_ObjectType_WithEnumProperty();
+    Test_RegisterType_ObjectType_WithEnumProperty_WithUnderlyingType();
 
     Test_RegisterType_ObjectType_WithArrayProperty_WithPodItemType();
     Test_RegisterType_ObjectType_WithArrayProperty_WithInlineObjectItemType();

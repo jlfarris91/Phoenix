@@ -1,8 +1,11 @@
 
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "DLLExport.h"
 #include "LDSCatalog.h"
+#include "LDSCatalogQueryContext.h"
 #include "Logging.h"
 
 namespace Phoenix::LDS::Json
@@ -22,7 +25,7 @@ namespace Phoenix::LDS::Json
         }
     };
 
-    template <class TCatalog>
+    template <class TCatalog = Catalog>
     PHOENIX_LDS_API struct JsonCatalogBuilderBase : ILogger<JsonCatalogBuilderLogMessage>
     {
         using json = nlohmann::json;
@@ -30,13 +33,14 @@ namespace Phoenix::LDS::Json
         JsonCatalogBuilderBase(const JsonDataSource* dataSource, TCatalog* catalog)
             : Catalog(catalog)
             , DataSource(dataSource)
+            , QueryContext(catalog)
         {
             PHX_ASSERT(catalog);
         }
 
     protected:
 
-        static bool GetPropertyValueFromJson(
+        static bool GetValueFromJson(
             const json& json,
             ELDSValueType type,
             LDSValue& outValue)
@@ -72,8 +76,7 @@ namespace Phoenix::LDS::Json
             case ELDSValueType::Name:
                 if (json.is_string())
                 {
-                    const auto& str = json.get<PHXString>();
-                    outValue.Name = Hashing::FNV1A32(str.data(), str.length());
+                    outValue.Name = json.get<PHXString>();
                     return true;
                 }
                 if (json.is_number_integer())
@@ -126,10 +129,11 @@ namespace Phoenix::LDS::Json
                 break;
             case ELDSValueType::Text:
             case ELDSValueType::Asset:
+            case ELDSValueType::Enum:
+            case ELDSValueType::EnumFlags:
                 if (json.is_string())
                 {
-                    const auto& str = json.get<PHXString>();
-                    outValue.Name = Hashing::FNV1A32(str.data(), str.length());
+                    outValue.Name = json.get<PHXString>();
                     return true;
                 }
                 break;
@@ -212,7 +216,7 @@ namespace Phoenix::LDS::Json
             }
 
             outValue.Type = metaRecord->GetValueAs<ELDSValueType>();
-            return GetPropertyValueFromJson(json, outValue.Type, outValue.Value);
+            return GetValueFromJson(json, outValue.Type, outValue.Value);
         }
 
         bool GetPropertyValueFromJson(
@@ -231,5 +235,6 @@ namespace Phoenix::LDS::Json
 
         TCatalog* Catalog;
         const JsonDataSource* DataSource;
+        LDSCatalogQueryContext<TCatalog> QueryContext;
     };
 }

@@ -17,13 +17,13 @@ namespace Phoenix
             PHX_REGISTER_FIELD(float, PushForce)
         PHX_DECLARE_TYPE_END()
 
-        EntityTool(Session* session);
+        EntityTool(TSharedPtr<Session> session);
 
         void OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
         void OnAppEvent(SDLDebugState& state, SDL_Event* event) override;
 
-        Session* Session;
+        TSharedPtr<Session> Session;
         float BrushSize = 10.0f;
         uint32 SpawnCount = 1;
         float MoveSpeed = 10.0f;

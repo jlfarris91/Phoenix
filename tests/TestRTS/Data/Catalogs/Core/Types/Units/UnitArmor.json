@@ -2,7 +2,7 @@
     "id": "UnitArmor",
     "type": "Object",
     "properties": {
-        "armor": {
+        "value": {
             "type": "Value",
             "default": 0.0,
             "minimum": 0.0,

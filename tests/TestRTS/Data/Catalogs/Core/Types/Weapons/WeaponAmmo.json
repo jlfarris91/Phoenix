@@ -27,7 +27,7 @@
         },
         "recharge_mode": {
             "type": "Enum",
-            "enum": [
+            "items": [
                 "Sequential",
                 "Parallel",
                 "Never"

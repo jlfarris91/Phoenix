@@ -31,12 +31,14 @@ namespace Phoenix
         FName WorldName = FName::None;
     };
 
-    class PHOENIXSIM_API Session : public BlockBufferOwner<Session>
+    class PHOENIXSIM_API Session : public TSharedAsThis<Session>, public BlockBufferOwner<Session>
     {
     public:
 
-        Session(const SessionCtorArgs& args);
+        Session() = default;
         ~Session();
+
+        static TSharedPtr<Session> Create(const SessionCtorArgs& args);
 
         void Initialize();
         void Shutdown();

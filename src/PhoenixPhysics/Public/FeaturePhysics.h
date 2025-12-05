@@ -117,6 +117,10 @@ namespace Phoenix
 
             static void AddForce(WorldRef& world, ECS::EntityId entityId, const Vec2& force);
 
+        protected:
+
+            bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
+
             TSharedPtr<PhysicsSystem> PhysicsSystem;
         };
     }

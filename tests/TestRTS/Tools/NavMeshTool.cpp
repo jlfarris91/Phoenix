@@ -15,7 +15,7 @@
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;
 
-NavMeshTool::NavMeshTool(Phoenix::Session* session)
+NavMeshTool::NavMeshTool(TSharedPtr<Phoenix::Session> session)
     : Session(session)
 {
 }

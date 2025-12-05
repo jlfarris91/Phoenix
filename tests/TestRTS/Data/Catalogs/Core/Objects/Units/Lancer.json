@@ -1,4 +1,5 @@
 {
     "id": "Lancer",
-    "base": "Unit"
+    "base": "Unit",
+    "collision_flags": "Ground|Air"
 }

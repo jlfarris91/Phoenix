@@ -568,7 +568,6 @@ project "PhoenixRTS"
 
     includedirs {
         "src/PhoenixRTS/Public",
-        "src/PhoenixRTS/Private",
         "src/PhoenixCore/Public",
         "src/PhoenixSim/Public",
         "src/PhoenixLDS/Public",

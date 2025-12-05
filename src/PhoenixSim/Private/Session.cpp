@@ -16,36 +16,44 @@
 
 using namespace Phoenix;
 
-Session::Session(const SessionCtorArgs& args)
+Session::~Session()
 {
-    DataDirectory = std::filesystem::absolute(args.DataDirectory);
-    ConfigName = args.ConfigName;
+    FeatureSet.reset();
+    WorldManager.reset();
+}
+
+TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
+{
+    TSharedPtr<Session> session = MakeShared<Session>();
+
+    session->DataDirectory = std::filesystem::absolute(args.DataDirectory);
+    session->ConfigName = args.ConfigName;
 
     if (args.CustomConfig.IsSet())
     {
-        CustomConfig = args.CustomConfig.Get();
+        session->CustomConfig = args.CustomConfig.Get();
     }
 
-    auto featuresIter = Config.find("features");
-    if (featuresIter != Config.end())
+    auto featuresIter = session->Config.find("features");
+    if (featuresIter != session->Config.end())
     {
         for (auto && [featureId, featureConfig] : featuresIter->items())
         {
-            FeatureConfigs.emplace(FName(featureId), featureConfig);
+            session->FeatureConfigs.emplace(FName(featureId), featureConfig);
         }
     }
 
-    FeatureSet = std::make_shared<Phoenix::FeatureSet>(args.FeatureSetArgs);
+    session->FeatureSet = std::make_shared<Phoenix::FeatureSet>(args.FeatureSetArgs);
 
     WorldManagerCtorArgs worldManagerArgs;
-    worldManagerArgs.Session = this;
-    worldManagerArgs.FeatureSet = FeatureSet;
+    worldManagerArgs.Session = session;
+    worldManagerArgs.FeatureSet = session->FeatureSet;
     worldManagerArgs.OnPostWorldUpdate = args.OnPostWorldUpdate;
-    worldManagerArgs.Config = Config["worlds"];
-    WorldManager = std::make_shared<Phoenix::WorldManager>(worldManagerArgs);
+    worldManagerArgs.Config = session->Config["worlds"];
+    session->WorldManager = std::make_shared<Phoenix::WorldManager>(worldManagerArgs);
 
     BlockBuffer::CtorArgs sessionBlockArgs;
-    for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
+    for (const FeatureSharedPtr& feature : session->FeatureSet->GetFeatures())
     {
         const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
         for (const BlockBuffer::BlockDefinition& sessionBlock : featureDefinition.SessionBlocks.Definitions)
@@ -54,13 +62,9 @@ Session::Session(const SessionCtorArgs& args)
         }
     }
 
-    SessionBuffer = BlockBuffer(sessionBlockArgs);
-}
+    session->SessionBuffer = BlockBuffer(sessionBlockArgs);
 
-Session::~Session()
-{
-    FeatureSet.reset();
-    WorldManager.reset();
+    return session;
 }
 
 void Session::Initialize()

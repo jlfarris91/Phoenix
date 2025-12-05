@@ -89,6 +89,28 @@ namespace Phoenix
             return *this;
         }
 
+        // Append a single character to the hash.
+        constexpr FName Append(char c) const
+        {
+            FName result = *this;
+            if (result.Value == 0)
+            {
+                result.Value = Hashing::FNV1A32(c);
+            }
+            else
+            {
+                result.Value = Hashing::FNV1A32Append(result.Value, c);
+            }
+#if DEBUG
+            if (!std::is_constant_evaluated())
+            {
+                (void)snprintf(result.Debug, _countof(result.Debug), "%s%c", result.Debug, c);
+            }
+#endif
+            return result;
+        }
+
+        // Append a string to the hash.
         constexpr FName Append(const char* str, size_t len) const
         {
             FName result = *this;
@@ -109,6 +131,7 @@ namespace Phoenix
             return result;
         }
 
+        // Append a fixed-length string to the hash.
         template <size_t N>
         constexpr FName Append(const char (&chars)[N]) const
         {

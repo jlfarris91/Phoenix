@@ -42,6 +42,11 @@ namespace Phoenix
             return FNV1A32(reinterpret_cast<const char*>(&obj), sizeof(T), basis);
         }
 
+        static constexpr hash32_t FNV1A32Append(hash32_t basis, char c)
+        {
+            return FNV1A32(&c, 1, basis);
+        }
+
         static constexpr hash32_t FNV1A32Append(hash32_t basis, const char* data, size_t length)
         {
             return FNV1A32(data, length, basis);

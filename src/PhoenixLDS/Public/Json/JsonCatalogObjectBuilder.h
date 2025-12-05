@@ -5,7 +5,7 @@
 
 namespace Phoenix::LDS::Json
 {
-    template <class TCatalog>
+    template <class TCatalog = Catalog>
     PHOENIX_LDS_API struct JsonCatalogObjectBuilder : JsonCatalogBuilderBase<TCatalog>
     {
         using json = nlohmann::json;
@@ -98,8 +98,18 @@ namespace Phoenix::LDS::Json
             {
                 return ProcessArray(rootObjectId, json, jsonPath, typePath);
             }
-            
-            return ProcessPODProperty(rootObjectId, json, jsonPath);
+
+            if (type == ELDSValueType::Enum)
+            {
+                return ProcessEnum(rootObjectId, json, jsonPath, typePath);
+            }
+
+            if (type == ELDSValueType::EnumFlags)
+            {
+                return ProcessEnumFlags(rootObjectId, json, jsonPath, typePath);
+            }
+
+            return ProcessValueProperty(rootObjectId, json, jsonPath);
         }
 
         bool ProcessObjectProperties(
@@ -134,11 +144,10 @@ namespace Phoenix::LDS::Json
             }
 
             const PHXString& valueStr = json.get<PHXString>();
-            FName valueId = FName(valueStr.data(), valueStr.length());
 
             LDSTypedValue value;
             value.Type = ELDSValueType::ObjectRef;
-            value.Value.Name = valueId;
+            value.Value.Name = valueStr;
 
             this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
             return true;
@@ -191,7 +200,83 @@ namespace Phoenix::LDS::Json
             return true;
         }
 
-        bool ProcessPODProperty(const PHXString& rootObjectId, const json& json, const PHXString& path)
+        bool ProcessEnum(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath)
+        {
+            if (!json.is_string())
+            {
+                this->LogError("Expected enum property to be a string value.").Context(rootObjectId, jsonPath);
+                return false;
+            }
+
+            const PHXString& valueStr = json.get<PHXString>();
+
+            const LDSRecord* enumTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/type");
+            if (enumTypeRecord == nullptr)
+            {
+                this->LogError("Could not find type of enum.").Context(rootObjectId, jsonPath);
+                return false;
+            }
+
+            // ELDSValueType underlyingType = enumItemTypeRecord->GetValueAs<ELDSValueType>();
+            //
+            // LDSTypedValue value;
+            // if (!this->GetValueFromJson(json, underlyingType, value))
+            // {
+            //     this->LogError("Failed to find enum value '{}'.", valueStr).Context(rootObjectId, jsonPath);
+            //     return false;
+            // }
+            //
+            // this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            return true;
+        }
+
+        bool ProcessEnumFlags(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath)
+        {
+            if (!json.is_string())
+            {
+                this->LogError("Expected enum flags property to be a '|'-delimited string value.").Context(rootObjectId, jsonPath);
+                return false;
+            }
+
+            const PHXString& valueStr = json.get<PHXString>();
+
+            TArray<PHXString> tokens;
+            PHXString token;
+            std::istringstream tokenStream(valueStr);
+            while (std::getline(tokenStream, token, '|'))
+            {
+                tokens.push_back(token);
+            }
+
+            // ELDSValueType underlyingValueType = 0;
+            //
+            //
+            //
+            // for (const PHXString& token : tokens)
+            // {
+            //
+            //     this->Catalog->FindTypeRecord();
+            //     
+            //     
+            // }
+            //
+            // LDSTypedValue value;
+            // value.Type = ELDSValueType::ObjectRef;
+            // value.Value.Int32 = underlyingValue;
+            //
+            // this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            return true;
+        }
+
+        bool ProcessValueProperty(const PHXString& rootObjectId, const json& json, const PHXString& path)
         {
             LDSTypedValue value;
             if (!this->GetPropertyValueFromJson(json, rootObjectId, path, value))

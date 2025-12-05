@@ -18,7 +18,7 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
     if (!catalogStream.is_open())
     {
         dataSource->LogError("Failed to open Catalog file '{}'", catalogPath);
-        return nullptr;
+        return dataSource;
     }
 
     nlohmann::json catalogJson;
@@ -30,7 +30,7 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
     catch (const nlohmann::detail::exception& ex)
     {
         dataSource->LogError("Failed to parse Catalog file '{}': {}", catalogPath, ex.what());
-        return nullptr;
+        return dataSource;
     }
 
     auto typesIter = catalogJson.find("types");
@@ -62,7 +62,7 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
                 catch (const nlohmann::detail::exception& ex)
                 {
                     dataSource->LogError("Failed to parse Type file '{}': {}", filePath.path().generic_string(), ex.what());
-                    return nullptr;
+                    return dataSource;
                 }
 
                 dataSource->RegisterType(typeJson);
@@ -99,7 +99,7 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
                 catch (const nlohmann::detail::exception& ex)
                 {
                     dataSource->LogError("Failed to parse Object file '{}': {}", filePath.path().generic_string(), ex.what());
-                    return nullptr;
+                    return dataSource;
                 }
 
                 dataSource->RegisterObject(objectJson);

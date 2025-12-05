@@ -2,46 +2,39 @@
 #pragma once
 
 #include "DLLExport.h"
+#include "LDSRecordQueryFlags.h"
 #include "Features.h"
 #include "LDSRecordStore.h"
 #include "LDSCatalog.h"
 #include "Session.h"
+#include "ObjectModel/LDSQueryContext.h"
 
 namespace Phoenix::LDS
 {
-    struct FeatureLDSStaticBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK_STATIC(FeatureLDSStaticBlock)
+    struct LDSRecordPath;
+}
 
-        TFixedCatalog<16384, 1024> Catalog;
-    };
-
-    struct FeatureLDSDynamicBlock : BufferBlockBase
+namespace Phoenix::LDS
+{
+    struct FeatureLDSSessionDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_STATIC(FeatureLDSDynamicBlock)
+        PHX_DECLARE_BLOCK_STATIC(FeatureLDSSessionDynamicBlock)
 
         TFixedCatalog<8192, 1024> Catalog;
     };
 
-    enum class ELDSFeatureQueryRecordFlags : uint8
+    struct FeatureLDSWorldDynamicBlock : BufferBlockBase
     {
-        None = 0,
+        PHX_DECLARE_BLOCK_STATIC(FeatureLDSWorldDynamicBlock)
 
-        // Don't search base objects
-        Exact = 1,
-
-        // Don't search dynamic catalogs
-        StaticOnly = 2,
-
-        // Don't search world catalogs
-        SessionOnly = 4,
+        TFixedCatalog<1024, 1024> Catalog;
     };
 
     class PHOENIX_LDS_API FeatureLDS : public IFeature
     {
         PHX_FEATURE_BEGIN(FeatureLDS)
-            FEATURE_SESSION_BLOCK(FeatureLDSStaticBlock)
-            FEATURE_SESSION_BLOCK(FeatureLDSDynamicBlock)
+            FEATURE_SESSION_BLOCK(FeatureLDSSessionDynamicBlock)
+            FEATURE_WORLD_BLOCK(FeatureLDSWorldDynamicBlock)
             FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
             FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
         PHX_FEATURE_END()
@@ -56,25 +49,21 @@ namespace Phoenix::LDS
         TSharedPtr<const Catalog> GetStaticWorldCatalog(WorldConstRef world) const;
 
         static const LDSRecord* QueryObjectRecord(
-            SessionConstPtr session,
-            WorldConstPtr world,
-            const FName& objectId,
-            const FName& propertyId,
-            ELDSFeatureQueryRecordFlags flags = ELDSFeatureQueryRecordFlags::None);
+            WorldConstRef world,
+            const LDSRecordPath& path,
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
         static const LDSRecord* QueryTypeRecord(
-            SessionConstPtr session,
-            WorldConstPtr world,
-            const FName& typeId,
-            const FName& propertyId,
-            ELDSFeatureQueryRecordFlags flags = ELDSFeatureQueryRecordFlags::None);
+            WorldConstRef world,
+            const LDSRecordPath& path,
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
     protected:
 
         void Initialize() override;
         void Shutdown() override;
 
-        static bool LoadCatalog(const PHXString& catalogRelativePath, Catalog& catalog);
+        static bool LoadCatalog(const PHXString& catalogAbsolutePath, Catalog& catalog);
 
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;

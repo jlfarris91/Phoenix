@@ -33,7 +33,7 @@ namespace Phoenix
             PHX_REGISTER_PROPERTY(bool, FixDelaunayTriangulation)
         PHX_DECLARE_TYPE_END()
 
-        NavMeshTool(Session* session);
+        NavMeshTool(TSharedPtr<Session> session);
 
         void OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
@@ -60,7 +60,7 @@ namespace Phoenix
         bool GetFixDelaunayTriangulation() const;
         void SetFixDelaunayTriangulation(const bool& v);
 
-        Session* Session;
+        TSharedPtr<Session> Session;
 
         float BrushSize = 10.0f;
         bool bDrawVertCircles = false;

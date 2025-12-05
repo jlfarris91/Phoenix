@@ -29,6 +29,9 @@
 #include "FeaturePhysics.h"
 #include "FeatureSteering.h"
 
+// RTS Features
+#include "Units/FeatureUnit.h"
+
 // Remove me
 #include "Json/LDSJsonTests.h"
 #include "BodyComponent.h"
@@ -62,7 +65,7 @@ FPSCalc GRendererFPS;
 
 Profiling::TracyProfiler GTracyProfiler;
 
-Session* GSession;
+TSharedPtr<Session> GSession;
 bool GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
 World* GLatestWorldView = nullptr;
@@ -101,8 +104,9 @@ void InitSession()
     TSharedPtr<FeatureNavigation> navMeshFeature = std::make_shared<FeatureNavigation>();
     TSharedPtr<FeaturePhysics> physicsFeature = std::make_shared<FeaturePhysics>();
     TSharedPtr<FeatureSteering> steeringFeature = std::make_shared<FeatureSteering>();
+    TSharedPtr<RTS::FeatureUnit> unitFeature = std::make_shared<RTS::FeatureUnit>();
     // TSharedPtr<FeatureLua> luaFeature = std::make_shared<FeatureLua>();
-    
+
     SessionCtorArgs sessionArgs;
     sessionArgs.DataDirectory = "./Data";
     sessionArgs.ConfigName = "DefaultSession";
@@ -112,10 +116,11 @@ void InitSession()
     sessionArgs.FeatureSetArgs.Features.push_back(navMeshFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(physicsFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(steeringFeature);
+    sessionArgs.FeatureSetArgs.Features.push_back(unitFeature);
     // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
 
-    GSession = new Session(sessionArgs);
+    GSession = Session::Create(sessionArgs);
 
     GSession->Initialize();
 

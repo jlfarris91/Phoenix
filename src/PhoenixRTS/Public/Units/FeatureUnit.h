@@ -19,6 +19,12 @@ namespace Phoenix::RTS
         T Regen = {};
     };
 
+    struct UnitComponent : ECS::IComponent
+    {
+        PHX_ECS_DECLARE_COMPONENT_BEGIN(UnitComponent)
+        PHX_ECS_DECLARE_COMPONENT_END()
+    };
+
     struct VitalsComponent : ECS::IComponent
     {
         PHX_ECS_DECLARE_COMPONENT(VitalsComponent)
@@ -45,11 +51,12 @@ namespace Phoenix::RTS
         Distance MaxRange = 16;
     };
 
-    class PHOENIX_RTS_API FeatureUnit : public IFeature
+    class FeatureUnit : public IFeature
     {
     public:
 
         PHX_FEATURE_BEGIN(FeatureUnit)
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
         PHX_FEATURE_END()
 
         static Unit SpawnUnit(
@@ -58,7 +65,7 @@ namespace Phoenix::RTS
             uint32 owner,
             const Vec2& pos,
             Angle facing,
-            const SpawnUnitArgs& args);
+            const SpawnUnitArgs& args = {});
 
         static uint32 SpawnUnits(
             WorldRef world,
@@ -67,10 +74,14 @@ namespace Phoenix::RTS
             uint32 owner,
             const Vec2& pos,
             Angle facing,
-            const SpawnUnitArgs& args);
+            const SpawnUnitArgs& args = {});
 
         // Returns the current health of a unit.
         static Value GetHealth(WorldConstRef world, Unit unit);
-        
+
+
+    protected:
+
+        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
     };
 }

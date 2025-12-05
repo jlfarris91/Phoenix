@@ -2,95 +2,14 @@
 #pragma once
 
 #include <execution>
-#include <nlohmann/json.hpp>
 
 #include "DLLExport.h"
-#include "Actions.h"
-#include "Optional.h"
-#include "Platform.h"
+#include "LDSValue.h"
 #include "Containers/Array.h"
 #include "Containers/FixedArray.h"
 
 namespace Phoenix::LDS
 {
-    enum class ELDSValueType : uint8
-    {
-        Unknown,
-
-        // Pod types
-        Bool,
-        Int32,
-        UInt32,
-        Name,
-        Value,
-        Distance,
-        Degrees,
-        Speed,
-        Time,
-
-        // Localized string
-        Text,
-
-        // Asset reference
-        Asset,
-
-        // Special types
-        Array,
-        Object,     // A full object definition.
-        ObjectRef,  // A reference to another object in the catalog.
-        Expression  // A reference to code.
-    };
-
-    PHOENIX_LDS_API bool TryParse(const PHXString& string, ELDSValueType& outEnum);
-
-    PHOENIX_LDS_API union LDSValue
-    {
-        int32 Int32;
-        uint32 UInt32;
-        FName Name;
-        Value Value;
-        Distance Distance;
-        Angle Degrees;
-        Speed Speed;
-        Time Time;
-        bool Bool;
-    };
-
-    PHOENIX_LDS_API struct LDSTypedValue
-    {
-        constexpr LDSTypedValue() = default;
-
-        constexpr LDSTypedValue(ELDSValueType type)
-            : Value({ .UInt32 = (uint32)type })
-            , Type(type)
-        {
-        }
-
-        constexpr LDSTypedValue(const LDSValue& value, ELDSValueType type)
-            : Value(value)
-            , Type(type)
-        {
-        }
-
-#define DEFINE_LDSTypedValue_CTOR(type, enumType) \
-        constexpr LDSTypedValue(type value) \
-            : Value{ .enumType = value } \
-            , Type(ELDSValueType::enumType) {}
-
-        DEFINE_LDSTypedValue_CTOR(int32, Int32)
-        DEFINE_LDSTypedValue_CTOR(uint32, UInt32)
-        DEFINE_LDSTypedValue_CTOR(FName, Name)
-        DEFINE_LDSTypedValue_CTOR(Value, Value)
-        // DEFINE_LDSTypedValue_CTOR(Distance, Distance);
-        DEFINE_LDSTypedValue_CTOR(Angle, Degrees)
-        DEFINE_LDSTypedValue_CTOR(Speed, Speed)
-
-#undef DEFINE_LDSTypedValue_CTOR
-
-        LDSValue Value = {};
-        ELDSValueType Type = ELDSValueType::Unknown;
-    };
-
     PHOENIX_LDS_API class LDSRecord
     {
     public:
@@ -199,13 +118,13 @@ namespace Phoenix::LDS
         LDSRecord* FindRecord(hash64_t recordId, hash64_t mask = -1, const LDSObjectRun& hint = {})
         {
             uint32 index = FindIndexOfRecord(recordId, mask, hint);
-            return Records.IsValidIndex(index) ? Records[index] : nullptr;
+            return Records.IsValidIndex(index) ? &Records[index] : nullptr;
         }
 
         const LDSRecord* FindRecord(hash64_t recordId, hash64_t mask = -1, const LDSObjectRun& hint = {}) const
         {
             uint32 index = FindIndexOfRecord(recordId, mask, hint);
-            return Records.IsValidIndex(index) ? Records[index] : nullptr;
+            return Records.IsValidIndex(index) ? &Records[index] : nullptr;
         }
 
         LDSRecord* FindRecord(const FName& objectId, const FName& propertyId, const LDSObjectRun& hint = {})
@@ -232,22 +151,21 @@ namespace Phoenix::LDS
         void ForEachRecord(const FName& objectId, const TCallback& callback, const LDSObjectRun& hint = {}) const
         {
             hash64_t recordId = ToRecordId(objectId);
-            uint32 sortedLength = SortedLength.GetValue(0);
 
             // Iterate the sorted range first
-            if (sortedLength != 0)
+            if (SortedNum != 0)
             {
                 uint32 index = FindIndexOfRecordInSortedRange(recordId, ObjectMask, hint);
 
                 // Iterate through the sorted records until we hit a new object id.
-                for (; index < sortedLength && Records[index].GetObjectId() == objectId; ++index)
+                for (; index < SortedNum && Records[index].GetObjectId() == objectId; ++index)
                 {
                     callback(Records[index]);
                 }
             }
 
             // Then iterate the unsorted range in case any new records were added since the last sort.
-            auto unsortedIter = Records.begin() + sortedLength;
+            auto unsortedIter = Records.begin() + SortedNum;
             for (; unsortedIter != Records.end(); ++unsortedIter)
             {
                 if ((unsortedIter->GetId() & ObjectMask) == recordId)
@@ -259,14 +177,14 @@ namespace Phoenix::LDS
 
         ELDSValueType GetTypeRecordValueType(const FName& objectId, const FName& propertyId, const LDSObjectRun& hint = {}) const
         {
-            auto record = FindRecord(objectId, propertyId, -1, hint);
+            auto record = FindRecord(objectId, propertyId, hint);
             return record ? record->GetValueType() : ELDSValueType::Unknown;
         }
 
         template <class T>
         const T& GetRecordValueAs(const FName& objectId, const FName& propertyId, const T& defaultValue = {}, const LDSObjectRun& hint = {})
         {
-            auto record = FindRecord(objectId, propertyId, -1, hint);
+            auto record = FindRecord(objectId, propertyId, hint);
             return record ? record->GetValueAs<T>() : defaultValue;
         }
 
@@ -283,24 +201,30 @@ namespace Phoenix::LDS
                 Records.end(),
                 RecordSort());
 
-            uint32 i = 0;
-            for (; i < Records.Num(); ++i)
-            {
-                if (!Records[i].IsValid())
-                {
-                    break;
-                }
-            }
+            auto firstInvalidRecord = std::find_if(
+                Records.begin(),
+                Records.end(),
+                InvalidRecordIdPred());
 
-            Records.SetNum(i);
-            SortedLength = i;
+            uint32 sortedNum = (uint32)(firstInvalidRecord - Records.begin());
+
+            Records.SetNum(sortedNum);
+            SortedNum = sortedNum;
         }
 
     private:
 
+        struct InvalidRecordIdPred
+        {
+            bool operator()(const LDSRecord& record) const
+            {
+                return !record.IsValid();
+            }
+        };
+
         struct RecordSort
         {
-            constexpr bool operator<(const LDSRecord& a, const LDSRecord& b) const
+            constexpr bool operator()(const LDSRecord& a, const LDSRecord& b) const
             {
                 // Sort invalid records to the back.
                 if (!a.IsValid())
@@ -318,7 +242,7 @@ namespace Phoenix::LDS
         struct SortedMaskedRecordIdPred
         {
             hash64_t Mask;
-            constexpr bool operator<(const LDSRecord& record, hash64_t id) const
+            constexpr bool operator()(const LDSRecord& record, hash64_t id) const
             {
                 return (record.GetId() & Mask) < id;
             }
@@ -326,16 +250,22 @@ namespace Phoenix::LDS
 
         struct UnsortedMaskedRecordIdPred
         {
+            hash64_t RecordId;
             hash64_t Mask;
-            constexpr bool operator==(const LDSRecord& record, hash64_t id) const
+            constexpr bool operator()(const LDSRecord& record) const
             {
-                return (record.GetId() & Mask) == id;
+                return (record.GetId() & Mask) == RecordId;
             }
         };
 
         // Find the index of a record by searching the sorted range followed by the unsorted range.
-        uint32 FindIndexOfRecord(hash64_t recordId, const LDSObjectRun& run, hash64_t mask)
+        uint32 FindIndexOfRecord(hash64_t recordId, hash64_t mask, const LDSObjectRun& run) const
         {
+            if (Records.IsEmpty())
+            {
+                return Index<uint32>::None;
+            }
+
             // First try to search the sorted range since it will be O(log N).
             uint32 index = FindIndexOfRecordInSortedRange(recordId, mask, run);
             if (index != Index<uint32>::None)
@@ -349,17 +279,15 @@ namespace Phoenix::LDS
 
         // Find the index of a record in the sorted range with an option subset defined by run.
         // This operation is O(log N).
-        uint32 FindIndexOfRecordInSortedRange(hash64_t recordId, hash64_t mask, const LDSObjectRun& run)
+        uint32 FindIndexOfRecordInSortedRange(hash64_t recordId, hash64_t mask, const LDSObjectRun& run) const
         {
-            if (!SortedLength.IsSet())
+            if (SortedNum == 0)
             {
                 return Index<uint32>::None;
             }
 
-            uint32 sortedLength = SortedLength.Get();
-
             // If a valid run was specified, try to use that because it should greatly reduce the search area.
-            if (run.Start < run.End & run.End <= sortedLength)
+            if (run.Start < run.End && run.End <= SortedNum)
             {
                 // First search in the sorted range defined by the run.
                 uint32 index = FindIndexOfRecordInSortedRun(recordId, mask, run);
@@ -377,7 +305,7 @@ namespace Phoenix::LDS
                 }
 
                 // Then check the sorted range after the run.
-                LDSObjectRun afterRun = { run.End, sortedLength };
+                LDSObjectRun afterRun = { run.End, SortedNum };
                 return FindIndexOfRecordInSortedRun(recordId, mask, afterRun);
             }
 
@@ -386,9 +314,9 @@ namespace Phoenix::LDS
         }
 
         // Search a subset of the sorted range. This operation is O(log N).
-        uint32 FindIndexOfRecordInSortedRun(hash64_t recordId, hash64_t mask, const LDSObjectRun& run)
+        uint32 FindIndexOfRecordInSortedRun(hash64_t recordId, hash64_t mask, const LDSObjectRun& run) const
         {
-            if (run.Start >= run.End || run.End >= SortedLength.Get())
+            if (run.Start >= run.End || run.End >= SortedNum)
             {
                 // Invalid range.
                 return Index<uint32>::None;
@@ -399,63 +327,67 @@ namespace Phoenix::LDS
         }
 
         // Search the entire sorted range. This operation is O(log N).
-        uint32 FindIndexOfRecordInSortedRange(hash64_t recordId, hash64_t mask)
+        uint32 FindIndexOfRecordInSortedRange(hash64_t recordId, hash64_t mask) const
         {
-            uint32 sortedLength = SortedLength.Get();
-            if (sortedLength == 0)
+            uint32 sortedNum = SortedNum;
+            if (sortedNum == 0)
             {
                 // Not sorted yet so there's nothing to search.
                 return Index<uint32>::None;
             }
             auto begin = Records.begin();
-            auto end = begin + sortedLength;
+            auto end = begin + sortedNum;
             return FindIndexOfRecordInSortedRange(begin, end, recordId, mask);
         }
 
         // Search a subset of the sorted range. This operation is O(log N).
         uint32 FindIndexOfRecordInSortedRange(
-            const decltype(TContainer::begin())& begin,
-            const decltype(TContainer::end())& end,
+            const auto& begin,
+            const auto& end,
             hash64_t recordId,
-            hash64_t mask)
+            hash64_t mask) const
         {
+            if (begin == end)
+            {
+                return Index<uint32>::None;
+            }
+
             auto iter = std::lower_bound(
                 begin,
                 end,
                 recordId & mask,
-                SortedMaskedRecordIdPred { mask });
+                SortedMaskedRecordIdPred{ mask });
 
             // We did not find the record within the sorted range.
-            if (iter == end)
+            if (iter == end || (iter->GetId() & mask) != (recordId & mask))
             {
                 return Index<uint32>::None;
             }
 
             // We found the record within the sorted range. Return the absolute index.
-            return iter - Records.begin();
+            return (uint32)(iter - Records.begin());
         }
 
         // Search the entire unsorted range. This operation is O(N).
-        uint32 FindIndexOfRecordInUnsortedRange(hash64_t recordId, hash64_t mask)
+        uint32 FindIndexOfRecordInUnsortedRange(hash64_t recordId, hash64_t mask) const
         {
-            auto iter = std::find(
-                Records.begin() + SortedLength.GetValue(0),
+            auto iter = std::find_if(
+                Records.begin() + SortedNum,
                 Records.end(),
-                recordId & mask,
-                UnsortedMaskedRecordIdPred{mask});
+                UnsortedMaskedRecordIdPred{recordId & mask, mask});
 
             // We did not find the record within the unsorted range.
-            if (iter == Records.end())
+            if (iter == Records.end() || (iter->GetId() & mask) != (recordId & mask))
             {
                 return Index<uint32>::None;
             }
 
             // We found the record within the unsorted range. Return the absolute index.
-            return iter - Records.begin();
+            return (uint32)(iter - Records.begin());
         }
         
         TContainer Records;
-        TOptional<uint32> SortedLength;
+        uint32 SortedNum = 0;
     };
 
     template <size_t N>
