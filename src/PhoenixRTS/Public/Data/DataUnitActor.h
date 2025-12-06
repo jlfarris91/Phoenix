@@ -13,7 +13,7 @@ namespace Phoenix::RTS::Data
         FName Asset;
         Color Tint;
 
-        static bool Read(const LDS::LDSReadObjectArgs& context, UnitActor& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, UnitActor& outItem);
     };
 
     struct PHOENIX_RTS_API UnitActorPtr : LDS::TLDSObjectPtr<UnitActor>

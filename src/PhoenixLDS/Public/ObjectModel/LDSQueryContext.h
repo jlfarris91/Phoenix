@@ -48,7 +48,7 @@ namespace Phoenix::LDS
     struct PHOENIX_LDS_API LDSReadObjectArgs
     {
         LDSReadObjectArgs(
-            const TSharedPtr<ILDSQueryContext>& queryContext,
+            const TSharedPtr<const ILDSQueryContext>& queryContext,
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags)
             : QueryContext(queryContext)
@@ -57,7 +57,7 @@ namespace Phoenix::LDS
         {
         }
 
-        TSharedPtr<ILDSQueryContext> GetQueryContext() const
+        TSharedPtr<const ILDSQueryContext> GetQueryContext() const
         {
             return QueryContext;
         }
@@ -79,7 +79,7 @@ namespace Phoenix::LDS
         }
 
     private:
-        TSharedPtr<ILDSQueryContext> QueryContext;
+        TSharedPtr<const ILDSQueryContext> QueryContext;
         LDSRecordPath Path;
         ELDSRecordQueryFlags Flags = ELDSRecordQueryFlags::None;
     };

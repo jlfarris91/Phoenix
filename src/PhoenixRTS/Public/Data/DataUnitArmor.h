@@ -12,7 +12,7 @@ namespace Phoenix::RTS::Data
         Value Value;
         Icon Icon;
 
-        static bool Read(const LDS::LDSReadObjectArgs& context, UnitArmor& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, UnitArmor& outItem);
     };
 
     struct PHOENIX_RTS_API UnitArmorPtr : LDS::TLDSObjectPtr<UnitArmor>

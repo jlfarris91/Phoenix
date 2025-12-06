@@ -68,6 +68,12 @@ namespace Phoenix::LDS
         // Gets the static catalog for a given world.
         TSharedPtr<const Catalog> GetStaticWorldCatalog(WorldConstRef world) const;
 
+        TSharedPtr<const ILDSQueryContext> GetSessionQueryContext() const;
+        TSharedPtr<const ILDSQueryContext> GetWorldQueryContext(WorldConstRef world) const;
+
+        static TSharedPtr<const ILDSQueryContext> StaticGetSessionQueryContext(SessionConstRef session);
+        static TSharedPtr<const ILDSQueryContext> StaticGetWorldQueryContext(WorldConstRef world);
+
         static const LDSRecord* QueryObjectRecord(
             WorldConstRef world,
             const LDSRecordPath& path,
@@ -85,10 +91,10 @@ namespace Phoenix::LDS
         void Initialize() override;
         void Shutdown() override;
 
-        static bool LoadCatalog(const PHXString& catalogAbsolutePath, Catalog& catalog);
-
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
+
+        static bool LoadCatalog(const PHXString& catalogAbsolutePath, Catalog& catalog);
 
         // A catalog that holds static LDS data for the session.
         // These catalogs are stored on the heap.
@@ -97,5 +103,9 @@ namespace Phoenix::LDS
         // Catalogs holding static LDS data for each world.
         // These catalogs are stored on the heap.
         TMap<FName, TSharedPtr<Catalog>> StaticWorldCatalogs;
+
+        TSharedPtr<ILDSQueryContext> SessionQueryContext;
+
+        TMap<FName, TSharedPtr<ILDSQueryContext>> WorldQueryContexts;
     };
 }

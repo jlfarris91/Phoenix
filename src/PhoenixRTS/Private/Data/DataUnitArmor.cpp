@@ -3,13 +3,15 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool UnitArmor::Read(const LDS::LDSReadObjectArgs& context, UnitArmor& outItem)
+bool UnitArmor::Read(const LDS::LDSReadObjectArgs& args, UnitArmor& outItem)
 {
+    const LDS::ILDSQueryContext& queryContext = *args.GetQueryContext();
+
     bool success = true;
 
-    UnitArmorPtr dataPtr(context.Path, context.Flags);
-    success = dataPtr.Value.TryGetValue(context, outItem.Value) && success;
-    success = dataPtr.Icon.TryReadObject(context, outItem.Icon) && success;
+    UnitArmorPtr dataPtr = args.CreatePtr<UnitArmorPtr>();
+    success = dataPtr.Value.TryGetValue(queryContext, outItem.Value) && success;
+    success = dataPtr.Icon.TryReadObject(queryContext, outItem.Icon) && success;
 
     return success;
 }

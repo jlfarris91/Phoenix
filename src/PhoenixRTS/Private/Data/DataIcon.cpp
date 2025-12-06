@@ -7,12 +7,12 @@ bool Icon::Read(const LDS::LDSReadObjectArgs& args, Icon& outItem)
 {
     bool success = true;
 
-    LDSScopedObjectQuery scope = (args.GetQueryContext(), args.GetRecordPath());
+    const LDS::ILDSQueryContext& queryContext = *args.GetQueryContext();
 
     IconPtr dataPtr = args.CreatePtr<IconPtr>();
-    success = dataPtr.Asset.TryGetValue(outItem.Asset) && success;
-    success = dataPtr.DisplayName.TryGetValue(args, outItem.DisplayName) && success;
-    success = dataPtr.Tooltip.TryReadObject(args, outItem.Tooltip) && success;
+    success = dataPtr.Asset.TryGetValue(queryContext, outItem.Asset) && success;
+    success = dataPtr.DisplayName.TryGetValue(queryContext, outItem.DisplayName) && success;
+    success = dataPtr.Tooltip.TryReadObject(queryContext, outItem.Tooltip) && success;
 
     return success;
 }

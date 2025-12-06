@@ -115,5 +115,12 @@ namespace Phoenix
     using SessionConstPtr = const Session*;
     using SessionRef = Session&;
     using SessionConstRef = const Session&;
+
+    template <class T>
+    TSharedPtr<T> GetFeature(WorldConstRef world)
+    {
+        TSharedPtr<Session> session = world.GetSession().lock();
+        return session ? session->GetFeature<T>() : TSharedPtr<T>();
+    }
 }
 

@@ -12,7 +12,7 @@ namespace Phoenix::RTS::Data
         TExpressionPtr<bool> Expression;
         FName Error;
 
-        static bool Read(const LDS::LDSReadObjectArgs& context, Validator& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, Validator& outItem);
     };
 
     struct PHOENIX_RTS_API ValidatorPtr : LDS::TLDSObjectPtr<Validator>

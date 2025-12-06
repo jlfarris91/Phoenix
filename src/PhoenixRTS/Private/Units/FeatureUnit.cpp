@@ -28,7 +28,7 @@ Unit FeatureUnit::SpawnUnit(
     if (entityId == EntityId::Invalid)
         return {};
 
-    LDSQueryContext context = LDSQueryContext::Create(world);
+    const ILDSQueryContext& queryContext = *FeatureLDS::StaticGetWorldQueryContext(world);
 
     Data::UnitPtr dataPtr(unitData);
 
@@ -37,14 +37,14 @@ Unit FeatureUnit::SpawnUnit(
     transformComp->Transform.Rotation = facing;
 
     BodyComponent* bodyComp = FeatureECS::GetComponent<BodyComponent>(world, entityId);
-    bodyComp->CollisionMask = (uint16)dataPtr.CollisionFlags.GetValue(context, Data::ECollisionFlags::None);
-    bodyComp->Radius = dataPtr.Placement.InnerRadius.GetValue(context);
+    bodyComp->CollisionMask = (uint16)dataPtr.CollisionFlags.GetValue(queryContext, Data::ECollisionFlags::None);
+    bodyComp->Radius = dataPtr.Placement.InnerRadius.GetValue(queryContext);
 
     // TODO (jfarris): take from a body component data object? 
     bodyComp->InvMass = OneDivBy<Value>(1.0f);
     bodyComp->LinearDamping = 10.0f;
 
-    Color color = Color(dataPtr.Actor.ResolveObject(context).Tint.GetValue(context, Color::White));
+    Color color = Color(dataPtr.Actor.ResolveObject(queryContext).Tint.GetValue(queryContext, Color::White));
     FeatureECS::SetBlackboardValue(world, entityId, "Color"_n, color);
 
     SteeringComponent* steeringComp = FeatureECS::GetComponent<SteeringComponent>(world, entityId);

@@ -3,7 +3,7 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool Tag::Read(const LDS::LDSReadObjectArgs& context, Tag& outItem)
+bool Tag::Read(const LDS::LDSReadObjectArgs& args, Tag& outItem)
 {
     bool success = true;
     return success;

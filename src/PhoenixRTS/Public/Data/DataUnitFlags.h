@@ -8,7 +8,7 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API UnitFlags
     {
-        static bool Read(const LDS::LDSReadObjectArgs& context, UnitFlags& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, UnitFlags& outItem);
     };
 
     struct PHOENIX_RTS_API UnitFlagsPtr : LDS::TLDSObjectPtr<UnitFlags>

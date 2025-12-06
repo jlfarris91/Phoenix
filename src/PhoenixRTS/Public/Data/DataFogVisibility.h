@@ -8,7 +8,7 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API FogVisibility
     {
-        static bool Read(const LDS::LDSReadObjectArgs& context, FogVisibility& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, FogVisibility& outItem);
     };
 
     struct PHOENIX_RTS_API FogVisibilityPtr : LDS::TLDSObjectPtr<FogVisibility>

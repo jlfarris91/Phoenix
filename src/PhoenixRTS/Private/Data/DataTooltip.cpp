@@ -3,35 +3,19 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool TooltipItem::Read(const LDS::LDSReadObjectArgs& args, TooltipItem& outItem)
-{
-    bool success = true;
-    TooltipItemPtr dataPtr = args.CreatePtr<TooltipItemPtr>();
-    success = dataPtr.Label.TryGetValue(outItem.Label) && success;
-    success = dataPtr.Value.TryGetValue(outItem.Value) && success;
-    success = dataPtr.Validator.TryResolveObject(args, outItem.Validator) && success;
-    return success;
-}
-
-TooltipItemPtr::TooltipItemPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
-    : TLDSObjectPtr(path, flags)
-    , Label(TLDSObjectPtr::Value<FName>("label"))
-    , Value(TLDSObjectPtr::Value<FName>("value"))
-    , Validator(ObjectRef<Data::Validator>("validator"))
-{
-}
-
 bool Tooltip::Read(const LDS::LDSReadObjectArgs& args, Tooltip& outItem)
 {
+    const LDS::ILDSQueryContext& queryContext = *args.GetQueryContext();
+
     bool success = true;
 
     TooltipPtr dataPtr = args.CreatePtr<TooltipPtr>();
-    success = dataPtr.Title.TryGetValue(args.GetQueryContext(), outItem.Title) && success;
-    success = dataPtr.SubTitle.TryGetValue(args, outItem.SubTitle) && success;
-    success = dataPtr.Body.TryGetValue(args, outItem.Body) && success;
+    success = dataPtr.Title.TryGetValue(queryContext, outItem.Title) && success;
+    success = dataPtr.SubTitle.TryGetValue(queryContext, outItem.SubTitle) && success;
+    success = dataPtr.Body.TryGetValue(queryContext, outItem.Body) && success;
 
     outItem.Items.Reset();
-    dataPtr.Items.ReadObjects(args, outItem.Items);
+    dataPtr.Items.ReadObjects(queryContext, outItem.Items);
 
     return success;
 }

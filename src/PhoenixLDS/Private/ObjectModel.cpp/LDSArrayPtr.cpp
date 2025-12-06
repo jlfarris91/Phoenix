@@ -1,7 +1,7 @@
 
 #include "ObjectModel/LDSArrayPtr.h"
 
-#include "ObjectModel/LDSQueryContext.h"
+#include "ObjectModel/LDSQueryContext.inl"
 
 using namespace Phoenix::LDS;
 

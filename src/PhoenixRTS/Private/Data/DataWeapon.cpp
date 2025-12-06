@@ -3,7 +3,7 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool Weapon::Read(const LDS::LDSReadObjectArgs& context, Weapon& outItem)
+bool Weapon::Read(const LDS::LDSReadObjectArgs& args, Weapon& outItem)
 {
     bool success = true;
     return success;

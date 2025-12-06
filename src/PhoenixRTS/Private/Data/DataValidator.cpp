@@ -8,13 +8,15 @@ Phoenix::RTS::Data::ValidatorPtr::ValidatorPtr(const LDS::LDSRecordPath& path, L
 {
 }
 
-bool Phoenix::RTS::Data::Validator::Read(const LDS::LDSReadObjectArgs& context, Validator& outItem)
+bool Phoenix::RTS::Data::Validator::Read(const LDS::LDSReadObjectArgs& args, Validator& outItem)
 {
+    const LDS::ILDSQueryContext& queryContext = *args.GetQueryContext();
+
     bool success = true;
 
-    ValidatorPtr dataPtr(context.Path, context.Flags);
-    success = dataPtr.Expression.TryResolveObject(context, outItem.Expression) && success;
-    success = dataPtr.Error.TryGetValue(context, outItem.Error) && success;
+    ValidatorPtr dataPtr = args.CreatePtr<ValidatorPtr>();
+    success = dataPtr.Expression.TryResolveObject(queryContext, outItem.Expression) && success;
+    success = dataPtr.Error.TryGetValue(queryContext, outItem.Error) && success;
 
     return success;
 }
