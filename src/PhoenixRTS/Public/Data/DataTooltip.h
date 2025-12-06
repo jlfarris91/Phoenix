@@ -8,7 +8,7 @@
 
 namespace Phoenix::LDS
 {
-    struct LDSReadObjectContext;
+    struct LDSReadObjectArgs;
 }
 
 namespace Phoenix::RTS::Data
@@ -21,7 +21,7 @@ namespace Phoenix::RTS::Data
         FName Value;
         ValidatorPtr Validator;
 
-        static bool Read(const LDS::LDSReadObjectContext& context, TooltipItem& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, TooltipItem& outItem);
     };
 
     struct PHOENIX_RTS_API TooltipItemPtr : LDS::TLDSObjectPtr<TooltipItem>
@@ -40,7 +40,7 @@ namespace Phoenix::RTS::Data
         FName Body;
         TArray2<TooltipItem> Items;
 
-        static bool Read(const LDS::LDSReadObjectContext& context, Tooltip& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, Tooltip& outItem);
     };
 
     struct PHOENIX_RTS_API TooltipPtr : LDS::TLDSObjectPtr<Tooltip>

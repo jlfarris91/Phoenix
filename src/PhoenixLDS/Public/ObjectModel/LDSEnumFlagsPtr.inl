@@ -9,13 +9,13 @@ namespace Phoenix::LDS
     template <class T>
     T LDSEnumFlagsPtr::GetValue(const ILDSQueryContext& context, const T& defaultValue) const
     {
-        return context.QueryObjectRecordValueAs<T>(Path, defaultValue, Flags);
+        return context.QueryRecordValueAs<T>(Path, defaultValue, Flags);
     }
 
     template <class T>
     bool LDSEnumFlagsPtr::TryGetValue(const ILDSQueryContext& context, T& outValue) const
     {
-        return context.TryQueryObjectRecordValueAs<T>(Path, outValue, Flags);
+        return context.TryQueryRecordValueAs<T>(Path, outValue, Flags);
     }
 
     template <class T, class U>

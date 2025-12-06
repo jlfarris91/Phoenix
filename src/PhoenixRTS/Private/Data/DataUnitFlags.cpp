@@ -3,7 +3,7 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool UnitFlags::Read(const LDS::LDSReadObjectContext& context, UnitFlags& outItem)
+bool UnitFlags::Read(const LDS::LDSReadObjectArgs& context, UnitFlags& outItem)
 {
     bool success = true;
     return success;

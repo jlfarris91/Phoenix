@@ -7,7 +7,7 @@ namespace Phoenix::LDS
     template <class T>
     T LDSRecordPtr::GetRecordValueAs(const ILDSQueryContext& context, const T& defaultValue) const
     {
-        return context.QueryObjectRecordValueAs<T>(Path, defaultValue, Flags);
+        return context.QueryRecordValueAs<T>(Path, defaultValue, Flags);
     }
 
     template <class T>

@@ -8,7 +8,7 @@ Phoenix::RTS::Data::ValidatorPtr::ValidatorPtr(const LDS::LDSRecordPath& path, L
 {
 }
 
-bool Phoenix::RTS::Data::Validator::Read(const LDS::LDSReadObjectContext& context, Validator& outItem)
+bool Phoenix::RTS::Data::Validator::Read(const LDS::LDSReadObjectArgs& context, Validator& outItem)
 {
     bool success = true;
 

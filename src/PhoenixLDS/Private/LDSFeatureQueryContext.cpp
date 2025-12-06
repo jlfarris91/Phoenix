@@ -42,10 +42,34 @@ LDSFeatureQueryContext LDSFeatureQueryContext::Create(WorldConstRef world)
     return {}; 
 }
 
+LDSFeatureQueryContext LDSFeatureQueryContext::WithMode(ELDSCatalogRecordStore mode) const
+{
+    LDSFeatureQueryContext context = *this;
+    context.Mode = mode;
+    return context;
+}
+
+LDSFeatureQueryContext LDSFeatureQueryContext::WithFlags(ELDSFeatureRecordQueryFlags flags) const
+{
+    LDSFeatureQueryContext context = *this;
+    context.FeatureQueryFlags = flags;
+    return context;
+}
+
+const LDSRecord* LDSFeatureQueryContext::QueryRecord(const LDSRecordPath& path, ELDSRecordQueryFlags flags) const
+{
+    switch (Mode)
+    {
+        case ELDSCatalogRecordStore::Object:    return QueryObjectRecord(path, flags);
+        case ELDSCatalogRecordStore::Type:      return QueryTypeRecord(path, flags);
+    }
+    return nullptr;
+}
+
 const LDSRecord* LDSFeatureQueryContext::QueryObjectRecord(const LDSRecordPath& path, ELDSRecordQueryFlags flags) const
 {
     // 1. Check the dynamic world catalog
-    if (WorldDynamicCatalog && HasNoneFlags(flags, ELDSRecordQueryFlags::SessionOnly, ELDSRecordQueryFlags::StaticOnly))
+    if (WorldDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
     {
         if (auto record = WorldDynamicCatalog->FindObjectRecord(path.ObjectId, path.Path))
         {
@@ -54,7 +78,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryObjectRecord(const LDSRecordPath& 
     }
 
     // 2. Check the static world catalog
-    if (WorldStaticCatalog && HasNoneFlags(flags, ELDSRecordQueryFlags::SessionOnly))
+    if (WorldStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
     {
         if (auto record = WorldStaticCatalog->FindObjectRecord(path.ObjectId, path.Path))
         {
@@ -63,7 +87,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryObjectRecord(const LDSRecordPath& 
     }
 
     // 3. Check the dynamic session catalog
-    if (SessionDynamicCatalog && HasNoneFlags(flags, ELDSRecordQueryFlags::StaticOnly))
+    if (SessionDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
     {
         if (auto record = SessionDynamicCatalog->FindObjectRecord(path.ObjectId, path.Path))
         {
@@ -72,7 +96,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryObjectRecord(const LDSRecordPath& 
     }
 
     // 4. Check the static session catalog
-    if (SessionStaticCatalog)
+    if (SessionStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
     {
         if (auto record = SessionStaticCatalog->FindObjectRecord(path.ObjectId, path.Path))
         {
@@ -97,7 +121,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryObjectRecord(const LDSRecordPath& 
 const LDSRecord* LDSFeatureQueryContext::QueryTypeRecord(const LDSRecordPath& path, ELDSRecordQueryFlags flags) const
 {
     // 1. Check the dynamic world catalog
-    if (WorldDynamicCatalog && HasNoneFlags(flags, ELDSRecordQueryFlags::SessionOnly, ELDSRecordQueryFlags::StaticOnly))
+    if (WorldDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
     {
         if (auto record = WorldDynamicCatalog->FindTypeRecord(path.ObjectId, path.Path))
         {
@@ -106,7 +130,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryTypeRecord(const LDSRecordPath& pa
     }
 
     // 2. Check the static world catalog
-    if (WorldStaticCatalog && HasNoneFlags(flags, ELDSRecordQueryFlags::SessionOnly))
+    if (WorldStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
     {
         if (auto record = WorldStaticCatalog->FindTypeRecord(path.ObjectId, path.Path))
         {
@@ -115,7 +139,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryTypeRecord(const LDSRecordPath& pa
     }
 
     // 3. Check the dynamic session catalog
-    if (SessionDynamicCatalog && HasNoneFlags(flags, ELDSRecordQueryFlags::StaticOnly))
+    if (SessionDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
     {
         if (auto record = SessionDynamicCatalog->FindTypeRecord(path.ObjectId, path.Path))
         {
@@ -124,7 +148,7 @@ const LDSRecord* LDSFeatureQueryContext::QueryTypeRecord(const LDSRecordPath& pa
     }
 
     // 4. Check the static session catalog
-    if (SessionStaticCatalog)
+    if (SessionStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
     {
         if (auto record = SessionStaticCatalog->FindTypeRecord(path.ObjectId, path.Path))
         {

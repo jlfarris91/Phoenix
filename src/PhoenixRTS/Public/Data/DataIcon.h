@@ -2,7 +2,7 @@
 #pragma once
 
 #include "DLLExport.h"
-#include "ObjectModel/LDSObjectModel.h"
+#include "LDSObjectModel.h"
 #include "Name.h"
 #include "DataTooltip.h"
 
@@ -14,7 +14,7 @@ namespace Phoenix::RTS::Data
         FName DisplayName;
         Tooltip Tooltip;
 
-        static bool Read(const LDS::LDSReadObjectContext& context, Icon& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& args, Icon& outItem);
     };
 
     struct PHOENIX_RTS_API IconPtr : LDS::TLDSObjectPtr<Icon>

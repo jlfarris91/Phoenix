@@ -6,6 +6,12 @@
 
 namespace Phoenix::LDS
 {
+    enum class ELDSCatalogRecordStore : uint8
+    {
+        Object,
+        Type
+    };
+
     template <class TObjectStore, class TTypeStore>
     PHOENIX_LDS_API struct TLDSCatalog
     {
@@ -22,7 +28,7 @@ namespace Phoenix::LDS
         LDSRecord* FindObjectRecord(
             const FName& objectId,
             const FName& propertyId,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
         {
             FName currObjectId = objectId;
             while (currObjectId != FName::None)
@@ -31,7 +37,7 @@ namespace Phoenix::LDS
                 {
                     return record;
                 }
-                if (HasNoneFlags(flags, ELDSObjectRecordQueryFlags::Exact))
+                if (HasNoneFlags(flags, ELDSRecordQueryFlags::Exact))
                 {
                     return nullptr;
                 }
@@ -42,7 +48,7 @@ namespace Phoenix::LDS
                 }
                 currObjectId = nextObjectId;
             }
-            if (HasNoneFlags(flags, ELDSObjectRecordQueryFlags::IgnoreDefaultValue))
+            if (HasNoneFlags(flags, ELDSRecordQueryFlags::IgnoreDefaultValue))
             {
                 return FindTypeRecord(currObjectId, propertyId + "/default");
             }
@@ -52,7 +58,7 @@ namespace Phoenix::LDS
         const LDSRecord* FindObjectRecord(
             const FName& objectId,
             const FName& propertyId,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None) const
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const
         {
             return const_cast<TLDSCatalog*>(this)->FindObjectRecord(objectId, propertyId, flags);
         }
@@ -98,7 +104,7 @@ namespace Phoenix::LDS
         LDSRecord* FindTypeRecord(
             const FName& typeId,
             const FName& propertyId,
-            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
         {
             FName currTypeId = typeId;
             while (currTypeId != FName::None)
@@ -107,7 +113,7 @@ namespace Phoenix::LDS
                 {
                     return record;
                 }
-                if (HasAnyFlags(flags, ELDSTypeRecordQueryFlags::Exact))
+                if (HasAnyFlags(flags, ELDSRecordQueryFlags::Exact))
                 {
                     break;
                 }
@@ -119,7 +125,7 @@ namespace Phoenix::LDS
         const LDSRecord* FindTypeRecord(
             const FName& typeId,
             const FName& propertyId,
-            ELDSTypeRecordQueryFlags flags = ELDSTypeRecordQueryFlags::None) const
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const
         {
             return const_cast<TLDSCatalog*>(this)->FindTypeRecord(typeId, propertyId, flags);
         }
@@ -127,13 +133,13 @@ namespace Phoenix::LDS
         // Returns the first matching type record found of a base type of a given object.
         LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId)
         {
-            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::None);
+            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSRecordQueryFlags::None);
         }
 
         // Returns the first matching type record found of a base type of a given object.
         const LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId) const
         {
-            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSTypeRecordQueryFlags::None);
+            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSRecordQueryFlags::None);
         }
 
         bool HasType(const FName& typeId) const
@@ -261,6 +267,16 @@ namespace Phoenix::LDS
                 }
             }
             return false;
+        }
+        
+        LDSObjectRun FindSortedRecordRun(const FName& objectId, ELDSCatalogRecordStore store) const
+        {
+            switch (store)
+            {
+                case ELDSCatalogRecordStore::Object: return Objects.FindSortedRecordRun(objectId);
+                case ELDSCatalogRecordStore::Type:   return Types.FindSortedRecordRun(objectId);
+            }
+            return {};
         }
 
         TObjectStore Objects;

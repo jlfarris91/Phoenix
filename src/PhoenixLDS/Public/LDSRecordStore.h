@@ -193,6 +193,23 @@ namespace Phoenix::LDS
             return (uint64)(uint32)objectId << 32 | (uint32)propertyId;
         }
 
+        LDSObjectRun FindSortedRecordRun(const FName& objectId)
+        {
+            hash64_t recordId = ToRecordId(objectId);
+            uint32 index = FindIndexOfRecordInSortedRange(recordId, ObjectMask);
+            if (index == Index<uint32>::None)
+            {
+                return {};
+            }
+            uint32 start = index;
+            uint32 end = index;
+            while (end < SortedNum && (Records[end].GetId() & ObjectMask) == recordId)
+            {
+                ++end;
+            }
+            return LDSObjectRun{start, end};
+        }
+
         void Sort()
         {
             std::sort(

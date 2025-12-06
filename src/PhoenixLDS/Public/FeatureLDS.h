@@ -30,6 +30,26 @@ namespace Phoenix::LDS
         TFixedCatalog<1024, 1024> Catalog;
     };
 
+    enum class ELDSFeatureRecordQueryFlags : uint8
+    {
+        None = 0,
+
+        // Don't search base objects or types.
+        Exact = 1,
+
+        // Don't search static catalogs.
+        DynamicOnly = 2,
+
+        // Don't search dynamic catalogs.
+        StaticOnly = 4,
+
+        // Don't search session catalogs.
+        WorldOnly = 8,
+
+        // Don't search world catalogs.
+        SessionOnly = 16,
+    };
+
     class PHOENIX_LDS_API FeatureLDS : public IFeature
     {
         PHX_FEATURE_BEGIN(FeatureLDS)
@@ -51,12 +71,14 @@ namespace Phoenix::LDS
         static const LDSRecord* QueryObjectRecord(
             WorldConstRef world,
             const LDSRecordPath& path,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+            ELDSFeatureRecordQueryFlags flags = ELDSFeatureRecordQueryFlags::None,
+            ELDSRecordQueryFlags flags2 = ELDSRecordQueryFlags::None);
 
         static const LDSRecord* QueryTypeRecord(
             WorldConstRef world,
             const LDSRecordPath& path,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+            ELDSFeatureRecordQueryFlags flags = ELDSFeatureRecordQueryFlags::None,
+            ELDSRecordQueryFlags flags2 = ELDSRecordQueryFlags::None);
 
     protected:
 

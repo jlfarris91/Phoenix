@@ -3,7 +3,7 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool FogVisibility::Read(const LDS::LDSReadObjectContext& context, FogVisibility& outItem)
+bool FogVisibility::Read(const LDS::LDSReadObjectArgs& context, FogVisibility& outItem)
 {
     bool success = true;
     return success;

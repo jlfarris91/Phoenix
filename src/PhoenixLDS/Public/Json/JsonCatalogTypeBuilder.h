@@ -462,7 +462,7 @@ namespace Phoenix::LDS::Json
             uint32 itemIndex,
             TOptional<ELDSValueType> underlyingValueType)
         {
-            PHXString itemKey;
+            FName itemKey;
             LDSTypedValue itemValue;
 
             if (underlyingValueType.IsSet())
@@ -478,7 +478,7 @@ namespace Phoenix::LDS::Json
                 auto itemKVPJson = itemJson.items().begin();
                 itemKey = itemKVPJson.key();
 
-                if (!this->GetValueFromJson(itemKVPJson.value(), underlyingValueType.Get(), itemValue))
+                if (!this->GetValueFromJson(itemKVPJson.value(), underlyingValueType.Get(), itemValue.Value))
                 {
                     this->LogError("Failed to read enum item value.").Context(rootTypeId, itemPath);
                     return false;
@@ -561,9 +561,10 @@ namespace Phoenix::LDS::Json
             bool success = true;
 
             // Record each enum item value
-            for (auto && [index, item] : items.items())
+            for (auto && [key, item] : items.items())
             {
-                PHXString itemPropertyPath = itemsPropertyPath + '/' + index;
+                PHXString itemPropertyPath = itemsPropertyPath + '/' + key;
+                uint32 index = atoi(key.c_str());
                 if (!ProcessEnumPropertyItem(rootTypeId, item, itemPropertyPath, index, customUnderlyingValueType))
                 {
                     success = false;

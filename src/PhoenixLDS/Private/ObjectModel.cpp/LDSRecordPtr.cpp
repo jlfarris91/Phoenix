@@ -40,10 +40,10 @@ bool LDSRecordPtr::IsValid() const
 
 bool LDSRecordPtr::RecordExists(const ILDSQueryContext& context) const
 {
-    return context.ObjectRecordExists(Path);
+    return context.RecordExists(Path);
 }
 
 ELDSValueType LDSRecordPtr::GetRecordType(const ILDSQueryContext& context) const
 {
-    return context.QueryObjectRecord(Path, Flags)->GetValueType();
+    return context.QueryRecord(Path, Flags)->GetValueType();
 }

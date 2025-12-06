@@ -1,7 +1,7 @@
 
 #include "Data/DataUnitActor.h"
 
-bool Phoenix::RTS::Data::UnitActor::Read(const LDS::LDSReadObjectContext& context, UnitActor& outItem)
+bool Phoenix::RTS::Data::UnitActor::Read(const LDS::LDSReadObjectArgs& context, UnitActor& outItem)
 {
     bool success = true;
 

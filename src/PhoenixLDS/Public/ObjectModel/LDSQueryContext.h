@@ -9,40 +9,29 @@
 
 namespace Phoenix::LDS
 {
-    struct PHOENIX_LDS_API LDSReadObjectContext
-    {
-        TSharedPtr<class ILDSQueryContext const> Query;
-        LDSRecordPath Path;
-        ELDSRecordQueryFlags Flags;
-    };
-
     class PHOENIX_LDS_API ILDSQueryContext : TSharedAsThis<ILDSQueryContext>
     {
     public:
 
         virtual ~ILDSQueryContext() = default;
 
-        //
-        // Object Querying
-        //
-
-        virtual const LDSRecord* QueryObjectRecord(
+        virtual const LDSRecord* QueryRecord(
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const = 0;
 
         template <class T>
-        T QueryObjectRecordValueAs(
+        T QueryRecordValueAs(
             const LDSRecordPath& path,
             const T& defaultValue = {},
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
 
         template <class T>
-        bool TryQueryObjectRecordValueAs(
+        bool TryQueryRecordValueAs(
             const LDSRecordPath& path,
             T& outValue,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
 
-        virtual bool ObjectRecordExists(
+        virtual bool RecordExists(
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
 
@@ -54,29 +43,44 @@ namespace Phoenix::LDS
             const LDSRecordPath& path,
             T& outObject,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
+    };
 
-        //
-        // Type Querying
-        //
-
-        virtual const LDSRecord* QueryTypeRecord(
+    struct PHOENIX_LDS_API LDSReadObjectArgs
+    {
+        LDSReadObjectArgs(
+            const TSharedPtr<ILDSQueryContext>& queryContext,
             const LDSRecordPath& path,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const = 0;
+            ELDSRecordQueryFlags flags)
+            : QueryContext(queryContext)
+            , Path(path)
+            , Flags(flags)
+        {
+        }
 
-        template <class T>
-        T QueryTypeRecordValueAs(
-            const LDSRecordPath& path,
-            const T& defaultValue = {},
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
+        TSharedPtr<ILDSQueryContext> GetQueryContext() const
+        {
+            return QueryContext;
+        }
 
-        template <class T>
-        bool TryQueryTypeRecordValueAs(
-            const LDSRecordPath& path,
-            T& outValue,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
+        const LDSRecordPath& GetRecordPath() const
+        {
+            return Path;
+        }
 
-        virtual bool TypeRecordExists(
-            const LDSRecordPath& path,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
+        ELDSRecordQueryFlags GetFlags() const
+        {
+            return Flags;
+        }
+
+        template <class TRecordPtr>
+        TRecordPtr CreatePtr() const
+        {
+            return TRecordPtr(Path, Flags);
+        }
+
+    private:
+        TSharedPtr<ILDSQueryContext> QueryContext;
+        LDSRecordPath Path;
+        ELDSRecordQueryFlags Flags = ELDSRecordQueryFlags::None;
     };
 }

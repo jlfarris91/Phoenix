@@ -26,7 +26,7 @@ LDSObjectPtr LDSObjectRefPtr::ResolveObject(const ILDSQueryContext& context) con
 
 bool LDSObjectRefPtr::TryResolveObject(const ILDSQueryContext& context, LDSObjectPtr& outObjectPtr) const
 {
-    if (const LDSRecord* record = context.QueryObjectRecord(Path, Flags))
+    if (const LDSRecord* record = context.QueryRecord(Path, Flags))
     {
         FName objectId = record->GetValueAs<FName>();
         outObjectPtr = LDSObjectPtr(LDSRecordPath(objectId), Flags);

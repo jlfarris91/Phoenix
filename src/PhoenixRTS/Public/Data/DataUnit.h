@@ -56,7 +56,7 @@ namespace Phoenix::RTS::Data
         UnitVitals Vitals;
         TArray2<WeaponPtr> Weapons;
 
-        static bool Read(const LDS::LDSReadObjectContext& context, Unit& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& context, Unit& outItem);
     };
 
     struct PHOENIX_RTS_API UnitPtr : LDS::TLDSObjectPtr<Unit>

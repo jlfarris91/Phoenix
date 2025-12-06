@@ -1,7 +1,6 @@
 
 #include "FeatureLDS.h"
 
-#include "Flags.h"
 #include "LDSFeatureQueryContext.h"
 #include "LDSObjectModel.h"
 #include "Json/JsonCatalogObjectBuilder.h"
@@ -121,17 +120,23 @@ TSharedPtr<const Catalog> FeatureLDS::GetStaticWorldCatalog(WorldConstRef world)
 const LDSRecord* FeatureLDS::QueryObjectRecord(
     WorldConstRef world,
     const LDSRecordPath& path,
-    ELDSRecordQueryFlags flags)
+    ELDSFeatureRecordQueryFlags flags,
+    ELDSRecordQueryFlags flags2)
 {
-    LDSFeatureQueryContext queryContext = LDSFeatureQueryContext::Create(world);
-    return queryContext.QueryObjectRecord(path, flags);
+    LDSFeatureQueryContext queryContext = LDSFeatureQueryContext::Create(world)
+        .WithMode(ELDSCatalogRecordStore::Object)
+        .WithFlags(flags);
+    return queryContext.QueryRecord(path, flags2);
 }
 
 const LDSRecord* FeatureLDS::QueryTypeRecord(
     WorldConstRef world,
     const LDSRecordPath& path,
-    ELDSRecordQueryFlags flags)
+    ELDSFeatureRecordQueryFlags flags,
+    ELDSRecordQueryFlags flags2)
 {
-    LDSFeatureQueryContext queryContext = LDSFeatureQueryContext::Create(world);
-    return queryContext.QueryTypeRecord(path, flags);
+    LDSFeatureQueryContext queryContext = LDSFeatureQueryContext::Create(world)
+        .WithMode(ELDSCatalogRecordStore::Type)
+        .WithFlags(flags);
+    return queryContext.QueryTypeRecord(path, flags2);
 }

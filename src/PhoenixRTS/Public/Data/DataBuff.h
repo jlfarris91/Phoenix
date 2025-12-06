@@ -8,7 +8,7 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API Buff
     {
-        static bool Read(const LDS::LDSReadObjectContext& context, Buff& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& context, Buff& outItem);
     };
 
     struct PHOENIX_RTS_API BuffPtr : LDS::TLDSObjectPtr<Buff>

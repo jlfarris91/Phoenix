@@ -3,7 +3,7 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool UnitPlacement::Read(const LDS::LDSReadObjectContext& context, UnitPlacement& outItem)
+bool UnitPlacement::Read(const LDS::LDSReadObjectArgs& context, UnitPlacement& outItem)
 {
     bool success = true;
 

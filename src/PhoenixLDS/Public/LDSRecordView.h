@@ -33,7 +33,7 @@ namespace Phoenix::LDS
             TCatalog* catalog,
             const FName& objectId,
             const FName& path = FName::None,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
             : Catalog(catalog)
             , ObjectId(objectId)
             , Path(path)
@@ -107,7 +107,7 @@ namespace Phoenix::LDS
         TCatalog* Catalog = nullptr;
         FName ObjectId;
         FName Path;
-        ELDSObjectRecordQueryFlags Flags = ELDSObjectRecordQueryFlags::None;
+        ELDSRecordQueryFlags Flags = ELDSRecordQueryFlags::None;
         const LDSRecord* Record = nullptr;
     };
 
@@ -119,7 +119,7 @@ namespace Phoenix::LDS
             TCatalog* catalog,
             const FName& objectId,
             const FName& path = FName::None,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
             : TLDSRecordView<TCatalog>(catalog, objectId, path, flags)
         {
         }
@@ -180,7 +180,7 @@ namespace Phoenix::LDS
             TCatalog* catalog,
             const FName& objectId,
             const FName& path = FName::None,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
             : TLDSRecordView<TCatalog>(catalog, objectId, path, flags)
         {
         }
@@ -205,7 +205,7 @@ namespace Phoenix::LDS
             TCatalog* catalog,
             const FName& objectId,
             const FName& path,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
             : TLDSRecordView<TCatalog>(catalog, objectId, path, flags)
         {
         }
@@ -224,7 +224,7 @@ namespace Phoenix::LDS
             TCatalog* catalog,
             const FName& objectId,
             const FName& path,
-            ELDSObjectRecordQueryFlags flags = ELDSObjectRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
             : TLDSRecordView<TCatalog>(catalog, objectId, path, flags)
         {
             // ie

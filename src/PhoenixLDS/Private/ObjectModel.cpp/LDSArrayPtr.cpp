@@ -17,14 +17,14 @@ LDSArrayPtr::LDSArrayPtr(const LDSRecordPtr& other)
 
 Phoenix::uint32 LDSArrayPtr::GetSize(const ILDSQueryContext& context) const
 {
-    return context.QueryObjectRecordValueAs<uint32>(Path.Append("size"), 0, Flags);
+    return context.QueryRecordValueAs<uint32>(Path.Append("size"), 0, Flags);
 }
 
 const LDSRecord* LDSArrayPtr::GetItemRecord(
     const ILDSQueryContext& context,
     uint32 index) const
 {
-    return context.QueryObjectRecord(Path.Append(index), Flags);
+    return context.QueryRecord(Path.Append(index), Flags);
 }
 
 LDSRecordPtr LDSArrayPtr::Item(uint32 index) const

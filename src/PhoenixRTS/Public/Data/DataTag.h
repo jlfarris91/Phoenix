@@ -8,7 +8,7 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API Tag
     {
-        static bool Read(const LDS::LDSReadObjectContext& context, Tag& outItem);
+        static bool Read(const LDS::LDSReadObjectArgs& context, Tag& outItem);
     };
 
     struct PHOENIX_RTS_API TagPtr : LDS::TLDSObjectPtr<Tag>

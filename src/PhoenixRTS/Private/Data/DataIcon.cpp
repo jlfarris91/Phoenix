@@ -3,14 +3,16 @@
 
 using namespace Phoenix::RTS::Data;
 
-bool Icon::Read(const LDS::LDSReadObjectContext& context, Icon& outItem)
+bool Icon::Read(const LDS::LDSReadObjectArgs& args, Icon& outItem)
 {
     bool success = true;
 
-    IconPtr dataPtr(context.Path, context.Flags);
-    success = dataPtr.Asset.TryGetValue(context, outItem.Asset) && success;
-    success = dataPtr.DisplayName.TryGetValue(context, outItem.DisplayName) && success;
-    success = dataPtr.Tooltip.TryReadObject(context, outItem.Tooltip) && success;
+    LDSScopedObjectQuery scope = (args.GetQueryContext(), args.GetRecordPath());
+
+    IconPtr dataPtr = args.CreatePtr<IconPtr>();
+    success = dataPtr.Asset.TryGetValue(outItem.Asset) && success;
+    success = dataPtr.DisplayName.TryGetValue(args, outItem.DisplayName) && success;
+    success = dataPtr.Tooltip.TryReadObject(args, outItem.Tooltip) && success;
 
     return success;
 }
