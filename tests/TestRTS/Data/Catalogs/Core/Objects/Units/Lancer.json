@@ -1,5 +1,12 @@
 {
     "id": "Lancer",
     "base": "Unit",
-    "collision_flags": "Ground|Air"
+    "armor": {
+        "value": 10
+    },
+    "collision_flags": "Ground|Air",
+    "placement": {
+        "inner_radius": 0.6,
+        "outer_radius": 1.0
+    }
 }

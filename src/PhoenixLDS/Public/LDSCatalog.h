@@ -37,7 +37,7 @@ namespace Phoenix::LDS
                 {
                     return record;
                 }
-                if (HasNoneFlags(flags, ELDSRecordQueryFlags::Exact))
+                if (HasAnyFlags(flags, ELDSRecordQueryFlags::Exact))
                 {
                     return nullptr;
                 }

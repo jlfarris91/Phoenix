@@ -426,7 +426,7 @@ void Test_RegisterType_ObjectType_WithEnumProperty()
 
     PHX_ASSERT(success);
     PHX_ASSERT(catalog.GetTypeRecordValueType("TestType"_n, "/testEnum/type"_n) == ELDSValueType::Enum);
-    PHX_ASSERT(catalog.GetTypeRecordValueAs<ELDSValueType>("TestType"_n, "/testEnum/underlying_type"_n) == ELDSValueType::Name);
+    PHX_ASSERT(catalog.GetTypeRecordValueAs<ELDSValueType>("TestType"_n, "/testEnum/underlying_type"_n) == ELDSValueType::UInt32);
     PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/size"_n) == 3);
     PHX_ASSERT(catalog.GetTypeRecordValueAs<FName>("TestType"_n, "/testEnum/items/0/key"_n) == "TestEnumValue0"_n);
     PHX_ASSERT(catalog.GetTypeRecordValueAs<uint32>("TestType"_n, "/testEnum/items/0/value"_n) == 0);

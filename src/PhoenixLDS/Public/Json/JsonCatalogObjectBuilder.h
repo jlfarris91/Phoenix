@@ -221,16 +221,16 @@ namespace Phoenix::LDS::Json
                 return false;
             }
 
-            // ELDSValueType underlyingType = enumItemTypeRecord->GetValueAs<ELDSValueType>();
-            //
-            // LDSTypedValue value;
-            // if (!this->GetValueFromJson(json, underlyingType, value))
-            // {
-            //     this->LogError("Failed to find enum value '{}'.", valueStr).Context(rootObjectId, jsonPath);
-            //     return false;
-            // }
-            //
-            // this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            ELDSValueType underlyingType = enumTypeRecord->GetValueAs<ELDSValueType>();
+
+            LDSTypedValue value;
+            if (!this->GetValueFromJson(json, underlyingType, value))
+            {
+                this->LogError("Failed to find enum value '{}'.", valueStr).Context(rootObjectId, jsonPath);
+                return false;
+            }
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
             return true;
         }
 
@@ -246,33 +246,47 @@ namespace Phoenix::LDS::Json
                 return false;
             }
 
+            const LDSRecord* enumTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/type");
+            if (enumTypeRecord == nullptr)
+            {
+                this->LogError("Could not find type of enum.").Context(rootObjectId, jsonPath);
+                return false;
+            }
+
+            const LDSRecord* enumItemsRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/items/size");
+            if (enumItemsRecord == nullptr)
+            {
+                this->LogError("Could not find size of enum items.").Context(rootObjectId, jsonPath);
+                return false;
+            }
+
             const PHXString& valueStr = json.get<PHXString>();
 
-            TArray<PHXString> tokens;
+            ELDSValueType underlyingType = enumTypeRecord->GetValueAs<ELDSValueType>();
+
             PHXString token;
             std::istringstream tokenStream(valueStr);
             while (std::getline(tokenStream, token, '|'))
             {
-                tokens.push_back(token);
+                uint32 enumNum = enumItemsRecord->GetValueAs<uint32>();
+                for (uint32 i = 0; i < enumNum; ++i)
+                {
+                    const LDSRecord* enumItemKeyRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/items/" + indexStr + "/key");
+                    if (enumItemKeyRecord == nullptr)
+                    {
+                        this->LogError("Could not find size of enum items.").Context(rootObjectId, jsonPath);
+                        return false;
+                    }
+                    
+                    
+                }
             }
 
-            // ELDSValueType underlyingValueType = 0;
-            //
-            //
-            //
-            // for (const PHXString& token : tokens)
-            // {
-            //
-            //     this->Catalog->FindTypeRecord();
-            //     
-            //     
-            // }
-            //
-            // LDSTypedValue value;
-            // value.Type = ELDSValueType::ObjectRef;
-            // value.Value.Int32 = underlyingValue;
-            //
-            // this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            LDSTypedValue value;
+            value.Type = ELDSValueType::ObjectRef;
+            value.Value.Int32 = underlyingValue;
+            
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
             return true;
         }
 

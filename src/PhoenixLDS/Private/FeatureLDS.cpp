@@ -52,7 +52,7 @@ TSharedPtr<const ILDSQueryContext> FeatureLDS::StaticGetSessionQueryContext(Sess
 TSharedPtr<const ILDSQueryContext> FeatureLDS::StaticGetWorldQueryContext(WorldConstRef world)
 {
     TSharedPtr<FeatureLDS> featureLDS = GetFeature<FeatureLDS>(world);
-    return featureLDS ? featureLDS->StaticGetWorldQueryContext(world) : TSharedPtr<const ILDSQueryContext>();
+    return featureLDS ? featureLDS->GetWorldQueryContext(world) : TSharedPtr<const ILDSQueryContext>();
 }
 
 const LDSRecord* FeatureLDS::QueryObjectRecord(

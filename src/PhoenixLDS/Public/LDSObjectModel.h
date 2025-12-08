@@ -5,7 +5,7 @@
 
 #include "ObjectModel/LDSArrayPtr.h"
 #include "ObjectModel/LDSEnumFlagsPtr.h"
-#include "ObjectModel/LDSEnumPtr.h"
+#include "ObjectModel/LDSEnumTypePtr.h"
 #include "ObjectModel/LDSObjectPtr.h"
 #include "ObjectModel/LDSObjectRefPtr.h"
 #include "ObjectModel/LDSRecordPtr.h"

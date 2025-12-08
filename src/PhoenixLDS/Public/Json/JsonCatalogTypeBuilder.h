@@ -442,11 +442,11 @@ namespace Phoenix::LDS::Json
             bool success = true;
 
             // Record each enum item value
-            for (auto && [index, item] : items.items())
+            for (auto && [key, item] : items.items())
             {
-                PHXString itemPropertyPath = itemsPropertyPath + '/' + index;
-                // TODO convert index to int
-                // if (!ProcessEnumPropertyItem(rootTypeId, item, itemPropertyPath, index, customUnderlyingValueType))
+                PHXString itemPropertyPath = itemsPropertyPath + '/' + key;
+                uint32 index = atoi(key.c_str());
+                if (!ProcessEnumPropertyItem(rootTypeId, item, itemPropertyPath, index, customUnderlyingValueType))
                 {
                     success = false;
                 }
