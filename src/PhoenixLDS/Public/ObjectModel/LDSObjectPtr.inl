@@ -25,22 +25,40 @@ namespace Phoenix::LDS
         return LDSValuePtr(Path.Append(chars), Flags);
     }
 
-    template <class T, size_t N>
-    TLDSValuePtr<T> LDSObjectPtr::Value(const char(& chars)[N]) const requires (!std::is_same_v<LDSValuePtr, T>)
+    template <class T, class TValuePtr, size_t N>
+    TValuePtr LDSObjectPtr::Value(const char(& chars)[N]) const requires (!std::is_base_of_v<LDSValuePtr, T>)
     {
-        return TLDSValuePtr<T>(Path.Append(chars), Flags);
+        return TValuePtr(Path.Append(chars), Flags);
     }
 
     template <class T, size_t N>
-    TLDSObjectPtr<T> LDSObjectPtr::Object(const char(& chars)[N]) const
+    TLDSObjectPtr<T> LDSObjectPtr::Object(const char(& chars)[N]) const requires (std::is_base_of_v<LDSObjectPtr, T>)
     {
         return TLDSObjectPtr<T>(Path.Append(chars), Flags);
     }
 
-    template <class T, size_t N>
-    TLDSObjectRefPtr<T> LDSObjectPtr::ObjectRef(const char(& chars)[N]) const
+    template <class T, class TObjectPtr, size_t N>
+    TObjectPtr LDSObjectPtr::Object(const char(& chars)[N]) const requires (!std::is_base_of_v<LDSObjectPtr, T>)
     {
-        return TLDSObjectRefPtr<T>(Path.Append(chars), Flags);
+        return TObjectPtr(Path.Append(chars), Flags);
+    }
+
+    template <class T, size_t N>
+    LDSObjectRefPtr LDSObjectPtr::ObjectRef(const char(& chars)[N]) const requires (std::is_base_of_v<LDSObjectRefPtr, T>)
+    {
+        return LDSObjectRefPtr(Path.Append(chars), Flags);
+    }
+
+    template <class T, class TObjectRefPtr, size_t N>
+    TObjectRefPtr LDSObjectPtr::ObjectRef(const char(& chars)[N]) const requires (!std::is_base_of_v<LDSObjectRefPtr, T>)
+    {
+        return TObjectRefPtr(Path.Append(chars), Flags);
+    }
+
+    template <size_t N>
+    LDSArrayPtr LDSObjectPtr::Array(const char(& chars)[N]) const
+    {
+        return LDSArrayPtr(Path.Append(chars), Flags);
     }
 
     template <class T, class TValuePtr, size_t N>
@@ -49,10 +67,10 @@ namespace Phoenix::LDS
         return TLDSValueArrayPtr<T, TValuePtr>(Path.Append(chars), Flags);
     }
 
-    template <class T, size_t N>
-    TLDSObjectArrayPtr<T> LDSObjectPtr::ObjectArray(const char(& chars)[N]) const
+    template <class T, class TObjectPtr, size_t N>
+    TLDSObjectArrayPtr<T, TObjectPtr> LDSObjectPtr::ObjectArray(const char(& chars)[N]) const
     {
-        return TLDSObjectArrayPtr<T>(Path.Append(chars), Flags);
+        return TLDSObjectArrayPtr<T, TObjectPtr>(Path.Append(chars), Flags);
     }
 
     template <class T, class TObjectPtr, size_t N>

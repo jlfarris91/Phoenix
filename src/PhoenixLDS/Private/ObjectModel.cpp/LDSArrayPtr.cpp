@@ -31,3 +31,18 @@ LDSRecordPtr LDSArrayPtr::Item(uint32 index) const
 {
     return LDSRecordPtr(Path.Append(index), Flags);
 }
+
+LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    : LDSArrayPtr(path, flags)
+{
+}
+
+LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPtr& other)
+    : LDSArrayPtr(other)
+{
+}
+
+LDSValuePtr LDSValueArrayPtr::Item(uint32 index) const
+{
+    return LDSArrayPtr::Item(index);
+}

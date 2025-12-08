@@ -39,24 +39,11 @@ namespace Phoenix::LDS
     struct TLDSObjectRefPtr : LDSObjectRefPtr
     {
         TLDSObjectRefPtr() = default;
-        TLDSObjectRefPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
-            : LDSObjectRefPtr(path, flags)
-        {
-        }
-        TLDSObjectRefPtr(const LDSRecordPtr& other)
-            : LDSObjectRefPtr(other)
-        {
-        }
+        TLDSObjectRefPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        TLDSObjectRefPtr(const LDSRecordPtr& other);
 
-        TObjectPtr ResolveObject(const ILDSQueryContext& context) const
-        {
-            return LDSObjectRefPtr::ResolveObjectAs<T>(context);
-        }
+        TObjectPtr ResolveObject(const ILDSQueryContext& context) const;
 
-        bool TryResolveObject(const ILDSQueryContext& context, TObjectPtr& outObject) const
-        {
-            return LDSObjectRefPtr::TryResolveObjectAs<T>(context, outObject);
-        }
+        bool TryResolveObject(const ILDSQueryContext& context, TObjectPtr& outObject) const;
     };
-
 }
