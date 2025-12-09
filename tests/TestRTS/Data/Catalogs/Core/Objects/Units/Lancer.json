@@ -1,6 +1,7 @@
 {
     "id": "Lancer",
     "base": "Unit",
+    "actor": "LancerActor",
     "armor": {
         "value": 10
     },

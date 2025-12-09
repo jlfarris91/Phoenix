@@ -1,0 +1,5 @@
+{
+    "id": "LancerActor",
+    "base": "UnitActor",
+    "tint": "FF0000FF"
+}

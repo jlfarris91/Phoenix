@@ -44,7 +44,8 @@ Unit FeatureUnit::SpawnUnit(
     bodyComp->InvMass = OneDivBy<Value>(1.0f);
     bodyComp->LinearDamping = 10.0f;
 
-    Color color = Color(dataPtr.Actor.ResolveObject(queryContext).Tint.GetValue(queryContext, Color::White));
+    Data::UnitActorPtr actorPtr = dataPtr.Actor.ResolveObject(queryContext);
+    Color color = Color(actorPtr.Tint.GetValue(queryContext, Color::White));
     FeatureECS::SetBlackboardValue(world, entityId, "Color"_n, color);
 
     SteeringComponent* steeringComp = FeatureECS::GetComponent<SteeringComponent>(world, entityId);
