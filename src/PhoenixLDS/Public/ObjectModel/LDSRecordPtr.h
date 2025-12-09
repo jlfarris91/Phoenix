@@ -26,10 +26,12 @@ namespace Phoenix::LDS
 
         bool RecordExists(const ILDSQueryContext& context) const;
 
+        ELDSValueType GetRecordType(const ILDSQueryContext& context) const;
+
+        LDSTypedValue GetRecordValue(const ILDSQueryContext& context) const;
+
         template <class T>
         T GetRecordValueAs(const ILDSQueryContext& context, const T& defaultValue = {}) const;
-
-        ELDSValueType GetRecordType(const ILDSQueryContext& context) const;
 
         template <class T>
         TLDSObjectPtr<T> AsObject() const;

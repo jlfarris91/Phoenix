@@ -1,36 +1,24 @@
 
 #include "ObjectModel/LDSObjectRefPtr.h"
 
-#include "LDSRecordStore.h"
-#include "ObjectModel/LDSObjectPtr.h"
-#include "ObjectModel/LDSQueryContext.h"
-
 using namespace Phoenix::LDS;
 
-LDSObjectRefPtr::LDSObjectRefPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+LDSObjectRefPtrBase::LDSObjectRefPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : LDSRecordPtr(path, flags)
 {
 }
 
-LDSObjectRefPtr::LDSObjectRefPtr(const LDSRecordPtr& other)
+LDSObjectRefPtrBase::LDSObjectRefPtrBase(const LDSRecordPtr& other)
     : LDSRecordPtr(other)
 {
 }
 
-LDSObjectPtr LDSObjectRefPtr::ResolveObject(const ILDSQueryContext& context) const
+LDSObjectRefPtr::LDSObjectRefPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    : LDSObjectRefPtrBase(path, flags)
 {
-    LDSObjectPtr result;
-    (void)TryResolveObject(context, result);
-    return result;
 }
 
-bool LDSObjectRefPtr::TryResolveObject(const ILDSQueryContext& context, LDSObjectPtr& outObjectPtr) const
+LDSObjectRefPtr::LDSObjectRefPtr(const LDSObjectRefPtrBase& other)
+    : LDSObjectRefPtrBase(other)
 {
-    if (const LDSRecord* record = context.QueryRecord(Path, Flags))
-    {
-        FName objectId = record->GetValueAs<FName>();
-        outObjectPtr = LDSObjectPtr(LDSRecordPath(objectId), Flags);
-        return true;
-    }
-    return false;
 }

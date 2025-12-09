@@ -2,12 +2,22 @@
 
 using namespace Phoenix::LDS;
 
-LDSEnumFlagsPtr::LDSEnumFlagsPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+LDSEnumFlagsPtrBase::LDSEnumFlagsPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : LDSRecordPtr(path, flags)
 {
 }
 
-LDSEnumFlagsPtr::LDSEnumFlagsPtr(const LDSRecordPtr& other)
+LDSEnumFlagsPtrBase::LDSEnumFlagsPtrBase(const LDSRecordPtr& other)
     : LDSRecordPtr(other)
+{
+}
+
+LDSEnumFlagsPtr::LDSEnumFlagsPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    : LDSEnumFlagsPtrBase(path, flags)
+{
+}
+
+LDSEnumFlagsPtr::LDSEnumFlagsPtr(const LDSEnumFlagsPtrBase& other)
+    : LDSEnumFlagsPtrBase(other)
 {
 }

@@ -5,44 +5,34 @@
 
 using namespace Phoenix::LDS;
 
-LDSArrayPtr::LDSArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+LDSArrayPtrBase::LDSArrayPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : LDSRecordPtr(path, flags)
 {
 }
 
-LDSArrayPtr::LDSArrayPtr(const LDSRecordPtr& other)
+LDSArrayPtrBase::LDSArrayPtrBase(const LDSRecordPtr& other)
     : LDSRecordPtr(other)
 {
 }
 
-Phoenix::uint32 LDSArrayPtr::GetSize(const ILDSQueryContext& context) const
+Phoenix::uint32 LDSArrayPtrBase::GetSize(const ILDSQueryContext& context) const
 {
     return context.QueryRecordValueAs<uint32>(Path.Append("size"), 0, Flags);
 }
 
-const LDSRecord* LDSArrayPtr::GetItemRecord(
+const LDSRecord* LDSArrayPtrBase::GetItemRecord(
     const ILDSQueryContext& context,
     uint32 index) const
 {
     return context.QueryRecord(Path.Append(index), Flags);
 }
 
-LDSRecordPtr LDSArrayPtr::Item(uint32 index) const
-{
-    return LDSRecordPtr(Path.Append(index), Flags);
-}
-
-LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
-    : LDSArrayPtr(path, flags)
+LDSArrayPtr::LDSArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    : LDSArrayPtrBase(path, flags)
 {
 }
 
-LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPtr& other)
-    : LDSArrayPtr(other)
+LDSArrayPtr::LDSArrayPtr(const LDSRecordPtr& other)
+    : LDSArrayPtrBase(other)
 {
-}
-
-LDSValuePtr LDSValueArrayPtr::Item(uint32 index) const
-{
-    return LDSArrayPtr::Item(index);
 }

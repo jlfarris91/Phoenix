@@ -3,49 +3,59 @@
 
 #include "LDSRecordPtr.h"
 
+// TODO (jfarris): do we even need this?
 namespace Phoenix::LDS
 {
-    struct PHOENIX_LDS_API LDSEnumFlagsPtr : LDSRecordPtr
+    struct PHOENIX_LDS_API LDSEnumFlagsPtrBase : LDSRecordPtr
+    {
+        LDSEnumFlagsPtrBase() = default;
+        LDSEnumFlagsPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        LDSEnumFlagsPtrBase(const LDSRecordPtr& other);
+    };
+
+    struct PHOENIX_LDS_API LDSEnumFlagsPtr : LDSEnumFlagsPtrBase
     {
         LDSEnumFlagsPtr() = default;
         LDSEnumFlagsPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        LDSEnumFlagsPtr(const LDSRecordPtr& other);
+        LDSEnumFlagsPtr(const LDSEnumFlagsPtrBase& other);
 
-        template <class T>
-        T GetValue(const ILDSQueryContext& context, const T& defaultValue = {}) const;
+        template <class TUnderlyingType>
+        TUnderlyingType GetValue(const ILDSQueryContext& context, const TUnderlyingType& defaultValue = {}) const;
 
-        template <class T>
-        bool TryGetValue(const ILDSQueryContext& context, T& outValue) const;
+        template <class TUnderlyingType>
+        bool TryGetValue(const ILDSQueryContext& context, TUnderlyingType& outValue) const;
 
-        template <class T, class U>
+        template <class TUnderlyingType, class U>
         bool HasAnyFlags(const ILDSQueryContext& context, U value) const;
 
-        template <class T, class ...Us>
+        template <class TUnderlyingType, class ...Us>
         bool HasAnyFlags(const ILDSQueryContext& context, Us&& ...args);
 
-        template <class T, class U>
+        template <class TUnderlyingType, class U>
         bool HasAllFlags(const ILDSQueryContext& context, U value);
 
-        template <class T, class ...Us>
+        template <class TUnderlyingType, class ...Us>
         bool HasAllFlags(const ILDSQueryContext& context, Us&& ...args);
 
-        template <class T, class U>
+        template <class TUnderlyingType, class U>
         bool HasNoneFlags(const ILDSQueryContext& context, U value);
 
-        template <class T, class ...Us>
+        template <class TUnderlyingType, class ...Us>
         bool HasNoneFlags(const ILDSQueryContext& context, Us&& ...args);
     };
 
-    template <class T>
-    struct TLDSEnumFlagsPtr : LDSEnumFlagsPtr
+    template <class TUnderlyingType>
+    struct TLDSEnumFlagsPtr : LDSEnumFlagsPtrBase
     {
         TLDSEnumFlagsPtr() = default;
         TLDSEnumFlagsPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        TLDSEnumFlagsPtr(const LDSRecordPtr& other);
+        TLDSEnumFlagsPtr(const LDSEnumFlagsPtrBase& other);
 
-        T GetValue(const ILDSQueryContext& context, const T& defaultValue = {}) const;
+        operator LDSEnumFlagsPtr() const;
 
-        bool TryGetValue(const ILDSQueryContext& context, T& outValue) const;
+        TUnderlyingType GetValue(const ILDSQueryContext& context, const TUnderlyingType& defaultValue = {}) const;
+
+        bool TryGetValue(const ILDSQueryContext& context, TUnderlyingType& outValue) const;
 
         template <class U>
         bool HasAnyFlags(const ILDSQueryContext& context, U value) const;

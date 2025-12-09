@@ -6,115 +6,123 @@
 
 namespace Phoenix::LDS
 {
-    template <class T>
-    T LDSEnumFlagsPtr::GetValue(const ILDSQueryContext& context, const T& defaultValue) const
+    template <class TUnderlyingType>
+    TUnderlyingType LDSEnumFlagsPtr::GetValue(const ILDSQueryContext& context, const TUnderlyingType& defaultValue) const
     {
-        return context.QueryRecordValueAs<T>(Path, defaultValue, Flags);
+        return context.QueryRecordValueAs<TUnderlyingType>(Path, defaultValue, Flags);
     }
 
-    template <class T>
-    bool LDSEnumFlagsPtr::TryGetValue(const ILDSQueryContext& context, T& outValue) const
+    template <class TUnderlyingType>
+    bool LDSEnumFlagsPtr::TryGetValue(const ILDSQueryContext& context, TUnderlyingType& outValue) const
     {
-        return context.TryQueryRecordValueAs<T>(Path, outValue, Flags);
+        return context.TryQueryRecordValueAs<TUnderlyingType>(Path, outValue, Flags);
     }
 
-    template <class T, class U>
+    template <class TUnderlyingType, class U>
     bool LDSEnumFlagsPtr::HasAnyFlags(const ILDSQueryContext& context, U value) const
     {
-        return Phoenix::HasAnyFlags(GetValue<T>(context), value);
+        return Phoenix::HasAnyFlags(GetValue<TUnderlyingType>(context), value);
     }
 
-    template <class T, class ... Us>
+    template <class TUnderlyingType, class ... Us>
     bool LDSEnumFlagsPtr::HasAnyFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return Phoenix::HasAnyFlags(GetValue<T>(context), std::forward<Us>(args)...);
+        return Phoenix::HasAnyFlags(GetValue<TUnderlyingType>(context), std::forward<Us>(args)...);
     }
 
-    template <class T, class U>
+    template <class TUnderlyingType, class U>
     bool LDSEnumFlagsPtr::HasAllFlags(const ILDSQueryContext& context, U value)
     {
-        return Phoenix::HasAllFlags(GetValue<T>(context), value);
+        return Phoenix::HasAllFlags(GetValue<TUnderlyingType>(context), value);
     }
 
-    template <class T, class ... Us>
+    template <class TUnderlyingType, class ... Us>
     bool LDSEnumFlagsPtr::HasAllFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return Phoenix::HasAllFlags(GetValue<T>(context), std::forward<Us>(args)...);
+        return Phoenix::HasAllFlags(GetValue<TUnderlyingType>(context), std::forward<Us>(args)...);
     }
 
-    template <class T, class U>
+    template <class TUnderlyingType, class U>
     bool LDSEnumFlagsPtr::HasNoneFlags(const ILDSQueryContext& context, U value)
     {
-        return Phoenix::HasNoneFlags(GetValue<T>(context), value);
+        return Phoenix::HasNoneFlags(GetValue<TUnderlyingType>(context), value);
     }
 
-    template <class T, class ... Us>
+    template <class TUnderlyingType, class ... Us>
     bool LDSEnumFlagsPtr::HasNoneFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return Phoenix::HasNoneFlags(GetValue<T>(context), std::forward<Us>(args)...);
+        return Phoenix::HasNoneFlags(GetValue<TUnderlyingType>(context), std::forward<Us>(args)...);
     }
 
-    template <class T>
-    TLDSEnumFlagsPtr<T>::TLDSEnumFlagsPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags): LDSEnumFlagsPtr(path, flags)
+    template <class TUnderlyingType>
+    TLDSEnumFlagsPtr<TUnderlyingType>::TLDSEnumFlagsPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+        : LDSEnumFlagsPtrBase(path, flags)
     {
     }
 
-    template <class T>
-    TLDSEnumFlagsPtr<T>::TLDSEnumFlagsPtr(const LDSRecordPtr& other): LDSEnumFlagsPtr(other)
+    template <class TUnderlyingType>
+    TLDSEnumFlagsPtr<TUnderlyingType>::TLDSEnumFlagsPtr(const LDSEnumFlagsPtrBase& other)
+        : LDSEnumFlagsPtrBase(other)
     {
     }
 
-    template <class T>
-    T TLDSEnumFlagsPtr<T>::GetValue(const ILDSQueryContext& context, const T& defaultValue) const
+    template <class TUnderlyingType>
+    TLDSEnumFlagsPtr<TUnderlyingType>::operator LDSEnumFlagsPtr() const
     {
-        return LDSEnumFlagsPtr::GetValue<T>(context, defaultValue);
+        return LDSEnumFlagsPtr(Path, Flags);
     }
 
-    template <class T>
-    bool TLDSEnumFlagsPtr<T>::TryGetValue(const ILDSQueryContext& context, T& outValue) const
+    template <class TUnderlyingType>
+    TUnderlyingType TLDSEnumFlagsPtr<TUnderlyingType>::GetValue(const ILDSQueryContext& context, const TUnderlyingType& defaultValue) const
     {
-        return LDSEnumFlagsPtr::TryGetValue<T>(context, outValue);
+        return LDSEnumFlagsPtr::GetValue<TUnderlyingType>(context, defaultValue);
     }
 
-    template <class T>
+    template <class TUnderlyingType>
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::TryGetValue(const ILDSQueryContext& context, TUnderlyingType& outValue) const
+    {
+        return LDSEnumFlagsPtr::TryGetValue<TUnderlyingType>(context, outValue);
+    }
+
+    template <class TUnderlyingType>
     template <class U>
-    bool TLDSEnumFlagsPtr<T>::HasAnyFlags(const ILDSQueryContext& context, U value) const
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAnyFlags(const ILDSQueryContext& context, U value) const
     {
-        return LDSEnumFlagsPtr::HasAnyFlags<T>(context, value);
+        return LDSEnumFlagsPtr::HasAnyFlags<TUnderlyingType>(context, value);
     }
 
-    template <class T>
+    template <class TUnderlyingType>
     template <class ... Us>
-    bool TLDSEnumFlagsPtr<T>::HasAnyFlags(const ILDSQueryContext& context, Us&&... args)
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAnyFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return LDSEnumFlagsPtr::HasAnyFlags<T>(context, std::forward<Us>(args)...);
+        return LDSEnumFlagsPtr::HasAnyFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
     }
 
-    template <class T>
+    template <class TUnderlyingType>
     template <class U>
-    bool TLDSEnumFlagsPtr<T>::HasAllFlags(const ILDSQueryContext& context, U value)
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAllFlags(const ILDSQueryContext& context, U value)
     {
-        return LDSEnumFlagsPtr::HasAllFlags<T>(context, value);
+        return LDSEnumFlagsPtr::HasAllFlags<TUnderlyingType>(context, value);
     }
 
-    template <class T>
+    template <class TUnderlyingType>
     template <class ... Us>
-    bool TLDSEnumFlagsPtr<T>::HasAllFlags(const ILDSQueryContext& context, Us&&... args)
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAllFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return LDSEnumFlagsPtr::HasAllFlags<T>(context, std::forward<Us>(args)...);
+        return LDSEnumFlagsPtr::HasAllFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
     }
 
-    template <class T>
+    template <class TUnderlyingType>
     template <class U>
-    bool TLDSEnumFlagsPtr<T>::HasNoneFlags(const ILDSQueryContext& context, U value)
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::HasNoneFlags(const ILDSQueryContext& context, U value)
     {
-        return LDSEnumFlagsPtr::HasNoneFlags<T>(context, value);
+        return LDSEnumFlagsPtr::HasNoneFlags<TUnderlyingType>(context, value);
     }
 
-    template <class T>
+    template <class TUnderlyingType>
     template <class ... Us>
-    bool TLDSEnumFlagsPtr<T>::HasNoneFlags(const ILDSQueryContext& context, Us&&... args)
+    bool TLDSEnumFlagsPtr<TUnderlyingType>::HasNoneFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return LDSEnumFlagsPtr::HasNoneFlags<T>(context, std::forward<Us>(args)...);
+        return LDSEnumFlagsPtr::HasNoneFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
     }
 }

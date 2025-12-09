@@ -2,32 +2,42 @@
 
 namespace Phoenix::LDS
 {
-    struct LDSObjectPtr;
+    struct PHOENIX_LDS_API LDSRecordPtr;
 
-    template <class T>
-    struct TLDSObjectPtr;
+    struct PHOENIX_LDS_API LDSObjectPtr;
 
-    struct LDSValuePtr;
+    template <class TObject>
+    struct PHOENIX_LDS_API TLDSObjectPtr;
 
-    template <class T>
-    struct TLDSValuePtr;
+    struct PHOENIX_LDS_API LDSValuePtr;
 
-    struct LDSObjectRefPtr;
+    template <class TValue>
+    struct PHOENIX_LDS_API TLDSValuePtr;
 
-    template <class T, class TObjectPtr = TLDSObjectPtr<T>>
-    struct TLDSObjectRefPtr;
+    struct PHOENIX_LDS_API LDSObjectRefPtr;
 
-    struct LDSArrayPtr;
+    template <class TObjectPtr = LDSObjectPtr>
+    struct PHOENIX_LDS_API TLDSObjectRefPtr;
 
-    template <class T, class TValuePtr = TLDSValuePtr<T>>
-    struct TLDSValueArrayPtr;
+    struct PHOENIX_LDS_API LDSArrayPtr;
 
-    template <class T, class TObjectPtr = TLDSObjectPtr<T>>
-    struct TLDSObjectArrayPtr;
+    struct PHOENIX_LDS_API LDSValueArrayPtr;
 
-    template <class T, class TObjectPtr = TLDSObjectPtr<T>, class TObjectRefPtr = TLDSObjectRefPtr<T, TObjectPtr>>
-    struct TLDSObjectRefArrayPtr;
+    template <class ...TArgs>
+    struct PHOENIX_LDS_API TLDSValueArrayPtr;
 
-    struct LDSEnumFlagsPtr;
-    template <class T> struct TLDSEnumFlagsPtr;
+    struct PHOENIX_LDS_API LDSObjectArrayPtr;
+
+    template <class ...TArgs>
+    struct PHOENIX_LDS_API TLDSObjectArrayPtr;
+
+    struct PHOENIX_LDS_API LDSObjectRefArrayPtr;
+
+    template <class ...TArgs>
+    struct PHOENIX_LDS_API TLDSObjectRefArrayPtr;
+
+    struct PHOENIX_LDS_API LDSEnumFlagsPtr;
+
+    template <class TUnderlyingType>
+    struct PHOENIX_LDS_API TLDSEnumFlagsPtr;
 }

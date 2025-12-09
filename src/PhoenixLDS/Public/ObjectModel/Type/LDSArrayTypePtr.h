@@ -16,8 +16,8 @@ namespace Phoenix::LDS
 
         TItemPtr Items;
         TArrayPtr DefaultValue;
-        LDSValuePtr<uint32> MinItems;
-        LDSValuePtr<uint32> MaxItems;
+        TLDSValuePtr<uint32> MinItems;
+        TLDSValuePtr<uint32> MaxItems;
 
     private:
         void InitCommon();

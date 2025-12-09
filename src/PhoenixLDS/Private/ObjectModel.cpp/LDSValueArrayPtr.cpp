@@ -1,14 +1,24 @@
-﻿
+
 #include "ObjectModel/LDSValueArrayPtr.h"
 
-using namespace Phoenix::LDS; 
+using namespace Phoenix::LDS;
 
-LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+LDSValueArrayPtrBase::LDSValueArrayPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : LDSArrayPtrBase(path, flags)
 {
 }
 
-LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPtr& other)
+LDSValueArrayPtrBase::LDSValueArrayPtrBase(const LDSRecordPtr& other)
     : LDSArrayPtrBase(other)
+{
+}
+
+LDSValueArrayPtr::LDSValueArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    : LDSValueArrayPtrBase(path, flags)
+{
+}
+
+LDSValueArrayPtr::LDSValueArrayPtr(const LDSValueArrayPtrBase& other)
+    : LDSValueArrayPtrBase(other)
 {
 }

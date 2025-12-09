@@ -4,33 +4,64 @@
 
 namespace Phoenix::LDS
 {
-    template <size_t N>
-    LDSObjectPtr LDSObjectTypePtr::Property(const char(& chars)[N]) const
+    template <class TObjectPtr, size_t N>
+    TObjectPtr LDSObjectTypePtr::Property(const char(& chars)[N]) const
     {
-        return LDSObjectPtr(Path.Append(chars), Flags);
+        return TObjectPtr(Path.Append(chars), Flags);
     }
 
     template <size_t N>
     LDSObjectTypePtr LDSObjectTypePtr::ObjectProperty(const char(& chars)[N]) const
     {
-        return LDSObjectTypePtr(Path.Append(chars), Flags);
+        return Property<LDSObjectTypePtr>(chars);
     }
 
     template <size_t N>
     LDSObjectRefTypePtr LDSObjectTypePtr::ObjectRefProperty(const char(& chars)[N]) const
     {
-        return LDSObjectRefTypePtr(Path.Append(chars), Flags);
+        return Property<LDSObjectRefTypePtr>(chars);
     }
 
-    template <class T, size_t N>
-    TLDSNumericTypePtr<T> LDSObjectTypePtr::NumericProperty(const char(& chars)[N]) const
+    template <class TArrayTypePtr, size_t N>
+    TArrayTypePtr LDSObjectTypePtr::ArrayProperty(const char(& chars)[N]) const
     {
-        return TLDSNumericTypePtr<T>(Path.Append(chars), Flags);
+        return Property<LDSArrayPtr>(chars);
     }
 
-    template <class T, size_t N>
-    TLDSEnumTypePtr<T> LDSObjectTypePtr::EnumProperty(const char(& chars)[N]) const
+    template <class TNumericTypePtr, size_t N>
+    TNumericTypePtr LDSObjectTypePtr::NumericProperty(const char(& chars)[N]) const
+        requires (std::is_base_of_v<LDSNumericTypePtr, TNumericTypePtr>)
     {
-        return TLDSEnumTypePtr<T>(Path.Append(chars), Flags);
+        return Property<TNumericTypePtr>(chars);
+    }
+
+    template <class TValue, class TNumericTypePtr, size_t N>
+    TNumericTypePtr LDSObjectTypePtr::NumericProperty(const char(& chars)[N]) const
+        requires (std::is_base_of_v<LDSValuePtrBase, TValue> && std::is_base_of_v<LDSNumericTypePtr, TNumericTypePtr>)
+    {
+        return Property<TNumericTypePtr>(chars);
+    }
+
+    template <class TValue, class TValuePtr, class TNumericTypePtr, size_t N>
+    TNumericTypePtr LDSObjectTypePtr::NumericProperty(const char(& chars)[N]) const
+        requires (!std::is_base_of_v<LDSValuePtrBase, TValue> && !std::is_base_of_v<LDSNumericTypePtr, TValue> &&
+                  std::is_base_of_v<LDSValuePtrBase, TValuePtr> &&
+                  std::is_base_of_v<LDSNumericTypePtr, TNumericTypePtr>)
+    {
+        return Property<TNumericTypePtr>(chars);
+    }
+
+    template <class TEnumTypePtr, size_t N>
+    TEnumTypePtr LDSObjectTypePtr::EnumProperty(const char(& chars)[N]) const
+        requires (std::is_base_of_v<LDSEnumTypePtr, TEnumTypePtr>)
+    {
+        return Property<TEnumTypePtr>(chars);
+    }
+
+    template <class TUnderlyingType, class TEnumTypePtr, size_t N>
+    TEnumTypePtr LDSObjectTypePtr::EnumProperty(const char(& chars)[N]) const
+        requires (!std::is_base_of_v<LDSEnumTypePtr, TUnderlyingType> && std::is_base_of_v<LDSEnumTypePtr, TEnumTypePtr>)
+    {
+        return Property<TEnumTypePtr>(chars);
     }
 }

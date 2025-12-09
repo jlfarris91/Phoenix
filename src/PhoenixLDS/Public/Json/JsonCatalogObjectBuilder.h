@@ -214,23 +214,25 @@ namespace Phoenix::LDS::Json
 
             const PHXString& valueStr = json.get<PHXString>();
 
-            const LDSRecord* enumTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/type");
-            if (enumTypeRecord == nullptr)
+            FName typeId = this->Catalog->GetBaseTypeId(rootObjectId);
+            if (FName::IsNoneOrEmpty(typeId))
             {
-                this->LogError("Could not find type of enum.").Context(rootObjectId, jsonPath);
+                this->LogError("Failed to find base type for object '{}'", rootObjectId).Context(rootObjectId, jsonPath);
                 return false;
             }
 
-            ELDSValueType underlyingType = enumTypeRecord->GetValueAs<ELDSValueType>();
+            LDSEnumTypePtr enumType(LDSRecordPath(typeId, typePath));
 
-            LDSTypedValue value;
-            if (!this->GetValueFromJson(json, underlyingType, value))
+            LDSEnumTypeItemPtr enumItem;
+            if (!enumType.TryGetEnumItem(this->TypeQueryContext, valueStr, enumItem))
             {
-                this->LogError("Failed to find enum value '{}'.", valueStr).Context(rootObjectId, jsonPath);
+                this->LogError("Could not find enum item named '{}'", valueStr).Context(rootObjectId, jsonPath);
                 return false;
             }
 
-            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            LDSTypedValue enumItemValue = enumItem.Value.GetRecordValue(this->TypeQueryContext);
+
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, enumItemValue);
             return true;
         }
 
@@ -243,6 +245,13 @@ namespace Phoenix::LDS::Json
             if (!json.is_string())
             {
                 this->LogError("Expected enum flags property to be a '|'-delimited string value.").Context(rootObjectId, jsonPath);
+                return false;
+            }
+
+            FName typeId = this->Catalog->GetBaseTypeId(rootObjectId);
+            if (FName::IsNoneOrEmpty(typeId))
+            {
+                this->LogError("Failed to find base type for object '{}'", rootObjectId).Context(rootObjectId, jsonPath);
                 return false;
             }
 
@@ -262,31 +271,16 @@ namespace Phoenix::LDS::Json
 
             const PHXString& valueStr = json.get<PHXString>();
 
-            ELDSValueType underlyingType = enumTypeRecord->GetValueAs<ELDSValueType>();
+            LDSEnumTypePtr enumType(LDSRecordPath(typeId, typePath));
 
-            PHXString token;
-            std::istringstream tokenStream(valueStr);
-            while (std::getline(tokenStream, token, '|'))
+            LDSEnumTypeItemPtr enumItem;
+            if (!enumType.TryGetEnumItem(this->TypeQueryContext, valueStr, enumItem))
             {
-                uint32 enumNum = enumItemsRecord->GetValueAs<uint32>();
-                for (uint32 i = 0; i < enumNum; ++i)
-                {
-                    const LDSRecord* enumItemKeyRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/items/" + indexStr + "/key");
-                    if (enumItemKeyRecord == nullptr)
-                    {
-                        this->LogError("Could not find size of enum items.").Context(rootObjectId, jsonPath);
-                        return false;
-                    }
-                    
-                    
-                }
+                this->LogError("Could not find enum item named '{}'", valueStr).Context(rootObjectId, jsonPath);
+                return false;
             }
 
-            LDSTypedValue value;
-            value.Type = ELDSValueType::ObjectRef;
-            value.Value.Int32 = underlyingValue;
-            
-            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, value);
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, LDSTypedValue());
             return true;
         }
 

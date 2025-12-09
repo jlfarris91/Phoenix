@@ -9,11 +9,18 @@
 
 namespace Phoenix::LDS
 {
-    struct PHOENIX_LDS_API LDSValuePtr : LDSRecordPtr
+    struct PHOENIX_LDS_API LDSValuePtrBase : LDSRecordPtr
+    {
+        LDSValuePtrBase() = default;
+        LDSValuePtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        LDSValuePtrBase(const LDSRecordPtr& other);
+    };
+
+    struct PHOENIX_LDS_API LDSValuePtr : LDSValuePtrBase
     {
         LDSValuePtr() = default;
         LDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        LDSValuePtr(const LDSRecordPtr& other);
+        LDSValuePtr(const LDSValuePtrBase& other);
 
         template <class T>
         T GetValue(const ILDSQueryContext& context, const T& defaultValue = {}) const;
@@ -22,15 +29,19 @@ namespace Phoenix::LDS
         bool TryGetValue(const ILDSQueryContext& context, T& outValue) const;
     };
 
-    template <class T>
-    struct PHOENIX_LDS_API TLDSValuePtr : LDSValuePtr
+    template <class TValue>
+    struct PHOENIX_LDS_API TLDSValuePtr : LDSValuePtrBase
     {
+        using ValueT = TValue;
+
         TLDSValuePtr() = default;
         TLDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        TLDSValuePtr(const LDSRecordPtr& other);
+        TLDSValuePtr(const LDSValuePtrBase& other);
 
-        T GetValue(const ILDSQueryContext& context, const T& defaultValue = {}) const;
+        operator LDSValuePtr() const;
 
-        bool TryGetValue(const ILDSQueryContext& context, T& outValue) const;
+        TValue GetValue(const ILDSQueryContext& context, const TValue& defaultValue = {}) const;
+
+        bool TryGetValue(const ILDSQueryContext& context, TValue& outValue) const;
     };
 }

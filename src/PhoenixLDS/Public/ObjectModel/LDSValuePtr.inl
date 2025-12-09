@@ -17,27 +17,33 @@ namespace Phoenix::LDS
         return context.TryQueryRecordValueAs<T>(Path, outValue, Flags);
     }
 
-    template <class T>
-    TLDSValuePtr<T>::TLDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
-        : LDSValuePtr(path, flags)
+    template <class TValue>
+    TLDSValuePtr<TValue>::TLDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+        : LDSValuePtrBase(path, flags)
     {
     }
 
-    template <class T>
-    TLDSValuePtr<T>::TLDSValuePtr(const LDSRecordPtr& other)
-        : LDSValuePtr(other)
+    template <class TValue>
+    TLDSValuePtr<TValue>::TLDSValuePtr(const LDSValuePtrBase& other)
+        : LDSValuePtrBase(other)
     {
     }
 
-    template <class T>
-    T TLDSValuePtr<T>::GetValue(const ILDSQueryContext& context, const T& defaultValue) const
+    template <class TValue>
+    TLDSValuePtr<TValue>::operator LDSValuePtr() const
     {
-        return LDSValuePtr::GetValue<T>(context, defaultValue);
+        return LDSValuePtr(Path, Flags);
     }
 
-    template <class T>
-    bool TLDSValuePtr<T>::TryGetValue(const ILDSQueryContext& context, T& outValue) const
+    template <class TValue>
+    TValue TLDSValuePtr<TValue>::GetValue(const ILDSQueryContext& context, const TValue& defaultValue) const
     {
-        return LDSValuePtr::TryGetValue<T>(context, outValue);
+        return LDSValuePtr::GetValue<TValue>(context, defaultValue);
+    }
+
+    template <class TValue>
+    bool TLDSValuePtr<TValue>::TryGetValue(const ILDSQueryContext& context, TValue& outValue) const
+    {
+        return LDSValuePtr::TryGetValue<TValue>(context, outValue);
     }
 }

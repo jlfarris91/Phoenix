@@ -33,7 +33,8 @@ namespace Phoenix::LDS::Json
         JsonCatalogBuilderBase(const JsonDataSource* dataSource, TCatalog* catalog)
             : Catalog(catalog)
             , DataSource(dataSource)
-            , QueryContext(catalog)
+            , ObjectQueryContext(catalog, ELDSCatalogRecordStore::Object)
+            , TypeQueryContext(catalog, ELDSCatalogRecordStore::Type)
         {
             PHX_ASSERT(catalog);
         }
@@ -235,6 +236,7 @@ namespace Phoenix::LDS::Json
 
         TCatalog* Catalog;
         const JsonDataSource* DataSource;
-        LDSCatalogQueryContext<TCatalog> QueryContext;
+        LDSCatalogQueryContext<TCatalog> ObjectQueryContext;
+        LDSCatalogQueryContext<TCatalog> TypeQueryContext;
     };
 }

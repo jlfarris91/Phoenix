@@ -47,3 +47,8 @@ ELDSValueType LDSRecordPtr::GetRecordType(const ILDSQueryContext& context) const
 {
     return context.QueryRecord(Path, Flags)->GetValueType();
 }
+
+LDSTypedValue LDSRecordPtr::GetRecordValue(const ILDSQueryContext& context) const
+{
+    return context.QueryRecord(Path, Flags)->GetValue();
+}

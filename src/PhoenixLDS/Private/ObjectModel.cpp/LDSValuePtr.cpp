@@ -3,12 +3,22 @@
 
 using namespace Phoenix::LDS;
 
-LDSValuePtr::LDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+LDSValuePtrBase::LDSValuePtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : LDSRecordPtr(path, flags)
 {
 }
 
-LDSValuePtr::LDSValuePtr(const LDSRecordPtr& other)
+LDSValuePtrBase::LDSValuePtrBase(const LDSRecordPtr& other)
     : LDSRecordPtr(other)
+{
+}
+
+LDSValuePtr::LDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    : LDSValuePtrBase(path, flags)
+{
+}
+
+LDSValuePtr::LDSValuePtr(const LDSValuePtrBase& other)
+    : LDSValuePtrBase(other)
 {
 }

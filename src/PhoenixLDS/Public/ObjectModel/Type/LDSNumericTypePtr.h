@@ -20,12 +20,22 @@ namespace Phoenix::LDS
         void InitCommon();
     };
 
-    template <class T, class TValuePtr = TLDSValuePtr<T>>
-    struct TLDSNumericTypePtr : LDSObjectPtr
+    template <class ...TArgs>
+    struct PHOENIX_LDS_API TLDSNumericTypePtr;
+
+    template <class TValue, class TValuePtr>
+    requires (!std::is_base_of_v<LDSValuePtrBase, TValue> && std::is_base_of_v<LDSValuePtrBase, TValuePtr>)
+    struct PHOENIX_LDS_API TLDSNumericTypePtr<TValue, TValuePtr> : LDSObjectPtr
     {
+        using ValueT = TValue;
+        using ValuePtrT = TValuePtr;
+
         TLDSNumericTypePtr() = default;
         TLDSNumericTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        TLDSNumericTypePtr(const LDSRecordPtr& other);
+        TLDSNumericTypePtr(const LDSNumericTypePtr& other);
+
+        operator LDSNumericTypePtr() const;
+        operator TLDSNumericTypePtr<TValuePtr>() const;
 
         TValuePtr DefaultValue;
         TValuePtr MinValue;
@@ -33,5 +43,14 @@ namespace Phoenix::LDS
 
     private:
         void InitCommon();
+    };
+
+    template <class TValuePtr>
+    requires (std::is_base_of_v<LDSValuePtrBase, TValuePtr>)
+    struct PHOENIX_LDS_API TLDSNumericTypePtr<TValuePtr> : TLDSNumericTypePtr<typename TValuePtr::ValueT, TValuePtr>
+    {
+        TLDSNumericTypePtr() = default;
+        TLDSNumericTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        TLDSNumericTypePtr(const LDSNumericTypePtr& other);
     };
 }
