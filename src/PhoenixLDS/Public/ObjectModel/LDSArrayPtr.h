@@ -8,11 +8,11 @@ namespace Phoenix::LDS
 {
     class LDSRecord;
 
-    struct PHOENIX_LDS_API LDSArrayPtr : LDSRecordPtr
+    struct PHOENIX_LDS_API LDSArrayPtrBase : LDSRecordPtr
     {
-        LDSArrayPtr() = default;
-        LDSArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        LDSArrayPtr(const LDSRecordPtr& other);
+        LDSArrayPtrBase() = default;
+        LDSArrayPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        LDSArrayPtrBase(const LDSRecordPtr& other);
 
         uint32 GetSize(const ILDSQueryContext& context) const;
 
@@ -21,6 +21,13 @@ namespace Phoenix::LDS
         // IE array.Item<LDSObjectPtr>()
         template <class TItemPtr = LDSRecordPtr>
         TItemPtr Item(uint32 index) const;
+    };
+
+    struct PHOENIX_LDS_API LDSArrayPtr : LDSArrayPtrBase
+    {
+        LDSArrayPtr() = default;
+        LDSArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        LDSArrayPtr(const LDSRecordPtr& other);
 
         // Ie array.ItemAsValue<uint32>()
         template <class T>
@@ -40,93 +47,78 @@ namespace Phoenix::LDS
 
         // ie array.ResolveItemObject<FoobarPtr>()
         template <class TObjectPtr = LDSObjectPtr>
-        TObjectPtr ResolveItemObject(const ILDSQueryContext& context, uint32 index) const requires ( std::is_base_of_v<LDSObjectPtr, TObjectPtr> );
+        TObjectPtr ResolveItemObject(
+            const ILDSQueryContext& context,
+            uint32 index) const
+            requires (std::is_base_of_v<LDSObjectPtr, TObjectPtr>);
 
         // ie array.ResolveItemObject<Foobar>()
         template <class T, class TObjectPtr = TLDSObjectPtr<T>>
-        TObjectPtr ResolveItemObject(const ILDSQueryContext& context, uint32 index) const requires ( !std::is_base_of_v<LDSObjectPtr, T> );
+        TObjectPtr ResolveItemObject(
+            const ILDSQueryContext& context,
+            uint32 index) const
+            requires (!std::is_base_of_v<LDSObjectPtr, T>);
 
-        template <class TCallback>
+        template <class TItemPtr = LDSRecordPtr, class TCallback>
         const LDSArrayPtr& ForEachItem(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class T, class TCallback>
-        const LDSArrayPtr& ForEachItemAsValue(const ILDSQueryContext& context, const TCallback& callback) const;
+        template <class TValuePtr = LDSValuePtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsValue(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires ( std::is_base_of_v<LDSValuePtr, TValuePtr> );
+
+        template <class T, class TValuePtr = TLDSValuePtr<T>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsValue(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires ( !std::is_base_of_v<LDSValuePtr, T> );
 
         template <class T, class TCallback>
         const LDSArrayPtr& ForEachItemValueAs(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TCallback>
-        const LDSArrayPtr& ForEachItemAsObject(const ILDSQueryContext& context, const TCallback& callback) const;
+        template <class TObjectPtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObject(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires ( std::is_base_of_v<LDSObjectPtr, TObjectPtr> );
 
-        template <class T, class TCallback>
-        const LDSArrayPtr& ForEachItemAsObject(const ILDSQueryContext& context, const TCallback& callback) const;
+        template <class T, class TObjectPtr = TLDSObjectPtr<T>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObject(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires ( !std::is_base_of_v<LDSObjectPtr, T> );
 
         template <class T, class TCallback>
         const LDSArrayPtr& ForEachItemAsReadObject(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TCallback>
-        const LDSArrayPtr& ForEachItemAsObjectRef(const ILDSQueryContext& context, const TCallback& callback) const;
+        template <class TObjectRefPtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObjectRef(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires (std::is_base_of_v<LDSObjectRefPtr, TObjectRefPtr>);
 
-        template <class T, class TCallback>
-        const LDSArrayPtr& ForEachItemAsObjectRef(const ILDSQueryContext& context, const TCallback& callback) const;
+        template <class T, class TObjectRefPtr = TLDSObjectRefPtr<T>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObjectRef(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires (!std::is_base_of_v<LDSObjectRefPtr, T>);
 
-        template <class TCallback>
-        const LDSArrayPtr& ForEachItemAsResolvedObject(const ILDSQueryContext& context, const TCallback& callback) const;
+        template <class TObjectPtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsResolvedObject(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires (std::is_base_of_v<LDSObjectPtr, TObjectPtr>);
 
-        template <class T, class TCallback>
-        const LDSArrayPtr& ForEachItemAsResolvedObject(const ILDSQueryContext& context, const TCallback& callback) const;
-    };
-
-    struct PHOENIX_LDS_API LDSValueArrayPtr : LDSArrayPtr
-    {
-        LDSValueArrayPtr() = default;
-        LDSValueArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        LDSValueArrayPtr(const LDSRecordPtr& other);
-
-        LDSValuePtr Item(uint32 index) const;
-
-        template <class T>
-        T ItemValue(const ILDSQueryContext& context, uint32 index, const T& defaultValue = {}) const;
-
-        template <class TValuePtr = LDSValuePtr, class TCallback>
-        const LDSValueArrayPtr& ForEachItem(const ILDSQueryContext& context, const TCallback& callback) const;
-
-        template <class T, class TCallback>
-        const LDSValueArrayPtr& ForEachItemValue(const ILDSQueryContext& context, const TCallback& callback) const;
-
-        template <class TValuePtr>
-        uint32 GetItems(const ILDSQueryContext& context, TArray2<TValuePtr>& outItems) const;
-
-        template <class T>
-        uint32 GetItemValues(const ILDSQueryContext& context, TArray2<T>& outValues) const;
-    };
-
-    template <class T, class TValuePtr>
-    struct PHOENIX_LDS_API TLDSValueArrayPtr : LDSArrayPtr
-    {
-        TLDSValueArrayPtr() = default;
-        TLDSValueArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        TLDSValueArrayPtr(const LDSRecordPtr& other);
-
-        TValuePtr Item(uint32 index) const;
-
-        T ItemValue(const ILDSQueryContext& context, uint32 index, const T& defaultValue = {}) const;
-
-        template <class TCallback>
-        const TLDSValueArrayPtr& ForEachItem(const ILDSQueryContext& context, const TCallback& callback) const;
-
-        template <class TCallback>
-        const TLDSValueArrayPtr& ForEachItemValue(const ILDSQueryContext& context, const TCallback& callback) const;
-
-        template <class U>
-        uint32 GetItems(const ILDSQueryContext& context, TArray2<U>& outItems) const;
-
-        template <class U>
-        uint32 GetItemValues(const ILDSQueryContext& context, TArray2<U>& outValues) const;
+        template <class T, class TObjectPtr = TLDSObjectPtr<T>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsResolvedObject(
+            const ILDSQueryContext& context,
+            const TCallback& callback) const
+            requires (!std::is_base_of_v<LDSObjectPtr, T>);
     };
 
     template <class T, class TObjectPtr>
-    struct PHOENIX_LDS_API TLDSObjectArrayPtr : LDSArrayPtr
+    struct PHOENIX_LDS_API TLDSObjectArrayPtr : LDSArrayPtrBase
     {
         TLDSObjectArrayPtr() = default;
         TLDSObjectArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
@@ -144,7 +136,7 @@ namespace Phoenix::LDS
     };
 
     template <class T, class TObjectPtr, class TObjectRefPtr>
-    struct PHOENIX_LDS_API TLDSObjectRefArrayPtr : LDSArrayPtr
+    struct PHOENIX_LDS_API TLDSObjectRefArrayPtr : LDSArrayPtrBase
     {
         TLDSObjectRefArrayPtr() = default;
         TLDSObjectRefArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);

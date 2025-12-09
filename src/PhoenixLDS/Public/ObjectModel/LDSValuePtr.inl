@@ -18,12 +18,14 @@ namespace Phoenix::LDS
     }
 
     template <class T>
-    TLDSValuePtr<T>::TLDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags): LDSValuePtr(path, flags)
+    TLDSValuePtr<T>::TLDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+        : LDSValuePtr(path, flags)
     {
     }
 
     template <class T>
-    TLDSValuePtr<T>::TLDSValuePtr(const LDSRecordPtr& other): LDSValuePtr(other)
+    TLDSValuePtr<T>::TLDSValuePtr(const LDSRecordPtr& other)
+        : LDSValuePtr(other)
     {
     }
 

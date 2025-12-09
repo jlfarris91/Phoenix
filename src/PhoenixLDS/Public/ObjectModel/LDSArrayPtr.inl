@@ -6,7 +6,7 @@
 namespace Phoenix::LDS
 {
     template <class TItemPtr>
-    TItemPtr LDSArrayPtr::Item(uint32 index) const
+    TItemPtr LDSArrayPtrBase::Item(uint32 index) const
     {
         return TItemPtr(Path.Append(index), Flags);
     }
@@ -47,26 +47,33 @@ namespace Phoenix::LDS
         return Item<TLDSObjectRefPtr<T, TObjectPtr>>(index).ResolveObject(context, index);
     }
 
-    template <class TCallback>
+    template <class TItemPtr, class TCallback>
     const LDSArrayPtr& LDSArrayPtr::ForEachItem(const ILDSQueryContext& context, const TCallback& callback) const
     {
         uint32 count = GetSize(context);
         for (uint32 i = 0; i < count; ++i)
         {
-            callback(i, Item(i));
+            callback(i, Item<TItemPtr>(i));
         }
         return *this;
     }
 
-    template <class T, class TCallback>
-    const LDSArrayPtr& LDSArrayPtr::ForEachItemAsValue(const ILDSQueryContext& context, const TCallback& callback) const
+    template <class TValuePtr, class TCallback>
+    const LDSArrayPtr& LDSArrayPtr::ForEachItemAsValue(
+        const ILDSQueryContext& context,
+        const TCallback& callback) const
+        requires (std::is_base_of_v<LDSValuePtr, TValuePtr>)
     {
-        uint32 count = GetSize(context);
-        for (uint32 i = 0; i < count; ++i)
-        {
-            callback(i, ItemAsValue<T>(i));
-        }
-        return *this;
+        return ForEachItem<TValuePtr>(context, callback);
+    }
+
+    template <class T, class TValuePtr, class TCallback>
+    const LDSArrayPtr& LDSArrayPtr::ForEachItemAsValue(
+        const ILDSQueryContext& context,
+        const TCallback& callback) const
+        requires (!std::is_base_of_v<LDSValuePtr, T>)
+    {
+        return ForEachItem<TValuePtr>(context, callback);
     }
 
     template <class T, class TCallback>
@@ -80,30 +87,22 @@ namespace Phoenix::LDS
         return *this;
     }
 
-    template <class TCallback>
+    template <class TObjectPtr, class TCallback>
     const LDSArrayPtr& LDSArrayPtr::ForEachItemAsObject(
         const ILDSQueryContext& context,
         const TCallback& callback) const
+        requires (std::is_base_of_v<LDSObjectPtr, TObjectPtr>)
     {
-        uint32 count = GetSize(context);
-        for (uint32 i = 0; i < count; ++i)
-        {
-            callback(i, ItemAsObject(i));
-        }
-        return *this;
+        return ForEachItem<TObjectPtr>(context, callback);
     }
 
-    template <class T, class TCallback>
+    template <class T, class TObjectPtr, class TCallback>
     const LDSArrayPtr& LDSArrayPtr::ForEachItemAsObject(
         const ILDSQueryContext& context,
         const TCallback& callback) const
+        requires (!std::is_base_of_v<LDSObjectPtr, T>)
     {
-        uint32 count = GetSize(context);
-        for (uint32 i = 0; i < count; ++i)
-        {
-            callback(i, ItemAsObject<T>(i));
-        }
-        return *this;
+        return ForEachItem<TObjectPtr>(context, callback);
     }
 
     template <class T, class TCallback>
@@ -114,7 +113,7 @@ namespace Phoenix::LDS
         uint32 count = GetSize(context);
         for (uint32 i = 0; i < count; ++i)
         {
-            TLDSObjectPtr<T> objectPtr = ItemAsObject<T>(i);
+            TLDSObjectPtr<T> objectPtr = Item<TLDSObjectPtr<T>>(i);
             T object;
             if (objectPtr.TryReadObject(context, object))
             {
@@ -124,54 +123,48 @@ namespace Phoenix::LDS
         return *this;
     }
 
-    template <class TCallback>
+    template <class TObjectRefPtr, class TCallback>
     const LDSArrayPtr& LDSArrayPtr::ForEachItemAsObjectRef(
         const ILDSQueryContext& context,
         const TCallback& callback) const
+        requires (std::is_base_of_v<LDSObjectRefPtr, TObjectRefPtr>)
     {
-        uint32 count = GetSize(context);
-        for (uint32 i = 0; i < count; ++i)
-        {
-            callback(i, ItemAsObjectRef(i));
-        }
-        return *this;
+        return ForEachItem<TObjectRefPtr>(context, callback);
     }
 
-    template <class T, class TCallback>
+    template <class T, class TObjectRefPtr, class TCallback>
     const LDSArrayPtr& LDSArrayPtr::ForEachItemAsObjectRef(
         const ILDSQueryContext& context,
         const TCallback& callback) const
+        requires (!std::is_base_of_v<LDSObjectRefPtr, T>)
+    {
+        return ForEachItem<TObjectRefPtr>(context, callback);
+    }
+
+    template <class TObjectPtr, class TCallback>
+    const LDSArrayPtr& LDSArrayPtr::ForEachItemAsResolvedObject(
+        const ILDSQueryContext& context,
+        const TCallback& callback) const
+        requires (std::is_base_of_v<LDSObjectPtr, TObjectPtr>)
     {
         uint32 count = GetSize(context);
         for (uint32 i = 0; i < count; ++i)
         {
-            callback(i, ItemAsObjectRef<T>(i));
+            callback(i, ResolveItemObject<TObjectPtr>(context, i));
         }
         return *this;
     }
 
-    template <class TCallback>
+    template <class T, class TObjectPtr, class TCallback>
     const LDSArrayPtr& LDSArrayPtr::ForEachItemAsResolvedObject(
         const ILDSQueryContext& context,
         const TCallback& callback) const
+        requires (!std::is_base_of_v<LDSObjectPtr, T>)
     {
         uint32 count = GetSize(context);
         for (uint32 i = 0; i < count; ++i)
         {
-            callback(i, ResolveItemObject(context, i));
-        }
-        return *this;
-    }
-
-    template <class T, class TCallback>
-    const LDSArrayPtr& LDSArrayPtr::ForEachItemAsResolvedObject(
-        const ILDSQueryContext& context,
-        const TCallback& callback) const
-    {
-        uint32 count = GetSize(context);
-        for (uint32 i = 0; i < count; ++i)
-        {
-            callback(i, ResolveItemObject<T>(context, i));
+            callback(i, ResolveItemObject<TObjectPtr>(context, i));
         }
         return *this;
     }
@@ -198,16 +191,21 @@ namespace Phoenix::LDS
         return LDSArrayPtr::ForEachItemValueAs<T>(context, callback);
     }
 
-    template <class TValuePtr>
-    uint32 LDSValueArrayPtr::GetItems(const ILDSQueryContext& context, TArray2<TValuePtr>& outItems) const
+    template <class TValuePtr, class TContainer>
+    uint32 LDSValueArrayPtr::GetItems(const ILDSQueryContext& context, TContainer& outItems) const
     {
         uint32 count = 0;
-        ForEachItemAsValue<TValuePtr>()(context, [&count, &outItems](uint32, const TLDSValuePtr<TValuePtr>& value)
+        ForEachItemAsValue<TValuePtr>()(context, [&count, &outItems](uint32, const TValuePtr& value)
         {
             outItems.Add(value);
             ++count;
         });
         return count;
+    }
+
+    template <class TValuePtr>
+    uint32 LDSValueArrayPtr::GetItems(const ILDSQueryContext& context, TArray2<TValuePtr>& outItems) const
+    {
     }
 
     template <class T, class TValuePtr>
