@@ -1,49 +1,47 @@
 
 #pragma once
 
-#include "LDSValuePtr.h"
-
 namespace Phoenix::LDS
 {
-    template <class T>
-    T LDSValuePtr::GetValue(const ILDSQueryContext& context, const T& defaultValue) const
+    template <IsNotRecordPtr TValue>
+    TValue LDSValuePtr::GetValue(const ILDSQueryContext& context, const TValue& defaultValue) const
     {
-        return context.QueryRecordValueAs<T>(Path, defaultValue, Flags);
+        return context.QueryRecordValueAs<TValue>(Path, defaultValue, Flags);
     }
 
-    template <class T>
-    bool LDSValuePtr::TryGetValue(const ILDSQueryContext& context, T& outValue) const
+    template <IsNotRecordPtr TValue>
+    bool LDSValuePtr::TryGetValue(const ILDSQueryContext& context, TValue& outValue) const
     {
-        return context.TryQueryRecordValueAs<T>(Path, outValue, Flags);
+        return context.TryQueryRecordValueAs<TValue>(Path, outValue, Flags);
     }
 
-    template <class TValue>
+    template <IsNotRecordPtr TValue>
     TLDSValuePtr<TValue>::TLDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
         : LDSValuePtrBase(path, flags)
     {
     }
 
-    template <class TValue>
+    template <IsNotRecordPtr TValue>
     TLDSValuePtr<TValue>::TLDSValuePtr(const LDSValuePtrBase& other)
         : LDSValuePtrBase(other)
     {
     }
 
-    template <class TValue>
+    template <IsNotRecordPtr TValue>
     TLDSValuePtr<TValue>::operator LDSValuePtr() const
     {
         return LDSValuePtr(Path, Flags);
     }
 
-    template <class TValue>
+    template <IsNotRecordPtr TValue>
     TValue TLDSValuePtr<TValue>::GetValue(const ILDSQueryContext& context, const TValue& defaultValue) const
     {
-        return LDSValuePtr::GetValue<TValue>(context, defaultValue);
+        return context.QueryRecordValueAs<TValue>(Path, defaultValue, Flags);
     }
 
-    template <class TValue>
+    template <IsNotRecordPtr TValue>
     bool TLDSValuePtr<TValue>::TryGetValue(const ILDSQueryContext& context, TValue& outValue) const
     {
-        return LDSValuePtr::TryGetValue<TValue>(context, outValue);
+        return context.TryQueryRecordValueAs<TValue>(Path, outValue, Flags);
     }
 }

@@ -5,11 +5,6 @@
 
 namespace Phoenix::LDS
 {
-    struct LDSValuePtrBase;
-    struct LDSObjectPtrBase;
-    struct LDSObjectRefPtrBase;
-    class LDSRecord;
-
     struct PHOENIX_LDS_API LDSArrayPtrBase : LDSRecordPtr
     {
         LDSArrayPtrBase() = default;
@@ -27,78 +22,69 @@ namespace Phoenix::LDS
         LDSArrayPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
         LDSArrayPtr(const LDSRecordPtr& other);
 
-        template <class TItemPtr = LDSRecordPtr>
+        template <IsRecordPtr TItemPtr = LDSRecordPtr>
         TItemPtr Item(uint32 index) const;
 
-        template <class TValuePtr = LDSValuePtr>
+        template <IsValuePtr TValuePtr = LDSValuePtr>
         TValuePtr ItemAsValue(uint32 index) const;
 
-        template <class TValue, class TValuePtr = TLDSValuePtr<TValue>>
+        template <IsNotRecordPtr TValue, IsValuePtr TValuePtr = TLDSValuePtr<TValue>>
         TValue ItemValueAs(const ILDSQueryContext& context, uint32 index, const TValue& defaultValue = {}) const;
 
-        template <class T>
-        TLDSObjectPtr<T> ItemAsObject(uint32 index) const;
+        template <IsObjectPtr TObjectPtr = LDSObjectPtr>
+        TObjectPtr ItemAsObject(uint32 index) const;
 
-        template <class TObjectRefPtr = LDSObjectRefPtr>
-        TObjectRefPtr ItemAsObjectRef(uint32 index) const
-            requires (std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>);
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>>
+        TObjectPtr ItemAsObject(uint32 index) const;
 
-        template <class TObjectRef, class TObjectRefPtr = TLDSObjectRefPtr<TObjectRef>>
-        TObjectRefPtr ItemAsObjectRef(uint32 index) const
-            requires (!std::is_base_of_v<LDSObjectRefPtrBase, TObjectRef>);
+        template <IsObjectRefPtr TObjectRefPtr = LDSObjectRefPtr>
+        TObjectRefPtr ItemAsObjectRef(uint32 index) const;
 
-        template <class TObjectPtr = LDSObjectPtr, class TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>>
+        template <IsObjectPtr TObjectPtr = LDSObjectPtr, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>>
+        TObjectRefPtr ItemAsObjectRef(uint32 index) const;
+
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>>
+        TObjectRefPtr ItemAsObjectRef(uint32 index) const;
+
+        template <IsObjectPtr TObjectPtr = LDSObjectPtr, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>>
         TObjectPtr ItemAsResolvedObject(const ILDSQueryContext& context, uint32 index) const;
 
-        template <class TItemPtr = LDSRecordPtr, class TCallback>
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>>
+        TObjectPtr ItemAsResolvedObject(const ILDSQueryContext& context, uint32 index) const;
+
+        template <IsRecordPtr TItemPtr = LDSRecordPtr, class TCallback>
         const LDSArrayPtr& ForEachItem(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TValuePtr = LDSValuePtr, class TCallback>
-        const LDSArrayPtr& ForEachItemAsValue(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-            requires (std::is_base_of_v<LDSValuePtrBase, TValuePtr>);
+        template <IsValuePtr TValuePtr = LDSValuePtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsValue(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TValue, class TValuePtr = TLDSValuePtr<TValue>, class TCallback>
-        const LDSArrayPtr& ForEachItemAsValue(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-            requires (!std::is_base_of_v<LDSValuePtrBase, TValue>);
-
-        template <class TValue, class TValuePtr = TLDSValuePtr<TValue>, class TCallback>
+        template <IsNotRecordPtr TValue, IsValuePtr TValuePtr = TLDSValuePtr<TValue>, class TCallback>
         const LDSArrayPtr& ForEachItemValueAs(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TObjectPtr, class TCallback>
-        const LDSArrayPtr& ForEachItemAsObject(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-            requires ( std::is_base_of_v<LDSObjectPtrBase, TObjectPtr> );
+        template <IsObjectPtr TObjectPtr = LDSObjectPtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObject(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TObject, class TObjectPtr = TLDSObjectPtr<TObject>, class TCallback>
-        const LDSArrayPtr& ForEachItemAsObject(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-            requires ( !std::is_base_of_v<LDSObjectPtrBase, TObject> );
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObject(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TObject, class TCallback>
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>, class TCallback>
         const LDSArrayPtr& ForEachItemAsReadObject(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TObjectRefPtr = LDSObjectRefPtr, class TCallback>
-        const LDSArrayPtr& ForEachItemAsObjectRef(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-            requires (std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>);
+        template <IsObjectRefPtr TObjectRefPtr = LDSObjectRefPtr, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObjectRef(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TObjectPtr = LDSObjectPtr, class TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>, class TCallback>
-        const LDSArrayPtr& ForEachItemAsObjectRef(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-        requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr>);
+        template <IsObjectPtr TObjectPtr = LDSObjectPtr, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObjectRef(const ILDSQueryContext& context, const TCallback& callback) const;
 
-        template <class TObjectPtr = LDSObjectPtr, class TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>, class TCallback>
-        const LDSArrayPtr& ForEachItemAsResolvedObject(
-            const ILDSQueryContext& context,
-            const TCallback& callback) const
-            requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr>);
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsObjectRef(const ILDSQueryContext& context, const TCallback& callback) const;
+
+        template <IsObjectPtr TObjectPtr = LDSObjectPtr, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsResolvedObject(const ILDSQueryContext& context, const TCallback& callback) const;
+
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr = TLDSObjectPtr<TObject>, IsObjectRefPtr TObjectRefPtr = TLDSObjectRefPtr<TObjectPtr>, class TCallback>
+        const LDSArrayPtr& ForEachItemAsResolvedObject(const ILDSQueryContext& context, const TCallback& callback) const;
     };
 }
+
+#include "LDSArrayPtr.inl"

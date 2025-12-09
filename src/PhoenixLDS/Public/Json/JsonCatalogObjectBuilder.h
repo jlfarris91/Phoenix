@@ -255,32 +255,28 @@ namespace Phoenix::LDS::Json
                 return false;
             }
 
-            const LDSRecord* enumTypeRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/type");
-            if (enumTypeRecord == nullptr)
-            {
-                this->LogError("Could not find type of enum.").Context(rootObjectId, jsonPath);
-                return false;
-            }
-
-            const LDSRecord* enumItemsRecord = this->Catalog->FindTypeRecordForObject(rootObjectId, typePath + "/items/size");
-            if (enumItemsRecord == nullptr)
-            {
-                this->LogError("Could not find size of enum items.").Context(rootObjectId, jsonPath);
-                return false;
-            }
-
-            const PHXString& valueStr = json.get<PHXString>();
-
             LDSEnumTypePtr enumType(LDSRecordPath(typeId, typePath));
 
-            LDSEnumTypeItemPtr enumItem;
-            if (!enumType.TryGetEnumItem(this->TypeQueryContext, valueStr, enumItem))
+            ELDSValueType underlyingType = enumType.UnderlyingType.GetValue(this->TypeQueryContext);
+            int32 flagsValue = 0;
+
+            const PHXString& valueStr = json.get<PHXString>();
+            PHXString token;
+            std::istringstream tokenStream(valueStr);
+            while (std::getline(tokenStream, token, '|'))
             {
-                this->LogError("Could not find enum item named '{}'", valueStr).Context(rootObjectId, jsonPath);
-                return false;
+                LDSEnumTypeItemPtr enumItem;
+                if (!enumType.TryGetEnumItem(this->TypeQueryContext, token, enumItem))
+                {
+                    this->LogError("Could not find enum item named '{}'", token).Context(rootObjectId, jsonPath);
+                    return false;
+                }
+
+                int32 flagValue = enumItem.Value.GetValue<int32>(this->TypeQueryContext);
+                flagsValue |= flagValue;
             }
 
-            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, LDSTypedValue());
+            this->Catalog->EmplaceObjectRecord(rootObjectId, jsonPath, LDSTypedValue({ .Int32 = flagsValue}, underlyingType));
             return true;
         }
 

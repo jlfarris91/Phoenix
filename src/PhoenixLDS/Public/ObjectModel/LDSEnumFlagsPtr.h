@@ -76,3 +76,5 @@ namespace Phoenix::LDS
         bool HasNoneFlags(const ILDSQueryContext& context, Us&& ...args);
     };
 }
+
+#include "LDSEnumFlagsPtr.inl"

@@ -4,9 +4,8 @@
 
 namespace Phoenix::LDS
 {
-    template <class TObjectPtr, class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr> && std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    TLDSObjectRefTypePtr<TObjectPtr, TObjectRefPtr>::TLDSObjectRefTypePtr(
+    template <IsObjectRefPtr TObjectRefPtr>
+    TLDSObjectRefTypePtrBase<TObjectRefPtr>::TLDSObjectRefTypePtrBase(
         const LDSRecordPath& path,
         ELDSRecordQueryFlags flags)
         : LDSObjectPtr(path, flags)
@@ -14,32 +13,19 @@ namespace Phoenix::LDS
         InitCommon();
     }
 
-    template <class TObjectPtr, class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr> && std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    TLDSObjectRefTypePtr<TObjectPtr, TObjectRefPtr>::TLDSObjectRefTypePtr(const LDSRecordPtr& other)
+    template <IsObjectRefPtr TObjectRefPtr>
+    TLDSObjectRefTypePtrBase<TObjectRefPtr>::TLDSObjectRefTypePtrBase(const LDSRecordPtr& other)
         : LDSObjectPtr(other)
     {
         InitCommon();
     }
 
-    template <class TObjectPtr, class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr> && std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    void TLDSObjectRefTypePtr<TObjectPtr, TObjectRefPtr>::InitCommon()
+    template <IsObjectRefPtr TObjectRefPtr>
+    void TLDSObjectRefTypePtrBase<TObjectRefPtr>::InitCommon()
     {
         ReferenceType = Value<FName>("type");
-    }
-
-    template <class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    TLDSObjectRefTypePtr<TObjectRefPtr>::TLDSObjectRefTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
-        : TLDSObjectRefTypePtr(path, flags)
-    {
-    }
-
-    template <class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    TLDSObjectRefTypePtr<TObjectRefPtr>::TLDSObjectRefTypePtr(const LDSRecordPtr& other)
-        : TLDSObjectRefTypePtr(other)
-    {
+        Default = ObjectRef<TObjectRefPtr>("default");
     }
 }
+
+#include "LDSObjectRefTypePtr.inl"

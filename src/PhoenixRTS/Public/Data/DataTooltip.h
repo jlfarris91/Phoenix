@@ -30,6 +30,6 @@ namespace Phoenix::RTS::Data
         LDS::TLDSValuePtr<FName> Title;
         LDS::TLDSValuePtr<FName> SubTitle;
         LDS::TLDSValuePtr<FName> Body;
-        LDS::TLDSObjectArrayPtr<TooltipItem, TLDSObjectPtr<TooltipItem>> Items;
+        LDS::TLDSObjectArrayPtr<TooltipItem> Items;
     };
 }

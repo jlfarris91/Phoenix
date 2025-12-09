@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "LDSArrayUtil.h"
 #include "LDSValuePtr.h"
 
 namespace Phoenix::LDS
@@ -14,16 +13,13 @@ namespace Phoenix::LDS
         return context.QueryRecordValueAs<uint32>(path.Append("size"), 0, flags);
     }
 
-    template <class TItemPtr>
-    TItemPtr LDSArrayUtil::GetItem(
-        const LDSRecordPath& path,
-        uint32 index,
-        ELDSRecordQueryFlags flags)
+    template <IsRecordPtr TItemPtr>
+    TItemPtr LDSArrayUtil::GetItem(const LDSRecordPath& path, uint32 index, ELDSRecordQueryFlags flags)
     {
         return TItemPtr(path.Append(index), flags);
     }
 
-    template <class TValue, class TValuePtr>
+    template <IsNotRecordPtr TValue, IsValuePtr TValuePtr>
     TValue LDSArrayUtil::GetItemValueAs(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -34,7 +30,7 @@ namespace Phoenix::LDS
         return GetItem<TValuePtr>(path, index, flags).template GetValue<TValue>(context, defaultValue);
     }
 
-    template <class TObjectPtr, class TObjectRefPtr>
+    template <IsObjectPtr TObjectPtr, IsObjectRefPtr TObjectRefPtr>
     TObjectPtr LDSArrayUtil::GetResolvedItemObject(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -44,7 +40,7 @@ namespace Phoenix::LDS
         return GetItem<TObjectRefPtr>(path, index, flags).ResolveObject(context);
     }
 
-    template <class TItemPtr, class TCallback>
+    template <IsRecordPtr TItemPtr, class TCallback>
     void LDSArrayUtil::ForEachItem(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -58,7 +54,7 @@ namespace Phoenix::LDS
         }
     }
 
-    template <class TValue, class TValuePtr, class TCallback>
+    template <IsNotRecordPtr TValue, IsValuePtr TValuePtr, class TCallback>
     void LDSArrayUtil::ForEachItemValueAs(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -72,7 +68,7 @@ namespace Phoenix::LDS
         }
     }
 
-    template <class TObject, class TObjectPtr, class TCallback>
+    template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr, class TCallback>
     void LDSArrayUtil::ForEachItemAsReadObject(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -91,7 +87,7 @@ namespace Phoenix::LDS
         }
     }
 
-    template <class TObjectPtr, class TObjectRefPtr, class TCallback>
+    template <IsObjectPtr TObjectPtr, IsObjectRefPtr TObjectRefPtr, class TCallback>
     void LDSArrayUtil::ForEachItemAsResolvedObject(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -105,7 +101,7 @@ namespace Phoenix::LDS
         }
     }
 
-    template <class TItemPtr, class TContainer>
+    template <IsRecordPtr TItemPtr, class TContainer>
     uint32 LDSArrayUtil::GetItems(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -121,7 +117,7 @@ namespace Phoenix::LDS
         return count;
     }
 
-    template <class TValue, class TValuePtr, class TContainer>
+    template <IsNotRecordPtr TValue, IsValuePtr TValuePtr, class TContainer>
     uint32 LDSArrayUtil::GetItemValuesAs(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -137,7 +133,7 @@ namespace Phoenix::LDS
         return count;
     }
 
-    template <class TObjectPtr, class TObjectRefPtr, class TContainer>
+    template <IsObjectPtr TObjectPtr, IsObjectRefPtr TObjectRefPtr, class TContainer>
     uint32 LDSArrayUtil::GetItemsAsResolvedObjects(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,
@@ -153,7 +149,7 @@ namespace Phoenix::LDS
         return count;
     }
 
-    template <class TObject, class TObjectPtr, class TContainer>
+    template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr, class TContainer>
     uint32 LDSArrayUtil::GetItemsAsReadObjects(
         const ILDSQueryContext& context,
         const LDSRecordPath& path,

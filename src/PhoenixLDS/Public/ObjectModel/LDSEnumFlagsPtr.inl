@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "LDSEnumFlagsPtr.h"
+#include "LDSQueryContext.h"
 #include "Flags.h"
 
 namespace Phoenix::LDS
@@ -75,13 +75,13 @@ namespace Phoenix::LDS
     template <class TUnderlyingType>
     TUnderlyingType TLDSEnumFlagsPtr<TUnderlyingType>::GetValue(const ILDSQueryContext& context, const TUnderlyingType& defaultValue) const
     {
-        return LDSEnumFlagsPtr::GetValue<TUnderlyingType>(context, defaultValue);
+        return context.QueryRecordValueAs<TUnderlyingType>(Path, defaultValue, Flags);
     }
 
     template <class TUnderlyingType>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::TryGetValue(const ILDSQueryContext& context, TUnderlyingType& outValue) const
     {
-        return LDSEnumFlagsPtr::TryGetValue<TUnderlyingType>(context, outValue);
+        return context.TryQueryRecordValueAs<TUnderlyingType>(Path, outValue, Flags);
     }
 
     template <class TUnderlyingType>

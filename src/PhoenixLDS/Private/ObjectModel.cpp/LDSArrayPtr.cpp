@@ -1,8 +1,6 @@
 
 #include "ObjectModel/LDSArrayPtr.h"
 
-#include "ObjectModel/LDSQueryContext.inl"
-
 using namespace Phoenix::LDS;
 
 LDSArrayPtrBase::LDSArrayPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)

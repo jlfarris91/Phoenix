@@ -1,9 +1,6 @@
 
 #pragma once
 
-#include "DLLExport.h"
-#include "LDSQueryContext.h"
-#include "LDSRecordPath.h"
 #include "LDSRecordPtr.h"
 #include "LDSRecordQueryFlags.h"
 
@@ -22,15 +19,15 @@ namespace Phoenix::LDS
         LDSValuePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
         LDSValuePtr(const LDSValuePtrBase& other);
 
-        template <class T>
-        T GetValue(const ILDSQueryContext& context, const T& defaultValue = {}) const;
+        template <IsNotRecordPtr TValue>
+        TValue GetValue(const ILDSQueryContext& context, const TValue& defaultValue = {}) const;
 
-        template <class T>
-        bool TryGetValue(const ILDSQueryContext& context, T& outValue) const;
+        template <IsNotRecordPtr TValue>
+        bool TryGetValue(const ILDSQueryContext& context, TValue& outValue) const;
     };
 
-    template <class TValue>
-    struct PHOENIX_LDS_API TLDSValuePtr : LDSValuePtrBase
+    template <IsNotRecordPtr TValue>
+    struct TLDSValuePtr : LDSValuePtrBase
     {
         using ValueT = TValue;
 
@@ -45,3 +42,5 @@ namespace Phoenix::LDS
         bool TryGetValue(const ILDSQueryContext& context, TValue& outValue) const;
     };
 }
+
+#include "LDSValuePtr.inl"

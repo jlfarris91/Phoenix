@@ -53,7 +53,7 @@
         },
         "pathing_mode": {
             "type": "Enum",
-            "values": [
+            "items": [
                 "Ground",
                 "Air",
                 "Hover"

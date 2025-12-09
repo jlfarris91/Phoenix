@@ -528,7 +528,7 @@ namespace Phoenix::LDS::Json
             }
 
             // Record the property type
-            this->Catalog->EmplaceTypeRecord(rootTypeId, propertyPath + "/type", LDSTypedValue(ELDSValueType::Enum));
+            this->Catalog->EmplaceTypeRecord(rootTypeId, propertyPath + "/type", LDSTypedValue(ELDSValueType::EnumFlags));
 
             // Record the underlying enum value type
             TOptional<ELDSValueType> customUnderlyingValueType;

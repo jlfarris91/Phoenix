@@ -1,3 +1,4 @@
+
 #include "ObjectModel/Type/LDSEnumTypePtr.h"
 
 using namespace Phoenix::LDS;
@@ -20,24 +21,14 @@ void LDSEnumTypeItemPtr::InitCommon()
     Value = LDSObjectPtr::Value("value");
 }
 
-LDSEnumTypePtrBase::LDSEnumTypePtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
-    : LDSObjectPtr(path, flags)
-{
-}
-
-LDSEnumTypePtrBase::LDSEnumTypePtrBase(const LDSEnumTypePtrBase& other)
-    : LDSObjectPtr(other)
-{
-}
-
 LDSEnumTypePtr::LDSEnumTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
-    : LDSEnumTypePtrBase(path, flags)
+    : LDSObjectPtr(path, flags)
 {
     InitCommon();
 }
 
-LDSEnumTypePtr::LDSEnumTypePtr(const LDSEnumTypePtrBase& other)
-    : LDSEnumTypePtrBase(other)
+LDSEnumTypePtr::LDSEnumTypePtr(const LDSObjectPtr& other)
+    : LDSObjectPtr(other)
 {
     InitCommon();
 }
@@ -55,7 +46,7 @@ bool LDSEnumTypePtr::TryGetEnumItem(
     LDSEnumTypeItemPtr& outItemPtr) const
 {
     bool foundItem = false;
-    Items.ForEachItem(context, [&](const LDSEnumTypeItemPtr& itemPtr)
+    Items.ForEachItem<LDSEnumTypeItemPtr>(context, [&](uint32, const LDSEnumTypeItemPtr& itemPtr)
     {
         if (itemPtr.Key.GetValue(context, FName::None) == key)
         {
@@ -69,6 +60,6 @@ bool LDSEnumTypePtr::TryGetEnumItem(
 void LDSEnumTypePtr::InitCommon()
 {
     UnderlyingType = Value<ELDSValueType>("underlying_type");
-    Items = ObjectArray<LDSEnumTypeItemPtr>("items");
-    DefaultValue = Value("default");
+    Items = ObjectArray("items");
+    DefaultValue = Value<FName>("default");
 }

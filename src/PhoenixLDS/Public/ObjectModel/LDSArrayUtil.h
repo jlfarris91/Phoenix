@@ -1,17 +1,12 @@
 
 #pragma once
 
-#include "LDSRecordPath.h"
+#include "LDSForwardDecls.h"
 #include "LDSRecordQueryFlags.h"
 #include "Platform.h"
 
 namespace Phoenix::LDS
 {
-    struct LDSObjectPtr;
-    struct LDSRecordPath;
-    struct LDSRecordPtr;
-    class ILDSQueryContext;
-
     struct PHOENIX_LDS_API LDSArrayUtil final
     {
         static uint32 GetSize(
@@ -19,13 +14,13 @@ namespace Phoenix::LDS
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TItemPtr>
+        template <IsRecordPtr TItemPtr>
         static TItemPtr GetItem(
             const LDSRecordPath& path,
             uint32 index,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TValue, class TValuePtr>
+        template <IsNotRecordPtr TValue, IsValuePtr TValuePtr>
         static TValue GetItemValueAs(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
@@ -33,63 +28,63 @@ namespace Phoenix::LDS
             const TValue& defaultValue = {},
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TObjectPtr, class TObjectRefPtr>
+        template <IsObjectPtr TObjectPtr, IsObjectRefPtr TObjectRefPtr>
         static TObjectPtr GetResolvedItemObject(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             uint32 index,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TItemPtr, class TCallback>
+        template <IsRecordPtr TItemPtr, class TCallback>
         static void ForEachItem(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             const TCallback& callback,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TValue, class TValuePtr, class TCallback>
+        template <IsNotRecordPtr TValue, IsValuePtr TValuePtr, class TCallback>
         static void ForEachItemValueAs(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             const TCallback& callback,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TObject, class TObjectPtr, class TCallback>
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr, class TCallback>
         static void ForEachItemAsReadObject(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             const TCallback& callback,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TObjectPtr, class TObjectRefPtr, class TCallback>
+        template <IsObjectPtr TObjectPtr, IsObjectRefPtr TObjectRefPtr, class TCallback>
         static void ForEachItemAsResolvedObject(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             const TCallback& callback,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TItemPtr, class TContainer>
+        template <IsRecordPtr TItemPtr, class TContainer>
         static uint32 GetItems(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             TContainer& outItems,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TValue, class TValuePtr, class TContainer>
+        template <IsNotRecordPtr TValue, IsValuePtr TValuePtr, class TContainer>
         static uint32 GetItemValuesAs(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             TContainer& outValues,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TObjectPtr, class TObjectRefPtr, class TContainer>
+        template <IsObjectPtr TObjectPtr, IsObjectRefPtr TObjectRefPtr, class TContainer>
         static uint32 GetItemsAsResolvedObjects(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
             TContainer& outObjects,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
 
-        template <class TObject, class TObjectPtr, class TContainer>
+        template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr, class TContainer>
         static uint32 GetItemsAsReadObjects(
             const ILDSQueryContext& context,
             const LDSRecordPath& path,
@@ -97,3 +92,5 @@ namespace Phoenix::LDS
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
     };
 }
+
+#include "LDSArrayUtil.inl"

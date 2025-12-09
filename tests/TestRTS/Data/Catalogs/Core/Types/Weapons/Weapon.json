@@ -28,7 +28,7 @@
             }
         },
         "flags": {
-            "type": "Flags",
+            "type": "EnumFlags",
             "items": [
                 "melee",
                 "channeled"

@@ -45,7 +45,7 @@ void EntityTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
     {
         Action action;
         action.Verb = "spawn_entity"_n;
-        action.Data[0].Name = "Unit"_n;
+        action.Data[0].Name = "Lancer"_n;
         action.Data[1].Distance = mouseWorldPos.X;
         action.Data[2].Distance = mouseWorldPos.Y;
         action.Data[3].Degrees = Vec2::RandUnitVector().AsRadians();

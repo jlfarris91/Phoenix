@@ -63,9 +63,9 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Unit)
 
-        LDS::TLDSObjectRefPtr<UnitActor, UnitActorPtr> Actor;
+        LDS::TLDSObjectRefPtr<UnitActorPtr> Actor;
         UnitArmorPtr Armor;
-        LDS::TLDSObjectRefArrayPtr<Buff, BuffPtr> Buffs;
+        LDS::TLDSObjectRefArrayPtr<BuffPtr> Buffs;
         UnitBuildPtr BuildStats;
         UnitCargoPtr CargoStats;
         LDS::TLDSEnumFlagsPtr<ECollisionFlags> CollisionFlags;
@@ -73,15 +73,15 @@ namespace Phoenix::RTS::Data
         LDS::TLDSObjectArrayPtr<Component> Components;
         UnitDeathPtr DeathStats;
         UnitEffectsPtr Effects;
-        LDS::TLDSObjectRefPtr<Faction, FactionPtr> Faction;
+        LDS::TLDSObjectRefPtr<FactionPtr> Faction;
         UnitFlagsPtr Flags;
         FogVisibilityPtr Fog;
         UnitInfoPtr Info;
         UnitPlacementPtr Placement;
-        LDS::TLDSObjectRefArrayPtr<Tag, TagPtr> Tags;
+        LDS::TLDSObjectRefArrayPtr<TagPtr> Tags;
         UnitSupplyPtr Supply;
         UnitVisionPtr Vision;
         UnitVitalsPtr Vitals;
-        LDS::TLDSObjectRefArrayPtr<Weapon, WeaponPtr> Weapons;
+        LDS::TLDSObjectRefArrayPtr<WeaponPtr> Weapons;
     };
 }

@@ -84,3 +84,5 @@ namespace Phoenix::LDS
         ELDSRecordQueryFlags Flags = ELDSRecordQueryFlags::None;
     };
 }
+
+#include "LDSQueryContext.inl"

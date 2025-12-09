@@ -40,7 +40,7 @@ UnitPtr::UnitPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags
     , Buffs(ObjectRefArray<Buff>("buffs"))
     , BuildStats(Object<UnitBuild>("build_stats"))
     , CargoStats(Object<UnitCargo>("cargo"))
-    , CollisionFlags(EnumFlags<ECollisionFlags>("collision_flags"))
+    , CollisionFlags(EnumFlags<ECollisionFlags>("collision"))
     , Commands(ObjectArray<Command>("commands"))
     , Components(ObjectArray<Command>("components"))
     , DeathStats(Object<UnitDeath>("death_stats"))

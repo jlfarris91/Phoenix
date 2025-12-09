@@ -7,7 +7,7 @@
 
 namespace Phoenix::LDS
 {
-    template <class TItemPtr, class TArrayPtr>
+    template <IsRecordPtr TItemPtr, IsArrayPtr TArrayPtr>
     struct TLDSArrayTypePtrBase : LDSObjectPtr
     {
         TLDSArrayTypePtrBase() = default;
@@ -34,5 +34,6 @@ namespace Phoenix::LDS
 
     template <class TObjectRefItemPtr = LDSObjectRefPtr, class TObjectRefArrayPtr = LDSObjectRefArrayPtr>
     using TLDSObjectRefArrayTypePtr = TLDSArrayTypePtrBase<TObjectRefItemPtr, TObjectRefArrayPtr>;
-
 }
+
+#include "LDSArrayTypePtr.inl"

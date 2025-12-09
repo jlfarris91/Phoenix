@@ -1,28 +1,23 @@
 #pragma once
 
-#include "LDSObjectRefPtr.h"
-
 namespace Phoenix::LDS
 {
-    template <class TObjectPtr>
+    template <IsObjectPtr TObjectPtr>
     TObjectPtr LDSObjectRefPtr::ResolveObject(const ILDSQueryContext& context) const
-        requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr>)
     {
         TObjectPtr objectPtr;
         (void)TryResolveObject<TObjectPtr>(context, objectPtr);
         return objectPtr;
     }
 
-    template <class TObject, class TObjectPtr>
+    template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr>
     TObjectPtr LDSObjectRefPtr::ResolveObject(const ILDSQueryContext& context) const
-        requires (!std::is_base_of_v<LDSObjectPtrBase, TObject> && std::is_base_of_v<LDSObjectPtrBase, TObjectPtr>)
     {
         return ResolveObject<TObjectPtr>(context);
     }
 
-    template <class TObjectPtr>
+    template <IsObjectPtr TObjectPtr>
     bool LDSObjectRefPtr::TryResolveObject(const ILDSQueryContext& context, TObjectPtr& outObjectPtr) const
-        requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr>)
     {
         if (const LDSRecord* record = context.QueryRecord(Path, Flags))
         {
@@ -33,41 +28,42 @@ namespace Phoenix::LDS
         return false;
     }
 
-    template <class TObject, class TObjectPtr>
+    template <IsNotRecordPtr TObject, IsObjectPtr TObjectPtr>
     bool LDSObjectRefPtr::TryResolveObject(const ILDSQueryContext& context, TObjectPtr& outObjectPtr) const
-        requires (!std::is_base_of_v<LDSObjectPtrBase, TObject> && std::is_base_of_v<LDSObjectPtrBase, TObjectPtr>)
     {
         return TryResolveObject<TObjectPtr>(context, outObjectPtr);
     }
 
-    template <class TObjectPtr>
-    TLDSObjectRefPtr<TObjectPtr>::TLDSObjectRefPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+    template <IsObjectPtr TObjectPtr>
+    TLDSObjectRefPtrBase<TObjectPtr>::TLDSObjectRefPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
         : LDSObjectRefPtrBase(path, flags)
     {
     }
 
-    template <class TObjectPtr>
-    TLDSObjectRefPtr<TObjectPtr>::TLDSObjectRefPtr(const LDSObjectRefPtrBase& other)
+    template <IsObjectPtr TObjectPtr>
+    TLDSObjectRefPtrBase<TObjectPtr>::TLDSObjectRefPtrBase(const LDSObjectRefPtrBase& other)
         : LDSObjectRefPtrBase(other)
     {
     }
 
-    template <class TObjectPtr>
-    TLDSObjectRefPtr<TObjectPtr>::operator LDSObjectRefPtr() const
+    template <IsObjectPtr TObjectPtr>
+    TLDSObjectRefPtrBase<TObjectPtr>::operator LDSObjectRefPtr() const
     {
         return LDSObjectRefPtr(Path, Flags);
     }
 
-    template <class TObjectPtr>
-    TObjectPtr TLDSObjectRefPtr<TObjectPtr>::ResolveObject(const ILDSQueryContext& context) const
+    template <IsObjectPtr TObjectPtr>
+    TObjectPtr TLDSObjectRefPtrBase<TObjectPtr>::ResolveObject(const ILDSQueryContext& context) const
     {
         TObjectPtr objectPtr;
         (void)TryResolveObject(context, objectPtr);
         return objectPtr;
     }
 
-    template <class TObjectPtr>
-    bool TLDSObjectRefPtr<TObjectPtr>::TryResolveObject(const ILDSQueryContext& context, TObjectPtr& outObjectPtr) const
+    template <IsObjectPtr TObjectPtr>
+    bool TLDSObjectRefPtrBase<TObjectPtr>::TryResolveObject(
+        const ILDSQueryContext& context,
+        TObjectPtr& outObjectPtr) const
     {
         if (const LDSRecord* record = context.QueryRecord(Path, Flags))
         {
@@ -76,5 +72,34 @@ namespace Phoenix::LDS
             return true;
         }
         return false;
+    }
+
+    template <IsObjectPtr TObjectPtr>
+    TLDSObjectRefPtr<TObjectPtr, EnableIfObjectPtr<TObjectPtr>>::TLDSObjectRefPtr(
+        const LDSRecordPath& path,
+        ELDSRecordQueryFlags flags)
+        : TLDSObjectRefPtrBase<TObjectPtr>(path, flags)
+    {
+    }
+
+    template <IsObjectPtr TObjectPtr>
+    TLDSObjectRefPtr<TObjectPtr, EnableIfObjectPtr<TObjectPtr>>::TLDSObjectRefPtr(
+        const LDSObjectRefPtrBase& other)
+        : TLDSObjectRefPtrBase<TObjectPtr>(other)
+    {
+    }
+
+    template <IsNotRecordPtr TObject>
+    TLDSObjectRefPtr<TObject, EnableIfNotRecordPtr<TObject>>::TLDSObjectRefPtr(
+        const LDSRecordPath& path, ELDSRecordQueryFlags flags)
+        : TLDSObjectRefPtrBase<TLDSObjectPtr<TObject>>(path, flags)
+    {
+    }
+
+    template <IsNotRecordPtr TObject>
+    TLDSObjectRefPtr<TObject, EnableIfNotRecordPtr<TObject>>::TLDSObjectRefPtr(
+        const LDSObjectRefPtrBase& other)
+        : TLDSObjectRefPtrBase<TLDSObjectPtr<TObject>>(other)
+    {
     }
 }

@@ -7,29 +7,12 @@
 
 namespace Phoenix::LDS
 {
-    struct PHOENIX_LDS_API LDSObjectRefTypePtr : LDSObjectPtr
+    template <IsObjectRefPtr TObjectRefPtr>
+    struct TLDSObjectRefTypePtrBase : LDSObjectPtr
     {
-        LDSObjectRefTypePtr() = default;
-        LDSObjectRefTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        LDSObjectRefTypePtr(const LDSRecordPtr& other);
-
-        TLDSValuePtr<FName> ReferenceType;
-        LDSObjectRefPtr Default;
-
-    private:
-        void InitCommon();
-    };
-
-    template <class ...TArgs>
-    struct PHOENIX_LDS_API TLDSObjectRefTypePtr;
-
-    template <class TObjectPtr, class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectPtrBase, TObjectPtr> && std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    struct PHOENIX_LDS_API TLDSObjectRefTypePtr<TObjectPtr, TObjectRefPtr> : LDSObjectPtr
-    {
-        TLDSObjectRefTypePtr() = default;
-        TLDSObjectRefTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        TLDSObjectRefTypePtr(const LDSRecordPtr& other);
+        TLDSObjectRefTypePtrBase() = default;
+        TLDSObjectRefTypePtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
+        TLDSObjectRefTypePtrBase(const LDSRecordPtr& other);
 
         TLDSValuePtr<FName> ReferenceType;
         TObjectRefPtr Default;
@@ -38,12 +21,8 @@ namespace Phoenix::LDS
         void InitCommon();
     };
 
-    template <class TObjectRefPtr>
-    requires (std::is_base_of_v<LDSObjectRefPtrBase, TObjectRefPtr>)
-    struct TLDSObjectRefTypePtr<TObjectRefPtr> : TLDSObjectRefTypePtr<typename TObjectRefPtr::ObjectT, TObjectRefPtr>
-    {
-        TLDSObjectRefTypePtr() = default;
-        TLDSObjectRefTypePtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
-        TLDSObjectRefTypePtr(const LDSRecordPtr& other);
-    };
+    using LDSObjectRefTypePtr = TLDSObjectRefTypePtrBase<LDSObjectRefPtr>;
+
+    template <IsObjectRefPtr TObjectRefPtr>
+    using TLDSObjectRefTypePtr = TLDSObjectRefTypePtrBase<TObjectRefPtr>;
 }

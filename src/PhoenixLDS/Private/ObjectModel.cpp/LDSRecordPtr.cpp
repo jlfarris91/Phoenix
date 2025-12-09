@@ -43,12 +43,17 @@ bool LDSRecordPtr::RecordExists(const ILDSQueryContext& context) const
     return context.RecordExists(Path);
 }
 
+const LDSRecord* LDSRecordPtr::GetRecord(const ILDSQueryContext& context) const
+{
+    return context.QueryRecord(Path, Flags);
+}
+
 ELDSValueType LDSRecordPtr::GetRecordType(const ILDSQueryContext& context) const
 {
-    return context.QueryRecord(Path, Flags)->GetValueType();
+    return GetRecord(context)->GetValueType();
 }
 
 LDSTypedValue LDSRecordPtr::GetRecordValue(const ILDSQueryContext& context) const
 {
-    return context.QueryRecord(Path, Flags)->GetValue();
+    return GetRecord(context)->GetValue();
 }
