@@ -2,7 +2,6 @@
 #pragma once
 
 #include "Component.h"
-#include "DLLExport.h"
 #include "Entity.h"
 #include "Features.h"
 #include "FixedPoint/FixedVector.h"
@@ -11,27 +10,10 @@ namespace Phoenix::RTS
 {
     struct Unit : ECS::EntityId { };
 
-    template <class T>
-    struct Vital
-    {
-        T Current = {};
-        T Max = {};
-        T Regen = {};
-    };
-
     struct UnitComponent : ECS::IComponent
     {
         PHX_ECS_DECLARE_COMPONENT_BEGIN(UnitComponent)
         PHX_ECS_DECLARE_COMPONENT_END()
-    };
-
-    struct VitalsComponent : ECS::IComponent
-    {
-        PHX_ECS_DECLARE_COMPONENT(VitalsComponent)
-
-        Vital<Value> Health;
-        Vital<Value> Energy;
-        Vital<Value> Shield;
     };
 
     enum class ESpawnUnitFlags : uint8
@@ -78,7 +60,6 @@ namespace Phoenix::RTS
 
         // Returns the current health of a unit.
         static Value GetHealth(WorldConstRef world, Unit unit);
-
 
     protected:
 
