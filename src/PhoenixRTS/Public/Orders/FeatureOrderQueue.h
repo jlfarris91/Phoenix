@@ -5,6 +5,10 @@
 #include "Features.h"
 #include "FixedOrderQueue.h"
 
+#ifndef PHX_RTS_ORDER_QUEUE_MAX_ORDERS
+#define PHX_RTS_ORDER_QUEUE_MAX_ORDERS 4096
+#endif
+
 namespace Phoenix::ECS
 {
     struct EntityId;
@@ -18,9 +22,10 @@ namespace Phoenix::RTS
     {
         PHX_DECLARE_BLOCK_DYNAMIC(FeatureOrderQueueDynamicBlock)
 
-        TFixedOrderQueue<4096> OrderQueue;
+        TFixedOrderQueue<PHX_RTS_ORDER_QUEUE_MAX_ORDERS> OrderQueue;
     };
 
+    // Manages the order queues of all units in the game.
     class PHOENIX_RTS_API FeatureOrderQueue : public IFeature
     {
     public:
@@ -48,10 +53,11 @@ namespace Phoenix::RTS
         // Use outIndex to find the next order. Note that it is an absolute index, not the unit's order index.
         static const Order* GetNextOrder(WorldConstRef world, const ECS::EntityId& unit, uint32 currIndex, uint32& outIndex);
 
-        // Gets the order in a unit's order queue.
+        // Gets the order at a specific index in a unit's order queue.
+        // The index should be a value between 0 (the head order) and the value returned by GetNumOrders. 
         static const Order* GetOrder(WorldConstRef world, const ECS::EntityId& unit, uint32 orderIndex);
 
-        // Gets the length of a unit's order queue.
+        // Gets the number of orders in a unit's order queue.
         static uint32 GetNumOrders(WorldConstRef world, const ECS::EntityId& unit);
 
         // Attempts to remove an order from a unit's order queue.

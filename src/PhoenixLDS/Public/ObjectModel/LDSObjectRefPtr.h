@@ -13,6 +13,8 @@ namespace Phoenix::LDS
         LDSObjectRefPtrBase() = default;
         LDSObjectRefPtrBase(const LDSRecordPath& path, ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None);
         LDSObjectRefPtrBase(const LDSRecordPtr& other);
+
+        FName GetReferenceId(const ILDSQueryContext& context) const;
     };
     
     struct PHOENIX_LDS_API LDSObjectRefPtr : LDSObjectRefPtrBase

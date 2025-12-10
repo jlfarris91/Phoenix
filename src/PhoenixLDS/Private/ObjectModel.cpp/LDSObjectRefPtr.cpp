@@ -13,6 +13,11 @@ LDSObjectRefPtrBase::LDSObjectRefPtrBase(const LDSRecordPtr& other)
 {
 }
 
+Phoenix::FName LDSObjectRefPtrBase::GetReferenceId(const ILDSQueryContext& context) const
+{
+    return context.QueryRecordValueAs<FName>(Path, FName::None, Flags);
+}
+
 LDSObjectRefPtr::LDSObjectRefPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : LDSObjectRefPtrBase(path, flags)
 {
