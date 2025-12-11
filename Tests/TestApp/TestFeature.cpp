@@ -15,9 +15,8 @@ using namespace Phoenix::Physics;
 
 bool TestFeature::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
 {
-
     if (action.Action.Verb == "spawn_entity"_n)
-    {   
+    {
         for (uint32 i = 0; i < action.Action.Data[4].UInt32; ++i)
         {
             EntityId entityId = FeatureECS::AcquireEntity(world, action.Action.Data[0].Name);
@@ -41,29 +40,15 @@ bool TestFeature::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& a
             color.R = rand() % 255;
             color.G = rand() % 255;
             color.B = rand() % 255;
-            FeatureECS::SetBlackboardValue(world, entityId, "Color"_n, color);
+            FeatureECS::SetBlackboardValue(world, entityId, "actor_tint"_n, color);
 
             Steering::SteeringComponent* steeringComp = FeatureECS::GetComponent<Steering::SteeringComponent>(world, entityId);
             steeringComp->AvoidanceRadius = bodyComp->Radius * 2;
             steeringComp->MaxSpeed = 50.0f;
-
-            if (entityId == 1)
-            {
-                // Steering::WanderComponent* wanderComp = FeatureECS::AddComponent<Steering::WanderComponent>(world, entityId);
-                // wanderComp->WanderAngle = ((rand() % RAND_MAX) / (double)RAND_MAX) * DEG_360;
-                // wanderComp->WanderRadius = 10.0;
-                // wanderComp->MaxSpeed = 5.0;
-            }
-            else
-            {
-                Steering::SeekComponent* seekComp = FeatureECS::GetComponent<Steering::SeekComponent>(world, entityId);
-                SetFlagRef(seekComp->Flags, Steering::ESeekFlags::Arrive, true); 
-                seekComp->TargetEntity = 0;
-                seekComp->SlowingDistance = 3;
-                seekComp->MaxSpeed = 50.0; 
-            }
         }
 
         return true;
     }
+
+    return false;
 }

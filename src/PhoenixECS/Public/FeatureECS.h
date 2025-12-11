@@ -188,6 +188,28 @@ namespace Phoenix
 
             static bool HasArchetypeDefinition(WorldConstRef world, const FName& name);
 
+            //
+            // Component Management
+            //
+
+            static bool RegisterComponentDefinition(WorldRef world, const ComponentDefinition& definition);
+
+            template <class TComponent>
+            static bool RegisterComponentDefinition(WorldRef world)
+            {
+                return RegisterComponentDefinition(world, ComponentDefinition::Create<TComponent>());
+            }
+
+            static bool UnregisterComponentDefinition(WorldRef world, const FName& componentType);
+
+            template <class TComponent>
+            static bool UnregisterComponentDefinition(WorldRef world)
+            {
+                return UnregisterComponentDefinition(world, TComponent::StaticTypeName);
+            }
+
+            static bool HasComponentDefinition(WorldRef world, const FName& componentType);
+
             // Gets the pointer to a component on an entity if it exists.
             static IComponent* GetComponent(WorldRef world, EntityId entityId, const FName& componentType);
 
@@ -214,6 +236,18 @@ namespace Phoenix
             {
                 const IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
                 return static_cast<const T*>(comp);
+            }
+
+            // Gets the pointer to a component on an entity or adds it if it doesn't exist.
+            template <class T>
+            static T* GetOrAddComponent(WorldRef world, EntityId entityId)
+            {
+                IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+                if (!comp)
+                {
+                    comp = AddComponent<T>(world, entityId);
+                }
+                return static_cast<T*>(comp);
             }
 
             // Gets a reference to a component on an entity if it exists.
@@ -275,6 +309,12 @@ namespace Phoenix
 
             // Removes a component from an entity.
             static bool RemoveComponent(WorldRef world, EntityId entityId, const FName& componentType);
+
+            template <class TComponent>
+            static bool RemoveComponent(WorldRef world, EntityId entityId)
+            {
+                return RemoveComponent(world, entityId, TComponent::StaticTypeName);
+            }
 
             // Removes all components from an entity, effectively releasing the associated archetype.
             static uint32 RemoveAllComponents(WorldRef world, EntityId entityId);
@@ -492,6 +532,12 @@ namespace Phoenix
 
             static const Transform2D* GetLocalTransformPtr(WorldConstRef world, EntityId entityId);
             static const Transform2D* GetWorldTransformPtr(WorldConstRef world, EntityId entityId);
+
+            // Returns true if the entity is within range of the target entity.
+            static bool IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range);
+
+            // Returns true if the entity is within range of the target location.
+            static bool IsInRange(WorldConstRef world, EntityId entity, const Vec2& target, Distance range);
 
             static void QueryEntitiesInRange(WorldConstRef world, const Vec2& pos, Distance range, TArray<EntityTransform>& outEntities);
 

@@ -55,6 +55,9 @@
         "info": {
             "type": "Object#UnitInfo"
         },
+        "movement": {
+            "type": "Object#UnitMovement"
+        },
         "placement": {
             "type": "Object#UnitPlacement"
         },

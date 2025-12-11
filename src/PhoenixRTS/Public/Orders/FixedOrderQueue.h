@@ -65,7 +65,7 @@ namespace Phoenix::RTS
                 return EnqueueOrder(entityId, order);
             }
 
-            uint32 index = entityOrder - &Orders[0];
+            uint32 index = static_cast<uint32>(entityOrder - &Orders[0]);
             InsertOrderAtIndex(entityId, order, index);
 
             // Order is being inserted into the sorted section so increase the number of sorted orders.
@@ -130,8 +130,8 @@ namespace Phoenix::RTS
             // Search the sorted section
             if (sortedEnd != begin)
             {
-                auto iter = std::lower_bound(begin, sortedEnd, { entityId, Order{} }, SortOrderById());
-                while (iter != sortedEnd && iter->Entity == entityId)
+                auto iter = std::lower_bound(begin, sortedEnd, EntityOrder{ entityId, Order{} }, SortOrderById());
+                while (iter != sortedEnd && iter->Id == entityId)
                 {
                     if (iter->IsValid())
                     {
@@ -168,13 +168,13 @@ namespace Phoenix::RTS
             // Search the sorted section
             if (sortedEnd != begin)
             {
-                auto iter = std::lower_bound(begin, sortedEnd, { entityId, Order{} }, SortOrderById());
-                while (iter != sortedEnd && iter->Entity == entityId)
+                auto iter = std::lower_bound(begin, sortedEnd, EntityOrder{ entityId, Order{} }, SortOrderById());
+                while (iter != sortedEnd && iter->Id == entityId)
                 {
                     if (iter->IsValid())
                     {
-                        outIndex = iter - begin;
-                        return &*iter;
+                        outIndex = static_cast<uint32>(iter - begin);
+                        return &iter->Order;
                     }
                     ++iter;
                 }
@@ -187,7 +187,7 @@ namespace Phoenix::RTS
                 if (iter->Id == entityId && iter->IsValid())
                 {
                     outIndex = static_cast<uint32>(iter - begin);
-                    return &*iter;
+                    return &iter->Order;
                 }
                 ++iter;
             }
@@ -200,13 +200,13 @@ namespace Phoenix::RTS
             uint32 index = currIndex + 1;
 
             // Search the sorted section
-            while (index < SortedNum && Orders[index]->Entity == entityId)
+            while (index < SortedNum && Orders[index].Id == entityId)
             {
                 const EntityOrder& order = Orders[index];
                 if (order.IsValid())
                 {
                     outIndex = index;
-                    return &order;
+                    return &order.Order;
                 }
                 ++index;
             }
@@ -216,10 +216,10 @@ namespace Phoenix::RTS
             while (index < Orders.Num())
             {
                 const EntityOrder& order = Orders[index];
-                if (order.Entity == entityId && order.IsValid())
+                if (order.Id == entityId && order.IsValid())
                 {
                     outIndex = index;
-                    return &order;
+                    return &order.Order;
                 }
                 ++index;
             }
@@ -244,8 +244,8 @@ namespace Phoenix::RTS
             // Search the sorted section
             if (sortedEnd != begin)
             {
-                auto iter = std::lower_bound(begin, sortedEnd, { entityId, Order{} }, SortOrderById());
-                while (iter != sortedEnd && iter->Entity == entityId)
+                auto iter = std::lower_bound(begin, sortedEnd, EntityOrder{ entityId, Order{} }, SortOrderById());
+                while (iter != sortedEnd && iter->Id == entityId)
                 {
                     if (iter->IsValid())
                     {
@@ -310,7 +310,7 @@ namespace Phoenix::RTS
                 --iter;
             }
 
-            SortedNum = iter - Orders.begin();
+            SortedNum = static_cast<uint32>(iter - Orders.begin());
             Orders.SetNum(SortedNum);
         }
 
@@ -383,7 +383,7 @@ namespace Phoenix::RTS
             return Index<uint32>::None;
         }
 
-        EntityOrder* GetEntityOrder(const ECS::EntityId& entityId, uint32 orderIndex)
+        uint32 FindIndexOfEntityOrder(const ECS::EntityId& entityId, uint32 orderIndex) const
         {
             auto begin = Orders.begin();
             auto end = Orders.end();
@@ -392,12 +392,12 @@ namespace Phoenix::RTS
             // Search the sorted section
             if (sortedEnd != begin)
             {
-                auto iter = std::lower_bound(begin, sortedEnd, { entityId, Order{} }, SortOrderById());
-                while (iter != sortedEnd && iter->Entity == entityId)
+                auto iter = std::lower_bound(begin, sortedEnd, EntityOrder{ entityId, Order{} }, SortOrderById());
+                while (iter != sortedEnd && iter->Id == entityId)
                 {
                     if (iter->IsValid() && orderIndex-- == 0)
                     {
-                        return &*iter;
+                        return static_cast<uint32>(iter - begin);
                     }
                     ++iter;
                 }
@@ -409,12 +409,24 @@ namespace Phoenix::RTS
             {
                 if (iter->Id == entityId && iter->IsValid() && orderIndex-- == 0)
                 {
-                    return &*iter;
+                    return static_cast<uint32>(iter - begin);
                 }
                 ++iter;
             }
 
-            return nullptr;
+            return Index<uint32>::None;
+        }
+
+        EntityOrder* GetEntityOrder(const ECS::EntityId& entityId, uint32 orderIndex)
+        {
+            uint32 index = FindIndexOfEntityOrder(entityId, orderIndex);
+            return index == Index<uint32>::None ? nullptr : &Orders[index];
+        }
+
+        const EntityOrder* GetEntityOrder(const ECS::EntityId& entityId, uint32 orderIndex) const
+        {
+            uint32 index = FindIndexOfEntityOrder(entityId, orderIndex);
+            return index == Index<uint32>::None ? nullptr : &Orders[index];
         }
 
         bool InsertOrderAtIndex(const ECS::EntityId& entityId, const Order& order, uint32 index)

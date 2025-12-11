@@ -31,6 +31,8 @@
 
 // RTS Features
 #include "Units/FeatureUnit.h"
+#include "Abilities/FeatureAbilities.h"
+#include "Orders/FeatureOrderQueue.h"
 
 // Remove me
 #include "Json/LDSJsonTests.h"
@@ -45,6 +47,7 @@
 #include "SDL/SDLViewport.h"
 
 // Test App Tools
+#include "Abilities/MoveAbility.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -105,7 +108,11 @@ void InitSession()
     TSharedPtr<FeaturePhysics> physicsFeature = std::make_shared<FeaturePhysics>();
     TSharedPtr<FeatureSteering> steeringFeature = std::make_shared<FeatureSteering>();
     TSharedPtr<RTS::FeatureUnit> unitFeature = std::make_shared<RTS::FeatureUnit>();
+    TSharedPtr<RTS::FeatureAbilities> abilitiesFeature = std::make_shared<RTS::FeatureAbilities>();
+    TSharedPtr<RTS::FeatureOrderQueue> orderQueueFeature = std::make_shared<RTS::FeatureOrderQueue>();
     // TSharedPtr<FeatureLua> luaFeature = std::make_shared<FeatureLua>();
+
+    abilitiesFeature->RegisterAbility(std::make_shared<RTS::MoveAbility>());
 
     SessionCtorArgs sessionArgs;
     sessionArgs.DataDirectory = "./Data";
@@ -117,6 +124,8 @@ void InitSession()
     sessionArgs.FeatureSetArgs.Features.push_back(physicsFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(steeringFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(unitFeature);
+    sessionArgs.FeatureSetArgs.Features.push_back(abilitiesFeature);
+    sessionArgs.FeatureSetArgs.Features.push_back(orderQueueFeature);
     // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
 
@@ -271,7 +280,7 @@ void OnAppRenderWorld()
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
                 Color color;
-                if (!FeatureECS::GetBlackboardValue(*GCurrWorldView, entity, "Color"_n, color))
+                if (!FeatureECS::GetBlackboardValue(*GCurrWorldView, entity, "actor_tint"_n, color))
                 {
                     color = Color::Red;
                 }

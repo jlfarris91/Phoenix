@@ -7,7 +7,7 @@
 #include "LDSRecordStore.h"
 #include "LDSCatalog.h"
 #include "Session.h"
-#include "ObjectModel/LDSQueryContext.h"
+#include "LDSObjectModel.h"
 
 namespace Phoenix::LDS
 {
@@ -86,6 +86,22 @@ namespace Phoenix::LDS
             ELDSFeatureRecordQueryFlags flags = ELDSFeatureRecordQueryFlags::None,
             ELDSRecordQueryFlags flags2 = ELDSRecordQueryFlags::None);
 
+        //
+        // Pointer Accessors
+        //
+
+        template <IsNotRecordPtr TValue>
+        static TValue GetValue(WorldConstRef world, const LDSValuePtr& ptr, const TValue& defaultValue = {});
+
+        template <IsNotRecordPtr TValue>
+        static bool TryGetValue(WorldConstRef world, const LDSValuePtr& ptr, TValue& outValue);
+
+        template <IsNotRecordPtr TValue>
+        static TValue GetValue(WorldConstRef world, const TLDSValuePtr<TValue>& ptr, const TValue& defaultValue = {});
+
+        template <IsNotRecordPtr TValue>
+        static bool TryGetValue(WorldConstRef world, const TLDSValuePtr<TValue>& ptr, TValue& outValue);
+
     protected:
 
         void Initialize() override;
@@ -109,3 +125,5 @@ namespace Phoenix::LDS
         TMap<FName, TSharedPtr<ILDSQueryContext>> WorldQueryContexts;
     };
 }
+
+#include "FeatureLDS.inl"

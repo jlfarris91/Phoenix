@@ -6,8 +6,10 @@
 #include "FeatureECS.h"
 #include "FeaturePhysics.h"
 #include "../../../PhoenixSteering/Public/SteeringComponent.h"
+#include "Abilities/FeatureAbilities.h"
 
 #include "Data/DataUnit.h"
+#include "Vitals/VitalsComponent.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -16,7 +18,7 @@ using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
 
-Unit FeatureUnit::SpawnUnit(
+UnitId FeatureUnit::SpawnUnit(
     WorldRef world,
     const FName& unitData,
     uint32 owner,
@@ -24,51 +26,51 @@ Unit FeatureUnit::SpawnUnit(
     Angle facing,
     const SpawnUnitArgs& args)
 {
-    EntityId entityId = FeatureECS::AcquireEntity(world, "Unit"_n);
-    if (entityId == EntityId::Invalid)
+    UnitId unitId = { FeatureECS::AcquireEntity(world, "Unit"_n) };
+    if (unitId == EntityId::Invalid)
         return {};
 
     const ILDSQueryContext& queryContext = *FeatureLDS::StaticGetWorldQueryContext(world);
 
     Data::UnitPtr dataPtr(unitData);
 
-    TransformComponent* transformComp = FeatureECS::GetComponent<TransformComponent>(world, entityId);
+    UnitComponent* unitComponent = FeatureECS::GetOrAddComponent<UnitComponent>(world, unitId);
+    unitComponent->Owner = owner;
+    unitComponent->UnitData = unitData;
+
+    // TODO (jfarris): find valid placement at position
+    TransformComponent* transformComp = FeatureECS::GetOrAddComponent<TransformComponent>(world, unitId);
     transformComp->Transform.Position = pos;
     transformComp->Transform.Rotation = facing;
 
-    BodyComponent* bodyComp = FeatureECS::GetComponent<BodyComponent>(world, entityId);
+    // TODO (jfarris): take from a body component data object?
+    BodyComponent* bodyComp = FeatureECS::GetOrAddComponent<BodyComponent>(world, unitId);
     bodyComp->CollisionMask = (uint16)dataPtr.CollisionFlags.GetValue(queryContext, Data::ECollisionFlags::None);
     bodyComp->Radius = dataPtr.Placement.InnerRadius.GetValue(queryContext);
-
-    // TODO (jfarris): take from a body component data object? 
     bodyComp->InvMass = OneDivBy<Value>(1.0f);
     bodyComp->LinearDamping = 10.0f;
 
+    // TODO (jfarris): hate that we hard-code the vitals component. What if I don't care about energy or shield?
+    VitalsComponent* vitalsComp = FeatureECS::GetOrAddComponent<VitalsComponent>(world, unitId);
+    vitalsComp->Health.Current = dataPtr.Vitals.Health.Starting.GetValue(queryContext);
+    vitalsComp->Health.Max = dataPtr.Vitals.Health.Max.GetValue(queryContext);
+    vitalsComp->Health.Regen = dataPtr.Vitals.Health.Regen.GetValue(queryContext);
+    vitalsComp->Energy.Current = dataPtr.Vitals.Energy.Starting.GetValue(queryContext);
+    vitalsComp->Energy.Max = dataPtr.Vitals.Energy.Max.GetValue(queryContext);
+    vitalsComp->Energy.Regen = dataPtr.Vitals.Energy.Regen.GetValue(queryContext);
+    vitalsComp->Shield.Current = dataPtr.Vitals.Shield.Starting.GetValue(queryContext);
+    vitalsComp->Shield.Max = dataPtr.Vitals.Shield.Max.GetValue(queryContext);
+    vitalsComp->Shield.Regen = dataPtr.Vitals.Shield.Regen.GetValue(queryContext);
+
+    // TODO (jfarris): don't need this since the app will be able to read this value
     Data::UnitActorPtr actorPtr = dataPtr.Actor.ResolveObject(queryContext);
     Color color = Color(actorPtr.Tint.GetValue(queryContext, Color::White));
-    FeatureECS::SetBlackboardValue(world, entityId, "Color"_n, color);
+    FeatureECS::SetBlackboardValue(world, unitId, "actor_tint"_n, color);
 
-    SteeringComponent* steeringComp = FeatureECS::GetComponent<SteeringComponent>(world, entityId);
-    steeringComp->AvoidanceRadius = bodyComp->Radius * 2;
-    steeringComp->MaxSpeed = 50.0f;
+    // TODO (jfarris): dispatch with a unit spawned event instead
+    FeatureAbilities::AddAbilitiesFromData(world, unitId, unitData);
 
-    if (entityId == 1)
-    {
-        // Steering::WanderComponent* wanderComp = FeatureECS::AddComponent<Steering::WanderComponent>(world, entityId);
-        // wanderComp->WanderAngle = ((rand() % RAND_MAX) / (double)RAND_MAX) * DEG_360;
-        // wanderComp->WanderRadius = 10.0;
-        // wanderComp->MaxSpeed = 5.0;
-    }
-    else
-    {
-        SeekComponent* seekComp = FeatureECS::GetComponent<SeekComponent>(world, entityId);
-        SetFlagRef(seekComp->Flags, ESeekFlags::Arrive, true); 
-        seekComp->TargetEntity = 0;
-        seekComp->SlowingDistance = 3;
-        seekComp->MaxSpeed = 50.0; 
-    }
-
-    return {};
+    return unitId;
 }
 
 uint32 FeatureUnit::SpawnUnits(
@@ -83,7 +85,7 @@ uint32 FeatureUnit::SpawnUnits(
     uint32 count = 0;
     for (uint32 i = 0; i < num; ++i)
     {
-        Unit unit = SpawnUnit(world, unitData, owner, pos, facing, args);
+        UnitId unit = SpawnUnit(world, unitData, owner, pos, facing, args);
         if (FeatureECS::IsEntityValid(world, unit))
         {
             ++count;
@@ -92,9 +94,32 @@ uint32 FeatureUnit::SpawnUnits(
     return count;
 }
 
-Value FeatureUnit::GetHealth(WorldConstRef world, Unit unit)
+Value FeatureUnit::GetHealth(WorldConstRef world, UnitId unit)
 {
-    return 0.0;
+    const VitalsComponent* vitalsComp = FeatureECS::GetComponent<VitalsComponent>(world, unit);
+    return vitalsComp ? vitalsComp->Health.Current : 0.0;
+}
+
+Value FeatureUnit::GetHealthMax(WorldConstRef world, UnitId unit)
+{
+    const VitalsComponent* vitalsComp = FeatureECS::GetComponent<VitalsComponent>(world, unit);
+    return vitalsComp ? vitalsComp->Health.Max : 0.0;
+}
+
+Value FeatureUnit::GetHealthRegen(WorldConstRef world, UnitId unit)
+{
+    const VitalsComponent* vitalsComp = FeatureECS::GetComponent<VitalsComponent>(world, unit);
+    return vitalsComp ? vitalsComp->Health.Regen : 0.0;
+}
+
+bool FeatureUnit::CanUnitMove(WorldConstRef world, UnitId unit)
+{
+    return false;
+}
+
+bool FeatureUnit::IsImmobilized(WorldConstRef world, UnitId unit)
+{
+    return false;
 }
 
 bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)

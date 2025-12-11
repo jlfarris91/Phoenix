@@ -18,6 +18,7 @@
 #include "DataUnitEffects.h"
 #include "DataUnitFlags.h"
 #include "DataUnitInfo.h"
+#include "DataUnitMovement.h"
 #include "DataUnitPlacement.h"
 #include "DataUnitSupply.h"
 #include "DataUnitVision.h"
@@ -49,6 +50,7 @@ namespace Phoenix::RTS::Data
         UnitFlags Flags;
         FogVisibility Fog;
         UnitInfo Info;
+        UnitMovement Movement;
         UnitPlacement Placement;
         TArray2<TagPtr> Tags;
         UnitSupply Supply;
@@ -77,6 +79,7 @@ namespace Phoenix::RTS::Data
         UnitFlagsPtr Flags;
         FogVisibilityPtr Fog;
         UnitInfoPtr Info;
+        UnitMovementPtr Movement;
         UnitPlacementPtr Placement;
         LDS::TLDSObjectRefArrayPtr<TagPtr> Tags;
         UnitSupplyPtr Supply;

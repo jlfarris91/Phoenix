@@ -6,6 +6,20 @@
         "value": 10
     },
     "collision": "Ground|Air",
+    "commands": [
+        {
+            "ability": "MoveAbility",
+            "button": "MoveAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 1
+            }
+        }
+    ],
+    "movement": {
+        "speed": "1.0"
+    },
     "placement": {
         "inner_radius": 0.6,
         "outer_radius": 1.0

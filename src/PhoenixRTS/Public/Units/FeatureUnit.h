@@ -1,19 +1,22 @@
 
 #pragma once
 
+#include "DLLExport.h"
 #include "Component.h"
 #include "Entity.h"
 #include "Features.h"
+#include "UnitId.h"
 #include "FixedPoint/FixedVector.h"
 
 namespace Phoenix::RTS
 {
-    struct Unit : ECS::EntityId { };
-
     struct UnitComponent : ECS::IComponent
     {
         PHX_ECS_DECLARE_COMPONENT_BEGIN(UnitComponent)
         PHX_ECS_DECLARE_COMPONENT_END()
+
+        uint32 Owner = 0;
+        FName UnitData;
     };
 
     enum class ESpawnUnitFlags : uint8
@@ -35,13 +38,13 @@ namespace Phoenix::RTS
 
     class FeatureUnit : public IFeature
     {
-    public:
-
         PHX_FEATURE_BEGIN(FeatureUnit)
             FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
         PHX_FEATURE_END()
 
-        static Unit SpawnUnit(
+    public:
+
+        static UnitId SpawnUnit(
             WorldRef world,
             const FName& unitData,
             uint32 owner,
@@ -59,7 +62,17 @@ namespace Phoenix::RTS
             const SpawnUnitArgs& args = {});
 
         // Returns the current health of a unit.
-        static Value GetHealth(WorldConstRef world, Unit unit);
+        static Value GetHealth(WorldConstRef world, UnitId unit);
+
+        // Returns the current max health of a unit.
+        static Value GetHealthMax(WorldConstRef world, UnitId unit);
+
+        // Returns the current health regen of a unit.
+        static Value GetHealthRegen(WorldConstRef world, UnitId unit);
+
+        static bool CanUnitMove(WorldConstRef world, UnitId unit);
+
+        static bool IsImmobilized(WorldConstRef world, UnitId unit);
 
     protected:
 

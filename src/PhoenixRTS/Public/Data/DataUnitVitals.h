@@ -3,6 +3,7 @@
 
 #include "DLLExport.h"
 #include "LDSObjectModel.h"
+#include "DataVital.h"
 
 namespace Phoenix::RTS::Data
 {
@@ -14,5 +15,9 @@ namespace Phoenix::RTS::Data
     struct PHOENIX_RTS_API UnitVitalsPtr : LDS::TLDSObjectPtr<UnitVitals>
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(UnitVitals);
+
+        VitalPtr Health;
+        VitalPtr Energy;
+        VitalPtr Shield;
     };
 }

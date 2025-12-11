@@ -174,10 +174,10 @@ namespace Phoenix
                 return ComponentDefinitions.Insert(definition.Id, definition);
             }
 
-            bool UnregisterComponentDefinition(const ComponentDefinition& definition)
+            bool UnregisterComponentDefinition(const FName& componentId)
             {
                 // TODO (jfarris): what should we do with existing archetype definitions containing the component?
-                return ComponentDefinitions.Remove(definition.Id);
+                return ComponentDefinitions.Remove(componentId);
             }
 
             bool IsComponentRegistered(const FName& componentId) const

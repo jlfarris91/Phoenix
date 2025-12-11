@@ -548,14 +548,13 @@ project "PhoenixRTS"
     location (projects)
 
     dependson {
-        "lua",
-        "sol2",
         "PhoenixCore",
         "PhoenixSim",
         "PhoenixLDS",
         "PhoenixBlackboard",
         "PhoenixECS",
-        "PhoenixPhysics"
+        "PhoenixPhysics",
+        "PhoenixSteering",
     }
 
     -- defines { "PHOENIX_DLL" }
@@ -574,6 +573,7 @@ project "PhoenixRTS"
         "src/PhoenixBlackboard/Public",
         "src/PhoenixECS/Public",
         "src/PhoenixPhysics/Public",
+        "src/PhoenixSteering/Public",
     }
 
     externalincludedirs {
@@ -582,13 +582,13 @@ project "PhoenixRTS"
     }
 
     links {
-        "lua",
         "PhoenixCore",
         "PhoenixSim",
         "PhoenixLDS",
         "PhoenixBlackboard",
         "PhoenixECS",
         "PhoenixPhysics",
+        "PhoenixSteering",
     }
 
     filter "configurations:Debug"
@@ -732,6 +732,7 @@ project "TestRTS"
         "PhoenixECS",
         "PhoenixBlackboard",
         "PhoenixPhysics",
+        "PhoenixSteering",
         "PhoenixLua",
         "PhoenixRTS"
     }

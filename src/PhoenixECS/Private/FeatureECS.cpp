@@ -492,6 +492,39 @@ bool FeatureECS::HasArchetypeDefinition(WorldConstRef world, const FName& name)
     return block->ArchetypeManager.IsArchetypeRegistered(name);
 }
 
+bool FeatureECS::RegisterComponentDefinition(WorldRef world, const ComponentDefinition& definition)
+{
+    FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    if (!block)
+    {
+        return false;
+    }
+
+    return block->ArchetypeManager.RegisterComponentDefinition(definition);
+}
+
+bool FeatureECS::UnregisterComponentDefinition(WorldRef world, const FName& componentType)
+{
+    FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    if (!block)
+    {
+        return false;
+    }
+
+    return block->ArchetypeManager.UnregisterComponentDefinition(componentType);
+}
+
+bool FeatureECS::HasComponentDefinition(WorldRef world, const FName& componentType)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    if (!block)
+    {
+        return false;
+    }
+
+    return block->ArchetypeManager.IsComponentRegistered(componentType);
+}
+
 IComponent* FeatureECS::GetComponent(
     WorldRef world,
     EntityId entityId,

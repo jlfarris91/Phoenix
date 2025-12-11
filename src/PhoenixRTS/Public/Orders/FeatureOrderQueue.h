@@ -18,7 +18,7 @@ namespace Phoenix::RTS
 {
     struct Order;
 
-    struct PHOENIX_RTS_API FeatureOrderQueueDynamicBlock : BufferBlockBase
+    struct FeatureOrderQueueDynamicBlock : BufferBlockBase
     {
         PHX_DECLARE_BLOCK_DYNAMIC(FeatureOrderQueueDynamicBlock)
 
@@ -26,7 +26,7 @@ namespace Phoenix::RTS
     };
 
     // Manages the order queues of all units in the game.
-    class PHOENIX_RTS_API FeatureOrderQueue : public IFeature
+    class FeatureOrderQueue : public IFeature
     {
     public:
 

@@ -24,6 +24,7 @@ bool Unit::Read(const LDS::LDSReadObjectArgs& args, Unit& outItem)
     success = dataPtr.Flags.TryReadObject(queryContext, outItem.Flags) && success;
     success = dataPtr.Fog.TryReadObject(queryContext, outItem.Fog) && success;
     success = dataPtr.Info.TryReadObject(queryContext, outItem.Info) && success;
+    success = dataPtr.Movement.TryReadObject(queryContext, outItem.Movement) && success;
     success = dataPtr.Placement.TryReadObject(queryContext, outItem.Placement) && success;
     success = dataPtr.Tags.GetResolvedObjects(queryContext, outItem.Tags) && success;
     success = dataPtr.Supply.TryReadObject(queryContext, outItem.Supply) && success;
@@ -49,6 +50,7 @@ UnitPtr::UnitPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags
     , Flags(Object<UnitFlags>("flags"))
     , Fog(Object<FogVisibility>("fog"))
     , Info(Object<UnitInfo>("info"))
+    , Movement(Object<UnitMovement>("movement"))
     , Placement(Object<UnitPlacement>("placement"))
     , Tags(ObjectRefArray<Tag>("tags"))
     , Supply(Object<UnitSupply>("supply"))

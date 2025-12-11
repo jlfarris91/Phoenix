@@ -265,7 +265,7 @@ void OnAppRenderWorld()
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
                 Color color;
-                if (!FeatureECS::GetBlackboardValue(*GCurrWorldView, entity, "Color"_n, color))
+                if (!FeatureECS::GetBlackboardValue(*GCurrWorldView, entity, "actor_tint"_n, color))
                 {
                     color = Color::Red;
                 }

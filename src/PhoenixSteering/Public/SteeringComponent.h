@@ -11,19 +11,31 @@ namespace Phoenix::Steering
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
     {
         PHX_ECS_DECLARE_COMPONENT(SteeringComponent)
+
+        // The accumulated steering vector for a given frame.
         Vec2 SteeringVector;
-        Vec2 GoalVector;
-        Vec2 AvoidVector;
-        Vec2 DensityVector;
-        Distance MaxSpeed;
+
+        // The max speed an entity can move not considering pushing forces.
+        Speed MaxSpeed;
+
+        // The radius at which to avoid other entities.
         Distance AvoidanceRadius;
+
+        // The time before separation kicks in.
+        Time SeparationDelay;
+
+        // The radius used when separating from neighbors.
+        Distance SeparationRadius;
+
+        // The strength of the separation force.
+        Value SeparationStrength;
     };
 
     enum class ESeekFlags
     {
         None = 0,
-        Arrive = 1,
-        Flee = 2,
+        SeekingGoal = 1,
+        ArrivedAtGoal = 2,
     };
 
     struct PHOENIX_STEERING_API SeekComponent : ECS::IComponent
@@ -33,8 +45,6 @@ namespace Phoenix::Steering
         ESeekFlags Flags = ESeekFlags::None;
         ECS::EntityId TargetEntity;
         Vec2 TargetPos;
-        Speed MaxSpeed;
-        Distance SlowingDistance;
     };
 
     struct PHOENIX_STEERING_API WanderComponent : ECS::IComponent

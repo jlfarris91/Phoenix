@@ -3,7 +3,6 @@
 
 #include "DLLExport.h"
 #include "Features.h"
-#include "FixedAbilities.h"
 
 #ifndef PHX_RTS_ORDER_QUEUE_MAX_ORDERS
 #define PHX_RTS_ORDER_QUEUE_MAX_ORDERS 4096
@@ -21,15 +20,15 @@ namespace Phoenix::ECS
 
 namespace Phoenix::RTS
 {
-    struct Unit;
+    struct UnitId;
     struct Order;
-    
-    struct PHOENIX_RTS_API FeatureAbilitiesDynamicBlock : BufferBlockBase
+
+    struct FeatureAbilitiesDynamicBlock : BufferBlockBase
     {
         PHX_DECLARE_BLOCK_DYNAMIC(FeatureAbilitiesDynamicBlock)
     };
 
-    class PHOENIX_RTS_API FeatureAbilities : public IFeature
+    class FeatureAbilities : public IFeature
     {
         PHX_FEATURE_BEGIN(FeatureAbilities)
             FEATURE_WORLD_BLOCK(FeatureAbilitiesDynamicBlock)
@@ -39,21 +38,27 @@ namespace Phoenix::RTS
 
     public:
 
-        static bool AddAbility(WorldRef world, const Unit& unit, const FName& abilityId);
-        
-        static bool RemoveAbility(WorldRef world, const Unit& unit, const FName& abilityId);
-        
-        static bool HasAbility(WorldConstRef world, const Unit& unit, const FName& abilityId);
-
-        static bool AddAbilitiesFromData(WorldRef world, const Unit& unit, const FName& unitData);
-
         bool RegisterAbility(const TSharedPtr<IAbility>& ability);
+
+        TSharedPtr<IAbility> GetAbility(const FName& abilityId) const;
+
+        static TSharedPtr<IAbility> StaticGetAbility(WorldConstRef world, const FName& abilityId);
+
+        static bool AddAbility(WorldRef world, const UnitId& unit, const FName& abilityId);
+
+        static bool RemoveAbility(WorldRef world, const UnitId& unit, const FName& abilityId);
+
+        static bool HasAbility(WorldConstRef world, const UnitId& unit, const FName& abilityId);
+
+        static bool AddAbilitiesFromData(WorldRef world, const UnitId& unit, const FName& unitData);
 
     protected:
 
-        void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
+        void Initialize() override;
+        void Shutdown() override;
 
-        static void SortAbilities(WorldRef world);
+        void OnWorldInitialize(WorldRef world) override;
+        void OnWorldShutdown(WorldRef world) override;
 
         TMap<FName, TSharedPtr<IAbility>> Abilities;
     };

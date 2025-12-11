@@ -8,7 +8,7 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API UnitPlacement
     {
-        // Footprint Footprint;
+        // FootprintPtr Footprint;
         Distance InnerRadius;
         Distance OuterRadius;
         static bool Read(const LDS::LDSReadObjectArgs& args, UnitPlacement& outItem);
@@ -17,7 +17,7 @@ namespace Phoenix::RTS::Data
     struct PHOENIX_RTS_API UnitPlacementPtr : LDS::TLDSObjectPtr<UnitPlacement>
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(UnitPlacement);
-        //LDS::TLDSObjectPtr<Footprint>
+        //LDS::TLDSObjectRefPtr<Footprint> Footprint;
         LDS::TLDSValuePtr<Distance> InnerRadius;
         LDS::TLDSValuePtr<Distance> OuterRadius;
     };

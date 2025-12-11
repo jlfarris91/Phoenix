@@ -35,6 +35,7 @@ namespace SteeringDetail
     struct SeekJob : IBufferJob<TransformComponent&, SteeringComponent&, SeekComponent&>
     {
         DeltaTime DeltaTime;
+        Distance ArrivalThreshold = 0.1;
 
         void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&, SeekComponent&>& span) override
         {
@@ -44,13 +45,31 @@ namespace SteeringDetail
 
             for (auto && [entityId, index, transformComp, steeringComp, seekComp] : span)
             {
+                // Only step entities actively seeking a goal
+                if (!HasAnyFlags(seekComp.Flags, ESeekFlags::SeekingGoal))
+                {
+                    continue;
+                }
+
                 Vec2 targetPos = seekComp.TargetPos;
 
+                bool clearSeekingGoal = true;
                 if (seekComp.TargetEntity != EntityId::Invalid)
                 {
-                    if (const TransformComponent* targetTransformComp = FeatureECS::GetComponent<TransformComponent>(world, seekComp.TargetEntity))
+                    if (const Transform2D* targetTransform = FeatureECS::GetWorldTransformPtr(world, seekComp.TargetEntity))
                     {
-                        targetPos = targetTransformComp->Transform.Position;
+                        targetPos = targetTransform->Position;
+
+                        // Only clear the seeking goal flag if within range of a static position.
+                        // Moving towards an entity will continue until the target is cleared or becomes invalid.
+                        clearSeekingGoal = false;
+                    }
+                    else
+                    {
+                        // Target entity is no longer a valid target
+                        seekComp.TargetEntity = EntityId::Invalid;
+                        SetFlagRef(seekComp.Flags, ESeekFlags::SeekingGoal, false);
+                        continue;
                     }
                 }
 
@@ -64,28 +83,26 @@ namespace SteeringDetail
                 //     targetPos = result.NextPoint;
                 // }
 
-                if (HasAnyFlags(seekComp.Flags, ESeekFlags::Arrive) && seekComp.SlowingDistance > 0)
+                Vec2 targetOffset = targetPos - currPos;
+                Distance distance = targetOffset.Length();
+
+                // The entity has reached its goal
+                if (distance < ArrivalThreshold)
                 {
-                    Vec2 targetOffset = targetPos - currPos;
-                    Distance distance = targetOffset.Length();
-                    if (distance > 0.0)
+                    SetFlagRef(seekComp.Flags, ESeekFlags::ArrivedAtGoal, true);
+
+                    if (clearSeekingGoal)
                     {
-                        Speed rampedSpeed = seekComp.MaxSpeed * (distance / seekComp.SlowingDistance);
-                        Speed clippedSpeed = Min(rampedSpeed, seekComp.MaxSpeed);
-                        Vec2 desiredVel = (clippedSpeed / distance) * targetOffset;
-                        steeringVel = desiredVel - steeringVel;
+                        SetFlagRef(seekComp.Flags, ESeekFlags::SeekingGoal, false);
                     }
-                }
-                else
-                {
-                    Vec2 desiredVel = (targetPos - currPos).Normalized() * seekComp.MaxSpeed;
-                    steeringVel = desiredVel - steeringVel;
+
+                    return;
                 }
 
-                if (HasAnyFlags(seekComp.Flags, ESeekFlags::Flee))
-                {   
-                    steeringVel *= -1;
-                }
+                SetFlagRef(seekComp.Flags, ESeekFlags::ArrivedAtGoal, false);
+
+                Vec2 desiredVel = (targetPos - currPos).Normalized() * steeringComp.MaxSpeed;
+                steeringVel = desiredVel - steeringVel;
 
                 steeringComp.SteeringVector += steeringVel;
             }
@@ -95,7 +112,6 @@ namespace SteeringDetail
     struct SeparationJob : IBufferJob<const TransformComponent&, const BodyComponent&, SteeringComponent&>
     {
         DeltaTime DeltaTime;
-        bool bMoveTowardsGoal;
         Distance DensityScalar;
         Distance DensityRadiusScalar;
         Distance AvoidanceScalar;
@@ -119,15 +135,9 @@ namespace SteeringDetail
                 bodyComp,
                 steeringComp] : span)
             {
-                Vec2 goal;
                 Vec2 avoid;
                 Vec2 density;
                 const Value T = 0.2;
-
-                if (bMoveTowardsGoal)
-                {
-                    goal = (Vec2::Zero - transformComp.Transform.Position).Normalized() * steeringComp.MaxSpeed;
-                }
 
                 // Query for overlapping morton ranges
                 {
@@ -207,10 +217,7 @@ namespace SteeringDetail
 
                 avoid *= AvoidanceScalar;
 
-                steeringComp.GoalVector = goal;
-                steeringComp.AvoidVector = avoid;
-                steeringComp.DensityVector = density;
-                steeringComp.SteeringVector = goal + avoid + density;
+                steeringComp.SteeringVector = avoid + density;
             }
         }
     };
@@ -329,7 +336,7 @@ namespace SteeringDetail
                 if (steerMag != 0.0)
                 {
                     TInvFixed2<Distance> invSteerMag = OneDivBy(steerMag);
-                    Distance clampedMag = Clamp(steerMag, -steeringComp.MaxSpeed, steeringComp.MaxSpeed);
+                    Distance clampedMag = Clamp<Distance>(steerMag, -steeringComp.MaxSpeed, steeringComp.MaxSpeed);
                     steeringComp.SteeringVector = (steeringComp.SteeringVector * invSteerMag) * clampedMag;
                 }
 
@@ -354,16 +361,18 @@ void SteeringSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    // SteeringDetail::SeekJob seekJob;
-    // seekJob.DeltaTime = args.DeltaTime;
-    // FeatureECS::ScheduleParallel(world, seekJob);
+    if (MoveTowardsGoal)
+    {
+        SteeringDetail::SeekJob seekJob;
+        seekJob.DeltaTime = args.DeltaTime;
+        FeatureECS::ScheduleParallel(world, seekJob);
+    }
 
     SteeringDetail::WanderJob wanderJob;
     FeatureECS::ScheduleParallel(world, wanderJob);
 
     SteeringDetail::SeparationJob avoidanceJob;
     avoidanceJob.DeltaTime = args.DeltaTime;
-    avoidanceJob.bMoveTowardsGoal = MoveTowardsGoal;
     avoidanceJob.DensityScalar = DensityScalar;
     avoidanceJob.DensityRadiusScalar = DensityRadiusScalar;
     avoidanceJob.AvoidanceScalar = AvoidanceScalar;

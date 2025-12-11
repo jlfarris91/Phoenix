@@ -11,5 +11,8 @@ bool UnitVitals::Read(const LDS::LDSReadObjectArgs& args, UnitVitals& outItem)
 
 UnitVitalsPtr::UnitVitalsPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
+    , Health(Object<VitalPtr>("health"))
+    , Energy(Object<VitalPtr>("energy"))
+    , Shield(Object<VitalPtr>("shield"))
 {
 }
