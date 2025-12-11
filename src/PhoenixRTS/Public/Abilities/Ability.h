@@ -10,6 +10,11 @@
 
 namespace Phoenix::RTS
 {
+    class FeatureAbilities;
+}
+
+namespace Phoenix::RTS
+{
     struct Action;
 
     struct IAbilityComponent : ECS::IComponent
@@ -17,6 +22,13 @@ namespace Phoenix::RTS
         PHX_DECLARE_INTERFACE_BEGIN(IAbilityComponent)
             PHX_REGISTER_BASE(IComponent)
         PHX_DECLARE_INTERFACE_END()
+    };
+
+    struct AbilityPriority
+    {
+        static uint32 All();
+        static uint32 SelfTargetOrAll(UnitId unit, ECS::EntityId target);
+        static uint32 Closest(WorldConstRef world, UnitId unit, const Vec2& target);
     };
 
     class IAbility : TSharedAsThis<IAbility>
@@ -27,27 +39,31 @@ namespace Phoenix::RTS
 
         virtual FName GetAbilityId() const = 0;
 
-        virtual void Initialize(SessionRef session) = 0;
+        virtual void Initialize(SessionRef session);
 
-        virtual void Shutdown(SessionRef session) = 0;
+        virtual void Shutdown(SessionRef session);
 
-        virtual void OnWorldInitialize(WorldRef world) = 0;
+        virtual void OnWorldInitialize(WorldRef world);
 
-        virtual void OnWorldShutdown(WorldRef world) = 0;
+        virtual void OnWorldShutdown(WorldRef world);
 
-        virtual bool AddAbility(WorldRef world, const UnitId& unit) = 0;
+        virtual bool AddAbility(WorldRef world, const UnitId& unit) const;
 
-        virtual bool RemoveAbility(WorldRef world, const UnitId& unit) = 0;
+        virtual bool RemoveAbility(WorldRef world, const UnitId& unit) const;
 
-        virtual bool HasAbility(WorldConstRef world, const UnitId& unit) = 0;
+        virtual bool HasAbility(WorldConstRef world, const UnitId& unit) const;
 
-        virtual uint32 HandleOrder(EOrderType type, const Order& order) = 0;
+        virtual uint32 GetCommandPriority(WorldRef world, UnitId unit, const Command& command) const;
 
-        virtual uint32 GetPriority(const Order& order) = 0;
+        virtual bool IsTransient(WorldRef world, const FName& abilityId) const;
 
-        virtual uint32 Acquire(const Order& order) = 0;
+        virtual bool ExecuteOrder(WorldRef world, UnitId unit, const Order& order) const;
 
-        virtual bool SupportsMagicBox(const Order& order) = 0;
+        virtual bool InterruptOrder(WorldRef world, UnitId unit, const Order& order) const;
+
+        virtual uint32 Acquire(const Order& order) const;
+
+        virtual bool SupportsMagicBox(const Order& order) const;
     };
 
     class AbilityBase : public IAbility
@@ -57,10 +73,14 @@ namespace Phoenix::RTS
         
         AbilityBase(const FName& abilityId);
 
+        void Initialize(SessionRef session) override;
+        void Shutdown(SessionRef session) override;
+
         FName GetAbilityId() const override;
 
     protected:
 
+        TSharedPtr<FeatureAbilities> Abilities;
         FName AbilityId;
     };
 }

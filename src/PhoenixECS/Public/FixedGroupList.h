@@ -46,20 +46,20 @@ namespace Phoenix::ECS
 
         EntityId GetFirstEntity(EntityId group, uint32& outIndex) const
         {
-            GroupEntity* item = Items.GetFirstItem(group, outIndex);
+            GroupEntity* item = Items.GetFirstSubItem(group, outIndex);
             return item ? item->Entity : EntityId::Invalid;
         }
 
         EntityId GetNextEntity(EntityId group, uint32 currIndex, uint32& outIndex) const
         {
-            GroupEntity* item = Items.GetNextItem(group, currIndex, outIndex);
+            GroupEntity* item = Items.GetNextSubItem(group, currIndex, outIndex);
             return item ? item->Entity : EntityId::Invalid;
         }
 
         template <class TCallback>
         void ForEachEntity(EntityId group, const TCallback& callback) const
         {
-            Items.ForEachItem(group, [&](const GroupEntity& item)
+            Items.ForEachSubItem(group, [&](const GroupEntity& item)
             {
                 callback(item.Entity);
             });

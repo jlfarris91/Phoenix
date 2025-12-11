@@ -53,18 +53,27 @@ namespace Phoenix::RTS
 
         static bool AddAbilitiesFromData(WorldRef world, const UnitId& unit, const FName& unitData);
 
-        static uint32 StaticHandleCommand(WorldRef world, const UnitId& unit, const Command& command);
+        static bool StaticHandleCommand(WorldRef world, const UnitId& unit, const Command& command);
 
-        uint32 HandleCommand(WorldRef world, const UnitId& unit, const Command& command);
+        bool HandleCommand(WorldRef world, const UnitId& unit, const Command& command) const;
+
+        static bool StaticHandleOrder(WorldRef world, const UnitId& unit, const Order& order);
+
+        bool HandleOrder(WorldRef world, const UnitId& unit, const Order& order) const;
+
+        static void StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success);
+
+        void OnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success) const;
 
     protected:
-
 
         void Initialize() override;
         void Shutdown() override;
 
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
+
+        bool ExitActiveAbility(WorldRef world, UnitId unit) const;
 
         TMap<FName, TSharedPtr<IAbility>> Abilities;
     };

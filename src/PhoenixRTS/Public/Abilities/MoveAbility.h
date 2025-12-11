@@ -16,6 +16,12 @@ namespace Phoenix::RTS
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
     };
 
+    enum class EMoveAbilityState
+    {
+        Idle,
+        MoveToPosition
+    };
+
     struct MoveAbilityComponent : IAbilityComponent
     {
         PHX_ECS_DECLARE_COMPONENT_BEGIN(MoveAbilityComponent)
@@ -23,17 +29,12 @@ namespace Phoenix::RTS
 
         MoveAbilityComponent();
 
-        enum class EMoveAbilityState
-        {
-            MoveToPosition
-        };
-
         union
         {
             MoveToPositionState MoveToPosition;
         } ActiveState;
 
-        EMoveAbilityState State;
+        EMoveAbilityState State = EMoveAbilityState::Idle;
     };
 
     class MoveAbility : public AbilityBase
@@ -42,6 +43,11 @@ namespace Phoenix::RTS
         PHX_DECLARE_DERIVED_TYPE_END()
 
     public:
+
+        struct Commands
+        {
+            static constexpr uint8 MoveToPosition = 0;
+        };
 
         MoveAbility();
 
@@ -53,19 +59,21 @@ namespace Phoenix::RTS
 
         void OnWorldShutdown(WorldRef world) override;
 
-        bool AddAbility(WorldRef world, const UnitId& unit) override;
+        bool AddAbility(WorldRef world, const UnitId& unit) const override;
 
-        bool RemoveAbility(WorldRef world, const UnitId& unit) override;
+        bool RemoveAbility(WorldRef world, const UnitId& unit) const override;
 
-        bool HasAbility(WorldConstRef world, const UnitId& unit) override;
+        bool HasAbility(WorldConstRef world, const UnitId& unit) const override;
 
-        uint32 HandleOrder(EOrderType type, const Order& order) override;
+        uint32 GetCommandPriority(WorldRef world, UnitId unit, const Command& command) const override;
 
-        uint32 GetPriority(const Order& order) override;
+        bool ExecuteOrder(WorldRef world, UnitId unit, const Order& order) const override;
 
-        uint32 Acquire(const Order& order) override;
+        bool InterruptOrder(WorldRef world, UnitId unit, const Order& order) const override;
 
-        bool SupportsMagicBox(const Order& order) override;
+        uint32 Acquire(const Order& order) const override;
+
+        bool SupportsMagicBox(const Order& order) const override;
 
     private:
 

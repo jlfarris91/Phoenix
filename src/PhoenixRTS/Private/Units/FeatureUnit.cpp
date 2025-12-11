@@ -6,10 +6,12 @@
 #include "FeatureECS.h"
 #include "FeaturePhysics.h"
 #include "SteeringComponent.h"
+#include "Abilities/Ability.h"
 #include "Abilities/FeatureAbilities.h"
 #include "Commands/Commands.h"
 
 #include "Data/DataUnit.h"
+#include "Orders/FeatureOrderQueue.h"
 #include "Selection/FeatureSelection.h"
 #include "Vitals/VitalsComponent.h"
 
@@ -116,7 +118,7 @@ Value FeatureUnit::GetHealthRegen(WorldConstRef world, UnitId unit)
 
 bool FeatureUnit::CanUnitMove(WorldConstRef world, UnitId unit)
 {
-    return false;
+    return true;
 }
 
 bool FeatureUnit::IsImmobilized(WorldConstRef world, UnitId unit)
@@ -140,31 +142,55 @@ bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& a
 
     if (args.Action.Verb == "command"_n || args.Action.Verb == "command_queued"_n)
     {
-        Command command = args.Action;
-        HandleCommand(world, command);
+        HandleCommand(world, args.Action);
     }
 
     return false;
 }
 
-void FeatureUnit::HandleCommand(WorldRef world, const Command& command)
+bool FeatureUnit::HandleCommand(WorldRef world, const Command& command)
 {
-    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
-    if (selection == EntityId::Invalid)
-    {
-        return;
-    }
-
     TSharedPtr<IAbility> ability = FeatureAbilities::StaticGetAbility(world, command.AbilityId);
     if (!ability)
     {
-        return;
+        return false;
     }
+
+    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
+    if (selection == EntityId::Invalid)
+    {
+        return false;
+    }
+
+    TArray<TTuple<UnitId, uint32>> handlers;
 
     // Determine how to handle the command
     FeatureECS::ForEachEntityInGroup(world, selection, [&](const EntityId& entity)
     {
+        uint32 priority = ability->GetCommandPriority(world, { entity }, command);
+        if (priority != 0)
+        {
+            handlers.emplace_back(UnitId{entity}, priority);
+        }
     });
 
-    
+    struct SortHandlersByPriority
+    {
+        bool operator()(const TTuple<UnitId, uint32>& a, const TTuple<UnitId, uint32>& b) const
+        {
+            return std::get<1>(a) > std::get<1>(b);
+        }
+    };
+
+    if (handlers.size() > 1)
+    {
+        std::ranges::stable_sort(handlers, SortHandlersByPriority());
+    }
+
+    for (auto && [unit, priority] : handlers)
+    {
+        FeatureAbilities::StaticHandleCommand(world, unit, command);
+    }
+
+    return !handlers.empty();
 }

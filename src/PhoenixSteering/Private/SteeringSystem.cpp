@@ -217,7 +217,7 @@ namespace SteeringDetail
 
                 avoid *= AvoidanceScalar;
 
-                steeringComp.SteeringVector = avoid + density;
+                steeringComp.SteeringVector += avoid + density;
             }
         }
     };

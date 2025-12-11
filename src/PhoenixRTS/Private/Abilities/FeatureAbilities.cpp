@@ -3,6 +3,7 @@
 #include "FeatureLDS.h"
 #include "Abilities/Ability.h"
 #include "Data/DataUnit.h"
+#include "Orders/FeatureOrderQueue.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -84,15 +85,91 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
     return success;
 }
 
-uint32 FeatureAbilities::StaticHandleCommand(WorldRef world, const UnitId& unit, const Command& command)
+bool FeatureAbilities::StaticHandleCommand(WorldRef world, const UnitId& unit, const Command& command)
 {
     TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
-    return feature ? feature->HandleCommand(world, unit, command) : 0;
+    return feature && feature->HandleCommand(world, unit, command);
 }
 
-uint32 FeatureAbilities::HandleCommand(WorldRef world, const UnitId& unit, const Command& command)
+bool FeatureAbilities::HandleCommand(WorldRef world, const UnitId& unit, const Command& command) const
 {
-    return 0;
+    TSharedPtr<IAbility> ability = GetAbility(command.AbilityId);
+    if (!ability)
+    {
+        return false;
+    }
+
+    Order order;
+    order.AbilityId = command.AbilityId;
+    order.CommandIndex = command.CommandIndex;
+    order.Target = command.TargetEntity;
+    order.Location = command.TargetLocation;
+    order.Flags = 0;
+
+    if (ability->IsTransient(world, command.AbilityId))
+    {
+        return ability->ExecuteOrder(world, unit, order);
+    }
+
+    if (!FeatureOrderQueue::EnqueueOrder(world, unit, order))
+    {
+        return false;
+    }
+
+    // TODO (jfarris): broadcast event that order was received
+
+    return true;
+}
+
+bool FeatureAbilities::StaticHandleOrder(WorldRef world, const UnitId& unit, const Order& order)
+{
+    TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
+    return feature && feature->HandleOrder(world, unit, order);
+}
+
+bool FeatureAbilities::HandleOrder(WorldRef world, const UnitId& unit, const Order& order) const
+{
+    TSharedPtr<IAbility> ability = GetAbility(order.AbilityId);
+    if (!ability)
+    {
+        return false;
+    }
+
+    // TODO (jfarris): should we allow an ability to deny exiting?
+    if (!ExitActiveAbility(world, unit))
+    {
+        return false;
+    }
+
+    if (!ability->ExecuteOrder(world, unit, order))
+    {
+        return false;
+    }
+
+    // TODO (jfarris): broadcast event that the order was executed
+
+    return true;
+}
+
+void FeatureAbilities::StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success)
+{
+    TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
+    feature->OnActiveOrderCompleted(world, unit, success);
+}
+
+void FeatureAbilities::OnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success) const
+{
+    ExitActiveAbility(world, unit);
+
+    // Remove the active order from the queue
+    FeatureOrderQueue::RemoveOrder(world, unit, 0);
+
+    // Handle the next head order
+    uint32 index;
+    if (const Order* order = FeatureOrderQueue::GetHeadOrder(world, unit, index))
+    {
+        StaticHandleOrder(world, unit, *order);
+    }
 }
 
 void FeatureAbilities::Initialize()
@@ -133,4 +210,22 @@ void FeatureAbilities::OnWorldShutdown(WorldRef world)
     {
         ability->OnWorldShutdown(world);
     }
+}
+
+bool FeatureAbilities::ExitActiveAbility(WorldRef world, UnitId unit) const
+{
+    uint32 index;
+    const Order* currentOrder = FeatureOrderQueue::GetHeadOrder(world, unit, index);
+    if (!currentOrder)
+    {
+        return false;
+    }
+
+    TSharedPtr<IAbility> ability = GetAbility(currentOrder->AbilityId);
+    if (!ability)
+    {
+        return false;
+    }
+
+    return ability->InterruptOrder(world, unit, *currentOrder);
 }

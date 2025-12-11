@@ -108,6 +108,22 @@ namespace Phoenix
             return true;
         }
 
+        bool InsertSubItem(const TItem& item, uint32 subIndex)
+        {
+            if (Items.IsFull())
+            {
+                return false;
+            }
+
+            uint32 index = FindIndexOfSubItem(GetItemKey(item), subIndex);
+            if (index == Index<uint32>::None)
+            {
+                return PushBack(item);
+            }
+
+            return InsertInternal(index, item);
+        }
+
         template <class ...TArgs>
         bool EmplaceInsert(uint32 index, TArgs&&... args)
         {
@@ -201,14 +217,14 @@ namespace Phoenix
             return true;
         }
 
-        bool Remove(const TKey& key, uint32 index)
+        bool RemoveSubItem(const TKey& key, uint32 subIndex)
         {
             if (Items.IsEmpty())
             {
                 return false;
             }
 
-            TItem* item = FindItemInternal(key, index);
+            TItem* item = FindSubItemInternal(key, subIndex);
             if (!item)
             {
                 return false;
@@ -220,14 +236,14 @@ namespace Phoenix
             return true;
         }
 
-        bool RemoveAndReturn(const TKey& key, uint32 index, TItem& outItem)
+        bool RemoveSubItemAndReturn(const TKey& key, uint32 subIndex, TItem& outItem)
         {
             if (Items.IsEmpty())
             {
                 return false;
             }
 
-            TItem* item = FindItemInternal(key, index);
+            TItem* item = FindSubItemInternal(key, subIndex);
             if (!item)
             {
                 return false;
@@ -283,7 +299,7 @@ namespace Phoenix
             return numRemoved;
         }
 
-        const TItem* GetFirstItem(const TKey& key, uint32& outIndex) const
+        const TItem* GetFirstSubItem(const TKey& key, uint32& outIndex) const
         {
             auto begin = Items.begin();
             auto end = Items.end();
@@ -321,7 +337,7 @@ namespace Phoenix
             return nullptr;
         }
 
-        const TItem* GetNextItem(const TKey& key, uint32 currIndex, uint32& outIndex) const
+        const TItem* GetNextSubItem(const TKey& key, uint32 currIndex, uint32& outIndex) const
         {
             uint32 index = currIndex + 1;
 
@@ -354,13 +370,12 @@ namespace Phoenix
             return nullptr;
         }
 
-        const TItem* GetItem(const TKey& key, uint32 index) const
+        const TItem* GetSubItem(const TKey& key, uint32 subIndex) const
         {
-            const TItem* item = FindItemInternal(key, index);
-            return item ? &item : nullptr;
+            return FindSubItemInternal(key, subIndex);
         }
 
-        uint32 GetNumItems(const TKey& key) const
+        uint32 GetNumSubItems(const TKey& key) const
         {
             auto begin = Items.begin();
             auto end = Items.end();
@@ -397,7 +412,7 @@ namespace Phoenix
         }
 
         template <class TCallback>
-        void ForEachItem(const TKey& key, const TCallback& callback) const
+        void ForEachSubItem(const TKey& key, const TCallback& callback) const
         {
             auto begin = Items.begin();
             auto end = Items.end();
@@ -520,7 +535,7 @@ namespace Phoenix
             return Index<uint32>::None;
         }
 
-        uint32 FindIndexOfItem(const TKey& key, uint32 index) const
+        uint32 FindIndexOfSubItem(const TKey& key, uint32 index) const
         {
             auto begin = Items.begin();
             auto end = Items.end();
@@ -555,15 +570,15 @@ namespace Phoenix
             return Index<uint32>::None;
         }
 
-        TItem* FindItemInternal(const TKey& key, uint32 subIndex)
+        TItem* FindSubItemInternal(const TKey& key, uint32 subIndex)
         {
-            uint32 index = FindIndexOfItem(key, subIndex);
+            uint32 index = FindIndexOfSubItem(key, subIndex);
             return index == Index<uint32>::None ? nullptr : &Items[index];
         }
 
-        const TItem* FindItemInternal(const TKey& key, uint32 subIndex) const
+        const TItem* FindSubItemInternal(const TKey& key, uint32 subIndex) const
         {
-            uint32 index = FindIndexOfItem(key, subIndex);
+            uint32 index = FindIndexOfSubItem(key, subIndex);
             return index == Index<uint32>::None ? nullptr : &Items[index];
         }
 

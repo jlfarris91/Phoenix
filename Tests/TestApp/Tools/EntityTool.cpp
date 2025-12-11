@@ -11,7 +11,7 @@
 
 using namespace Phoenix;
 
-EntityTool::EntityTool(Phoenix::Session* session)
+EntityTool::EntityTool(const TSharedPtr<Phoenix::Session>& session)
     : Session(session)
 {
 }

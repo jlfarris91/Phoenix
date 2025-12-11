@@ -21,13 +21,13 @@ namespace Phoenix
             PHX_REGISTER_FIELD(float, ZoomSpeed)
         PHX_DECLARE_TYPE_END()
 
-        CameraTool(Session* session, SDLCamera* camera, SDLViewport* viewport);
+        CameraTool(const TSharedPtr<Session>& session, SDLCamera* camera, SDLViewport* viewport);
 
         void OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
         void OnAppEvent(SDLDebugState& state, SDL_Event* event) override;
 
-        Session* Session;
+        TSharedPtr<Session> Session;
         SDLCamera* Camera;
         SDLViewport* Viewport;
         TOptional<SDL_FPoint> CameraDragPos;

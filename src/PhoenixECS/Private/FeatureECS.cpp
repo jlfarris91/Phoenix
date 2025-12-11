@@ -585,6 +585,12 @@ const IComponent& FeatureECS::GetComponentRef(
     return *component;
 }
 
+bool FeatureECS::HasComponent(WorldConstRef world, EntityId entityId, const FName& componentType)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block && block->ArchetypeManager.GetComponent(entityId, componentType) != nullptr;
+}
+
 IComponent* FeatureECS::AddComponent(
     WorldRef world,
     EntityId entityId,
@@ -740,6 +746,34 @@ const Transform2D* FeatureECS::GetWorldTransformPtr(WorldConstRef world, EntityI
 {
     const TransformComponent* comp = GetComponent<TransformComponent>(world, entityId);
     return comp ? &comp->Transform : nullptr;
+}
+
+bool FeatureECS::IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entity);
+    if (!entityTransform)
+    {
+        return false;
+    }
+
+    auto targetTransform = GetWorldTransformPtr(world, target);
+    if (!targetTransform)
+    {
+        return false;
+    }
+
+    return Vec2::Distance(entityTransform->Position, targetTransform->Position) <= range;
+}
+
+bool FeatureECS::IsInRange(WorldConstRef world, EntityId entity, const Vec2& target, Distance range)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entity);
+    if (!entityTransform)
+    {
+        return false;
+    }
+
+    return Vec2::Distance(entityTransform->Position, target) <= range;
 }
 
 void FeatureECS::QueryEntitiesInRange(

@@ -46,20 +46,20 @@ namespace Phoenix::ECS
 
         FName GetFirstTag(EntityId entity, uint32& outIndex) const
         {
-            EntityTag* item = Items.GetFirstItem(entity, outIndex);
+            EntityTag* item = Items.GetFirstSubItem(entity, outIndex);
             return item ? item->Tag : FName::None;
         }
 
         FName GetNextTag(EntityId entity, uint32 currIndex, uint32& outIndex) const
         {
-            EntityTag* item = Items.GetNextItem(entity, currIndex, outIndex);
+            EntityTag* item = Items.GetNextSubItem(entity, currIndex, outIndex);
             return item ? item->Tag : FName::None;
         }
 
         template <class TCallback>
         void ForEachTag(EntityId entity, const TCallback& callback) const
         {
-            Items.ForEachItem(entity, [&](const EntityTag& item)
+            Items.ForEachSubItem(entity, [&](const EntityTag& item)
             {
                 callback(item.Tag);
             });

@@ -267,6 +267,9 @@ namespace Phoenix
                 return static_cast<const T&>(comp);
             }
 
+            // Returns whether an entity is using an archetype containing a type of component.
+            static bool HasComponent(WorldConstRef world, EntityId entityId, const FName& componentType);
+
             // Adds a new component to an entity.
             static IComponent* AddComponent(WorldRef world, EntityId entityId, const FName& componentType);
 

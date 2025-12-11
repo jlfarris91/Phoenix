@@ -63,7 +63,7 @@ FPSCalc GRendererFPS;
 
 Profiling::TracyProfiler GTracyProfiler;
 
-Session* GSession;
+TSharedPtr<Session> GSession;
 bool GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
 World* GLatestWorldView = nullptr;
@@ -114,13 +114,13 @@ void InitSession()
     sessionArgs.FeatureSetArgs.Features.push_back(testFeature);
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
 
-    GSession = new Session(sessionArgs);
+    GSession = Session::Create(sessionArgs);
 
     GSession->Initialize();
 
     WorldManager* worldManager = GSession->GetWorldManager();
 
-    auto primaryWorld = worldManager->NewWorld("TestWorld"_n);
+    auto primaryWorld = worldManager->NewWorld({"DefaultWorld"_n, "TestWorld"_n});
 
     FeatureECS::RegisterArchetypeDefinition<TransformComponent, BodyComponent, SteeringComponent, SeekComponent>(*primaryWorld, "Unit"_n);
     
@@ -399,7 +399,7 @@ void OnAppRenderUI()
                 ImGui::TableNextColumn();
                 ImGui::Text("Num Tags:");
                 ImGui::TableNextColumn();
-                ImGui::Text("%u", ecsDynamicBlock.Tags.GetNumActive());
+                ImGui::Text("%u", ecsDynamicBlock.Tags.GetNumValidTags());
 
                 ImGui::TableNextColumn();
                 ImGui::Text("Tags HWM:");

@@ -37,7 +37,7 @@ namespace Phoenix::RTS
         uint32 Sender = 0;
         ECommandType Type = ECommandType::Order;
         FName AbilityId;
-        uint32 CommandIndex = 0;
+        uint8 CommandIndex = 0;
         ECS::EntityId TargetEntity;
         Vec2 TargetLocation;
 

@@ -11,6 +11,8 @@
 
 namespace Phoenix::RTS
 {
+    class IAbility;
+
     struct UnitComponent : ECS::IComponent
     {
         PHX_ECS_DECLARE_COMPONENT_BEGIN(UnitComponent)
@@ -77,7 +79,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        static void HandleCommand(WorldRef world, const Command& command);
+        static bool HandleCommand(WorldRef world, const Command& command);
 
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
     };
