@@ -35,9 +35,9 @@ namespace Phoenix
 
         NavMeshTool(TSharedPtr<Session> session);
 
-        void OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
+        void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
-        void OnAppEvent(SDLDebugState& state, SDL_Event* event) override;
+        void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
 
         void RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, const Pathfinding::NavMesh& mesh);
 

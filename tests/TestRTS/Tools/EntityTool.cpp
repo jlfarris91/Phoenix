@@ -16,7 +16,7 @@ EntityTool::EntityTool(TSharedPtr<Phoenix::Session> session)
 {
 }
 
-void EntityTool::OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer)
+void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
@@ -36,7 +36,7 @@ void EntityTool::OnAppRenderUI(ImGuiIO& io)
     
 }
 
-void EntityTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
+void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
@@ -50,7 +50,7 @@ void EntityTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
         action.Data[2].Distance = mouseWorldPos.Y;
         action.Data[3].Degrees = Vec2::RandUnitVector().AsRadians();
         action.Data[4].UInt32 = SpawnCount;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
     }
 
     // Release entities
@@ -61,7 +61,7 @@ void EntityTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
         action.Data[0].Distance = mouseWorldPos.X;
         action.Data[1].Distance = mouseWorldPos.Y;
         action.Data[2].Distance = BrushSize;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
     }
 
     // Push entities
@@ -73,6 +73,6 @@ void EntityTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
         action.Data[1].Distance = mouseWorldPos.Y;
         action.Data[2].Distance = BrushSize;
         action.Data[3].Value = PushForce;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
     }
 }

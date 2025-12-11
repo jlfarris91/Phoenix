@@ -11,7 +11,7 @@
         "icon": {
             "type": "Object#Icon",
             "default": {
-                "icon_asset": "Icons/armor.png",
+                "icon": "Icons/armor.png",
                 "display_name": "Unnamed Armor",
                 "description": "Provides additional protection to units, reducing incoming damage."
             }

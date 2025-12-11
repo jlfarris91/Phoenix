@@ -75,8 +75,8 @@ SDLDebugRenderer* GDebugRenderer;
 SDLCamera* GCamera;
 SDLViewport* GViewport;
 
-TArray<TSharedPtr<ISDLTool>> Tools;
-TArray<TSharedPtr<ISDLTool>> ActiveTools;
+TArray<TSharedPtr<ISDLTool>> GTools;
+TArray<TSharedPtr<ISDLTool>> GActiveTools;
 
 World* GCurrWorldView = nullptr;
 
@@ -194,13 +194,13 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     auto entityTool = MakeShared<EntityTool>(GSession);
     auto navMeshTool = MakeShared<NavMeshTool>(GSession);
 
-    Tools.push_back(cameraTool);
-    Tools.push_back(entityTool);
-    Tools.push_back(navMeshTool);
+    GTools.push_back(cameraTool);
+    GTools.push_back(entityTool);
+    GTools.push_back(navMeshTool);
 
-    ActiveTools.push_back(cameraTool);
-    ActiveTools.push_back(entityTool);
-    ActiveTools.push_back(navMeshTool);
+    GActiveTools.push_back(cameraTool);
+    GActiveTools.push_back(entityTool);
+    GActiveTools.push_back(navMeshTool);
 }
 
 void OnAppRenderWorld()
@@ -298,7 +298,7 @@ void OnAppRenderWorld()
             feature->OnDebugRender(*GCurrWorldView, *GDebugState, *GDebugRenderer);
         }
 
-        for (const TSharedPtr<ISDLTool>& tool : ActiveTools)
+        for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
         {
             tool->OnAppRenderWorld(*GCurrWorldView, *GDebugState, *GDebugRenderer);
         }
@@ -365,7 +365,7 @@ void OnAppRenderUI()
 
     if (ImGui::Begin("Tools"))
     {
-        for (const auto& tool : Tools)
+        for (const auto& tool : GTools)
         {
             const auto& descriptor = tool->GetTypeDescriptor();
 
@@ -600,7 +600,7 @@ void OnAppEvent(SDL_Event* event)
 {
     GDebugState->ProcessAppEvent(event);
 
-    for (const TSharedPtr<ISDLTool>& tool : ActiveTools)
+    for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
     {
         tool->OnAppEvent(*GDebugState, event);
     }

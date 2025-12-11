@@ -2,7 +2,7 @@
     "id": "Icon",
     "type": "Object",
     "properties": {
-        "icon_asset": {
+        "asset": {
             "type": "Asset#Icon"
         },
         "display_name": {

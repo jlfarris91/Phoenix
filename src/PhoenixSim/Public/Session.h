@@ -43,7 +43,7 @@ namespace Phoenix
         void Initialize();
         void Shutdown();
 
-        void QueueAction(const Action& action);
+        void EnqueueAction(const Action& action);
 
         void Tick(const SessionStepArgs& args);
         void Step(const SessionStepArgs& args);

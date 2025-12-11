@@ -84,6 +84,17 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
     return success;
 }
 
+uint32 FeatureAbilities::StaticHandleCommand(WorldRef world, const UnitId& unit, const Command& command)
+{
+    TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
+    return feature ? feature->HandleCommand(world, unit, command) : 0;
+}
+
+uint32 FeatureAbilities::HandleCommand(WorldRef world, const UnitId& unit, const Command& command)
+{
+    return 0;
+}
+
 void FeatureAbilities::Initialize()
 {
     IFeature::Initialize();

@@ -33,6 +33,11 @@
 #include "Units/FeatureUnit.h"
 #include "Abilities/FeatureAbilities.h"
 #include "Orders/FeatureOrderQueue.h"
+#include "Selection/FeatureSelection.h"
+#include "Tools/PlayerController.h"
+
+// RTS Abilities
+#include "Abilities/MoveAbility.h"
 
 // Remove me
 #include "Json/LDSJsonTests.h"
@@ -47,7 +52,6 @@
 #include "SDL/SDLViewport.h"
 
 // Test App Tools
-#include "Abilities/MoveAbility.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -80,8 +84,9 @@ SDLDebugRenderer* GDebugRenderer;
 SDLCamera* GCamera;
 SDLViewport* GViewport;
 
-TArray<TSharedPtr<ISDLTool>> Tools;
-TArray<TSharedPtr<ISDLTool>> ActiveTools;
+TArray<TSharedPtr<ISDLTool>> GTools;
+TArray<TSharedPtr<ISDLTool>> GActiveTools;
+TSharedPtr<ISDLTool> GPlayerController;
 
 World* GCurrWorldView = nullptr;
 
@@ -110,6 +115,7 @@ void InitSession()
     TSharedPtr<RTS::FeatureUnit> unitFeature = std::make_shared<RTS::FeatureUnit>();
     TSharedPtr<RTS::FeatureAbilities> abilitiesFeature = std::make_shared<RTS::FeatureAbilities>();
     TSharedPtr<RTS::FeatureOrderQueue> orderQueueFeature = std::make_shared<RTS::FeatureOrderQueue>();
+    TSharedPtr<RTS::FeatureSelection> selectionFeature = std::make_shared<RTS::FeatureSelection>();
     // TSharedPtr<FeatureLua> luaFeature = std::make_shared<FeatureLua>();
 
     abilitiesFeature->RegisterAbility(std::make_shared<RTS::MoveAbility>());
@@ -126,6 +132,7 @@ void InitSession()
     sessionArgs.FeatureSetArgs.Features.push_back(unitFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(abilitiesFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(orderQueueFeature);
+    sessionArgs.FeatureSetArgs.Features.push_back(selectionFeature);
     // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
 
@@ -209,13 +216,14 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     auto entityTool = MakeShared<EntityTool>(GSession);
     auto navMeshTool = MakeShared<NavMeshTool>(GSession);
 
-    Tools.push_back(cameraTool);
-    Tools.push_back(entityTool);
-    Tools.push_back(navMeshTool);
+    GPlayerController = MakeShared<PlayerController>(GSession, GCamera, GViewport);
 
-    ActiveTools.push_back(cameraTool);
-    ActiveTools.push_back(entityTool);
-    ActiveTools.push_back(navMeshTool);
+    GTools.push_back(cameraTool);
+    GTools.push_back(entityTool);
+    GTools.push_back(navMeshTool);
+    GTools.push_back(GPlayerController);
+
+    GActiveTools.push_back(GPlayerController);
 }
 
 void OnAppRenderWorld()
@@ -313,7 +321,7 @@ void OnAppRenderWorld()
             feature->OnDebugRender(*GCurrWorldView, *GDebugState, *GDebugRenderer);
         }
 
-        for (const TSharedPtr<ISDLTool>& tool : ActiveTools)
+        for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
         {
             tool->OnAppRenderWorld(*GCurrWorldView, *GDebugState, *GDebugRenderer);
         }
@@ -380,14 +388,22 @@ void OnAppRenderUI()
 
     if (ImGui::Begin("Tools"))
     {
-        for (const auto& tool : Tools)
+        GActiveTools.clear();
+
+        for (const auto& tool : GTools)
         {
             const auto& descriptor = tool->GetTypeDescriptor();
 
             if (ImGui::CollapsingHeader(descriptor.DisplayName))
             {
+                GActiveTools.push_back(tool);
                 DrawPropertyGrid(tool.get(), descriptor);
             }
+        }
+
+        if (GActiveTools.empty())
+        {
+            GActiveTools.push_back(GPlayerController);
         }
 
         ImGui::End();
@@ -414,12 +430,22 @@ void OnAppRenderUI()
                 ImGui::TableNextColumn();
                 ImGui::Text("Num Tags:");
                 ImGui::TableNextColumn();
-                ImGui::Text("%u", ecsDynamicBlock.Tags.GetNumActive());
+                ImGui::Text("%u", ecsDynamicBlock.Tags.GetNumValidTags());
 
                 ImGui::TableNextColumn();
                 ImGui::Text("Tags HWM:");
                 ImGui::TableNextColumn();
                 ImGui::Text("%u", ecsDynamicBlock.Tags.GetSize());
+
+                ImGui::TableNextColumn();
+                ImGui::Text("Num Group Pairs:");
+                ImGui::TableNextColumn();
+                ImGui::Text("%u", ecsDynamicBlock.Groups.GetNumValidPairs());
+
+                ImGui::TableNextColumn();
+                ImGui::Text("Group Pairs HWM:");
+                ImGui::TableNextColumn();
+                ImGui::Text("%u", ecsDynamicBlock.Groups.GetSize());
                                 
                 ImGui::EndTable();
             }
@@ -615,9 +641,9 @@ void OnAppEvent(SDL_Event* event)
 {
     GDebugState->ProcessAppEvent(event);
 
-    for (const TSharedPtr<ISDLTool>& tool : ActiveTools)
+    for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
     {
-        tool->OnAppEvent(*GDebugState, event);
+        tool->OnAppEvent(*GCurrWorldView, *GDebugState, event);
     }
 }
 

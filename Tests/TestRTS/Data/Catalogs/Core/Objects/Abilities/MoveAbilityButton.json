@@ -1,6 +1,6 @@
 {
     "id": "MoveAbilityButton",
-    "type": "Object",
+    "base": "CommandButton",
     "icon": {
         "asset": "Texture2D'/Game/UI/Assets/Icons/BasicCommands/UI_Icons_BasicCommands_Move.UI_Icons_BasicCommands_Move'",
         "display_name": "Move",

@@ -26,7 +26,7 @@ void CameraTool::OnAppRenderUI(ImGuiIO& io)
 {
 }
 
-void CameraTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
+void CameraTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
 {
     float mx, my;
     SDL_GetMouseState(&mx, &my);

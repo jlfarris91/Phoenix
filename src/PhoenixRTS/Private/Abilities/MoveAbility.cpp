@@ -36,6 +36,7 @@ void MoveAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
 
 MoveAbilityComponent::MoveAbilityComponent()
     : ActiveState(MoveToPositionState{})
+    , State(EMoveAbilityState::MoveToPosition)
 {
 }
 

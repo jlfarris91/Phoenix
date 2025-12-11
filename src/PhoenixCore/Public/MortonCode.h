@@ -152,7 +152,8 @@ namespace Phoenix
         int32 MaxX = 0, MaxY = 0;
     };
 
-    PHOENIXCORE_API MortonCodeAABB ToMortonCodeAABB(Vec2 pos, Distance radius);
+    PHOENIXCORE_API MortonCodeAABB ToMortonCodeAABB(const Vec2& min, const Vec2& max);
+    PHOENIXCORE_API MortonCodeAABB ToMortonCodeAABB(const Vec2& pos, Distance radius);
 
     PHOENIXCORE_API void MortonCodeQuery(
         const MortonCodeAABB& query,

@@ -14,15 +14,17 @@ namespace Phoenix
     struct SDLCamera;
     class Session;
 
-    struct CameraTool : ISDLTool
+    struct PlayerController : ISDLTool
     {
-        PHX_DECLARE_TYPE_BEGIN(CameraTool)
+        PHX_DECLARE_TYPE_BEGIN(PlayerController)
             PHX_REGISTER_FIELD(float, PanSpeed)
             PHX_REGISTER_FIELD(float, ZoomSpeed)
         PHX_DECLARE_TYPE_END()
 
-        CameraTool(TSharedPtr<Session> session, SDLCamera* camera, SDLViewport* viewport);
+        PlayerController(const TSharedPtr<Session>& session, SDLCamera* camera, SDLViewport* viewport);
 
+        void OnActivated() override;
+        void OnDeactivated() override;
         void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
         void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
@@ -33,5 +35,9 @@ namespace Phoenix
         TOptional<SDL_FPoint> CameraDragPos;
         float PanSpeed = 100.0f;
         float ZoomSpeed = 0.1f;
+
+        Vec2 CursorPos;
+        TOptional<Vec2> CursorDragStart;
+        TOptional<Vec2> BoxSelectDragStart, BoxSelectDragEnd;
     };
 }

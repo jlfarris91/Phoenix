@@ -10,6 +10,7 @@
 
 namespace Phoenix::RTS
 {
+    struct Command;
     class IAbility;
 }
 
@@ -52,7 +53,12 @@ namespace Phoenix::RTS
 
         static bool AddAbilitiesFromData(WorldRef world, const UnitId& unit, const FName& unitData);
 
+        static uint32 StaticHandleCommand(WorldRef world, const UnitId& unit, const Command& command);
+
+        uint32 HandleCommand(WorldRef world, const UnitId& unit, const Command& command);
+
     protected:
+
 
         void Initialize() override;
         void Shutdown() override;

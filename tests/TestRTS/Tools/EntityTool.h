@@ -19,9 +19,9 @@ namespace Phoenix
 
         EntityTool(TSharedPtr<Session> session);
 
-        void OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
+        void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
-        void OnAppEvent(SDLDebugState& state, SDL_Event* event) override;
+        void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
 
         TSharedPtr<Session> Session;
         float BrushSize = 10.0f;

@@ -18,8 +18,8 @@ namespace Phoenix
 
         virtual void OnActivated() {}
         virtual void OnDeactivated() {}
-        virtual void OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer) {}
+        virtual void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) {}
         virtual void OnAppRenderUI(ImGuiIO& io) {}
-        virtual void OnAppEvent(SDLDebugState& state, SDL_Event* event) {}
+        virtual void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) {}
     };
 }

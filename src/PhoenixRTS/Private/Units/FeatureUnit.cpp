@@ -5,10 +5,12 @@
 #include "FeatureLDS.h"
 #include "FeatureECS.h"
 #include "FeaturePhysics.h"
-#include "../../../PhoenixSteering/Public/SteeringComponent.h"
+#include "SteeringComponent.h"
 #include "Abilities/FeatureAbilities.h"
+#include "Commands/Commands.h"
 
 #include "Data/DataUnit.h"
+#include "Selection/FeatureSelection.h"
 #include "Vitals/VitalsComponent.h"
 
 using namespace Phoenix;
@@ -122,18 +124,47 @@ bool FeatureUnit::IsImmobilized(WorldConstRef world, UnitId unit)
     return false;
 }
 
-bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
+bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args)
 {
-    if (action.Action.Verb == "spawn_entity"_n)
+    if (args.Action.Verb == "spawn_entity"_n)
     {
-        FName unitData = action.Action.Data[0].Name;
-        Distance x = action.Action.Data[1].Distance;
-        Distance y = action.Action.Data[2].Distance;
-        Angle facing = action.Action.Data[3].Degrees;
-        uint32 num = action.Action.Data[4].UInt32;
+        FName unitData = args.Action.Data[0].Name;
+        Distance x = args.Action.Data[1].Distance;
+        Distance y = args.Action.Data[2].Distance;
+        Angle facing = args.Action.Data[3].Degrees;
+        uint32 num = args.Action.Data[4].UInt32;
 
         SpawnUnits(world, num, unitData, 0, { x, y }, facing);
         return true;
     }
+
+    if (args.Action.Verb == "command"_n || args.Action.Verb == "command_queued"_n)
+    {
+        Command command = args.Action;
+        HandleCommand(world, command);
+    }
+
     return false;
+}
+
+void FeatureUnit::HandleCommand(WorldRef world, const Command& command)
+{
+    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
+    if (selection == EntityId::Invalid)
+    {
+        return;
+    }
+
+    TSharedPtr<IAbility> ability = FeatureAbilities::StaticGetAbility(world, command.AbilityId);
+    if (!ability)
+    {
+        return;
+    }
+
+    // Determine how to handle the command
+    FeatureECS::ForEachEntityInGroup(world, selection, [&](const EntityId& entity)
+    {
+    });
+
+    
 }

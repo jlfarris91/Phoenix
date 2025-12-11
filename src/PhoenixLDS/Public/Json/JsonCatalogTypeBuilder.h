@@ -359,6 +359,9 @@ namespace Phoenix::LDS::Json
                 }
             }
 
+            // Record the type
+            this->Catalog->EmplaceTypeRecord(rootTypeId, propertyPath + "/type", LDSTypedValue(valueType));
+
             return true;
         }
 

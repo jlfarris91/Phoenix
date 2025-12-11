@@ -236,7 +236,7 @@ namespace Phoenix::Blackboard
 
         uint32 GetSize() const
         {
-            return Items.Num();
+            return static_cast<uint32>(Items.Num());
         }
 
         uint32 GetNumActive() const

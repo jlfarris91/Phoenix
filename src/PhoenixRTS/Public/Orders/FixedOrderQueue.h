@@ -279,7 +279,7 @@ namespace Phoenix::RTS
             if (sortedEnd != begin)
             {
                 auto iter = std::lower_bound(begin, sortedEnd, { entityId, Order{} }, SortOrderById());
-                while (iter != sortedEnd && iter->Entity == entityId)
+                while (iter != sortedEnd && iter->Id == entityId)
                 {
                     if (iter->IsValid())
                     {
@@ -348,40 +348,6 @@ namespace Phoenix::RTS
                 return !order.IsValid();
             }
         };
-
-        uint32 FindIndexOfOrder(const EntityOrder& entityOrder)
-        {
-            auto begin = Orders.begin();
-            auto end = Orders.end();
-            auto sortedEnd = begin + SortedNum;
-
-            // Search the sorted section
-            if (sortedEnd != begin)
-            {
-                auto iter = std::lower_bound(begin, sortedEnd, entityOrder, SortOrderById());
-                while (iter != sortedEnd && iter->Entity == entityOrder.Id)
-                {
-                    if (iter->Order == entityOrder.Order)
-                    {
-                        return iter - begin;
-                    }
-                    ++iter;
-                }
-            }
-
-            // Search the unsorted section
-            auto iter = sortedEnd;
-            while (iter != end)
-            {
-                if (*iter == entityOrder)
-                {
-                    return iter - begin;
-                }
-                ++iter;
-            }
-
-            return Index<uint32>::None;
-        }
 
         uint32 FindIndexOfEntityOrder(const ECS::EntityId& entityId, uint32 orderIndex) const
         {

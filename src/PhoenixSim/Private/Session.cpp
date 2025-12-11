@@ -93,7 +93,7 @@ void Session::Shutdown()
     }
 }
 
-void Session::QueueAction(const Action& action)
+void Session::EnqueueAction(const Action& action)
 {
     std::lock_guard lock(ActionQueueMutex);
     ActionQueue.emplace_back(SimTime + 1, action);

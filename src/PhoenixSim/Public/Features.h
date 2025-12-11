@@ -117,13 +117,13 @@ namespace Phoenix
         virtual void OnPostUpdate(const FeatureUpdateArgs& args);
 
         // Called once per action sent to the session, before OnHandleAction.
-        virtual bool OnPreHandleAction(const FeatureActionArgs& action);
+        virtual bool OnPreHandleAction(const FeatureActionArgs& args);
  
         // Called once per action sent to the session.
-        virtual bool OnHandleAction(const FeatureActionArgs& action);
+        virtual bool OnHandleAction(const FeatureActionArgs& args);
 
         // Called once per action sent to the session, after OnHandleAction.
-        virtual bool OnPostHandleAction(const FeatureActionArgs& action);
+        virtual bool OnPostHandleAction(const FeatureActionArgs& args);
 
         // Called once per session step, per world, before OnWorldUpdate.
         virtual void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args);
@@ -135,13 +135,13 @@ namespace Phoenix
         virtual void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args);
 
         // Called once per action sent to a specific world, before OnHandleWorldAction.
-        virtual bool OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action);
+        virtual bool OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& args);
 
         // Called once per action sent to a specific world.
-        virtual bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action);
+        virtual bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args);
 
         // Called once per action sent to a specific world, after OnHandleWorldAction.
-        virtual bool OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& action);
+        virtual bool OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& args);
 
         // Gives the feature the ability to render debug information for a given world.
         virtual void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer);

@@ -238,7 +238,7 @@ void FeatureECS::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args
 
     WorldTaskQueue::Flush(world);
 
-    CompactWorldBuffer(world);
+    SortAndCompact(world);
 }
 
 bool FeatureECS::OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
@@ -274,11 +274,7 @@ bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& ac
 
         for (const EntityTransform& entity : outEntities)
         {
-            const Vec2& entityPos = entity.TransformComponent->Transform.Position;
-            if (Vec2::Distance(pos, entityPos) < range)
-            {
-                ReleaseEntity(world, entity.EntityId);
-            }
+            ReleaseEntity(world, entity.EntityId);
         }
 
         return true;
@@ -642,72 +638,53 @@ uint32 FeatureECS::RemoveAllComponents(WorldRef world, EntityId entityId)
 
     return block->ArchetypeManager.RemoveAllComponents(entity->Handle);
 }
-bool FeatureECS::HasTag(WorldConstRef world, EntityId entityId, const FName& tagName)
+
+bool FeatureECS::HasTag(WorldConstRef world, EntityId entityId, const FName& tag)
 {
     const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
-    if (!block)
-    {
-        return false;
-    }
-
-    const Entity* entity = GetEntityPtr(world, entityId);
-    if (!entity)
-    {
-        return false;
-    }
-
-    return block->Tags.HasTag(*entity, tagName);
+    return block && block->Tags.HasTag(entityId, tag);
 }
 
-bool FeatureECS::AddTag(WorldRef world, EntityId entityId, const FName& tagName)
+bool FeatureECS::AddTag(WorldRef world, EntityId entityId, const FName& tag)
 {
     FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
-    if (!block)
-    {
-        return false;
-    }
-
-    Entity* entity = GetEntityPtr(world, entityId);
-    if (!entity)
-    {
-        return false;
-    }
-
-    return block->Tags.AddTag(*entity, tagName);
+    return block && block->Tags.AddTag(entityId, tag);
 }
 
-bool FeatureECS::RemoveTag(WorldRef world, EntityId entityId, const FName& tagName)
+bool FeatureECS::RemoveTag(WorldRef world, EntityId entityId, const FName& tag)
 {
     FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
-    if (!block)
-    {
-        return false;
-    }
-
-    Entity* entity = GetEntityPtr(world, entityId);
-    if (!entity)
-    {
-        return false;
-    }
-
-    return block->Tags.RemoveTag(*entity, tagName);
+    return block && block->Tags.RemoveTag(entityId, tag);
 }
 
 uint32 FeatureECS::RemoveAllTags(WorldRef world, EntityId entityId)
 {
     FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
-    if (!block)
-    {
-        return 0;
-    }
+    return block ? block->Tags.RemoveAllTags(entityId) : 0;
+}
 
-    Entity* entity = GetEntityPtr(world, entityId);
-    if (!entity)
-    {
-        return 0;
-    }
+bool FeatureECS::GroupContainsEntity(WorldConstRef world, EntityId group, EntityId entity)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block && block->Groups.ContainsEntity(group, entity);
+}
 
-    return block->Tags.RemoveAllTags(*entity);
+bool FeatureECS::AddEntityToGroup(WorldRef world, EntityId group, EntityId entity)
+{
+    FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block && block->Groups.AddEntity(group, entity);
+}
+
+bool FeatureECS::RemoveEntityFromGroup(WorldRef world, EntityId group, EntityId entity)
+{
+    FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block && block->Groups.RemoveEntity(group, entity);
+}
+
+uint32 FeatureECS::ClearGroup(WorldRef world, EntityId group)
+{
+    FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block ? block->Groups.RemoveAllEntities(group) : 0;
 }
 
 blackboard_key_t FeatureECS::CreateBlackboardKey(
@@ -784,6 +761,35 @@ void FeatureECS::QueryEntitiesInRange(
     ForEachInMortonCodeRanges<EntityTransform, &EntityTransform::ZCode>(
         scratchBlock.SortedEntities,
         ranges,
+        [&](const EntityTransform& entityTransform)
+        {
+            const Vec2& entityPos = entityTransform.TransformComponent->Transform.Position;
+            if (Vec2::Distance(pos, entityPos) < range)
+            {
+                outEntities.push_back(entityTransform);
+            }
+        });
+}
+
+void FeatureECS::QueryEntitiesInRect(
+    WorldConstRef world,
+    const Vec2& min,
+    const Vec2& max,
+    TArray<EntityTransform>& outEntities)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    const FeatureECSScratchBlock& scratchBlock = world.GetBlockRef<FeatureECSScratchBlock>();
+
+    // Query for overlapping morton ranges
+    TMortonCodeRangeArray ranges;
+    MortonCodeAABB aabb = ToMortonCodeAABB(min, max);
+    MortonCodeQuery(aabb, ranges);
+
+    TArray<EntityTransform*> overlappingEntities;
+    ForEachInMortonCodeRanges<EntityTransform, &EntityTransform::ZCode>(
+        scratchBlock.SortedEntities,
+        ranges,
         [&](const EntityTransform& entityBody)
         {
             outEntities.push_back(entityBody);
@@ -806,8 +812,18 @@ void FeatureECS::SortEntitiesByZCode(WorldRef world)
     WorldTaskQueue::Schedule(world, &FeatureECSDetail::SortEntitiesByZCodeTask);
 }
 
-void FeatureECS::CompactWorldBuffer(WorldRef world)
+void FeatureECS::SortAndCompact(WorldRef world)
 {
     FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
     dynamicBlock.ArchetypeManager.Compact();
+
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("SortTags");
+        dynamicBlock.Tags.Sort();
+    }
+
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("SortGroups");
+        dynamicBlock.Groups.Sort();
+    }
 }

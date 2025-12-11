@@ -40,17 +40,17 @@ void IFeature::OnPostUpdate(const FeatureUpdateArgs& args)
 {
 }
 
-bool IFeature::OnPreHandleAction(const FeatureActionArgs& action)
+bool IFeature::OnPreHandleAction(const FeatureActionArgs& args)
 {
     return false;
 }
 
-bool IFeature::OnHandleAction(const FeatureActionArgs& action)
+bool IFeature::OnHandleAction(const FeatureActionArgs& args)
 {
     return false;
 }
 
-bool IFeature::OnPostHandleAction(const FeatureActionArgs& action)
+bool IFeature::OnPostHandleAction(const FeatureActionArgs& args)
 {
     return false;
 }

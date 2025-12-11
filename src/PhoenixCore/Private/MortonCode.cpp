@@ -59,7 +59,28 @@ namespace PhoenixMortonCodeImpl
     }
 }
 
-MortonCodeAABB Phoenix::ToMortonCodeAABB(Vec2 pos, Distance radius)
+MortonCodeAABB Phoenix::ToMortonCodeAABB(const Vec2& min, const Vec2& max)
+{
+    int32 lox = (int32)Min(min.X, max.X);
+    int32 hix = (int32)Max(min.X, max.X);
+    int32 loy = (int32)Min(min.Y, max.Y);
+    int32 hiy = (int32)Max(min.Y, max.Y);
+
+    MortonCodeAABB aabb;
+    aabb.MinX = ScaleToMortonCode(lox);
+    aabb.MinY = ScaleToMortonCode(loy);
+    aabb.MaxX = ScaleToMortonCode(hix);
+    aabb.MaxY = ScaleToMortonCode(hiy);
+
+    if (lox < 0) --aabb.MinX;
+    if (loy < 0) --aabb.MinY;
+    if (hix < 0) --aabb.MaxX;
+    if (hiy < 0) --aabb.MaxY;
+
+    return aabb;
+}
+
+MortonCodeAABB Phoenix::ToMortonCodeAABB(const Vec2& pos, Distance radius)
 {
     int32 lox = (int32)(pos.X - radius);
     int32 hix = (int32)(pos.X + radius);

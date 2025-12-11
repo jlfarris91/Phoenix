@@ -9,6 +9,7 @@
 #include "FeatureBlackboard.h"
 #include "FixedBlackboard.h"
 #include "FixedEntityList.h"
+#include "FixedGroupList.h"
 #include "Parallel.h"
 #include "SystemJob.h"
 #include "TransformComponent.h"
@@ -35,7 +36,7 @@ namespace Phoenix
             ArchetypeManager ArchetypeManager;
             FixedEntityList<PHX_ECS_MAX_ENTITIES> Entities;
             FixedTagList<PHX_ECS_MAX_TAGS> Tags;
-            TFixedArray<EntityId, PHX_ECS_MAX_ENTITIES> Groups;
+            FixedGroupList<PHX_ECS_MAX_ENTITIES> Groups;
         };
 
         struct PHOENIXECS_API FeatureECSScratchBlock : BufferBlockBase
@@ -362,13 +363,13 @@ namespace Phoenix
             //
 
             // Returns true if the entity has a given tag.
-            static bool HasTag(WorldConstRef world, EntityId entityId, const FName& tagName);
+            static bool HasTag(WorldConstRef world, EntityId entityId, const FName& tag);
 
             // Adds a tag to the entity. Returns true if the tag was added.
-            static bool AddTag(WorldRef world, EntityId entityId, const FName& tagName);
+            static bool AddTag(WorldRef world, EntityId entityId, const FName& tag);
 
             // Removes a tag from the entity. Returns true if the tag was removed.
-            static bool RemoveTag(WorldRef world, EntityId entityId, const FName& tagName);
+            static bool RemoveTag(WorldRef world, EntityId entityId, const FName& tag);
 
             // Removes all tags from the entity. Returns the number of tags that were removed.
             static uint32 RemoveAllTags(WorldRef world, EntityId entityId);
@@ -377,19 +378,35 @@ namespace Phoenix
             template <class TCallback>
             static void ForEachTag(WorldConstRef world, EntityId entityId, const TCallback& callback)
             {
-                const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
-                if (!block)
+                if (const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>())
                 {
-                    return;
+                    block->Tags.ForEachTag(entityId, callback);
                 }
+            }
 
-                const Entity* entity = GetEntityPtr(world, entityId);
-                if (!entity)
+            //
+            // Group management
+            //
+
+            // Returns true if the entity group contains an entity.
+            static bool GroupContainsEntity(WorldConstRef world, EntityId group, EntityId entity);
+
+            // Adds an entity to an entity group. Returns true if the entity was added.
+            static bool AddEntityToGroup(WorldRef world, EntityId group, EntityId entity);
+
+            // Removes an entity from an entity group. Returns true if the entity was removed.
+            static bool RemoveEntityFromGroup(WorldRef world, EntityId group, EntityId entity);
+
+            // Removes all entities from an entity group. Returns the number of entities that were removed.
+            static uint32 ClearGroup(WorldRef world, EntityId group);
+
+            template <class TCallback>
+            static void ForEachEntityInGroup(WorldConstRef world, const EntityId group, const TCallback& callback)
+            {
+                if (const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>())
                 {
-                    return;
+                    block->Groups.ForEachEntity(group, callback);
                 }
-
-                return block->Tags.ForEachTag(*entity, callback);
             }
 
             //
@@ -541,6 +558,8 @@ namespace Phoenix
 
             static void QueryEntitiesInRange(WorldConstRef world, const Vec2& pos, Distance range, TArray<EntityTransform>& outEntities);
 
+            static void QueryEntitiesInRect(WorldConstRef world, const Vec2& min, const Vec2& max, TArray<EntityTransform>& outEntities);
+
             bool bDebugDrawMortonCodeBoundaries = false;
             bool bDebugDrawEntityZCodes = false;
 
@@ -548,7 +567,7 @@ namespace Phoenix
 
             static void SortEntitiesByZCode(WorldRef world);
 
-            static void CompactWorldBuffer(WorldRef world);
+            static void SortAndCompact(WorldRef world);
 
             TArray<TSharedPtr<ISystem>> Systems;
             TSharedPtr<ThreadPool> JobThreadPool;

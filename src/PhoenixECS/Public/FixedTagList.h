@@ -2,187 +2,105 @@
 #pragma once
 
 #include "EntityId.h"
-#include "EntityTag.h"
 #include "Containers/FixedArray.h"
+#include "Containers/FixedSortedList.h"
 
-namespace Phoenix
+namespace Phoenix::ECS
 {
-    namespace ECS
+    template <size_t N>
+    class FixedTagList
     {
-        template <size_t N>
-        class FixedTagList
+    public:
+
+        static constexpr uint32 Capacity = N;
+
+        uint32 GetSize() const
         {
-        public:
+            return Items.GetSize();
+        }
 
-            static constexpr size_t Capacity = N;
+        uint32 GetNumValidTags() const
+        {
+            return Items.GetNumValidItems();
+        }
 
-            constexpr size_t GetSize() const
+        bool HasTag(EntityId entity, const FName& tag) const
+        {
+            return Items.Contains({ entity, tag });
+        }
+
+        bool AddTag(EntityId entity, const FName& tag)
+        {
+            return Items.PushBackUnique({ entity, tag });
+        }
+
+        bool RemoveTag(EntityId entity, const FName& tag)
+        {
+            return Items.Remove({ entity, tag });
+        }
+
+        uint32 RemoveAllTags(EntityId entity)
+        {
+            return Items.RemoveAll(entity);
+        }
+
+        FName GetFirstTag(EntityId entity, uint32& outIndex) const
+        {
+            EntityTag* item = Items.GetFirstItem(entity, outIndex);
+            return item ? item->Tag : FName::None;
+        }
+
+        FName GetNextTag(EntityId entity, uint32 currIndex, uint32& outIndex) const
+        {
+            EntityTag* item = Items.GetNextItem(entity, currIndex, outIndex);
+            return item ? item->Tag : FName::None;
+        }
+
+        template <class TCallback>
+        void ForEachTag(EntityId entity, const TCallback& callback) const
+        {
+            Items.ForEachItem(entity, [&](const EntityTag& item)
             {
-                return Tags.Num();
+                callback(item.Tag);
+            });
+        }
+
+        void Sort()
+        {
+            Items.Sort();
+        }
+
+    private:
+
+        struct EntityTag
+        {
+            EntityTag() = default;
+            EntityTag(EntityId entity, FName tag = FName::None)
+                : Entity(entity)
+                , Tag(tag)
+            {
             }
 
-            constexpr size_t GetNumActive() const
+            bool operator==(const EntityTag& other) const
             {
-                return NumActiveTags;
+                return Entity == other.Entity && Tag == other.Tag;
             }
 
-            bool HasTag(const Entity& entity, const FName& tagName) const
-            {
-                bool foundTag = false;
-                ForEachTag(entity, [&](const EntityTag& tag, int32)
-                {
-                    if (tag.TagName == tagName)
-                    {
-                        foundTag = true;
-                        return false;
-                    }
-                    return true;
-                });
-                return foundTag;
-            }
+            bool IsValid() const { return Tag != FName::None; }
+            void Invalidate() { Tag = FName::None; }
 
-            bool AddTag(Entity& entity, const FName& tagName)
-            {
-                int32 newTagIndex = INDEX_NONE;
-
-                // Find the next available tag index
-                {
-                    for (size_t i = 1; i < Capacity; ++i)
-                    {
-                        if (Tags[i].TagName == FName::None)
-                        {
-                            newTagIndex = (int32)i;
-                            break;
-                        }
-                    }
-
-                    if (newTagIndex == INDEX_NONE)
-                    {
-                        return false;
-                    }
-                }
-
-                if (entity.TagHead == INDEX_NONE)
-                {
-                    entity.TagHead = newTagIndex;
-                }
-                else
-                {
-                    // Find the tail tag and update it's next
-                    int32 tagIter = entity.TagHead;
-                    while (Tags[tagIter].Next != INDEX_NONE)
-                    {
-                        // Entity already has the tag, don't add duplicates
-                        if (Tags[tagIter].TagName == tagName)
-                        {
-                            return false;
-                        }
-
-                        tagIter = Tags[tagIter].Next;
-                    }
-                    Tags[tagIter].Next = newTagIndex;
-                }
-
-                // Make room for the new tag if necessary
-                if (!Tags.IsValidIndex(newTagIndex))
-                {
-                    Tags.SetNum(newTagIndex + 1);
-                }
-
-                EntityTag& tag = Tags[newTagIndex];
-                tag.Next = INDEX_NONE;
-                tag.TagName = tagName;
-
-                ++NumActiveTags;
-
-                return true;
-            }
-
-            bool RemoveTag(Entity& entity, FName tagName)
-            {
-                int32 prevTagIndex = INDEX_NONE;
-                int32 tagIndex = INDEX_NONE;
-                ForEachTag(entity, [&, tagName](const EntityTag& tag, uint32 index)
-                {
-                    tagIndex = index;
-                    if (tag.TagName == tagName)
-                    {
-                        return false;
-                    }
-                    prevTagIndex = tagIndex;
-                    return true;
-                });
-
-                if (tagIndex == INDEX_NONE)
-                {
-                    return false;
-                }
-
-                EntityTag& tagToRemove = Tags[tagIndex];
-
-                if (prevTagIndex != INDEX_NONE)
-                {
-                    EntityTag& prevTag = Tags[prevTagIndex];
-                    prevTag.Next = tagToRemove.Next;
-                }
-
-                if (entity.TagHead == tagIndex)
-                {
-                    entity.TagHead = prevTagIndex;
-                }
-
-                // Reset tag data
-                tagToRemove.TagName = FName::None;
-                tagToRemove.Next = INDEX_NONE;
-
-                --NumActiveTags;
-
-                return true;
-                
-            }
-
-            uint32 RemoveAllTags(Entity& entity)
-            {
-                int32 tagIndex = entity.TagHead;
-
-                uint32 numTagsRemoved = 0;
-                while (tagIndex != INDEX_NONE)
-                {
-                    EntityTag& tag = Tags[tagIndex];
-
-                    tagIndex = tag.Next;
-                    numTagsRemoved++;
-                    --NumActiveTags;
-
-                    // Reset tag data
-                    tag.TagName = FName::None;
-                    tag.Next = INDEX_NONE;
-                }
-
-                entity.TagHead = INDEX_NONE;
-
-                return numTagsRemoved;
-            }
-
-            template <class TCallback>
-            void ForEachTag(const Entity& entity, const TCallback& callback) const
-            {
-                int32 tagIndex = entity.TagHead;
-                while (tagIndex != INDEX_NONE)
-                {
-                    const EntityTag& tag = Tags[tagIndex];
-                    if (!callback(tag, tagIndex))
-                    {
-                        return;
-                    }
-                    tagIndex = tag.Next;
-                }
-            }
-
-        private:
-
-            TFixedArray<EntityTag, Capacity> Tags;
-            size_t NumActiveTags = 0;
+            EntityId Entity;
+            FName Tag;
         };
-    }
+
+        struct GetItemKey
+        {
+            EntityId operator()(const EntityTag& item) const
+            {
+                return item.Entity;
+            }
+        };
+
+        TFixedSortedList<EntityTag, GetItemKey, TFixedArray<EntityTag, Capacity>> Items;
+    };
 }

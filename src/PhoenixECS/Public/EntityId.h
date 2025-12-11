@@ -17,8 +17,11 @@ namespace Phoenix
             constexpr EntityId() : Id(0) {}
             constexpr EntityId(entityid_t raw) : Id(raw) {}
 
-            operator entityid_t() const;
-            EntityId& operator=(const entityid_t& id);
+            constexpr operator entityid_t() const { return Id; }
+            constexpr EntityId& operator=(const entityid_t& id) { Id = id; return *this; }
+
+            constexpr bool operator==(const EntityId& other) const { return Id == other.Id; }
+            constexpr bool operator!=(const EntityId& other) const { return Id != other.Id; }
 
         private:
             entityid_t Id;

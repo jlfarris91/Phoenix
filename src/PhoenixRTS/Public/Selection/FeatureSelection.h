@@ -1,0 +1,59 @@
+
+#pragma once
+
+#include "DLLExport.h"
+#include "EntityId.h"
+#include "Features.h"
+#include "Containers/FixedArray.h"
+
+#ifndef PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER
+#define PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER 4
+#endif
+
+// TODO (jfarris): where do we define the max number of players? for now use 32
+#define PHX_RTS_MAX_PLAYER_SELECTION_GROUPS (PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER * 32)
+
+namespace Phoenix::RTS
+{
+    struct Order;
+
+    struct PlayerSelectionGroup
+    {
+        uint32 Player = 0;
+        FName GroupName;
+        ECS::EntityId GroupId;
+    };
+
+    struct FeatureSelectionDynamicBlock : BufferBlockBase
+    {
+        PHX_DECLARE_BLOCK_DYNAMIC(FeatureSelectionDynamicBlock)
+
+        TFixedArray<PlayerSelectionGroup, PHX_RTS_MAX_PLAYER_SELECTION_GROUPS> PlayerSelectionGroups;
+    };
+
+    class FeatureSelection : public IFeature
+    {
+        PHX_FEATURE_BEGIN(FeatureSelection)
+            FEATURE_WORLD_BLOCK(FeatureSelectionDynamicBlock)
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+        PHX_FEATURE_END()
+
+    public:
+
+        static constexpr uint32 MaxNumGroupsPerPlayer = PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER;
+
+        static ECS::EntityId GetOrCreatePlayerSelection(WorldRef world, uint32 player, const FName& name);
+
+        static ECS::EntityId GetPlayerSelection(WorldConstRef world, uint32 player, const FName& name = FName::None);
+
+        static bool AddToPlayerSelection(WorldRef world, uint32 player, const ECS::EntityId& entity, const FName& name = FName::None);
+
+        static bool RemoveFromPlayerSelection(WorldRef world, uint32 player, const ECS::EntityId& entity, const FName& name = FName::None);
+
+        static bool ClearPlayerSelection(WorldRef world, uint32 player, const FName& name = FName::None);
+
+    private:
+
+        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
+    };
+}

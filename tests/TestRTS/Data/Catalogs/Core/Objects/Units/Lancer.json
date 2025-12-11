@@ -18,7 +18,7 @@
         }
     ],
     "movement": {
-        "speed": "1.0"
+        "speed": 50.0
     },
     "placement": {
         "inner_radius": 0.6,

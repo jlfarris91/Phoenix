@@ -20,7 +20,7 @@ NavMeshTool::NavMeshTool(TSharedPtr<Phoenix::Session> session)
 {
 }
 
-void NavMeshTool::OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, SDLDebugRenderer& renderer)
+void NavMeshTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
@@ -78,7 +78,7 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, S
         action.Data[0].Distance = CursorPos.X;
         action.Data[1].Distance = CursorPos.Y;
         action.Data[2].Distance = BrushSize;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
 
         renderer.DrawCircle(CursorPos, BrushSize, Color::White);
     }
@@ -93,7 +93,7 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, S
             action.Data[1].Distance = LineStart->Y;
             action.Data[2].Distance = LineEnd->X;
             action.Data[3].Distance = LineEnd->Y;
-            Session->QueueAction(action);
+            Session->EnqueueAction(action);
         }
         else if (LineStart.IsSet())
         {
@@ -101,7 +101,7 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, S
             action.Verb = "insert_point"_n;
             action.Data[0].Distance = LineStart->X;
             action.Data[1].Distance = LineStart->Y;
-            Session->QueueAction(action);
+            Session->EnqueueAction(action);
         }
 
         LineStart.Reset();
@@ -114,7 +114,7 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef& world, SDLDebugState& state, S
         action.Verb = "insert_point"_n;
         action.Data[0].Distance = LoadedVerts[LoadedVertIndex].X;
         action.Data[1].Distance = LoadedVerts[LoadedVertIndex].Y;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
         LoadedVertIndex++;
     }
 }
@@ -123,7 +123,7 @@ void NavMeshTool::OnAppRenderUI(ImGuiIO& io)
 {
 }
 
-void NavMeshTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
+void NavMeshTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
 {
     auto mouseWorldPos = state.GetWorldMousePos();
 
@@ -150,7 +150,7 @@ void NavMeshTool::OnAppEvent(SDLDebugState& state, SDL_Event* event)
             action.Data[2].Distance = PathGoal->X;
             action.Data[3].Distance = PathGoal->Y;
             action.Data[4].Distance = AgentRadius;
-            Session->QueueAction(action);
+            Session->EnqueueAction(action);
         }
     }
 }
@@ -434,7 +434,7 @@ void NavMeshTool::LoadMeshFromFile()
         action.Verb = "set_nav_mesh_size"_n;
         action.Data[0].Distance = mapSize.X;
         action.Data[1].Distance = mapSize.Y;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
     }
 
     for (const SGVec2& vert : LoadedVerts)
@@ -443,7 +443,7 @@ void NavMeshTool::LoadMeshFromFile()
         action.Verb = "insert_point"_n;
         action.Data[0].Distance = vert.X;
         action.Data[1].Distance = vert.Y;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
     }
 
     for (auto & vert : pathingMeshJson["edges"])
@@ -460,7 +460,7 @@ void NavMeshTool::LoadMeshFromFile()
         action.Data[1].Distance = vertA.Y;
         action.Data[2].Distance = vertB.X;
         action.Data[3].Distance = vertB.Y;
-        Session->QueueAction(action);
+        Session->EnqueueAction(action);
     }
 }
 
@@ -470,7 +470,7 @@ void NavMeshTool::Step()
     action.Verb = "path_step"_n;
     action.Data[0].Distance = AgentRadius;
     action.Data[1].UInt32 = 1;
-    Session->QueueAction(action);
+    Session->EnqueueAction(action);
 }
 
 void NavMeshTool::Step10()
@@ -479,7 +479,7 @@ void NavMeshTool::Step10()
     action.Verb = "path_step"_n;
     action.Data[0].Distance = AgentRadius;
     action.Data[1].UInt32 = 10;
-    Session->QueueAction(action);
+    Session->EnqueueAction(action);
 }
 
 bool NavMeshTool::GetIsStepping() const
@@ -494,7 +494,7 @@ void NavMeshTool::SetIsStepping(const bool& v)
     Action action;
     action.Verb = "path_set_stepping"_n;
     action.Data[0].Bool = v;
-    Session->QueueAction(action);
+    Session->EnqueueAction(action);
 }
 
 bool NavMeshTool::GetFixDelaunayTriangulation() const
@@ -509,5 +509,5 @@ void NavMeshTool::SetFixDelaunayTriangulation(const bool& v)
     Action action;
     action.Verb = "mesh_set_fix_delaunay_triangulations"_n;
     action.Data[0].Bool = v;
-    Session->QueueAction(action);
+    Session->EnqueueAction(action);
 }

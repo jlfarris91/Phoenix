@@ -6,6 +6,7 @@
 #include "Entity.h"
 #include "Features.h"
 #include "UnitId.h"
+#include "Commands/Commands.h"
 #include "FixedPoint/FixedVector.h"
 
 namespace Phoenix::RTS
@@ -76,6 +77,8 @@ namespace Phoenix::RTS
 
     protected:
 
-        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
+        static void HandleCommand(WorldRef world, const Command& command);
+
+        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
     };
 }
