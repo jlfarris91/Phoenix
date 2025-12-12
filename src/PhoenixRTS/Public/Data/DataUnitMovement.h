@@ -53,8 +53,8 @@ namespace Phoenix::RTS::Data
         LDS::TLDSValuePtr<Distance> SeparationRadius;
         LDS::TLDSValuePtr<Phoenix::Value> SeparationStrength;
         LDS::TLDSValuePtr<Speed> Speed;
-        LDS::TLDSValuePtr<Time> TurnTimeIdle;
-        LDS::TLDSValuePtr<Time> TurnTimeMoving;
+        LDS::TLDSValuePtr<Time> TurnRateIdle;
+        LDS::TLDSValuePtr<Time> TurnRateMoving;
         LDS::TLDSValuePtr<Distance> TurnRadius;
         LDS::TLDSValuePtr<Phoenix::Value> TurnSlowRate;
     };

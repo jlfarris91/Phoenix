@@ -11,15 +11,15 @@ using namespace Phoenix::Steering;
 
 bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, const Vec2& target)
 {
-    SeekComponent* seekComp = FeatureECS::GetComponent<SeekComponent>(world, entity);
-    if (!seekComp)
+    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!steerComp)
     {
         return false;
     }
 
-    seekComp->TargetPos = target;
-    seekComp->TargetEntity = EntityId::Invalid;
-    SetFlagRef(seekComp->Flags, ESeekFlags::SeekingGoal, true);
+    steerComp->GoalPos = target;
+    steerComp->GoalEntity = EntityId::Invalid;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
@@ -30,52 +30,66 @@ bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const
         return false;
     }
 
-    SeekComponent* seekComp = FeatureECS::GetComponent<SeekComponent>(world, entity);
-    if (!seekComp)
+    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!steerComp)
     {
         return false;
     }
 
-    seekComp->TargetEntity = target;
-    seekComp->TargetPos = Vec2::Zero;
-    SetFlagRef(seekComp->Flags, ESeekFlags::SeekingGoal, true);
+    steerComp->GoalEntity = target;
+    steerComp->GoalPos = Vec2::Zero;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
 bool FeatureSteering::IsSeekingGoal(WorldRef world, const EntityId& entity)
 {
-    SeekComponent* seekComp = FeatureECS::GetComponent<SeekComponent>(world, entity);
-    if (!seekComp)
+    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!steerComp)
     {
         return false;
     }
 
-    return HasAnyFlags(seekComp->Flags, ESeekFlags::SeekingGoal);
+    return HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasArrivedAtGoal(WorldRef world, const EntityId& entity)
 {
-    SeekComponent* seekComp = FeatureECS::GetComponent<SeekComponent>(world, entity);
-    if (!seekComp)
+    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!steerComp)
     {
         return false;
     }
 
-    return HasAnyFlags(seekComp->Flags, ESeekFlags::ArrivedAtGoal);
+    return HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
 bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
 {
-    SeekComponent* seekComp = FeatureECS::GetComponent<SeekComponent>(world, entity);
-    if (!seekComp)
+    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!steerComp)
     {
         return false;
     }
 
-    seekComp->TargetEntity = EntityId::Invalid;
-    seekComp->TargetPos = Vec2::Zero;
-    SetFlagRef(seekComp->Flags, ESeekFlags::SeekingGoal, false);
-    SetFlagRef(seekComp->Flags, ESeekFlags::ArrivedAtGoal, false);
+    steerComp->GoalEntity = EntityId::Invalid;
+    steerComp->GoalPos = Vec2::Zero;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, false);
+    SetFlagRef(steerComp->Flags, ESteerFlags::ArrivedAtGoal, false);
+    return true;
+}
+
+bool FeatureSteering::UpdateSpeed(WorldRef world, const EntityId& entity, const SteeringSpeedArgs& args)
+{
+    SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!comp)
+    {
+        return false;
+    }
+
+    comp->MaxSpeed = args.MaxSpeed.GetValue(comp->MaxSpeed);
+    comp->AccelerationTime = args.AccelerationTime.GetValue(comp->AccelerationTime);
+    comp->DecelerationTime = args.DecelerationTime.GetValue(comp->DecelerationTime);
     return true;
 }
 

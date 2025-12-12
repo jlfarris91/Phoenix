@@ -1,16 +1,22 @@
 
 #pragma once
 
+#include "Flags.h"
 #include "Containers/FixedBVH.h"
 #include "Optional.h"
 #include "Platform.h"
 #include "Containers/FixedArray.h"
 #include "FixedPoint/FixedMath.h"
 #include "FixedPoint/FixedVector.h"
-#include "FixedPoint/FixedLine.h"
 
 namespace Phoenix
 {
+    enum class EHalfEdgeFlags : uint8
+    {
+        None = 0,
+        Locked = 1
+    };
+    
     template <class TIdx = uint16>
     struct TMeshHalfEdge
     {
@@ -27,7 +33,17 @@ namespace Phoenix
         // The owning face id.
         TIdx Face = 0;
 
-        uint8 bLocked = 0;
+        EHalfEdgeFlags Flags = EHalfEdgeFlags::None;
+
+        constexpr bool IsLocked() const
+        {
+            return HasAnyFlags(Flags, EHalfEdgeFlags::Locked);
+        }
+
+        constexpr void Lock()
+        {
+            SetFlagRef(Flags, EHalfEdgeFlags::Locked);
+        }
     };
 
     template <class TIdx = uint16>
@@ -79,6 +95,9 @@ namespace Phoenix
         static constexpr TVecComp DefaultThreshold = 1E-2;
         static constexpr size_t Capacity = NFaces;
 
+        const TVec& GetBounds() const;
+        void SetBounds(const TFixedBox<TVec>& bounds, bool reset = true);
+
         // Resets the mesh clearing all vertices, edges and faces.
         void Reset();
 
@@ -87,6 +106,8 @@ namespace Phoenix
         // Vertices
         //
         ///////////////////////////////////////////////////////////////////////
+
+        const auto& GetVertices() const;
 
         // Returns true if the index represents a valid vertex.
         bool IsValidVert(TIdx vertIndex) const;
@@ -127,18 +148,22 @@ namespace Phoenix
         bool IsVertLocked(TIdx vertIndex) const;
 
         // Executes a callback for each vertex in range of a position.
-        template <class T>
-        void ForEachVertInRange(const TVec& pos, TVecComp radius, T& callback) const;
+        template <class TCallback>
+        void ForEachVertInRange(const TVec& pos, TVecComp radius, TCallback& callback) const;
 
         // Executes a callback for each half-edge connected to a given vert.
-        template <class T>
-        void ForEachVertHalfEdge(TIdx vertIndex, T& callback, EHalfEdgeDirection direction = EHalfEdgeDirection::Both) const;
+        template <class TCallback>
+        void ForEachVertHalfEdge(TIdx vertIndex, TCallback& callback, EHalfEdgeDirection direction = EHalfEdgeDirection::Both) const;
+
+        TVec ClampPointToBounds(const TVec& pos, TVecComp radius = 0) const;
 
         ///////////////////////////////////////////////////////////////////////
         //
         // Half-Edges
         //
         ///////////////////////////////////////////////////////////////////////
+
+        const auto& GetHalfEdges() const;
 
         // Returns true if the index represents a valid half edge.
         bool IsValidHalfEdge(TIdx halfEdgeIndex) const;
@@ -214,6 +239,8 @@ namespace Phoenix
         //
         ///////////////////////////////////////////////////////////////////////
 
+        const auto& GetFaces() const;
+
         // Returns true if the index represents a valid face.
         bool IsValidFace(TIdx faceIndex) const;
 
@@ -265,26 +292,31 @@ namespace Phoenix
 
         void SplitEdge(TIdx edgeIndex, TIdx vertIndex);
 
-        template <class TPredicate>
-        void ForEachHalfEdgeInFace(TIdx faceIndex, const TPredicate& pred) const;
+        template <class TCallback>
+        void ForEachHalfEdgeInFace(TIdx faceIndex, const TCallback& callback) const;
 
-        template <class TPredicate>
-        void ForEachHalfEdgeIndexInFace(TIdx faceIndex, const TPredicate& pred) const;
+        template <class TCallback>
+        void ForEachHalfEdgeIndexInFace(TIdx faceIndex, const TCallback& callback) const;
 
-        template <class TPredicate>
-        void ForEachHalfEdgeTwinInFace(TIdx faceIndex, const TPredicate& pred) const;
+        template <class TCallback>
+        void ForEachHalfEdgeTwinInFace(TIdx faceIndex, const TCallback& callback) const;
 
-        template <class TPredicate>
-        void ForEachNeighboringFaceIndex(TIdx faceIndex, const TPredicate& pred) const;
+        template <class TCallback>
+        void ForEachNeighboringFaceIndex(TIdx faceIndex, const TCallback& callback) const;
 
-        template <class TPredicate>
-        void ForEachNeighboringFace(TIdx faceIndex, const TPredicate& pred) const;
+        template <class TCallback>
+        void ForEachNeighboringFace(TIdx faceIndex, const TCallback& callback) const;
 
         ///////////////////////////////////////////////////////////////////////
         //
         // Operations
         //
         ///////////////////////////////////////////////////////////////////////
+
+        // Performs a linecast inside the mesh and returns the first locked edge that the ray passes through.
+        // This assumes that the start point is inside the mesh.
+        // TODO (jfarris): implement radius
+        TIdx LineCast(const TVec& start, const TVec& end, TVecComp radius = 0) const;
 
         // Recursively flips edges connected to the vertex until the delaunay condition is met.
         void FixDelaunayConditions(TIdx vi);
@@ -299,9 +331,12 @@ namespace Phoenix
 
         bool CDT_InsertEdge(const TLine<TVec>& line, bool fixDelaunayConditions = true);
 
+    private:
+
         TFixedArray<TVec, NFaces*3> Vertices;
         TFixedArray<THalfEdge, NFaces*3> HalfEdges;
         TFixedArray<TFace, NFaces> Faces;
+        TFixedBox<TVec> Bounds;
     };
 
     using DefaultFixedCDTMesh2 = TFixedCDTMesh2<8192, uint32, Distance, uint16>;

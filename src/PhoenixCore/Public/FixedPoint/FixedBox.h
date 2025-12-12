@@ -1,5 +1,6 @@
 
 #pragma once
+#include "Corners.h"
 
 namespace Phoenix
 {
@@ -12,6 +13,8 @@ namespace Phoenix
         constexpr TFixedBox(const TVec& min, const TVec& max) : Min(min), Max(max) {}
         constexpr TFixedBox(const TFixedBox& other) : Min(other.Min), Max(other.Max) {}
         constexpr TFixedBox(TFixedBox&& other) noexcept : Min(other.Min), Max(other.Max) {}
+
+        TFixedBox& operator=(const TFixedBox& other) = default;
 
         static TFixedBox FromPoints(const TVec& a, const TVec& b, const TVec& c)
         {
@@ -30,6 +33,11 @@ namespace Phoenix
                 box.Union(*(points + i));
             }
             return box;
+        }
+
+        constexpr bool IsEmpty() const
+        {
+            return TVec::Equals(Min, Max);
         }
 
         constexpr TVec GetCenter() const
@@ -121,6 +129,22 @@ namespace Phoenix
             result.Min.Y = Phoenix::Min(Min.Y, other.Min.Y);
             result.Max.X = Phoenix::Max(Max.X, other.Max.X);
             result.Max.Y = Phoenix::Max(Max.Y, other.Max.Y);
+            return result;
+        }
+
+        constexpr void GetCorners(TVec (&corners)[4]) const
+        {
+            corners[(uint8)ECorners::BottomLeft] = Min;
+            corners[(uint8)ECorners::BottomRight] = TVec(Max.X, Min.Y);
+            corners[(uint8)ECorners::TopLeft] = TVec(Min.X, Max.Y);
+            corners[(uint8)ECorners::TopRight] = Max;
+        }
+
+        constexpr TVec Clamp(const TVec& pos, TVecComp radius = 0) const
+        {
+            TVec result;
+            result.X = Phoenix::Clamp<TVecComp>(pos.X, Min.X + radius, Max.X - radius);
+            result.Y = Phoenix::Clamp<TVecComp>(pos.Y, Min.Y + radius, Max.Y - radius);
             return result;
         }
 

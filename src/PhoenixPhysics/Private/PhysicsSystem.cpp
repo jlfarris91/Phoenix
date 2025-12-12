@@ -56,18 +56,26 @@ namespace PhysicsSystemDetail
             });
     }
 
-    struct IntegrateVelocitiesJob : IBufferJob<TransformComponent&, BodyComponent&>
+    struct IntegrateVelocitiesJob : IBufferJob<BodyComponent&>
     {
         DeltaTime DeltaTime;
 
-        void Execute(const EntityComponentSpan<TransformComponent&, BodyComponent&>& span) override
+        void Execute(const EntityComponentSpan<BodyComponent&>& span) override
         {
             PHX_PROFILE_ZONE_SCOPED_N("IntegrateVelocitiesJob");
 
-            for (auto && [entityIdA, index, transformCompA, bodyCompA] : span)
+            for (auto && [entityIdA, index, bodyComp] : span)
             {
-                bodyCompA.LinearVelocity += bodyCompA.Force * bodyCompA.InvMass * DeltaTime;
-                bodyCompA.Force = Vec2::Zero;
+                bodyComp.LinearVelocity += bodyComp.Force * bodyComp.InvMass * DeltaTime;
+
+                if (bodyComp.MaxLinearVelocity > 0)
+                {
+                    Distance vel = bodyComp.LinearVelocity.Length();
+                    vel = Min(vel, bodyComp.MaxLinearVelocity);
+                    bodyComp.LinearVelocity = bodyComp.LinearVelocity.Normalized() * vel;
+                }
+
+                bodyComp.Force = Vec2::Zero;
             }
         }
     };
@@ -337,10 +345,14 @@ namespace PhysicsSystemDetail
                             SetFlagRef(bodyComp.Flags, EBodyFlags::Awake, false);
                         }
                     }
-                
+
+                    bodyComp.PreviousPos = transformComp.Transform.Position;
                     transformComp.Transform.Position += bodyComp.LinearVelocity * DeltaTime;
 
-                    bodyComp.LinearVelocity *= (1.0f - bodyComp.LinearDamping * DeltaTime);
+                    if (bodyComp.LinearDamping > 0)
+                    {
+                        bodyComp.LinearVelocity *= (1.0f - bodyComp.LinearDamping * DeltaTime);
+                    }
                 }
             }
         }    

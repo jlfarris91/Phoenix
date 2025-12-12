@@ -66,7 +66,7 @@ namespace Phoenix
             PHX_PROFILE_ZONE_SCOPED;
 
             StartPos = startPos;
-            GoalPos = goalPos;
+            GoalPos = mesh.ClampPointToBounds(goalPos, radius);
             Radius = radius;
             StartFaceIndex = mesh.FindFaceContainingPoint(startPos);
             GoalFaceIndex = mesh.FindFaceContainingPoint(goalPos);
@@ -136,8 +136,8 @@ namespace Phoenix
             Node& currNode = FindOrAddNode(mesh, currEdgeIndex);
             currNode.Visited = 2;
 
-            const THalfEdge& edge = mesh.HalfEdges[currEdgeIndex];
-            if (edge.bLocked)
+            const THalfEdge& edge = mesh.GetHalfEdge(currEdgeIndex);
+            if (edge.IsLocked())
             {
                 LastStepResult = EStepResult::Continue;
                 return LastStepResult;
@@ -159,7 +159,7 @@ namespace Phoenix
             }
 
             {
-                const THalfEdge& twinHalfEdge0 = mesh.HalfEdges[twinEdgeIndex];
+                const THalfEdge& twinHalfEdge0 = mesh.GetHalfEdge(twinEdgeIndex);
 
                 if (twinHalfEdge0.Face == GoalFaceIndex)
                 {
@@ -172,22 +172,22 @@ namespace Phoenix
 
                 for (size_t i = 0; i < 2; ++i)
                 {
-                    const THalfEdge& twinHalfEdgeN = mesh.HalfEdges[twinEdgeIndex];
+                    const THalfEdge& twinHalfEdgeN = mesh.GetHalfEdge(twinEdgeIndex);
 
-                    if (twinHalfEdgeN.bLocked || !mesh.IsValidHalfEdge(twinHalfEdgeN.Twin))
+                    if (twinHalfEdgeN.IsLocked() || !mesh.IsValidHalfEdge(twinHalfEdgeN.Twin))
                     {
                         twinEdgeIndex = twinHalfEdgeN.Next;
                         continue;
                     }
 
-                    const THalfEdge& twinTwin = mesh.HalfEdges[twinHalfEdgeN.Twin];
+                    const THalfEdge& twinTwin = mesh.GetHalfEdge(twinHalfEdgeN.Twin);
                     if (Nodes.Contains(twinHalfEdgeN.Twin) && Nodes[twinHalfEdgeN.Twin].Visited == 2)
                     {
                         twinEdgeIndex = twinHalfEdgeN.Next;
                         continue;
                     }
 
-                    if (twinTwin.bLocked)
+                    if (twinTwin.IsLocked())
                     {
                         twinEdgeIndex = twinHalfEdgeN.Next;
                         continue;

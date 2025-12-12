@@ -77,7 +77,7 @@ bool FeatureOrderQueue::RemoveOrder(WorldRef world, const UnitId& unit, uint32 i
     return false;
 }
 
-uint32 FeatureOrderQueue::RemoveAllOrders(WorldRef world, const UnitId& unit)
+uint32 FeatureOrderQueue::ClearOrderQueue(WorldRef world, const UnitId& unit)
 {
     FeatureOrderQueueDynamicBlock& block = world.GetBlockRef<FeatureOrderQueueDynamicBlock>();
     return block.OrderQueue.RemoveAllOrders(unit);

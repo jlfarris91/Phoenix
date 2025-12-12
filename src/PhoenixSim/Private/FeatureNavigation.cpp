@@ -19,14 +19,7 @@ void FeatureNavigation::RebuildNavMesh(WorldRef world)
 {
     FeatureNavMeshDynamicBlock& block = world.GetBlockRef<FeatureNavMeshDynamicBlock>();
 
-    auto bl = Vec2(0, 0);
-    auto br = Vec2(block.MapSize.X, 0);
-    auto tl = Vec2(0, block.MapSize.Y);
-    auto tr = Vec2(block.MapSize.X, block.MapSize.Y);
-
-    block.DynamicNavMesh.Reset();
-    block.DynamicNavMesh.InsertFace(bl, tr, tl, 1);
-    block.DynamicNavMesh.InsertFace(bl, br, tr, 2);
+    block.DynamicNavMesh.SetBounds(TFixedBox(Vec2::Zero, block.MapSize));
 
     for (const auto& point : block.DynamicPoints)
     {
@@ -204,7 +197,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawVertices)
     {
-        for (const auto& vert : mesh.Vertices)
+        for (const auto& vert : mesh.GetVertices())
         {
             renderer.DrawCircle(vert, 3.0f, Color::White);
         }
@@ -212,36 +205,36 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawHalfEdges)
     {
-        for (const auto& edge : mesh.HalfEdges)
+        for (const auto& edge : mesh.GetHalfEdges())
         {
-            if (!mesh.Faces.IsValidIndex(edge.Face))
+            if (!mesh.IsValidFace(edge.Face))
                 continue;
 
-            if (edge.bLocked)
+            if (edge.IsLocked())
                 continue;
 
-            const Vec2& vertA = mesh.Vertices[edge.VertA];
-            const Vec2& vertB = mesh.Vertices[edge.VertB];
+            const Vec2& vertA = mesh.GetVertices()[edge.VertA];
+            const Vec2& vertB = mesh.GetVertices()[edge.VertB];
 
             renderer.DrawLine(vertA, vertB, Color(50, 50, 50));
         }
 
-        for (const auto& edge : mesh.HalfEdges)
+        for (const auto& edge : mesh.GetHalfEdges())
         {
-            if (!mesh.Faces.IsValidIndex(edge.Face))
+            if (!mesh.IsValidFace(edge.Face))
                 continue;
 
-            if (!edge.bLocked)
+            if (!edge.IsLocked())
                 continue;
 
-            const Vec2& vertA = mesh.Vertices[edge.VertA];
-            const Vec2& vertB = mesh.Vertices[edge.VertB];
+            const Vec2& vertA = mesh.GetVertices()[edge.VertA];
+            const Vec2& vertB = mesh.GetVertices()[edge.VertB];
 
             renderer.DrawLine(vertA, vertB, Color::Red);
         }
 
         // Redraw the edges of the face the mouse is within so that they draw on top
-        for (size_t i = 0; i < mesh.Faces.Num(); ++i)
+        for (size_t i = 0; i < mesh.GetFaces().Num(); ++i)
         {
             auto result = mesh.IsPointInFace(uint16(i), cursorPos);
             if (result.Result == EPointInFaceResult::Inside)
@@ -250,8 +243,8 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
                 mesh.ForEachHalfEdgeInFace(uint16(i), [&](const auto& halfEdge)
                 {
-                    const Vec2& vertA = mesh.Vertices[halfEdge.VertA];
-                    const Vec2& vertB = mesh.Vertices[halfEdge.VertB];
+                    const Vec2& vertA = mesh.GetVertices()[halfEdge.VertA];
+                    const Vec2& vertB = mesh.GetVertices()[halfEdge.VertB];
                     renderer.DrawLine(vertA, vertB, color);
                 });
             }
@@ -260,9 +253,9 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawVertexIds)
     {
-        for (uint16 i = 0; i < mesh.Vertices.Num(); ++i)
+        for (uint16 i = 0; i < mesh.GetVertices().Num(); ++i)
         {
-            const Vec2& pt = mesh.Vertices[i];
+            const Vec2& pt = mesh.GetVertices()[i];
 
             char str[256] = { '\0' };
 #ifdef _WIN32
@@ -276,7 +269,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawHalfEdgeIds)
     {
-        for (uint16 i = 0; i < mesh.HalfEdges.Num(); ++i)
+        for (uint16 i = 0; i < mesh.GetHalfEdges().Num(); ++i)
         {
             if (!mesh.IsValidHalfEdge(uint16(i)))
                 continue;
@@ -297,13 +290,13 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawFaceIds)
     {
-        for (uint16 i = 0; i < uint16(mesh.Faces.Num()); ++i)
+        for (uint16 i = 0; i < uint16(mesh.GetFaces().Num()); ++i)
         {
-            if (!mesh.Faces.IsValidIndex(i))
+            if (!mesh.IsValidFace(i))
                 continue;
 
-            const auto& face = mesh.Faces[i];
-            if (!mesh.HalfEdges.IsValidIndex(face.HalfEdge))
+            const auto& face = mesh.GetFaces()[i];
+            if (!mesh.IsValidHalfEdge(face.HalfEdge))
                 continue;
 
             Color color = renderer.GetColor(i);

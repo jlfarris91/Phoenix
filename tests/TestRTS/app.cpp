@@ -144,7 +144,7 @@ void InitSession()
 
     auto primaryWorld = worldManager->NewWorld({ "DefaultWorld"_n, "TestWorld"_n });
 
-    FeatureECS::RegisterArchetypeDefinition<TransformComponent, BodyComponent, SteeringComponent, SeekComponent>(*primaryWorld, "Unit"_n);
+    FeatureECS::RegisterArchetypeDefinition<TransformComponent, SteeringComponent>(*primaryWorld, "Unit"_n);
     
     GSessionThread = new std::thread(UpdateSessionWorker);
 }

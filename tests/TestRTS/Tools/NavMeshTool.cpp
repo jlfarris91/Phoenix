@@ -159,42 +159,42 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 {
     if (bDrawVertCircles)
     {
-        for (const Vec2& vert : mesh.Vertices)
+        for (const Vec2& vert : mesh.GetVertices())
         {
             renderer.DrawCircle(vert, 0.1f, Color::White);
         }
     }
 
     // Draw unlocked edges gray
-    for (const auto& edge : mesh.HalfEdges)
+    for (const auto& edge : mesh.GetHalfEdges())
     {
-        if (!mesh.Faces.IsValidIndex(edge.Face))
+        if (!mesh.IsValidFace(edge.Face))
             continue;
 
-        if (edge.bLocked)
+        if (edge.IsLocked())
             continue;
 
-        const Vec2& vertA = mesh.Vertices[edge.VertA];
-        const Vec2& vertB = mesh.Vertices[edge.VertB];
+        const Vec2& vertA = mesh.GetVertices()[edge.VertA];
+        const Vec2& vertB = mesh.GetVertices()[edge.VertB];
         renderer.DrawLine(vertA, vertB, Color(50, 50, 50));
     }
 
     // Draw locked edges in red
-    for (const auto& edge : mesh.HalfEdges)
+    for (const auto& edge : mesh.GetHalfEdges())
     {
-        if (!mesh.Faces.IsValidIndex(edge.Face))
+        if (!mesh.IsValidFace(edge.Face))
             continue;
 
-        if (!edge.bLocked)
+        if (!edge.IsLocked())
             continue;
 
-        const Vec2& vertA = mesh.Vertices[edge.VertA];
-        const Vec2& vertB = mesh.Vertices[edge.VertB];
+        const Vec2& vertA = mesh.GetVertices()[edge.VertA];
+        const Vec2& vertB = mesh.GetVertices()[edge.VertB];
         renderer.DrawLine(vertA, vertB, Color::Red);
     }
 
     // Redraw the edges of the face the mouse is within so that they draw on top
-    for (size_t i = 0; i < mesh.Faces.Num(); ++i)
+    for (size_t i = 0; i < mesh.GetFaces().Num(); ++i)
     {
         auto result = mesh.IsPointInFace(int16(i), CursorPos);
         if (result.Result != EPointInFaceResult::Outside)
@@ -203,8 +203,8 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
             mesh.ForEachHalfEdgeInFace(uint16(i), [&](const auto& halfEdge)
             {
-                const Vec2& vertA = mesh.Vertices[halfEdge.VertA];
-                const Vec2& vertB = mesh.Vertices[halfEdge.VertB];
+                const Vec2& vertA = mesh.GetVertices()[halfEdge.VertA];
+                const Vec2& vertB = mesh.GetVertices()[halfEdge.VertB];
                 renderer.DrawLine(vertA, vertB, color);
             });
 
@@ -228,9 +228,9 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawVertIds)
     {
-        for (size_t i = 0; i < mesh.Vertices.Num(); ++i)
+        for (size_t i = 0; i < mesh.GetVertices().Num(); ++i)
         {
-            const Vec2& pt = mesh.Vertices[i];
+            const Vec2& pt = mesh.GetVertices()[i];
 
             char str[256];
             size_t len = sprintf_s(str, _countof(str), "%llu", i);
@@ -240,13 +240,13 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawFaceIds)
     {
-        for (uint16 i = 0; i < mesh.Faces.Num(); ++i)
+        for (uint16 i = 0; i < mesh.GetFaces().Num(); ++i)
         {
-            if (!mesh.Faces.IsValidIndex(i))
+            if (!mesh.IsValidFace(i))
                 continue;
 
-            const auto& face = mesh.Faces[i];
-            if (!mesh.HalfEdges.IsValidIndex(face.HalfEdge))
+            const auto& face = mesh.GetFaces()[i];
+            if (!mesh.IsValidHalfEdge(face.HalfEdge))
                 continue;
 
             Color color = renderer.GetColor(i);
@@ -262,24 +262,24 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawFaceCircumcircles)
     {
-        for (int32 i = 0; i < mesh.Faces.Num(); ++i)
+        for (int32 i = 0; i < mesh.GetFaces().Num(); ++i)
         {
-            if (!mesh.Faces.IsValidIndex(i))
+            if (!mesh.IsValidFace(i))
                 continue;
 
-            const auto& face = mesh.Faces[i];
-            if (!mesh.HalfEdges.IsValidIndex(face.HalfEdge))
+            const auto& face = mesh.GetFaces()[i];
+            if (!mesh.IsValidHalfEdge(face.HalfEdge))
                 continue;
 
             Color color = renderer.GetColor(i) / 2;
 
-            const auto& e0 = mesh.HalfEdges[face.HalfEdge];
-            const auto& e1 = mesh.HalfEdges[e0.Next];
-            const auto& e2 = mesh.HalfEdges[e1.Next];
+            const auto& e0 = mesh.GetHalfEdges()[face.HalfEdge];
+            const auto& e1 = mesh.GetHalfEdges()[e0.Next];
+            const auto& e2 = mesh.GetHalfEdges()[e1.Next];
     
-            const Vec2& a = mesh.Vertices[e0.VertA];
-            const Vec2& b = mesh.Vertices[e1.VertA];
-            const Vec2& c = mesh.Vertices[e2.VertA];
+            const Vec2& a = mesh.GetVertices()[e0.VertA];
+            const Vec2& b = mesh.GetVertices()[e1.VertA];
+            const Vec2& c = mesh.GetVertices()[e2.VertA];
     
             RenderCircumcircle(renderer, a, b, c, color);
         }
@@ -289,21 +289,21 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
     {
         renderer.DrawLine(*LineStart, *LineEnd, Color::White);
 
-        for (auto edge : mesh.HalfEdges)
+        for (auto edge : mesh.GetHalfEdges())
         {
             if (edge.Face == Index<uint16>::None)
             {
                 continue;
             }
 
-            const Vec2& a = mesh.Vertices[edge.VertA];
-            const Vec2& b = mesh.Vertices[edge.VertB];
+            const Vec2& a = mesh.GetVertices()[edge.VertA];
+            const Vec2& b = mesh.GetVertices()[edge.VertB];
 
             Vec2 pt;
             if (Vec2::Intersects(a, b, *LineStart, *LineEnd, pt))
             {
-                const Vec2& vertA = mesh.Vertices[edge.VertA];
-                const Vec2& vertB = mesh.Vertices[edge.VertB];
+                const Vec2& vertA = mesh.GetVertices()[edge.VertA];
+                const Vec2& vertB = mesh.GetVertices()[edge.VertB];
                 renderer.DrawLine(vertA, vertB, Color::White);
 
                 renderer.DrawCircle(pt, 10, Color::White);
@@ -332,10 +332,10 @@ void NavMeshTool::RenderPath(
     {
         for (uint16 halfEdgeIndex : meshPath.OpenSet)
         {
-            const auto& halfEdge = mesh.HalfEdges[halfEdgeIndex];
+            const auto& halfEdge = mesh.GetHalfEdges()[halfEdgeIndex];
         
-            const Vec2& vertA = mesh.Vertices[halfEdge.VertA];
-            const Vec2& vertB = mesh.Vertices[halfEdge.VertB];
+            const Vec2& vertA = mesh.GetVertices()[halfEdge.VertA];
+            const Vec2& vertB = mesh.GetVertices()[halfEdge.VertB];
             renderer.DrawLine(vertA, vertB, Color::Green);
         
             Vec2 center, normal;
@@ -350,10 +350,10 @@ void NavMeshTool::RenderPath(
     {
         for (int32 i = 0; i < (int32)meshPath.PathEdges.Num(); ++i)
         {
-            const auto& halfEdge = mesh.HalfEdges[meshPath.PathEdges[i]];
+            const auto& halfEdge = mesh.GetHalfEdges()[meshPath.PathEdges[i]];
 
-            const Vec2& vertA = mesh.Vertices[halfEdge.VertA];
-            const Vec2& vertB = mesh.Vertices[halfEdge.VertB];
+            const Vec2& vertA = mesh.GetVertices()[halfEdge.VertA];
+            const Vec2& vertB = mesh.GetVertices()[halfEdge.VertB];
             renderer.DrawLine(vertA, vertB, Color(100, 0, 100));
         }
 

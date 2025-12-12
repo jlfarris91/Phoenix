@@ -13,14 +13,15 @@
 using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
+using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
 
 namespace MoveAbilitySystemDetail
 {
-    struct UpdateMoveAbilityComponentJob : IBufferJob<const SeekComponent&, const TransformComponent&, MoveAbilityComponent&>
+    struct UpdateMoveAbilityComponentJob : IBufferJob<const SteeringComponent&, const TransformComponent&, MoveAbilityComponent&>
     {
-        void Execute(const EntityComponentSpan<const SeekComponent&, const TransformComponent&, MoveAbilityComponent&>& span) override
+        void Execute(const EntityComponentSpan<const SteeringComponent&, const TransformComponent&, MoveAbilityComponent&>& span) override
         {
             PHX_PROFILE_ZONE_SCOPED_N("UpdateMoveAbilityComponentJob");
 
@@ -99,12 +100,6 @@ bool MoveAbility::AddAbility(WorldRef world, const UnitId& unit) const
         return false;
     }
 
-    SeekComponent* seekComp = FeatureECS::GetOrAddComponent<SeekComponent>(world, unit);
-    if (!seekComp)
-    {
-        return false;
-    }
-
     SteeringComponent* steeringComp = FeatureECS::GetOrAddComponent<SteeringComponent>(world, unit);
     if (!steeringComp)
     {
@@ -115,7 +110,17 @@ bool MoveAbility::AddAbility(WorldRef world, const UnitId& unit) const
 
     Data::UnitPtr unitData(unitComp->UnitData);
 
-    steeringComp->MaxSpeed = unitData.Movement.Speed.GetValue(queryContext);
+    Speed maxSpeed = unitData.Movement.Speed.GetValue(queryContext);
+    Time accelerationTime = unitData.Movement.AccelerationTime.GetValue(queryContext);
+    Time decelerationTime = unitData.Movement.DecelerationTime.GetValue(queryContext);
+
+    FeatureSteering::UpdateSpeed(world, unit, { maxSpeed, accelerationTime, decelerationTime });
+
+    steeringComp->CollisionMask = (uint32)unitData.CollisionFlags.GetValue(queryContext);
+    steeringComp->InnerRadius = unitData.Placement.InnerRadius.GetValue(queryContext);
+    steeringComp->OuterRadius = unitData.Placement.OuterRadius.GetValue(queryContext);
+    steeringComp->TurnRateIdle = unitData.Movement.TurnRateIdle.GetValue(queryContext);
+    steeringComp->TurnRateMoving = unitData.Movement.TurnRateMoving.GetValue(queryContext);
     steeringComp->AvoidanceRadius = unitData.Placement.InnerRadius.GetValue(queryContext);
     steeringComp->SeparationDelay = unitData.Movement.SeparationDelay.GetValue(queryContext);
     steeringComp->SeparationRadius = unitData.Movement.SeparationRadius.GetValue(queryContext);

@@ -8,15 +8,46 @@
 
 namespace Phoenix::Steering
 {
+    enum class ESteerFlags
+    {
+        None = 0,
+        SeekingGoal = 1,
+        ArrivedAtGoal = 2,
+        Active = 4
+    };
+
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
     {
         PHX_ECS_DECLARE_COMPONENT(SteeringComponent)
 
-        // The accumulated steering vector for a given frame.
-        Vec2 SteeringVector;
+        ESteerFlags Flags = ESteerFlags::None;
+
+        ECS::EntityId GoalEntity;
+        Vec2 GoalPos;
+
+        Vec2 StepPos[2];
+
+        Vec2 Velocity;
+        Vec2 PreviousPos;
+        uint32 CollisionMask = 0;
+
+        Distance InnerRadius;
+        Distance OuterRadius;
 
         // The max speed an entity can move not considering pushing forces.
-        Speed MaxSpeed;
+        Distance MaxSpeed;
+
+        // The amount of time it takes to turn 180 degrees when idle.
+        Time TurnRateIdle;
+
+        // The amount of time it takes to turn 180 degrees when moving.
+        Time TurnRateMoving;
+
+        // The amount of time it takes to go from stopped to max speed.
+        Time AccelerationTime;
+
+        // The amount of time it takes to go from max speed to stopped.
+        Time DecelerationTime;
 
         // The radius at which to avoid other entities.
         Distance AvoidanceRadius;
@@ -29,30 +60,5 @@ namespace Phoenix::Steering
 
         // The strength of the separation force.
         Value SeparationStrength;
-    };
-
-    enum class ESeekFlags
-    {
-        None = 0,
-        SeekingGoal = 1,
-        ArrivedAtGoal = 2,
-    };
-
-    struct PHOENIX_STEERING_API SeekComponent : ECS::IComponent
-    {
-        PHX_ECS_DECLARE_COMPONENT(SeekComponent)
-
-        ESeekFlags Flags = ESeekFlags::None;
-        ECS::EntityId TargetEntity;
-        Vec2 TargetPos;
-    };
-
-    struct PHOENIX_STEERING_API WanderComponent : ECS::IComponent
-    {
-        PHX_ECS_DECLARE_COMPONENT(WanderComponent)
-
-        Angle WanderAngle;
-        Distance WanderRadius;
-        Speed MaxSpeed;
     };
 }

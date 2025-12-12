@@ -18,7 +18,10 @@
         }
     ],
     "movement": {
-        "speed": 50.0
+        "acceleration_time": 1.0,
+        "deceleration_time": 1.0,
+        "speed": 5.5,
+        "turn_rate_moving": 0.35
     },
     "placement": {
         "inner_radius": 0.6,

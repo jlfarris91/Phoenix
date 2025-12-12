@@ -6,11 +6,13 @@
 #include "FeatureECS.h"
 #include "FeatureNavigation.h"
 #include "FeaturePhysics.h"
+#include "FeatureSteering.h"
 #include "Flags.h"
 #include "MortonCode.h"
 #include "SteeringComponent.h"
 #include "SystemJob.h"
 #include "TransformComponent.h"
+#include "WorldTaskQueue.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -19,368 +21,440 @@ using namespace Phoenix::Steering;
 
 namespace SteeringDetail
 {
-    struct InitJob : IBufferJob<SteeringComponent&>
+    struct PopulateSortedEntitiesJob : IBufferJob<TransformComponent&, SteeringComponent&>
     {
-        void Execute(const EntityComponentSpan<SteeringComponent&>& span) override
+        void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&>& span) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("InitJob");
+            PHX_PROFILE_ZONE_SCOPED_N("PopulateSortedEntitiesJob");
 
-            for (auto && [entityId, index, steeringComp] : span)
+            FeatureSteeringScratchBlock& scratchBlock = World->GetBlockRef<FeatureSteeringScratchBlock>();
+
+            for (auto && [entityId, index, transformComp, steeringComp] : span)
             {
-                steeringComp.SteeringVector = Vec2::Zero;
+                uint32 sortedEntityIndex = scratchBlock.SortedEntityCount.fetch_add(1);
+                scratchBlock.SortedEntities[sortedEntityIndex] = SortedEntity{entityId, &transformComp, &steeringComp, transformComp.ZCode};
             }
         }
     };
 
-    struct SeekJob : IBufferJob<TransformComponent&, SteeringComponent&, SeekComponent&>
+    void SortEntitiesByZCodeTask(WorldRef world)
     {
-        DeltaTime DeltaTime;
-        Distance ArrivalThreshold = 0.1;
+        PHX_PROFILE_ZONE_SCOPED;
 
-        void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&, SeekComponent&>& span) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("SeekJob");
+        FeatureSteeringScratchBlock& scratchBlock = world.GetBlockRef<FeatureSteeringScratchBlock>();
 
-            WorldRef world = *World;
+        // Calculated from PopulateSortedEntitiesJob
+        scratchBlock.SortedEntities.SetSize(scratchBlock.SortedEntityCount);
 
-            for (auto && [entityId, index, transformComp, steeringComp, seekComp] : span)
+        // Sort entities by their zcodes
+        std::ranges::stable_sort(
+            scratchBlock.SortedEntities,
+            [](const SortedEntity& a, const SortedEntity& b)
             {
-                // Only step entities actively seeking a goal
-                if (!HasAnyFlags(seekComp.Flags, ESeekFlags::SeekingGoal))
-                {
-                    continue;
-                }
+                return a.ZCode < b.ZCode;
+            });
+    }
 
-                Vec2 targetPos = seekComp.TargetPos;
-
-                bool clearSeekingGoal = true;
-                if (seekComp.TargetEntity != EntityId::Invalid)
-                {
-                    if (const Transform2D* targetTransform = FeatureECS::GetWorldTransformPtr(world, seekComp.TargetEntity))
-                    {
-                        targetPos = targetTransform->Position;
-
-                        // Only clear the seeking goal flag if within range of a static position.
-                        // Moving towards an entity will continue until the target is cleared or becomes invalid.
-                        clearSeekingGoal = false;
-                    }
-                    else
-                    {
-                        // Target entity is no longer a valid target
-                        seekComp.TargetEntity = EntityId::Invalid;
-                        SetFlagRef(seekComp.Flags, ESeekFlags::SeekingGoal, false);
-                        continue;
-                    }
-                }
-
-                const Transform2D& transform = transformComp.Transform;
-                const Vec2& currPos = transform.Position;
-                Vec2 steeringVel;
-
-                // Pathfinding::PathResult result = Pathfinding::FeatureNavigation::PathTo(world, currPos, targetPos, bodyComp.Radius);
-                // if (result.PathFound)
-                // {
-                //     targetPos = result.NextPoint;
-                // }
-
-                Vec2 targetOffset = targetPos - currPos;
-                Distance distance = targetOffset.Length();
-
-                // The entity has reached its goal
-                if (distance < ArrivalThreshold)
-                {
-                    SetFlagRef(seekComp.Flags, ESeekFlags::ArrivedAtGoal, true);
-
-                    if (clearSeekingGoal)
-                    {
-                        SetFlagRef(seekComp.Flags, ESeekFlags::SeekingGoal, false);
-                    }
-
-                    return;
-                }
-
-                SetFlagRef(seekComp.Flags, ESeekFlags::ArrivedAtGoal, false);
-
-                Vec2 desiredVel = (targetPos - currPos).Normalized() * steeringComp.MaxSpeed;
-                steeringVel = desiredVel - steeringVel;
-
-                steeringComp.SteeringVector += steeringVel;
-            }
-        }
-    };
-
-    struct SeparationJob : IBufferJob<const TransformComponent&, const BodyComponent&, SteeringComponent&>
+    struct PathfindingJob : IBufferJob<TransformComponent&, SteeringComponent&>
     {
-        DeltaTime DeltaTime;
-        Distance DensityScalar;
-        Distance DensityRadiusScalar;
-        Distance AvoidanceScalar;
-        Distance AvoidanceRadiusScalar;
+        Distance ArrivalThreshold;
 
-        void Execute(const EntityComponentSpan<const TransformComponent&, const BodyComponent&, SteeringComponent&>& span) override
+        void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&>& span) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("SeparationJob");
-
-            FeaturePhysicsScratchBlock& physicsScratchBlock = World->GetBlockRef<FeaturePhysicsScratchBlock>();
-
-            TMortonCodeRangeArray ranges;
-
-            const EntityBody* neighbors[64];
-            uint32 neighborsCount = 0;
+            PHX_PROFILE_ZONE_SCOPED_N("PathfindingJob");
 
             for (auto && [
                 entityId,
                 index,
                 transformComp,
-                bodyComp,
-                steeringComp] : span)
+                steerComp] : span)
             {
-                Vec2 avoid;
-                Vec2 density;
-                const Value T = 0.2;
+                DetermineStepPositions(transformComp, steerComp);
+            }
+        }
+
+        void DetermineStepPositions(const TransformComponent& transformComp, SteeringComponent& steerComp) const
+        {
+            PHX_PROFILE_ZONE_SCOPED;
+
+            // Only step entities actively seeking a goal
+            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+            {
+                return;
+            }
+
+            Vec2 targetPos = steerComp.GoalPos;
+
+            bool clearSeekingGoal = true;
+            if (steerComp.GoalEntity != EntityId::Invalid)
+            {
+                if (const Transform2D* targetTransform = FeatureECS::GetWorldTransformPtr(*World, steerComp.GoalEntity))
+                {
+                    targetPos = targetTransform->Position;
+
+                    // Only clear the seeking goal flag if within range of a static position.
+                    // Moving towards an entity will continue until the target is cleared or becomes invalid.
+                    clearSeekingGoal = false;
+                }
+                else
+                {
+                    // Target entity is no longer a valid target
+                    steerComp.GoalEntity = EntityId::Invalid;
+                    ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
+                    return;
+                }
+            }
+
+            const Transform2D& transform = transformComp.Transform;
+            const Vec2& currPos = transform.Position;
+
+            Pathfinding::PathResult result = Pathfinding::FeatureNavigation::PathTo(*World, currPos, targetPos, steerComp.OuterRadius);
+            if (result.PathFound)
+            {
+                targetPos = result.NextPoint;
+            }
+            // else
+            // {
+            //     ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
+            //     ClearFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
+            //     return;
+            // }
+
+            Vec2 targetOffset = targetPos - currPos;
+            Distance distance = targetOffset.Length();
+
+            // The entity has reached its goal
+            if (distance < ArrivalThreshold)
+            {
+                SetFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
+
+                if (clearSeekingGoal)
+                {
+                    ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
+                }
+            }
+
+            steerComp.StepPos[0] = targetPos;
+        }
+    };
+
+    struct SteeringJob : IBufferJob<TransformComponent&, SteeringComponent&>
+    {
+        DeltaTime DeltaTime;
+
+        bool MoveTowardsGoal;
+        Distance ArrivalThreshold;
+
+        Distance DensityScalar;
+        Distance DensityRadiusScalar;
+        Distance AvoidanceScalar;
+        Distance AvoidanceRadiusScalar;
+
+        void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&>& span) override
+        {
+            PHX_PROFILE_ZONE_SCOPED_N("SteeringJob");
+
+            for (auto && [
+                entityId,
+                index,
+                transformComp,
+                steerComp] : span)
+            {
+                // Calculate the velocity vector the moves the entity towards the goal.
+                Vec2 vel = CalculateVelocity(transformComp, steerComp);
+
+                steerComp.Velocity = vel;
+
+                // Rotate to face goal direction
+                Vec2 stepDir = steerComp.StepPos[0] - transformComp.Transform.Position;
+                CalculateFacing(transformComp, steerComp, stepDir, transformComp.Transform.Rotation);
+
+                // Integrate velocity
+                Integrate(transformComp, steerComp);
+            }
+        }
+
+        Vec2 CalculateVelocity(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
+        {
+            // Only step entities actively seeking a goal
+            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+            {
+                return Vec2::Zero;
+            }
+
+            const Vec2& currPos = transformComp.Transform.Position;
+            const Vec2& stepPos = steerComp.StepPos[0];
+            Vec2 stepDir = stepPos - currPos;
+
+            // Wait to start moving until the entity has rotated to face the step pos
+            {
+                auto targetAngle = stepDir.AsRadians();
+                auto delta = AngleDelta(targetAngle, transformComp.Transform.Rotation);
+                if (Abs(delta) > RAD_45)
+                {
+                    return Vec2::Zero;
+                }
+            }
+
+            Vec2 v = currPos - steerComp.PreviousPos;
+            int64 vv = Vec2::SqrxQ(v);
+
+            Vec2 d = stepPos - currPos;
+            int64 dd = Vec2::SqrxQ(d);
+
+            int64 speed = steerComp.MaxSpeed.Value;
+            int64 speed2 = speed*speed;
+
+            int64 decel = 1;
+            if (steerComp.DecelerationTime.Value > 0)
+            {
+                decel = (int64)steerComp.MaxSpeed.Value / steerComp.DecelerationTime.Value;
+            }
+            if (decel < 1)
+            {
+                decel = 1;
+            }
+            int64 decel2 = decel*decel;
+
+            int64 accel2 = speed2;
+            if (steerComp.AccelerationTime.Value > 0)
+            {
+                accel2 = speed2 / steerComp.AccelerationTime.Value;
+            }
+            if (accel2 < 2)
+            {
+                accel2 = 2;
+            }
+
+            int64 stopTime2 = vv / decel2;
+            int64 stopDist2 = stopTime2 * vv;
+
+            if (dd <= accel2)
+            {
+                v = d;
+            }
+            else if (dd <= stopDist2)
+            {
+                int64 decelNeed = (vv*vv) / dd;
+                if (decelNeed > decel2)
+                    decel2 = decelNeed;
+
+                if (vv > decel2)
+                {
+                    v -= v.Normalized() * Distance(Q64(decel2));
+                    vv = Vec2::SqrxQ(v);
+                }
+            }
+            else
+            {
+                if (vv < speed2)
+                {
+                    vv = vv * 9/8 + accel2;
+                }
+                if (vv > speed2)
+                {
+                    vv = speed2;
+                }
+            }
+
+            v = vv > dd ? d : d.Normalized() * Distance(Q64(vv));
+            return v;
+        }
+
+        bool CalculateFacing(
+            const TransformComponent& transformComp,
+            const SteeringComponent& steerComp,
+            const Vec2& velocity,
+            Angle& outAngle,
+            Angle threshold = Angle::Epsilon) const
+        {
+            Distance len = velocity.Length();
+            Distance thresh = Distance(Q32(128));
+            if (len <= thresh)
+            {
+                return false;
+            }
+
+            Angle angle = velocity.AsRadians();
+            Angle delta = AngleDelta(angle, transformComp.Transform.Rotation);
+            Angle absDelta = Abs(delta);
+
+            if (absDelta <= threshold)
+            {
+                return false;
+            }
+
+            if (steerComp.TurnRateMoving == 0)
+            {
+                return false;
+            }
+
+            Angle turnRate = PI / steerComp.TurnRateMoving * DeltaTime;
+
+            if (absDelta < turnRate)
+            {
+                outAngle = angle;
+            }
+            else if (delta > 0)
+            {
+                outAngle = Cordic::AngleShift(transformComp.Transform.Rotation + turnRate);
+            }
+            else
+            {
+                outAngle = Cordic::AngleShift(transformComp.Transform.Rotation - turnRate);
+            }
+
+            return true;
+        }
+
+        void Integrate(TransformComponent& transformComp, SteeringComponent& steerComp)
+        {
+            Distance vel = steerComp.Velocity.Length();
+            vel = Min(vel, steerComp.MaxSpeed);
+            steerComp.Velocity = steerComp.Velocity.Normalized() * vel;
+
+            steerComp.PreviousPos = transformComp.Transform.Position;
+            transformComp.Transform.Position += steerComp.Velocity * DeltaTime;
+
+            CollideWithWorld(transformComp, steerComp);
+
+            bool moved = !Vec2::Equals(steerComp.PreviousPos, transformComp.Transform.Position);
+            SetFlagRef(steerComp.Flags, ESteerFlags::Active, moved);
+        }
+
+        void CollideWithWorld(
+            TransformComponent& transformComp,
+            SteeringComponent& steerComp)
+        {
+            
+        }
+    };
+
+    struct CollisionJob : IBufferJob<TransformComponent&, SteeringComponent&>
+    {
+        void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&>& span) override
+        {
+            PHX_PROFILE_ZONE_SCOPED_N("CollisionJob");
+
+            FeatureSteeringScratchBlock& scratchBlock = World->GetBlockRef<FeatureSteeringScratchBlock>();
+
+            TMortonCodeRangeArray ranges;
+            const SortedEntity* neighbors[64];
+            uint32 neighborsCount = 0;
+
+            for (auto && [
+                entityId,
+                index,
+                transformCompA,
+                steerCompA] : span)
+            {
+                if (HasNoneFlags(steerCompA.Flags, ESteerFlags::Active))
+                {
+                    continue;
+                }
 
                 // Query for overlapping morton ranges
                 {
                     PHX_PROFILE_ZONE_SCOPED_N("OverlapQuery");
 
-                    MortonCodeAABB aabb = ToMortonCodeAABB(transformComp.Transform.Position, steeringComp.AvoidanceRadius);
+                    MortonCodeAABB aabb = ToMortonCodeAABB(transformCompA.Transform.Position, steerCompA.AvoidanceRadius);
 
                     ranges.clear();
                     MortonCodeQuery(aabb, ranges);
 
                     neighborsCount = 0;
-                    ForEachInMortonCodeRanges<EntityBody, &EntityBody::ZCode>(
-                        physicsScratchBlock.SortedEntities,
+                    ForEachInMortonCodeRanges<SortedEntity, &SortedEntity::ZCode>(
+                        scratchBlock.SortedEntities,
                         ranges,
-                        [&](const EntityBody& eb)
+                        [&](const SortedEntity& other)
                         {
-                            if (eb.EntityId == entityId)
+                            if (other.EntityId == entityId)
                             {
                                 return false;
                             }
 
-                            if ((bodyComp.CollisionMask & eb.BodyComponent->CollisionMask) == 0)
+                            if ((steerCompA.CollisionMask & other.SteeringComponent->CollisionMask) == 0)
                             {
                                 return false;
                             }
-                
-                            neighbors[neighborsCount++] = &eb;
+
+                            neighbors[neighborsCount++] = &other;
                             return neighborsCount == _countof(neighbors);
                         });
                 }
 
                 for (uint32 i = 0; i < neighborsCount; ++i)
                 {
-                    const EntityBody* entityBodyB = neighbors[i];
-                    TransformComponent& transformCompB = *entityBodyB->TransformComponent;
-                    BodyComponent& bodyCompB = *entityBodyB->BodyComponent;
+                    const SortedEntity* entityB = neighbors[i];
+                    TransformComponent& transformCompB = *entityB->TransformComponent;
+                    SteeringComponent& steerCompB = *entityB->SteeringComponent;
 
-                    Vec2 offset = transformComp.Transform.Position - transformCompB.Transform.Position;
-                    Distance dist = offset.Length();
-                    if (dist == 0.0)
-                    {
-                        offset = Vec2((1 + rand() % 99) / 100.0, (1 + rand() % 99) / 100.0);
-                        offset = offset.Normalized();
-                        dist = offset.Length();
-                    }
+                    auto radius = steerCompA.OuterRadius + steerCompB.OuterRadius;
+                    auto rr = SqrxQ(radius);
 
-                    if (dist == 0.0)
+                    auto dist = transformCompB.Transform.Position - transformCompA.Transform.Position;
+                    auto dd = Vec2::SqrxQ(dist);
+
+                    if (dd >= rr)
                     {
                         continue;
                     }
 
-                    // Density
-                    Distance target = bodyComp.Radius * DensityRadiusScalar;
-                    if (dist < target)
+                    if (dd == 0)
                     {
-                        Vec2 n = offset / dist;
-                        auto k = (target - dist) / target;
-                        density += n * k * DensityScalar;
+                        dist = Vec2(radius, 0);
+                        dd = rr;
                     }
 
-                    // Avoid
-                    Vec2 relVel = bodyComp.LinearVelocity - bodyCompB.LinearVelocity;
-                    Vec2 d = offset + relVel * T;
-                    Distance dLen = d.Length();
-                    Distance r = (bodyComp.Radius + bodyCompB.Radius) * AvoidanceRadiusScalar;
+                    auto normal = dist.Normalized() * radius;
+                    auto separation = (normal - dist) / 2;
+                    transformCompA.Transform.Position -= separation;
+                    transformCompB.Transform.Position += separation;
 
-                    if (dLen != 0 && dLen < r)
-                    {
-                        Vec2 correction = (d / dLen) * (r - dist);
-                        Vec2 avoidVel = correction / T;
-                        Vec2::EPerpendicularDir perpDir = static_cast<Vec2::EPerpendicularDir>((entityId * 2654435761u) & 1u);
-                        Vec2 tangent = Vec2::Perpendicular(d, perpDir).Normalized();
-                        Vec2 lateral = tangent * Vec2::Dot(relVel, tangent);
-                        avoid += avoidVel * 0.4 + lateral * 0.6;
-                    }
+                    SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
+                    SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
                 }
-
-                avoid *= AvoidanceScalar;
-
-                steeringComp.SteeringVector += avoid + density;
-            }
-        }
-    };
-
-    struct AvoidanceJob : IBufferJob<const TransformComponent&, const BodyComponent&, SteeringComponent&>
-    {
-        DeltaTime DeltaTime;
-
-        void Execute(const EntityComponentSpan<const TransformComponent&, const BodyComponent&, SteeringComponent&>& span) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("AvoidanceJob");
-
-            FeaturePhysicsScratchBlock& physicsScratchBlock = World->GetBlockRef<FeaturePhysicsScratchBlock>();
-
-            TMortonCodeRangeArray ranges;
-
-            const EntityBody* overlappingBodies[16];
-            uint32 overlappingBodiesCount = 0;
-
-            for (auto && [
-                entityId,
-                index,
-                transformComp,
-                bodyComp,
-                steeringComp] : span)
-            {
-                Vec2 avoidanceVec;
-                Vec2 desiredVel = bodyComp.Force + steeringComp.SteeringVector;
-
-                // Query for overlapping morton ranges
-                {
-                    PHX_PROFILE_ZONE_SCOPED_N("OverlapQuery");
-
-                    MortonCodeAABB aabb = ToMortonCodeAABB(transformComp.Transform.Position, steeringComp.AvoidanceRadius * 2);
-
-                    ranges.clear();
-                    MortonCodeQuery(aabb, ranges);
-
-                    overlappingBodiesCount = 0;
-                    ForEachInMortonCodeRanges<EntityBody, &EntityBody::ZCode>(
-                        physicsScratchBlock.SortedEntities,
-                        ranges,
-                        [&](const EntityBody& eb)
-                        {
-                            if (eb.EntityId == entityId)
-                            {
-                                return false;
-                            }
-                
-                            if ((bodyComp.CollisionMask & eb.BodyComponent->CollisionMask) == 0)
-                            {
-                                return false;
-                            }
-                
-                            overlappingBodies[overlappingBodiesCount++] = &eb;
-                            return overlappingBodiesCount == _countof(overlappingBodies);
-                        });
-                }
-
-                for (uint32 i = 0; i < overlappingBodiesCount; ++i)
-                {
-                    const EntityBody* entityBodyB = overlappingBodies[i];
-                    TransformComponent& transformCompB = *entityBodyB->TransformComponent;
-                    BodyComponent& bodyCompB = *entityBodyB->BodyComponent;
-
-                    Vec2 offset = transformCompB.Transform.Position - transformComp.Transform.Position;
-                    Distance dist = offset.Length();
-                    Distance rr = (bodyComp.Radius + bodyCompB.Radius) * 2;
-
-                    if (dist != 0.0 && dist < steeringComp.AvoidanceRadius)
-                    {
-                        Vec2 n = offset / dist;
-                        Value inward = Vec2::Dot(desiredVel, n);
-                        if (inward > 0)
-                        {
-                            Value weight = Clamp<Value>((rr - dist) / rr, 0, 1);
-                            avoidanceVec -= n * inward * weight;
-                        }
-                    }
-                }
-
-                steeringComp.SteeringVector += avoidanceVec;
-            }
-        }
-    };
-
-    struct WanderJob : IBufferJob<TransformComponent&, BodyComponent&, WanderComponent&>
-    {
-        void Execute(const EntityComponentSpan<TransformComponent&, BodyComponent&, WanderComponent&>& span) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("WanderJob");
-
-            for (auto && [entityId, index, transformComp, bodyComp, wander] : span)
-            {
-                auto a = ((rand() % RAND_MAX) / (double)RAND_MAX) * Angle::D * 2 - Angle::D;
-                auto angleDelta = Angle(Q32(a)) * 0.2;
-                wander.WanderAngle += angleDelta;
-                Vec2 desiredVel = Vec2::FromPolar(wander.WanderAngle, wander.WanderRadius).Normalized() * wander.MaxSpeed;
-                bodyComp.LinearVelocity = desiredVel;
-
-                Angle desiredAngle = bodyComp.LinearVelocity.AsRadians();
-                transformComp.Transform.Rotation = desiredAngle;
-            }
-        }
-    };
-
-    struct IntegrateJob : IBufferJob<TransformComponent&, BodyComponent&, SteeringComponent&>
-    {
-        void Execute(const EntityComponentSpan<TransformComponent&, BodyComponent&, SteeringComponent&>& span) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("IntegrateJob");
-
-            for (auto && [entityId, index, transformComp, bodyComp, steeringComp] : span)
-            {
-                Distance steerMag = steeringComp.SteeringVector.Length();
-                if (steerMag != 0.0)
-                {
-                    TInvFixed2<Distance> invSteerMag = OneDivBy(steerMag);
-                    Distance clampedMag = Clamp<Distance>(steerMag, -steeringComp.MaxSpeed, steeringComp.MaxSpeed);
-                    steeringComp.SteeringVector = (steeringComp.SteeringVector * invSteerMag) * clampedMag;
-                }
-
-                bodyComp.Force += steeringComp.SteeringVector;
-
-                //Angle desiredAngle = bodyComp.LinearVelocity.AsRadians();
-                //transformComp.Transform.Rotation = desiredAngle;
             }
         }
     };
 }
 
-void SteeringSystem::OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args)
+void SteeringSystem::OnPreWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
-    PHX_PROFILE_ZONE_SCOPED;
+    FeatureSteeringScratchBlock& scratchBlock = world.GetBlockRef<FeatureSteeringScratchBlock>();
 
-    SteeringDetail::InitJob initJob;
-    FeatureECS::ScheduleParallel(world, initJob);
+    scratchBlock.SortedEntities.Reset();
+    scratchBlock.SortedEntityCount = 0;
+
+    SteeringDetail::PopulateSortedEntitiesJob job;
+    FeatureECS::ScheduleParallel(world, job);
+
+    WorldTaskQueue::Schedule(world, &SteeringDetail::SortEntitiesByZCodeTask);
 }
 
 void SteeringSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    if (MoveTowardsGoal)
+    SteeringDetail::PathfindingJob pathfindingJob;
+    pathfindingJob.ArrivalThreshold = ArrivalThreshold;
+    FeatureECS::ScheduleParallel(world, pathfindingJob);
+
+    SteeringDetail::SteeringJob steeringJob;
+    steeringJob.DeltaTime = args.DeltaTime;
+    steeringJob.MoveTowardsGoal = MoveTowardsGoal;
+    steeringJob.ArrivalThreshold = ArrivalThreshold;
+    steeringJob.DensityScalar = DensityScalar;
+    steeringJob.DensityRadiusScalar = DensityRadiusScalar;
+    steeringJob.AvoidanceScalar = AvoidanceScalar;
+    steeringJob.AvoidanceRadiusScalar = AvoidanceRadiusScalar;
+    FeatureECS::ScheduleParallel(world, steeringJob);
+
+    for (uint32 i = 0; i < 2; ++i)
     {
-        SteeringDetail::SeekJob seekJob;
-        seekJob.DeltaTime = args.DeltaTime;
-        FeatureECS::ScheduleParallel(world, seekJob);
+        SteeringDetail::CollisionJob collisionJob;
+        FeatureECS::ScheduleParallel(world, collisionJob);
     }
-
-    SteeringDetail::WanderJob wanderJob;
-    FeatureECS::ScheduleParallel(world, wanderJob);
-
-    SteeringDetail::SeparationJob avoidanceJob;
-    avoidanceJob.DeltaTime = args.DeltaTime;
-    avoidanceJob.DensityScalar = DensityScalar;
-    avoidanceJob.DensityRadiusScalar = DensityRadiusScalar;
-    avoidanceJob.AvoidanceScalar = AvoidanceScalar;
-    avoidanceJob.AvoidanceRadiusScalar = AvoidanceRadiusScalar;
-    FeatureECS::ScheduleParallel(world, avoidanceJob);
-
-    SteeringDetail::IntegrateJob integrateJob;
-    FeatureECS::ScheduleParallel(world, integrateJob);
 }
 
 void SteeringSystem::OnDebugRender(

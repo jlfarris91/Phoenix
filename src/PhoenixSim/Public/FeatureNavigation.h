@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Features.h"
+#include "FixedPoint/FixedLine.h"
 #include "Mesh/Mesh2.h"
 #include "Mesh/MeshPath.h"
 

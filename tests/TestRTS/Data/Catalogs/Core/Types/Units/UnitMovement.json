@@ -92,17 +92,17 @@
                 "description": "The maximum movement speed of the unit."
             }
         },
-        "turn_time_idle": {
+        "turn_rate_idle": {
             "type": "Time",
-            "default": 0.0,
+            "default": 1.0,
             "minimum": 0.0,
             "attributes": {
                 "description": "The time it takes to complete a 180 degree turn while idle."
             }
         },
-        "turn_time_moving": {
+        "turn_rate_moving": {
             "type": "Time",
-            "default": 0.0,
+            "default": 1.0,
             "minimum": 0.0,
             "attributes": {
                 "description": "The time it takes to complete a 180 degree turn while moving."

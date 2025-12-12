@@ -1,7 +1,6 @@
 
 #include "PlayerController.h"
 
-#include <iostream>
 #include <SDL3/SDL_events.h>
 
 #include "FeatureECS.h"
@@ -11,7 +10,9 @@
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
 #include "Commands/Commands.h"
+
 #include "Selection/FeatureSelection.h"
+#include "Orders/FeatureOrderQueue.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -80,10 +81,20 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
     EntityId selectionGroup = FeatureSelection::GetPlayerSelection(world, playerId, groupId);
     FeatureECS::ForEachEntityInGroup(world, selectionGroup, [&](const EntityId& entityId)
     {
-        if (auto transform = FeatureECS::GetWorldTransformPtr(world, entityId))
+        auto transformPtr = FeatureECS::GetWorldTransformPtr(world, entityId);
+        if (!transformPtr)
         {
-            renderer.DrawCircle(transform->Position, 1.0, Color::Green);
+            return;
         }
+
+        renderer.DrawCircle(transformPtr->Position, 1.0, Color::Green);
+
+        Vec2 lastTargetPos = transformPtr->Position;
+        FeatureOrderQueue::ForEachOrder(world, {entityId}, [&](const Order& order)
+        {
+            renderer.DrawLine(lastTargetPos, order.Location, Color::Blue);
+            lastTargetPos = order.Location;
+        });
     });
 }
 
@@ -163,7 +174,6 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
     if (state.MouseButtonPressed(SDL_BUTTON_LEFT))
     {
-        std::cout << "MouseButtonPressed" << std::endl;
         CursorDragStart = CursorPos;
     }
 
@@ -181,7 +191,6 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
     if (state.MouseButtonReleased(SDL_BUTTON_LEFT))
     {
-        std::cout << "MouseButtonReleased" << std::endl;
         if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet() && (*BoxSelectDragStart - *BoxSelectDragEnd).Length() > 0.1)
         {
             Vec2 min;
@@ -257,7 +266,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     {
         // Issue move command to selection
         Command command;
-        command.Type = ECommandType::Order;
+        command.Type = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandType::Queued : ECommandType::Order;
         command.AbilityId = "MoveAbility"_n;
         command.CommandIndex = 0;
         command.TargetLocation = state.GetWorldMousePos();

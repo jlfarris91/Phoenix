@@ -128,7 +128,11 @@ namespace Phoenix
         static_assert(Tb < (sizeof(T) << 3) - 2);
         using ValueT = T;
         using QT = TFixedQ_T<T>;
+
+        // The denominator.
         static constexpr int64 D = 1LL << Tb;
+
+        // The number of bits used to represent decimal places.
         static constexpr int32 B = Tb;
 
         static constexpr TFixedQ_T<T> QMIN = TFixedQ_T<T>(std::numeric_limits<T>::min());
@@ -232,9 +236,13 @@ namespace Phoenix
     struct TInvFixed
     {
         using ValueT = T;
+
+        // The denominator.
         static constexpr int64 D = 1 << Tb;
+
+        // The number of bits used to represent decimal places.
         static constexpr int32 B = Tb;
-        
+
         template <class U> static constexpr T ToFixedValue(U v) { return static_cast<T>(static_cast<double>(D) / static_cast<double>(v)); }
         template <class U> static constexpr U FromFixedValue(T v) { return U(D) / U(v); }
 

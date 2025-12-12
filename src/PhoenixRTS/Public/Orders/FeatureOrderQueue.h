@@ -70,7 +70,14 @@ namespace Phoenix::RTS
         static bool RemoveOrder(WorldRef world, const UnitId& unit, uint32 index);
 
         // Clears the order queue for a unit.
-        static uint32 RemoveAllOrders(WorldRef world, const UnitId& unit);
+        static uint32 ClearOrderQueue(WorldRef world, const UnitId& unit);
+
+        template <class TCallback>
+        static void ForEachOrder(WorldConstRef world, const UnitId& unit, const TCallback& callback)
+        {
+            const FeatureOrderQueueDynamicBlock& block = world.GetBlockRef<FeatureOrderQueueDynamicBlock>();
+            block.OrderQueue.ForEachOrder(unit, callback);
+        }
 
     protected:
 

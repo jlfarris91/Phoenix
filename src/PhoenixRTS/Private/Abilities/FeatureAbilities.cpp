@@ -111,6 +111,11 @@ bool FeatureAbilities::HandleCommand(WorldRef world, const UnitId& unit, const C
         return ability->ExecuteOrder(world, unit, order);
     }
 
+    if (command.Type == ECommandType::Order)
+    {
+        FeatureOrderQueue::ClearOrderQueue(world, unit);
+    }
+
     if (!FeatureOrderQueue::EnqueueOrder(world, unit, order))
     {
         return false;

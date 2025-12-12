@@ -83,14 +83,20 @@ void SDLDebugState::ProcessAppEvent(SDL_Event* event)
     PrevKeyStates = KeyStates;
     PrevMouseButtonStates = MouseButtonStates;
 
-    if (event->type == SDL_EVENT_KEY_DOWN)
+    if (event->type == SDL_EVENT_KEY_UP || event->type == SDL_EVENT_KEY_DOWN)
     {
-        KeyStates[event->key.key] = true;
-    }
+        KeyStates[event->key.key] = event->type == SDL_EVENT_KEY_DOWN;
 
-    if (event->type == SDL_EVENT_KEY_UP)
-    {
-        KeyStates[event->key.key] = false;
+        SDL_Keymod mods = event->key.mod;
+        KeyStates[SDL_KMOD_LCTRL] = mods & SDL_KMOD_LCTRL;
+        KeyStates[SDL_KMOD_RCTRL] = mods & SDL_KMOD_RCTRL;
+        KeyStates[SDL_KMOD_CTRL] = (mods & (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL)) != 0;
+        KeyStates[SDL_KMOD_LSHIFT] = mods & SDL_KMOD_LSHIFT;
+        KeyStates[SDL_KMOD_RSHIFT] = mods & SDL_KMOD_RSHIFT;
+        KeyStates[SDL_KMOD_SHIFT] = (mods & (SDL_KMOD_LSHIFT | SDL_KMOD_RSHIFT)) != 0;
+        KeyStates[SDL_KMOD_LALT] = mods & SDL_KMOD_LALT;
+        KeyStates[SDL_KMOD_RALT] = mods & SDL_KMOD_RALT;
+        KeyStates[SDL_KMOD_ALT] = (mods & (SDL_KMOD_LALT | SDL_KMOD_RALT)) != 0;
     }
 
     if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)

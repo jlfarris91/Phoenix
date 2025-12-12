@@ -11,6 +11,38 @@ namespace Phoenix
     template <class T>
     struct TLine;
 
+    constexpr int64 Sqrx(int32 a, int32 b)
+    {
+        return (int64)a * b;
+    }
+
+    constexpr int64 Sqrx(int64 a, int64 b)
+    {
+        return a * b;
+    }
+
+    constexpr int64 Sqrx(int32 v)
+    {
+        return Sqrx(v, v);
+    }
+
+    constexpr int64 Sqrx(int64 v)
+    {
+        return Sqrx(v, v);
+    }
+
+    template <uint8 Tb, class T>
+    constexpr auto Sqrx(const TFixed<Tb, T>& value)
+    {
+        return value * value;
+    }
+
+    template <uint8 Tb, class T>
+    constexpr int64 SqrxQ(const TFixed<Tb, T>& value)
+    {
+        return (int64)value.Value * value.Value;
+    }
+
     template <uint8 Tb, class T>
     constexpr TFixed<Tb, T> Sqrt(const TFixed<Tb, T>& value)
     {
@@ -46,14 +78,11 @@ namespace Phoenix
         return Cordic::Vector(x, y).Y;
     }
 
-    constexpr Angle AngleBetween(Angle a, Angle b)
+    constexpr Angle AngleDelta(Angle a, Angle b)
     {
-        Angle d = Abs(a - b);
-        if (d > PI)
-        {
-            d = TWO_PI - d;
-        }
-        return d;
+        Angle delta = static_cast<Angle::QT>((a - b + PI).Value % TWO_PI.Value);
+        if (delta < 0) delta += TWO_PI;
+        return delta - PI;
     }
 
     template <class T>

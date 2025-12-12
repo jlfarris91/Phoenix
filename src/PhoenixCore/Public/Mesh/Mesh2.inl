@@ -14,11 +14,48 @@
 namespace Phoenix
 {
     MESH_TEMPLATE
+    const typename MESH_CLASS::TVec& MESH_CLASS::GetBounds() const
+    {
+        return Bounds;
+    }
+
+    MESH_TEMPLATE
+    void MESH_CLASS::SetBounds(const TFixedBox<TVec>& bounds, bool reset)
+    {
+        Bounds = bounds;
+        if (reset)
+        {
+            Reset();
+        }
+    }
+
+    MESH_TEMPLATE
     void MESH_CLASS::Reset()
     {
         Vertices.Reset();
         HalfEdges.Reset();
         Faces.Reset();
+
+        // Insert default faces
+        if (!Bounds.IsEmpty())
+        {
+            TVec corners[4];
+            Bounds.GetCorners(corners);
+
+            const TVec& bl = corners[(uint8)ECorners::BottomLeft];
+            const TVec& br = corners[(uint8)ECorners::BottomRight];
+            const TVec& tl = corners[(uint8)ECorners::TopLeft];
+            const TVec& tr = corners[(uint8)ECorners::TopRight];
+
+            InsertFace(bl, tr, tl, 1);
+            InsertFace(bl, br, tr, 2);
+        }
+    }
+
+    MESH_TEMPLATE
+    const auto& MESH_CLASS::GetVertices() const
+    {
+        return Vertices;
     }
 
     MESH_TEMPLATE
@@ -129,7 +166,7 @@ namespace Phoenix
         bool foundLocked = false;
         ForEachVertHalfEdge(vertIndex, [&foundLocked](const THalfEdge& halfEdge, TIdx)
         {
-            if (halfEdge.bLocked)
+            if (halfEdge.IsLocked())
             {
                 foundLocked = true;
                 return false;
@@ -177,6 +214,18 @@ namespace Phoenix
                 }
             }
         }
+    }
+
+    MESH_TEMPLATE
+    typename MESH_CLASS::TVec MESH_CLASS::ClampPointToBounds(const TVec& pos, TVecComp radius) const
+    {
+        return Bounds.Clamp(pos, radius);
+    }
+
+    MESH_TEMPLATE
+    const auto& MESH_CLASS::GetHalfEdges() const
+    {
+        return HalfEdges;
     }
 
     MESH_TEMPLATE
@@ -231,7 +280,7 @@ namespace Phoenix
         edge.Twin = Index<TIdx>::None;
         edge.Next = Index<TIdx>::None;
         edge.Face = f;
-        edge.bLocked = false;
+        edge.Flags = EHalfEdgeFlags::None;
 
         return e;
     }
@@ -401,13 +450,13 @@ namespace Phoenix
             return false;
 
         const THalfEdge& halfEdge = HalfEdges[halfEdgeIndex];
-        if (halfEdge.bLocked)
+        if (halfEdge.IsLocked())
             return true;
 
         if (!IsValidHalfEdge(halfEdge.Twin))
             return false;
 
-        return HalfEdges[halfEdge.Twin].bLocked;
+        return HalfEdges[halfEdge.Twin].IsLocked();
     }
 
     MESH_TEMPLATE
@@ -451,6 +500,12 @@ namespace Phoenix
             }
         }
         return result;
+    }
+
+    MESH_TEMPLATE
+    const auto& MESH_CLASS::GetFaces() const
+    {
+        return Faces;
     }
 
     MESH_TEMPLATE
@@ -794,7 +849,7 @@ namespace Phoenix
 
     MESH_TEMPLATE
     template <class TPredicate>
-    void MESH_CLASS::ForEachHalfEdgeInFace(TIdx faceIndex, const TPredicate& pred) const
+    void MESH_CLASS::ForEachHalfEdgeInFace(TIdx faceIndex, const TPredicate& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -808,13 +863,13 @@ namespace Phoenix
             PHX_ASSERT(IsValidHalfEdge(edgeIndex));
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
-            pred(halfEdge);
+            callback(halfEdge);
         }
     }
 
     MESH_TEMPLATE
     template <class TPredicate>
-    void MESH_CLASS::ForEachHalfEdgeIndexInFace(TIdx faceIndex, const TPredicate& pred) const
+    void MESH_CLASS::ForEachHalfEdgeIndexInFace(TIdx faceIndex, const TPredicate& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -826,7 +881,7 @@ namespace Phoenix
         for (size_t i = 0; i < 3; ++i)
         {
             PHX_ASSERT(IsValidHalfEdge(edgeIndex));
-            pred(edgeIndex);
+            callback(edgeIndex);
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
         }
@@ -834,7 +889,7 @@ namespace Phoenix
 
     MESH_TEMPLATE
     template <class TPredicate>
-    void MESH_CLASS::ForEachHalfEdgeTwinInFace(TIdx faceIndex, const TPredicate& pred) const
+    void MESH_CLASS::ForEachHalfEdgeTwinInFace(TIdx faceIndex, const TPredicate& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -853,13 +908,13 @@ namespace Phoenix
 
             const THalfEdge& twinEdge = HalfEdges[halfEdge.Twin];
 
-            pred(twinEdge);
+            callback(twinEdge);
         }
     }
 
     MESH_TEMPLATE
     template <class TPredicate>
-    void MESH_CLASS::ForEachNeighboringFaceIndex(TIdx faceIndex, const TPredicate& pred) const
+    void MESH_CLASS::ForEachNeighboringFaceIndex(TIdx faceIndex, const TPredicate& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -881,13 +936,13 @@ namespace Phoenix
             if (!IsValidFace(twinEdge.Face))
                 continue;
 
-            pred(twinEdge.Face);
+            callback(twinEdge.Face);
         }
     }
 
     MESH_TEMPLATE
     template <class TPredicate>
-    void MESH_CLASS::ForEachNeighboringFace(TIdx faceIndex, const TPredicate& pred) const
+    void MESH_CLASS::ForEachNeighboringFace(TIdx faceIndex, const TPredicate& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -911,8 +966,64 @@ namespace Phoenix
 
             const TFace& twinFace = Faces[twinEdge.Face];
 
-            pred(twinFace);
+            callback(twinFace);
         }
+    }
+
+    MESH_TEMPLATE
+    TIdx MESH_CLASS::LineCast(const TVec& start, const TVec& end, TVecComp radius) const
+    {
+        TIdx startFace = FindFaceContainingPoint(start);
+        if (!IsValidFace(startFace))
+        {
+            return Index<TIdx>::None;
+        }
+
+        TIdx lockedHalfEdgeIdx = Index<TIdx>::None;
+        TIdx currFaceIdx = startFace;
+
+        // Walk each triangle with a half edge intersecting with the line
+        while (lockedHalfEdgeIdx == Index<TIdx>::None && IsValidFace(currFaceIdx))
+        {
+            const TFace& face = Faces[currFaceIdx];
+            currFaceIdx = Index<TIdx>::None;
+
+            TIdx halfEdgeIdx = face.HalfEdge;
+
+            // Walk the half-edges to find one that intersects the line
+            for (size_t i = 0; i < 3; ++i)
+            {
+                PHX_ASSERT(IsValidHalfEdge(halfEdgeIdx));
+                const THalfEdge& halfEdge = HalfEdges[halfEdgeIdx];
+
+                const TVec& a = Vertices[halfEdge.VertA];
+                const TVec& b = Vertices[halfEdge.VertB];
+
+                TVec pt;
+                if (TVec::Intersects(start, end, a, b, pt))
+                {
+                    if (halfEdge.IsLocked())
+                    {
+                        lockedHalfEdgeIdx = halfEdgeIdx;
+                        break;
+                    }
+
+                    if (IsValidHalfEdge(halfEdge.Twin))
+                    {
+                        const THalfEdge& halfEdgeTwin = HalfEdges[halfEdge.Twin];
+                        currFaceIdx = halfEdgeTwin.Face;
+                        break;
+                    }
+
+                    currFaceIdx = Index<TIdx>::None;
+                    break;
+                }
+
+                halfEdgeIdx = halfEdge.Next;
+            }
+        }
+
+        return lockedHalfEdgeIdx;
     }
 
     MESH_TEMPLATE
@@ -925,7 +1036,7 @@ namespace Phoenix
         for (size_t i = 0; i < HalfEdges.Num(); ++i)
         {
             auto& edge = HalfEdges[i];
-            if (edge.Face != Index<TIdx>::None && edge.VertA == vi && !edge.bLocked)
+            if (edge.Face != Index<TIdx>::None && edge.VertA == vi && !edge.IsLocked())
             {
                 stack.Enqueue(TIdx(i));
             }
@@ -953,7 +1064,7 @@ namespace Phoenix
                 continue;
 
             THalfEdge& twinEdge0 = HalfEdges[twinEdgeIndex0];
-            if (twinEdge0.bLocked)
+            if (twinEdge0.IsLocked())
                 continue;
 
             if (!IsValidFace(twinEdge0.Face))
@@ -963,7 +1074,7 @@ namespace Phoenix
             PHX_ASSERT(IsValidHalfEdge(twinEdgeIndex1));
             THalfEdge& twinEdge1 = HalfEdges[twinEdgeIndex1];
 
-            if (twinEdge1.bLocked)
+            if (twinEdge1.IsLocked())
                 continue;
 
             TIdx twinEdgeIndex2 = twinEdge1.Next;
@@ -1205,8 +1316,8 @@ namespace Phoenix
         // Edge already exists so just lock it.
         if (edge.HalfEdge0 != Index<TIdx>::None && edge.HalfEdge1 != Index<TIdx>::None)
         {
-            HalfEdges[edge.HalfEdge0].bLocked = true;
-            HalfEdges[edge.HalfEdge1].bLocked = true;
+            HalfEdges[edge.HalfEdge0].Lock();
+            HalfEdges[edge.HalfEdge1].Lock();
             return false;
         }
 
@@ -1333,12 +1444,12 @@ namespace Phoenix
 
         if (lockedEdge.HalfEdge0 != Index<TIdx>::None)
         {
-            HalfEdges[lockedEdge.HalfEdge0].bLocked = true;
+            HalfEdges[lockedEdge.HalfEdge0].Lock();
         }
 
         if (lockedEdge.HalfEdge1 != Index<TIdx>::None)
         {
-            HalfEdges[lockedEdge.HalfEdge1].bLocked = true;
+            HalfEdges[lockedEdge.HalfEdge1].Lock();
         }
 
         // PHX_ASSERT(lockedEdge.HalfEdge0 != Index<TIdx>::None);

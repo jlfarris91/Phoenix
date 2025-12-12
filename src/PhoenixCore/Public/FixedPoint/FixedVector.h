@@ -186,6 +186,28 @@ namespace Phoenix
             return Cordic::Dot(a.X, a.Y, b.X, b.Y);
         }
 
+        constexpr static int64 SqrxQ(const TVec2& a, const TVec2& b)
+        {
+            return Phoenix::Sqrx(a.X.Value, b.X.Value) + Phoenix::Sqrx(a.Y.Value, b.Y.Value);
+        }
+
+        constexpr static int64 SqrxQ(const TVec2& v)
+        {
+            return SqrxQ(v, v);
+        }
+
+        constexpr static auto Sqrx(const TVec2& v)
+        {
+            using U = decltype(v.X * v.X);
+            return U(Q64(SqrxQ(v)));
+        }
+
+        constexpr static auto Sqrx(const TVec2& a, const TVec2& b)
+        {
+            using U = decltype(a.X * a.X);
+            return U(Q64(SqrxQ(a, b)));
+        }
+
         constexpr static auto Distance(const TVec2& a, const TVec2& b)
         {
             return Magnitude(a.X - b.X, a.Y - b.Y);

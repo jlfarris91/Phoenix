@@ -15,6 +15,7 @@ namespace Phoenix::Steering
             PHX_REGISTER_FIELD(double, DensityRadiusScalar)
             PHX_REGISTER_FIELD(double, AvoidanceScalar)
             PHX_REGISTER_FIELD(double, AvoidanceRadiusScalar)
+            PHX_REGISTER_FIELD(double, ArrivalThreshold)
         PHX_ECS_DECLARE_SYSTEM_END()
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -27,5 +28,6 @@ namespace Phoenix::Steering
         double DensityRadiusScalar = 2.2;
         double AvoidanceScalar = 1.3;
         double AvoidanceRadiusScalar = 2.2;
+        double ArrivalThreshold = 0.1;
     };
 }

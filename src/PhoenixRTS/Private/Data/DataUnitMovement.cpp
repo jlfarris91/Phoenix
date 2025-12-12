@@ -22,8 +22,8 @@ UnitMovementPtr::UnitMovementPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecord
     , SeparationRadius(Value<Distance>("separation_radius"))
     , SeparationStrength(Value<Phoenix::Value>("separation_strength"))
     , Speed(Value<Phoenix::Speed>("speed"))
-    , TurnTimeIdle(Value<Time>("turn_time_idle"))
-    , TurnTimeMoving(Value<Time>("turn_time_moving"))
+    , TurnRateIdle(Value<Time>("turn_rate_idle"))
+    , TurnRateMoving(Value<Time>("turn_rate_moving"))
     , TurnRadius(Value<Distance>("turn_radius"))
     , TurnSlowRate(Value<Phoenix::Value>("turn_slow_rate"))
 {

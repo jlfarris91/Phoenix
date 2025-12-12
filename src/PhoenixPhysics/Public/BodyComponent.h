@@ -48,12 +48,16 @@ namespace Phoenix
             // The amount of distance applied to the relative transform each step.
             Vec2 LinearVelocity = Vec2::Zero;
 
+            Distance MaxLinearVelocity = 0;
+
             Value LinearDamping = 0;
 
             // The mass of the body. Used when resolving body separation.
             InvValue InvMass;
 
             uint8 SleepTimer = 0;
+
+            Vec2 PreviousPos;
         };
         
     }
