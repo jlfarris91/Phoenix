@@ -32,12 +32,12 @@ namespace Phoenix
         TSharedPtr<Session> Session;
         SDLCamera* Camera;
         SDLViewport* Viewport;
-        TOptional<SDL_FPoint> CameraDragPos;
         float PanSpeed = 100.0f;
         float ZoomSpeed = 0.1f;
 
-        Vec2 CursorPos;
-        TOptional<Vec2> CursorDragStart;
-        TOptional<Vec2> BoxSelectDragStart, BoxSelectDragEnd;
+        Vec2 CursorWorldPos;
+        TOptional<SDL_FPoint> CameraDragPos;
+        TOptional<SDL_FPoint> CursorDragStart;
+        TOptional<SDL_FPoint> BoxSelectDragStart, BoxSelectDragEnd;
     };
 }

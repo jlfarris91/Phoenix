@@ -97,7 +97,7 @@ namespace Phoenix
         }
     };
 
-    template <size_t NFaces, class TFaceData, class TVecComp_ = Distance, class TIdx = uint16>
+    template <uint32 NFaces, class TFaceData, class TVecComp_ = Distance, class TIdx = uint16>
     struct TFixedCDTMesh2
     {
         using TIndex = TIdx;
@@ -108,7 +108,7 @@ namespace Phoenix
         using THitResult = TMeshHitResult<TVecComp_, TIdx>;
 
         static constexpr TVecComp DefaultThreshold = 1E-2;
-        static constexpr size_t Capacity = NFaces;
+        static constexpr uint32 Capacity = NFaces;
 
         const TVec& GetBounds() const;
         void SetBounds(const TFixedBox<TVec>& bounds, bool reset = true);

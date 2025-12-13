@@ -1,6 +1,7 @@
 
 #include "Orders/FeatureOrderQueue.h"
 
+#include "Units/UnitId.h"
 #include "Profiling.h"
 #include "Session.h"
 #include "Abilities/FeatureAbilities.h"

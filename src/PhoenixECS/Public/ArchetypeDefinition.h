@@ -65,7 +65,7 @@ namespace Phoenix
                 const ComponentDefinition& componentDefinition,
                 TArchetypeDefinition& outArchDef)
             {
-                for (size_t i = 0; i < baseArchDef.Components.Num(); ++i)
+                for (uint32 i = 0; i < baseArchDef.Components.Num(); ++i)
                 {
                     if (baseArchDef.Components[i].Id == componentDefinition.Id)
                         return false;
@@ -143,14 +143,14 @@ namespace Phoenix
                 return Components[index];
             }
 
-            constexpr bool IsValidIndex(size_t index) const
+            constexpr bool IsValidIndex(uint32 index) const
             {
                 return Components.IsValidIndex(index);
             }
 
             constexpr uint16 IndexOfComponent(const FName& componentId) const
             {
-                for (size_t i = 0; i < Components.Num(); ++i)
+                for (uint32 i = 0; i < Components.Num(); ++i)
                 {
                     if (Components[i].Id == componentId)
                         return (uint16)i;

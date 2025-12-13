@@ -341,6 +341,12 @@ const TArray<TSharedPtr<ISystem>>& FeatureECS::GetSystems() const
     return Systems;
 }
 
+const decltype(FeatureECSDynamicBlock::Entities)* FeatureECS::GetEntities(WorldConstRef world)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block ? &block->Entities : nullptr;
+}
+
 bool FeatureECS::IsEntityValid(WorldConstRef world, EntityId entityId)
 {
     return GetEntityPtr(world, entityId) != nullptr;
@@ -417,6 +423,12 @@ bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId)
 
     // Remove all associated tags
     RemoveAllTags(world, entityId);
+
+    // Remove the entity from any groups it belongs to
+    RemoveEntityFromAllGroups(world, entityId);
+
+    // Clear its own group
+    ClearGroup(world, entityId);
 
     // Remove all blackboard keys associated with the entity
     BlackboardKeyQuery query(IgnoreKey, entityId, IgnoreType);
@@ -645,6 +657,12 @@ uint32 FeatureECS::RemoveAllComponents(WorldRef world, EntityId entityId)
     return block->ArchetypeManager.RemoveAllComponents(entity->Handle);
 }
 
+const decltype(FeatureECSDynamicBlock::Tags)* FeatureECS::GetTags(WorldConstRef world)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block ? &block->Tags : nullptr;
+}
+
 bool FeatureECS::HasTag(WorldConstRef world, EntityId entityId, const FName& tag)
 {
     const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
@@ -669,6 +687,12 @@ uint32 FeatureECS::RemoveAllTags(WorldRef world, EntityId entityId)
     return block ? block->Tags.RemoveAllTags(entityId) : 0;
 }
 
+const decltype(FeatureECSDynamicBlock::Groups)* FeatureECS::GetGroups(WorldConstRef world)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block ? &block->Groups : nullptr;
+}
+
 bool FeatureECS::GroupContainsEntity(WorldConstRef world, EntityId group, EntityId entity)
 {
     const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
@@ -687,10 +711,16 @@ bool FeatureECS::RemoveEntityFromGroup(WorldRef world, EntityId group, EntityId 
     return block && block->Groups.RemoveEntity(group, entity);
 }
 
+uint32 FeatureECS::RemoveEntityFromAllGroups(WorldRef world, EntityId entity)
+{
+    FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block && block->Groups.RemoveEntityFromAllGroups(entity);
+}
+
 uint32 FeatureECS::ClearGroup(WorldRef world, EntityId group)
 {
     FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
-    return block ? block->Groups.RemoveAllEntities(group) : 0;
+    return block ? block->Groups.ClearGroup(group) : 0;
 }
 
 blackboard_key_t FeatureECS::CreateBlackboardKey(

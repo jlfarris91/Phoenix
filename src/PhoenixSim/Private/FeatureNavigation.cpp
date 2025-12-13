@@ -113,7 +113,7 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
         bool removedAny = false;
 
-        for (size_t i = 0; i < dynamicBlock.DynamicPoints.Num();)
+        for (uint32 i = 0; i < dynamicBlock.DynamicPoints.Num();)
         {
             if (Vec2::Distance(dynamicBlock.DynamicPoints[i], pos) < radius)
             {
@@ -126,7 +126,7 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
             }
         }
 
-        for (size_t i = 0; i < dynamicBlock.DynamicEdges.Num();)
+        for (uint32 i = 0; i < dynamicBlock.DynamicEdges.Num();)
         {
             if (DistanceToLine(dynamicBlock.DynamicEdges[i], pos) < radius)
             {
@@ -234,7 +234,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
         }
 
         // Redraw the edges of the face the mouse is within so that they draw on top
-        for (size_t i = 0; i < mesh.GetFaces().Num(); ++i)
+        for (uint32 i = 0; i < mesh.GetFaces().Num(); ++i)
         {
             auto result = mesh.IsPointInFace(uint16(i), cursorPos);
             if (result.Result == EPointInFaceResult::Inside)

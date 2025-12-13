@@ -1,12 +1,33 @@
 
 #pragma once
 
-#include "Units/UnitId.h"
+#include "EntityId.h"
 #include "Orders.h"
 #include "Containers/FixedSortedList.h"
 
 namespace Phoenix::RTS
 {
+    struct EntityOrder
+    {
+        EntityOrder() = default;
+        EntityOrder(ECS::EntityId entity, const Order& order = {})
+            : Entity(entity)
+            , Order(order)
+        {
+        }
+
+        bool operator==(const EntityOrder& other) const
+        {
+            return Entity == other.Entity && Order == other.Order;
+        }
+
+        bool IsValid() const { return Order != RTS::Order(); }
+        void Invalidate() { Order = RTS::Order(); }
+
+        ECS::EntityId Entity;
+        Order Order;
+    };
+
     template <size_t N>
     class FixedOrderQueue
     {
@@ -24,17 +45,17 @@ namespace Phoenix::RTS
             return Items.GetNumValidItems();
         }
 
-        bool ContainsOrder(UnitId entity, const Order& order) const
+        bool ContainsOrder(ECS::EntityId entity, const Order& order) const
         {
             return Items.Contains({ entity, order });
         }
 
-        bool EnqueueOrder(UnitId entity, const Order& order)
+        bool EnqueueOrder(ECS::EntityId entity, const Order& order)
         {
             return Items.EmplaceBack(entity, order);
         }
 
-        bool DequeueOrder(UnitId entity, Order& outOrder)
+        bool DequeueOrder(ECS::EntityId entity, Order& outOrder)
         {
             EntityOrder item;
             if (!Items.RemoveSubItemAndReturn(entity, 0, item))
@@ -46,51 +67,60 @@ namespace Phoenix::RTS
             return true;
         }
 
-        bool InsertOrder(UnitId entity, const Order& order, uint32 orderIndex)
+        bool InsertOrder(ECS::EntityId entity, const Order& order, uint32 orderIndex)
         {
             return Items.InsertSubItem({ entity, order }, orderIndex);
         }
 
-        bool RemoveOrder(UnitId entity, const Order& order)
+        bool RemoveOrder(ECS::EntityId entity, const Order& order)
         {
             return Items.Remove({ entity, order });
         }
 
-        bool RemoveOrder(UnitId entity, uint32 orderIndex)
+        bool RemoveOrder(ECS::EntityId entity, uint32 orderIndex)
         {
             return Items.RemoveSubItem(entity, orderIndex);
         }
 
-        uint32 RemoveAllOrders(UnitId entity)
+        uint32 RemoveAllOrders(ECS::EntityId entity)
         {
             return Items.RemoveAll(entity);
         }
 
-        const Order* GetFirstOrder(UnitId entity, uint32& outIndex) const
+        const Order* GetFirstOrder(ECS::EntityId entity, uint32& outIndex) const
         {
             const EntityOrder* item = Items.GetFirstSubItem(entity, outIndex);
             return item ? &item->Order : nullptr;
         }
 
-        const Order* GetNextOrder(UnitId entity, uint32 currIndex, uint32& outIndex) const
+        const Order* GetNextOrder(ECS::EntityId entity, uint32 currIndex, uint32& outIndex) const
         {
             const EntityOrder* item = Items.GetNextSubItem(entity, currIndex, outIndex);
             return item ? &item->Order : nullptr;
         }
 
-        const Order* GetOrder(UnitId entity, uint32 orderIndex) const
+        const Order* GetOrder(ECS::EntityId entity, uint32 orderIndex) const
         {
             const EntityOrder* item = Items.GetSubItem(entity, orderIndex);
             return item ? &item->Order : nullptr;
         }
 
-        uint32 GetNumOrders(UnitId entity) const
+        uint32 GetNumOrders(ECS::EntityId entity) const
         {
             return Items.GetNumSubItems(entity);
         }
 
         template <class TCallback>
-        void ForEachOrder(UnitId entity, const TCallback& callback) const
+        void ForEach(const TCallback& callback) const
+        {
+            Items.ForEachItem( [&](const EntityOrder& item)
+            {
+                callback(item);
+            });
+        }
+
+        template <class TCallback>
+        void ForEachOrder(ECS::EntityId entity, const TCallback& callback) const
         {
             Items.ForEachSubItem(entity, [&](const EntityOrder& item)
             {
@@ -105,30 +135,9 @@ namespace Phoenix::RTS
 
     private:
 
-        struct EntityOrder
-        {
-            EntityOrder() = default;
-            EntityOrder(UnitId entity, const Order& order = {})
-                : Entity(entity)
-                , Order(order)
-            {
-            }
-
-            bool operator==(const EntityOrder& other) const
-            {
-                return Entity == other.Entity && Order == other.Order;
-            }
-
-            bool IsValid() const { return Order != RTS::Order(); }
-            void Invalidate() { Order = RTS::Order(); }
-
-            UnitId Entity;
-            Order Order;
-        };
-
         struct GetItemKey
         {
-            UnitId operator()(const EntityOrder& item) const
+            ECS::EntityId operator()(const EntityOrder& item) const
             {
                 return item.Entity;
             }

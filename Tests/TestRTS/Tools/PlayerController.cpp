@@ -13,6 +13,7 @@
 
 #include "Selection/FeatureSelection.h"
 #include "Orders/FeatureOrderQueue.h"
+#include "Units/UnitId.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -41,20 +42,23 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
-    CursorPos = mouseWorldPos;
+    CursorWorldPos = mouseWorldPos;
 
     constexpr uint32 playerId = 0;
     const FName groupId = FName::None;
 
-    if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet() && !Vec2::Equals(*BoxSelectDragStart,*BoxSelectDragEnd))
+    if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet())
     {
+        Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragStart);
+        Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragEnd);
+
         Vec2 min;
-        min.X = std::min(BoxSelectDragStart->X, BoxSelectDragEnd->X);
-        min.Y = std::min(BoxSelectDragStart->Y, BoxSelectDragEnd->Y);
+        min.X = std::min(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
+        min.Y = std::min(boxSelectDragStartWS.Y, boxSelectDragEndWS.Y);
 
         Vec2 max;
-        max.X = std::max(BoxSelectDragStart->X, BoxSelectDragEnd->X);
-        max.Y = std::max(BoxSelectDragStart->Y, BoxSelectDragEnd->Y);
+        max.X = std::max(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
+        max.Y = std::max(boxSelectDragStartWS.Y, boxSelectDragEndWS.Y);
 
         renderer.DrawRect(min, max, Color::White);
 
@@ -69,7 +73,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
     else
     {
         TArray<EntityTransform> entities;
-        FeatureECS::QueryEntitiesInRange(world, CursorPos, 1.0, entities);
+        FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
 
         for (const EntityTransform& entity : entities)
         {
@@ -90,7 +94,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
         renderer.DrawCircle(transformPtr->Position, 1.0, Color::Green);
 
         Vec2 lastTargetPos = transformPtr->Position;
-        FeatureOrderQueue::ForEachOrder(world, {entityId}, [&](const Order& order)
+        FeatureOrderQueue::ForEachOrder(world, { entityId }, [&](const Order& order)
         {
             renderer.DrawLine(lastTargetPos, order.Location, Color::Blue);
             lastTargetPos = order.Location;
@@ -108,33 +112,6 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     SDL_GetMouseState(&mx, &my);
     SDL_FPoint mouseWindowPos = { mx, my };
     Vec2 mouseWorldPos = state.GetWorldMousePos();
-
-    if (event->type == SDL_EVENT_MOUSE_MOTION)
-    {
-        if (CameraDragPos.IsSet())
-        {
-            Vec2 lastMouseWorldPos = Viewport->ViewportPosToWorldPos(*CameraDragPos);
-            Vec2 mouseDelta = mouseWorldPos - lastMouseWorldPos;
-            Camera->Position -= mouseDelta;
-            CameraDragPos = mouseWindowPos;
-        }
-    }
-
-    if (event->type == SDL_EVENT_MOUSE_BUTTON_UP)
-    {
-        if (event->button.button == SDL_BUTTON_RIGHT)
-        {
-            CameraDragPos.Reset();
-        }
-    }
-
-    if (event->type == SDL_EVENT_MOUSE_BUTTON_DOWN)
-    {
-        if (event->button.button == SDL_BUTTON_RIGHT)
-        {
-            CameraDragPos = mouseWindowPos;
-        }
-    }
 
     if (event->type == SDL_EVENT_KEY_DOWN)
     {
@@ -159,10 +136,6 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         }
     }
 
-    if (event->type == SDL_EVENT_KEY_UP)
-    {
-    }
-
     if (event->type == SDL_EVENT_MOUSE_WHEEL)
     {
         float zoomScale = 1.0f + (float)event->wheel.integer_y * ZoomSpeed;
@@ -172,34 +145,65 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     constexpr uint32 playerId = 0;
     const FName groupId = FName::None;
 
-    if (state.MouseButtonPressed(SDL_BUTTON_LEFT))
+    if (state.MouseButtonPressed(SDL_BUTTON_LEFT) || state.MouseButtonPressed(SDL_BUTTON_RIGHT))
     {
-        CursorDragStart = CursorPos;
+        CursorDragStart = mouseWindowPos;
     }
 
-    if (state.MouseButtonDown(SDL_BUTTON_LEFT))
+    auto distance = [](SDL_FPoint a, SDL_FPoint b)
     {
-        if (!BoxSelectDragStart.IsSet() && CursorDragStart.IsSet() && (CursorPos - *CursorDragStart).Length() > 0.1)
+        if (a.x == b.x && a.y == b.y)
+            return 0.0f;
+        float dx = a.x - b.x;
+        float dy = a.y - b.y;
+        return sqrt(dx*dx + dy*dy);
+    };
+
+    const double DragThreshold = 3.0;
+
+    if (event->type == SDL_EVENT_MOUSE_MOTION && CursorDragStart.IsSet())
+    {
+        if (state.MouseButtonDown(SDL_BUTTON_RIGHT))
         {
-            BoxSelectDragStart = CursorDragStart;
+            if (!CameraDragPos.IsSet() && distance(mouseWindowPos, *CursorDragStart) > DragThreshold)
+            {
+                CameraDragPos = mouseWindowPos;
+            }
+            else if (CameraDragPos.IsSet())
+            {
+                Vec2 lastMouseWorldPos = Viewport->ViewportPosToWorldPos(*CameraDragPos);
+                Vec2 mouseDelta = mouseWorldPos - lastMouseWorldPos;
+                Camera->Position -= mouseDelta;
+                CameraDragPos = mouseWindowPos;
+            }
         }
-        if (BoxSelectDragStart.IsSet())
+        else if (state.MouseButtonDown(SDL_BUTTON_LEFT))
         {
-            BoxSelectDragEnd = CursorPos;
+            if (!BoxSelectDragStart.IsSet() && distance(mouseWindowPos, *CursorDragStart) > DragThreshold)
+            {
+                BoxSelectDragStart = CursorDragStart;
+            }
+            else if (BoxSelectDragStart.IsSet())
+            {
+                BoxSelectDragEnd = mouseWindowPos;
+            }
         }
     }
 
-    if (state.MouseButtonReleased(SDL_BUTTON_LEFT))
+    if (state.MouseButtonReleased(SDL_BUTTON_LEFT) && !CameraDragPos.IsSet())
     {
-        if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet() && (*BoxSelectDragStart - *BoxSelectDragEnd).Length() > 0.1)
+        if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet() && distance(*BoxSelectDragStart, *BoxSelectDragEnd) > DragThreshold)
         {
+            Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragStart);
+            Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragEnd);
+
             Vec2 min;
-            min.X = std::min(BoxSelectDragStart->X, BoxSelectDragEnd->X);
-            min.Y = std::min(BoxSelectDragStart->Y, BoxSelectDragEnd->Y);
+            min.X = std::min(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
+            min.Y = std::min(boxSelectDragStartWS.Y, boxSelectDragEndWS.Y);
 
             Vec2 max;
-            max.X = std::max(BoxSelectDragStart->X, BoxSelectDragEnd->X);
-            max.Y = std::max(BoxSelectDragStart->Y, BoxSelectDragEnd->Y);
+            max.X = std::max(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
+            max.Y = std::max(boxSelectDragStartWS.Y, boxSelectDragEndWS.Y);
 
             TArray<EntityTransform> entities;
             FeatureECS::QueryEntitiesInRect(world, min, max, entities);
@@ -230,7 +234,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         else
         {
             TArray<EntityTransform> entities;
-            FeatureECS::QueryEntitiesInRange(world, CursorPos, 1.0, entities);
+            FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
 
             if (!state.KeyDown(SDL_KMOD_CTRL) && !state.KeyDown(SDL_KMOD_SHIFT))
             {
@@ -264,12 +268,18 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
     if (state.MouseButtonReleased(SDL_BUTTON_RIGHT))
     {
-        // Issue move command to selection
-        Command command;
-        command.Type = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandType::Queued : ECommandType::Order;
-        command.AbilityId = "MoveAbility"_n;
-        command.CommandIndex = 0;
-        command.TargetLocation = state.GetWorldMousePos();
-        Session->EnqueueAction(command);
+        if (!CameraDragPos.IsSet())
+        {
+            // Issue move command to selection
+            Command command;
+            command.Type = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandType::Queued : ECommandType::Order;
+            command.AbilityId = "MoveAbility"_n;
+            command.CommandIndex = 0;
+            command.TargetLocation = state.GetWorldMousePos();
+            Session->EnqueueAction(command);
+        }
+
+        CursorDragStart.Reset();
+        CameraDragPos.Reset();
     }
 }

@@ -6,6 +6,27 @@
 
 namespace Phoenix::ECS
 {
+    struct GroupEntity
+    {
+        GroupEntity() = default;
+        GroupEntity(EntityId group, EntityId entity = EntityId::Invalid)
+            : Group(group)
+            , Entity(entity)
+        {
+        }
+
+        bool operator==(const GroupEntity& other) const
+        {
+            return Group == other.Group && Entity == other.Entity;
+        }
+
+        bool IsValid() const { return Entity != EntityId::Invalid; }
+        void Invalidate() { Entity = EntityId::Invalid; }
+
+        EntityId Group;
+        EntityId Entity;
+    };
+
     template <size_t N>
     class FixedGroupList
     {
@@ -38,7 +59,12 @@ namespace Phoenix::ECS
             return Items.Remove({ group, entity });
         }
 
-        uint32 RemoveAllEntities(EntityId group)
+        bool RemoveEntityFromAllGroups(EntityId entity)
+        {
+            return Items.RemoveAll(RemoveEntityFromAllGroupsPred { entity });
+        }
+
+        uint32 ClearGroup(EntityId group)
         {
             return Items.RemoveAll(group);
         }
@@ -53,6 +79,15 @@ namespace Phoenix::ECS
         {
             GroupEntity* item = Items.GetNextSubItem(group, currIndex, outIndex);
             return item ? item->Entity : EntityId::Invalid;
+        }
+
+        template <class TCallback>
+        void ForEach(const TCallback& callback) const
+        {
+            Items.ForEachItem([&](const GroupEntity& item)
+            {
+                callback(item);
+            });
         }
 
         template <class TCallback>
@@ -71,32 +106,20 @@ namespace Phoenix::ECS
 
     private:
 
-        struct GroupEntity
-        {
-            GroupEntity() = default;
-            GroupEntity(EntityId group, EntityId entity = EntityId::Invalid)
-                : Group(group)
-                , Entity(entity)
-            {
-            }
-
-            bool operator==(const GroupEntity& other) const
-            {
-                return Group == other.Group && Entity == other.Entity;
-            }
-
-            bool IsValid() const { return Entity != EntityId::Invalid; }
-            void Invalidate() { Entity = EntityId::Invalid; }
-
-            EntityId Group;
-            EntityId Entity;
-        };
-
         struct GetItemKey
         {
             EntityId operator()(const GroupEntity& item) const
             {
                 return item.Group;
+            }
+        };
+
+        struct RemoveEntityFromAllGroupsPred
+        {
+            EntityId Entity;
+            EntityId operator()(const GroupEntity& item) const
+            {
+                return item.Entity == Entity;
             }
         };
 

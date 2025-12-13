@@ -194,7 +194,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
     }
 
     // Redraw the edges of the face the mouse is within so that they draw on top
-    for (size_t i = 0; i < mesh.GetFaces().Num(); ++i)
+    for (uint32 i = 0; i < mesh.GetFaces().Num(); ++i)
     {
         auto result = mesh.IsPointInFace(int16(i), CursorPos);
         if (result.Result != EPointInFaceResult::Outside)
@@ -228,12 +228,12 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawVertIds)
     {
-        for (size_t i = 0; i < mesh.GetVertices().Num(); ++i)
+        for (uint32 i = 0; i < mesh.GetVertices().Num(); ++i)
         {
             const Vec2& pt = mesh.GetVertices()[i];
 
             char str[256];
-            size_t len = sprintf_s(str, _countof(str), "%llu", i);
+            size_t len = sprintf_s(str, _countof(str), "%lu", i);
             renderer.DrawDebugText(pt, str, len, Color::White);
         }
     }
@@ -262,7 +262,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawFaceCircumcircles)
     {
-        for (int32 i = 0; i < mesh.GetFaces().Num(); ++i)
+        for (uint32 i = 0; i < mesh.GetFaces().Num(); ++i)
         {
             if (!mesh.IsValidFace(i))
                 continue;

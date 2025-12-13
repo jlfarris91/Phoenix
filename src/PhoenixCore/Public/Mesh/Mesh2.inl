@@ -8,7 +8,7 @@
 #include "Flags.h"
 #include "Profiling.h"
 
-#define MESH_TEMPLATE template <size_t NFaces, class TFaceData, class TVecComp, class TIdx>
+#define MESH_TEMPLATE template <uint32 NFaces, class TFaceData, class TVecComp, class TIdx>
 #define MESH_CLASS TFixedCDTMesh2<NFaces, TFaceData, TVecComp, TIdx>
 
 namespace Phoenix
@@ -67,7 +67,7 @@ namespace Phoenix
     MESH_TEMPLATE
     TIdx MESH_CLASS::FindVertex(const TVec& pt, const TVecComp& threshold) const
     {
-        for (size_t i = 0; i < Vertices.Num(); ++i)
+        for (uint32 i = 0; i < Vertices.Num(); ++i)
         {
             if (TVec::Equals(pt, Vertices[i], threshold))
             {
@@ -123,7 +123,7 @@ namespace Phoenix
     {
         TIdx idx = Index<TIdx>::None;
         TVecComp minDist = TVecComp::Max;
-        for (size_t i = 0; i < Vertices.Num(); ++i)
+        for (uint32 i = 0; i < Vertices.Num(); ++i)
         {
             auto dist = TVec::Distance(Vertices[i], pt);
             if ((!radius.IsSet() || dist < *radius) && dist < minDist)
@@ -145,7 +145,7 @@ namespace Phoenix
     {
         outV0 = Index<TIdx>::None;
         outV1 = Index<TIdx>::None;
-        for (size_t i = 0; i < Vertices.Num(); ++i)
+        for (uint32 i = 0; i < Vertices.Num(); ++i)
         {
             if (TVec::Equals(v0, Vertices[i], threshold))
                 outV0 = TIdx(i);
@@ -181,7 +181,7 @@ namespace Phoenix
     template <class T>
     void MESH_CLASS::ForEachVertInRange(const TVec& pos, TVecComp radius, T& callback) const
     {
-        for (size_t i = 0; i < Vertices.Num(); ++i)
+        for (uint32 i = 0; i < Vertices.Num(); ++i)
         {
             if (TVec::Distance(Vertices[i], pos) < radius)
             {
@@ -198,7 +198,7 @@ namespace Phoenix
         if (!IsValidVert(vertIndex))
             return;
 
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             if (!IsValidHalfEdge(i))
                 continue;
@@ -254,7 +254,7 @@ namespace Phoenix
         PHX_ASSERT(vA != vB);
 
         TIdx e = Index<TIdx>::None;
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[i];
             if (e == Index<TIdx>::None && halfEdge.Face == Index<TIdx>::None)
@@ -306,7 +306,7 @@ namespace Phoenix
     MESH_TEMPLATE
     TIdx MESH_CLASS::FindHalfEdge(TIdx v0, TIdx v1) const
     {
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[i];
             if (halfEdge.Face == Index<TIdx>::None)
@@ -325,17 +325,17 @@ namespace Phoenix
     {
         TVecComp minDist = TVecComp::Max;
         TIdx closestHalfEdgeIndex = Index<TIdx>::None;
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[i];
             if (halfEdge.Face == Index<TIdx>::None)
                 continue;
 
-            TOptional<TVecComp> dist = GetDistanceToHalfEdge(i, pos);
+            TOptional<TVecComp> dist = GetDistanceToHalfEdge((TIdx)i, pos);
             if (dist.IsSet() && dist.Get() < minDist)
             {
                 minDist = dist.Get();
-                closestHalfEdgeIndex = i;
+                closestHalfEdgeIndex = TIdx(i);
             }
         }
         outDist = minDist;
@@ -482,7 +482,7 @@ namespace Phoenix
     {
         TMeshEdge<TIdx> result;
         uint8 count = 0;
-        for (size_t i = 0; i < HalfEdges.Num() && count != 0x3; ++i)
+        for (uint32 i = 0; i < HalfEdges.Num() && count != 0x3; ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[i];
             if (halfEdge.Face == Index<TIdx>::None)
@@ -515,7 +515,7 @@ namespace Phoenix
 
         TIdx f = Index<TIdx>::None;
 
-        for (size_t i = 0; i < Faces.Num(); ++i)
+        for (uint32 i = 0; i < Faces.Num(); ++i)
         {
             if (Faces[i].HalfEdge == Index<TIdx>::None)
             {
@@ -547,7 +547,7 @@ namespace Phoenix
         THalfEdge& edge2 = HalfEdges[e2];
         edge2.Next = e0;
 
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             THalfEdge& e = HalfEdges[i];
 
@@ -858,7 +858,7 @@ namespace Phoenix
 
         TIdx edgeIndex = face.HalfEdge;
 
-        for (size_t i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
             PHX_ASSERT(IsValidHalfEdge(edgeIndex));
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
@@ -878,7 +878,7 @@ namespace Phoenix
 
         TIdx edgeIndex = face.HalfEdge;
 
-        for (size_t i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
             PHX_ASSERT(IsValidHalfEdge(edgeIndex));
             callback(edgeIndex);
@@ -898,7 +898,7 @@ namespace Phoenix
 
         TIdx edgeIndex = face.HalfEdge;
 
-        for (size_t i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
@@ -923,7 +923,7 @@ namespace Phoenix
 
         TIdx edgeIndex = face.HalfEdge;
 
-        for (size_t i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
@@ -951,7 +951,7 @@ namespace Phoenix
 
         TIdx edgeIndex = face.HalfEdge;
 
-        for (size_t i = 0; i < 3; ++i)
+        for (uint32 i = 0; i < 3; ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
@@ -993,7 +993,7 @@ namespace Phoenix
             TIdx currHalfEdgeIdx = face.HalfEdge;
 
             // Walk the half-edges to find one that intersects the line
-            for (size_t i = 0; i < 3; ++i)
+            for (uint32 i = 0; i < 3; ++i)
             {
                 PHX_ASSERT(IsValidHalfEdge(currHalfEdgeIdx));
                 const THalfEdge& halfEdge = HalfEdges[currHalfEdgeIdx];
@@ -1046,7 +1046,7 @@ namespace Phoenix
 
         TFixedQueue<int16, 128> stack;
 
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             auto& edge = HalfEdges[i];
             if (edge.Face != Index<TIdx>::None && edge.VertA == vi && !edge.IsLocked())
@@ -1254,7 +1254,7 @@ namespace Phoenix
 
         TIdx containingFace = Index<TIdx>::None;
         TIdx containingEdge = Index<TIdx>::None;
-        for (size_t i = 0; i < Faces.Num(); ++i)
+        for (uint32 i = 0; i < Faces.Num(); ++i)
         {
             auto faceIndex = TIdx(i);
             const auto& face = Faces[faceIndex];
@@ -1365,7 +1365,7 @@ namespace Phoenix
         TFixedArray<TIdx, 128> corridor;
 
         // Find all half-edges incident to the start vert of the line
-        for (size_t i = 0; i < HalfEdges.Num(); ++i)
+        for (uint32 i = 0; i < HalfEdges.Num(); ++i)
         {
             const THalfEdge& halfEdge = HalfEdges[i];
             if (halfEdge.Face != Index<TIdx>::None && halfEdge.VertA == v0)
@@ -1392,7 +1392,7 @@ namespace Phoenix
             TIdx edgeIndexN = halfEdge0.Next;
 
             // Walk the half-edges to find one that intersects the line
-            for (size_t i = 0; i < 2; ++i)
+            for (uint32 i = 0; i < 2; ++i)
             {
                 PHX_ASSERT(IsValidHalfEdge(edgeIndexN));
                 const THalfEdge& halfEdgeN = HalfEdges[edgeIndexN];

@@ -6,6 +6,27 @@
 
 namespace Phoenix::ECS
 {
+    struct EntityTag
+    {
+        EntityTag() = default;
+        EntityTag(EntityId entity, FName tag = FName::None)
+            : Entity(entity)
+            , Tag(tag)
+        {
+        }
+
+        bool operator==(const EntityTag& other) const
+        {
+            return Entity == other.Entity && Tag == other.Tag;
+        }
+
+        bool IsValid() const { return Tag != FName::None; }
+        void Invalidate() { Tag = FName::None; }
+
+        EntityId Entity;
+        FName Tag;
+    };
+
     template <size_t N>
     class FixedTagList
     {
@@ -56,6 +77,15 @@ namespace Phoenix::ECS
         }
 
         template <class TCallback>
+        void ForEach(const TCallback& callback) const
+        {
+            Items.ForEachItem([&](const EntityTag& item)
+            {
+                callback(item);
+            });
+        }
+
+        template <class TCallback>
         void ForEachTag(EntityId entity, const TCallback& callback) const
         {
             Items.ForEachSubItem(entity, [&](const EntityTag& item)
@@ -70,27 +100,6 @@ namespace Phoenix::ECS
         }
 
     private:
-
-        struct EntityTag
-        {
-            EntityTag() = default;
-            EntityTag(EntityId entity, FName tag = FName::None)
-                : Entity(entity)
-                , Tag(tag)
-            {
-            }
-
-            bool operator==(const EntityTag& other) const
-            {
-                return Entity == other.Entity && Tag == other.Tag;
-            }
-
-            bool IsValid() const { return Tag != FName::None; }
-            void Invalidate() { Tag = FName::None; }
-
-            EntityId Entity;
-            FName Tag;
-        };
 
         struct GetItemKey
         {

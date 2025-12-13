@@ -312,6 +312,30 @@ namespace Phoenix
             return numRemoved;
         }
 
+        // Removes all items matching a given predicate. Note that this operation is O(N).
+        template <class TPredicate>
+        uint32 RemoveAll(const TPredicate& pred)
+        {
+            if (Items.IsEmpty())
+            {
+                return false;
+            }
+
+            uint32 numRemoved = 0;
+
+            for (TItem& item : Items)
+            {
+                if (item.IsValid() && pred(item))
+                {
+                    item.Invalidate();
+                    --NumValidItems;
+                    ++numRemoved;
+                }
+            }
+
+            return numRemoved;
+        }
+
         const TItem* GetFirstSubItem(const TKey& key, uint32& outIndex) const
         {
             if (Items.IsEmpty())
@@ -448,6 +472,44 @@ namespace Phoenix
             return numItems;
         }
 
+        // Executes a callback for each item in the list.
+        // Note that this operation is O(N).
+        template <class TCallback>
+        void ForEachItem(const TCallback& callback) const
+        {
+            if (Items.IsEmpty())
+            {
+                return;
+            }
+
+            for (const TItem& item : Items)
+            {
+                if (item.IsValid())
+                {
+                    callback(item);
+                }
+            }
+        }
+
+        // Executes a callback for each item in the list.
+        // Note that this operation is O(N).
+        template <class TPredicate, class TCallback>
+        void ForEachItem(const TPredicate& pred, const TCallback& callback) const
+        {
+            if (Items.IsEmpty())
+            {
+                return;
+            }
+
+            for (const TItem& item : Items)
+            {
+                if (item.IsValid() && pred(item))
+                {
+                    callback(item);
+                }
+            }
+        }
+
         template <class TCallback>
         void ForEachSubItem(const TKey& key, const TCallback& callback) const
         {
@@ -499,7 +561,7 @@ namespace Phoenix
 
             std::stable_sort(Items.begin(), Items.end(), SortInvalidItemsToBack());
 
-            auto iter = Items.end();
+            auto iter = Items.end() - 1;
             while (iter != Items.begin() && !iter->IsValid())
             {
                 --iter;
@@ -507,7 +569,7 @@ namespace Phoenix
 
             SortedNum = static_cast<uint32>(iter - Items.begin());
 
-            if (SortedNum == 0 && iter->IsValid())
+            if (iter->IsValid())
             {
                 ++SortedNum;
             }

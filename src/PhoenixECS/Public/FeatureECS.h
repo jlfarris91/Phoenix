@@ -111,6 +111,9 @@ namespace Phoenix
             //
             // Entity Management
             //
+
+            // Gets a pointer to the entities array for a given world.
+            static const decltype(FeatureECSDynamicBlock::Entities)* GetEntities(WorldConstRef world);
             
             static bool IsEntityValid(WorldConstRef world, EntityId entityId);
             
@@ -365,6 +368,9 @@ namespace Phoenix
             //  Tag Management
             //
 
+            // Gets a pointer to the tags array for a given world.
+            static const decltype(FeatureECSDynamicBlock::Tags)* GetTags(WorldConstRef world);
+
             // Returns true if the entity has a given tag.
             static bool HasTag(WorldConstRef world, EntityId entityId, const FName& tag);
 
@@ -391,6 +397,9 @@ namespace Phoenix
             // Group management
             //
 
+            // Gets a pointer to the groups array for a given world.
+            static const decltype(FeatureECSDynamicBlock::Groups)* GetGroups(WorldConstRef world);
+
             // Returns true if the entity group contains an entity.
             static bool GroupContainsEntity(WorldConstRef world, EntityId group, EntityId entity);
 
@@ -399,6 +408,9 @@ namespace Phoenix
 
             // Removes an entity from an entity group. Returns true if the entity was removed.
             static bool RemoveEntityFromGroup(WorldRef world, EntityId group, EntityId entity);
+
+            // Removes an entity from all groups that it belongs to. Returns the number of groups it was removed from.
+            static uint32 RemoveEntityFromAllGroups(WorldRef world, EntityId entity);
 
             // Removes all entities from an entity group. Returns the number of entities that were removed.
             static uint32 ClearGroup(WorldRef world, EntityId group);

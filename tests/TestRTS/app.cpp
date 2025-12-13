@@ -609,7 +609,54 @@ void OnAppRenderUI()
                 
                 ImGui::TreePop();
             }
-            
+
+            if (ImGui::TreeNode("Tags:"))
+            {
+                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+
+                if (auto tagsPtr = FeatureECS::GetTags(*GCurrWorldView))
+                {
+                    if (ImGui::BeginTable("Tags", 2, ImGuiTableFlags_SizingFixedFit))
+                    {
+                        const auto& tags = *tagsPtr;
+                        tags.ForEach([](const EntityTag& entityTag)
+                        {
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%u:", entityTag.Entity);
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%u", entityTag.Tag);
+                        });
+
+                        ImGui::EndTable();
+                    }
+                }
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Groups:"))
+            {
+                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+
+                if (auto groupsPtr = FeatureECS::GetGroups(*GCurrWorldView))
+                {
+                    if (ImGui::BeginTable("Groups", 2, ImGuiTableFlags_SizingFixedFit))
+                    {
+                        const auto& groups = *groupsPtr;
+                        groups.ForEach([](const GroupEntity& groupEntity)
+                        {
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%u", groupEntity.Group);
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%u", groupEntity.Entity);
+                        });
+
+                        ImGui::EndTable();
+                    }
+                }
+
+                ImGui::TreePop();
+            }
         }
     
         ImGui::End();
