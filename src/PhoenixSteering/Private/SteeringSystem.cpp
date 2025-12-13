@@ -108,11 +108,11 @@ namespace SteeringDetail
             const Transform2D& transform = transformComp.Transform;
             const Vec2& currPos = transform.Position;
 
-            Pathfinding::PathResult result = Pathfinding::FeatureNavigation::PathTo(*World, currPos, targetPos, steerComp.OuterRadius);
-            if (result.PathFound)
-            {
-                targetPos = result.NextPoint;
-            }
+            // Pathfinding::PathResult result = Pathfinding::FeatureNavigation::PathTo(*World, currPos, targetPos, steerComp.OuterRadius);
+            // if (result.PathFound)
+            // {
+            //     targetPos = result.NextPoint;
+            // }
             // else
             // {
             //     ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);

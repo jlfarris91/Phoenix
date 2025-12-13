@@ -2,7 +2,6 @@
 #pragma once
 
 #include "EntityId.h"
-#include "Containers/FixedArray.h"
 #include "Containers/FixedSortedList.h"
 
 namespace Phoenix::ECS
@@ -101,6 +100,6 @@ namespace Phoenix::ECS
             }
         };
 
-        TFixedSortedList<GroupEntity, GetItemKey, TFixedArray<GroupEntity, Capacity>> Items;
+        TFixedSortedList<GroupEntity, Capacity, GetItemKey> Items;
     };
 }

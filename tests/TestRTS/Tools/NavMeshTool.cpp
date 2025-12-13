@@ -306,8 +306,16 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
                 const Vec2& vertB = mesh.GetVertices()[edge.VertB];
                 renderer.DrawLine(vertA, vertB, Color::White);
 
-                renderer.DrawCircle(pt, 10, Color::White);
+                renderer.DrawCircle(pt, AgentRadius, Color::White);
             }
+        }
+
+        auto hitResult = mesh.LineCast(*LineStart, *LineEnd, AgentRadius);
+        if (hitResult.IsValid())
+        {
+            renderer.DrawLine(*LineStart, hitResult.HitPos, Color::Red);
+            renderer.DrawLine(hitResult.HitPos, hitResult.HitPos + hitResult.HitNormal, Color::Red);
+            renderer.DrawCircle(hitResult.HitPos, AgentRadius, Color::Red);
         }
     }
 }

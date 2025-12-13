@@ -971,30 +971,32 @@ namespace Phoenix
     }
 
     MESH_TEMPLATE
-    TIdx MESH_CLASS::LineCast(const TVec& start, const TVec& end, TVecComp radius) const
+    typename MESH_CLASS::THitResult MESH_CLASS::LineCast(const TVec& start, const TVec& end, TVecComp radius) const
     {
         TIdx startFace = FindFaceContainingPoint(start);
         if (!IsValidFace(startFace))
         {
-            return Index<TIdx>::None;
+            return {};
         }
 
-        TIdx lockedHalfEdgeIdx = Index<TIdx>::None;
+        THitResult result;
         TIdx currFaceIdx = startFace;
+        TIdx lastHitFaceIdx = Index<TIdx>::None;
+        TIdx lastHitHalfEdgeIdx = Index<TIdx>::None;
 
         // Walk each triangle with a half edge intersecting with the line
-        while (lockedHalfEdgeIdx == Index<TIdx>::None && IsValidFace(currFaceIdx))
+        while (!result.IsValid() && IsValidFace(currFaceIdx))
         {
             const TFace& face = Faces[currFaceIdx];
-            currFaceIdx = Index<TIdx>::None;
+            TIdx nextFaceIdx = Index<TIdx>::None;
 
-            TIdx halfEdgeIdx = face.HalfEdge;
+            TIdx currHalfEdgeIdx = face.HalfEdge;
 
             // Walk the half-edges to find one that intersects the line
             for (size_t i = 0; i < 3; ++i)
             {
-                PHX_ASSERT(IsValidHalfEdge(halfEdgeIdx));
-                const THalfEdge& halfEdge = HalfEdges[halfEdgeIdx];
+                PHX_ASSERT(IsValidHalfEdge(currHalfEdgeIdx));
+                const THalfEdge& halfEdge = HalfEdges[currHalfEdgeIdx];
 
                 const TVec& a = Vertices[halfEdge.VertA];
                 const TVec& b = Vertices[halfEdge.VertB];
@@ -1004,26 +1006,37 @@ namespace Phoenix
                 {
                     if (halfEdge.IsLocked())
                     {
-                        lockedHalfEdgeIdx = halfEdgeIdx;
+                        result.HalfEdgeIndex = currHalfEdgeIdx;
+                        result.HitPos = pt;
+
+                        TVec n = (b - a).Normalized();
+                        result.HitNormal = TVec(-n.Y, n.X);
+
                         break;
                     }
 
                     if (IsValidHalfEdge(halfEdge.Twin))
                     {
                         const THalfEdge& halfEdgeTwin = HalfEdges[halfEdge.Twin];
-                        currFaceIdx = halfEdgeTwin.Face;
-                        break;
+                        if (halfEdgeTwin.Face != lastHitHalfEdgeIdx && halfEdgeTwin.Face != lastHitFaceIdx)
+                        {
+                            nextFaceIdx = halfEdgeTwin.Face;
+                        }
                     }
 
-                    currFaceIdx = Index<TIdx>::None;
+                    lastHitFaceIdx = currFaceIdx;
+                    lastHitHalfEdgeIdx = currHalfEdgeIdx;
+
                     break;
                 }
 
-                halfEdgeIdx = halfEdge.Next;
+                currHalfEdgeIdx = halfEdge.Next;
             }
+
+            currFaceIdx = nextFaceIdx;
         }
 
-        return lockedHalfEdgeIdx;
+        return result;
     }
 
     MESH_TEMPLATE

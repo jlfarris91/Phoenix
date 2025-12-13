@@ -201,6 +201,13 @@ bool ThreadPool::WaitIdle(std::chrono::milliseconds maxWaitTime) const
 
 void ThreadPool::Worker(uint32 workerId)
 {
+#if _WIN32
+    wchar_t buf[256];
+    size_t len;
+    mbstowcs_s(&len, buf, Id.c_str(), 256);
+    SetThreadDescription(GetCurrentThread(), buf);
+#endif
+
     PHX_PROFILE_SET_THREAD_NAME(Id.c_str(), (int32)workerId);
 
     Task task;

@@ -151,6 +151,10 @@ void InitSession()
 
 void UpdateSessionWorker()
 {
+#if _WIN32
+    SetThreadDescription(GetCurrentThread(), L"Sim");
+#endif
+
     PHX_PROFILE_SET_THREAD_NAME("Sim", 0);
 
     GSessionThreadWantsExit = false;

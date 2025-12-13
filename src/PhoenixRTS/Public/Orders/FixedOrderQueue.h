@@ -3,7 +3,6 @@
 
 #include "Units/UnitId.h"
 #include "Orders.h"
-#include "Containers/FixedArray.h"
 #include "Containers/FixedSortedList.h"
 
 namespace Phoenix::RTS
@@ -135,6 +134,6 @@ namespace Phoenix::RTS
             }
         };
 
-        TFixedSortedList<EntityOrder, GetItemKey, TFixedArray<EntityOrder, Capacity>> Items;
+        TFixedSortedList<EntityOrder, Capacity, GetItemKey> Items;
     };
 }

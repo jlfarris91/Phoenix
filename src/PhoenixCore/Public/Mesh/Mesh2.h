@@ -84,6 +84,19 @@ namespace Phoenix
         TIdx Index = Phoenix::Index<TIdx>::None;
     };
 
+    template <class TVecComp = Distance, class TIdx = uint16>
+    struct TMeshHitResult
+    {
+        TIdx HalfEdgeIndex = Index<TIdx>::None;
+        TVec2<TVecComp> HitPos;
+        TVec2<TVecComp> HitNormal;
+
+        constexpr bool IsValid() const
+        {
+            return HalfEdgeIndex != Index<TIdx>::None;
+        }
+    };
+
     template <size_t NFaces, class TFaceData, class TVecComp_ = Distance, class TIdx = uint16>
     struct TFixedCDTMesh2
     {
@@ -92,6 +105,8 @@ namespace Phoenix
         using TFace = TMeshFace<TFaceData, TIdx>;
         using TVec = TVec2<TVecComp_>;
         using TVecComp = TVecComp_;
+        using THitResult = TMeshHitResult<TVecComp_, TIdx>;
+
         static constexpr TVecComp DefaultThreshold = 1E-2;
         static constexpr size_t Capacity = NFaces;
 
@@ -316,7 +331,7 @@ namespace Phoenix
         // Performs a linecast inside the mesh and returns the first locked edge that the ray passes through.
         // This assumes that the start point is inside the mesh.
         // TODO (jfarris): implement radius
-        TIdx LineCast(const TVec& start, const TVec& end, TVecComp radius = 0) const;
+        THitResult LineCast(const TVec& start, const TVec& end, TVecComp radius = 0) const;
 
         // Recursively flips edges connected to the vertex until the delaunay condition is met.
         void FixDelaunayConditions(TIdx vi);

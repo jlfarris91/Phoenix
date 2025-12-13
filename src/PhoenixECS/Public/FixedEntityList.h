@@ -69,6 +69,11 @@ namespace Phoenix
 
             constexpr EntityId Acquire(const FName& kind)
             {
+                if (NumActiveEntities + 1 == Capacity)
+                {
+                    return EntityId::Invalid;
+                }
+
                 // Find the first invalid entity index
                 uint32 entityIdx = 1;
                 for (; entityIdx < Capacity; ++entityIdx)

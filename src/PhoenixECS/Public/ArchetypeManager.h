@@ -13,15 +13,15 @@
 #include "Utils.h"
 
 #ifndef PHX_ECS_ARCHETYPE_MGR_MAX_COMPONENT_DEFS
-#define PHX_ECS_ARCHETYPE_MGR_MAX_COMPONENT_DEFS 128
+#define PHX_ECS_ARCHETYPE_MGR_MAX_COMPONENT_DEFS 256
 #endif
 
 #ifndef PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_DEFS
-#define PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_DEFS 32
+#define PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_DEFS 512
 #endif
 
 #ifndef PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_LISTS
-#define PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_LISTS 1024
+#define PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_LISTS 8192
 #endif
 
 namespace Phoenix
@@ -595,8 +595,12 @@ namespace Phoenix
                 }
                 
                 TBlockHandle handle = ArchetypeLists.template Allocate<TArchetypeList>(archetypeDef->GetArchetypeHash(), *archetypeDef);
+
                 list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                list->SetId(handle.Id);
+                if (list)
+                {
+                    list->SetId(handle.Id);
+                }
 
                 return list;
             }

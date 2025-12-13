@@ -5,36 +5,38 @@
 
 namespace Phoenix
 {
-    template <class T, size_t N>
+    template <class T, uint32 N>
     class TFixedArray
     {
     public:
         using ItemT = T;
-        static constexpr size_t Capacity = N;
+        static constexpr uint32 Capacity = N;
 
-        T& operator[](size_t index)
+        T& operator[](uint32 index)
         {
+            PHX_ASSERT(index < Capacity);
             return *(Data + index);
         }
 
-        const T& operator[](size_t index) const
+        const T& operator[](uint32 index) const
         {
+            PHX_ASSERT(index < Capacity);
             return *(Data + index);
         }
 
-        size_t Num() const
+        uint32 Num() const
         {
             return Size;
         }
 
-        size_t GetTotalSize() const
+        uint32 GetTotalSize() const
         {
             return Size * sizeof(T);
         }
 
-        bool IsValidIndex(size_t index) const
+        bool IsValidIndex(uint32 index) const
         {
-            return index < Size;
+            return index < Size && index < Capacity;
         }
 
         bool IsEmpty() const
@@ -47,56 +49,83 @@ namespace Phoenix
             return Size == Capacity;
         }
 
-        T& PushBack(const T& value)
+        bool PushBack(const T& value)
         {
-            assert(Size < Capacity);
+            PHX_ASSERT(!IsFull());
+            if (IsFull())
+            {
+                return false;
+            }
             Data[Size++] = value;
-            return Data[Size-1];
+            return true;
         }
 
-        void Add(const T& value)
-        {
-            (void)PushBack(value);
-        }
-
-        T& Add_GetRef(const T& value)
+        bool Add(const T& value)
         {
             return PushBack(value);
         }
 
-        void AddDefaulted()
+        T& Add_GetRef(const T& value)
         {
-            (void)PushBack({});
+            if (!PushBack(value))
+            {
+                static T temp;
+                return temp;
+            }
+            return Data[Size-1];
+        }
+
+        bool AddDefaulted()
+        {
+            return Add({});
         }
 
         T& AddDefaulted_GetRef()
         {
-            return PushBack({});
+            return Add_GetRef({});
         }
 
         template <class ...TArgs>
-        T& EmplaceBack_GetRef(TArgs... args)
+        bool EmplaceBack(TArgs&&... args)
         {
-            assert(Size < Capacity);
-            Data[Size++] = { args... };
-            return Data[Size-1];
+            PHX_ASSERT(!IsFull());
+            if (IsFull())
+            {
+                return false;
+            }
+            new (&Data[Size++]) T(std::forward<TArgs>(args)...);
+            return true;
         }
-        
+
         template <class ...TArgs>
-        void EmplaceBack(TArgs... args)
+        T& EmplaceBack_GetRef(TArgs&&... args)
         {
-            (void)EmplaceBack_GetRef(args...);
+            PHX_ASSERT(Size < Capacity);
+            if (!EmplaceBack(std::forward<TArgs>(args)...))
+            {
+                static T temp;
+                return temp;
+            }
+            return Data[Size-1];
         }
 
         void PopBack()
         {
-            assert(Size > 0);
+            PHX_ASSERT(Size > 0);
+            if (Size == 0)
+            {
+                return;
+            }
             Data[Size--].~T();
         }
 
         T PopBackAndReturn()
         {
-            assert(Size > 0);
+            PHX_ASSERT(Size > 0);
+            if (Size == 0)
+            {
+                return {};
+            }
             T temp = Data[Size - 1];
             Data[Size--].~T();
             return temp;
@@ -104,25 +133,45 @@ namespace Phoenix
 
         T& Front()
         {
-            assert(Size > 0);
+            PHX_ASSERT(!IsEmpty());
+            if (IsEmpty())
+            {
+                static T temp;
+                return temp;
+            }
             return Data[0];
         }
 
         const T& Front() const
         {
-            assert(Size > 0);
+            PHX_ASSERT(!IsEmpty());
+            if (IsEmpty())
+            {
+                static T temp;
+                return temp;
+            }
             return Data[0];
         }
 
         T& Back()
         {
-            assert(Size > 0);
+            PHX_ASSERT(!IsEmpty());
+            if (IsEmpty())
+            {
+                static T temp;
+                return temp;
+            }
             return Data[Size - 1];
         }
 
         const T& Back() const
         {
-            assert(Size > 0);
+            PHX_ASSERT(!IsEmpty());
+            if (IsEmpty())
+            {
+                static T temp;
+                return temp;
+            }
             return Data[Size - 1];
         }
 
@@ -131,17 +180,18 @@ namespace Phoenix
             SetNum(0);
         }
 
-        void SetNum(size_t newSize, const T& value = {})
+        void SetNum(uint32 newSize, const T& value = {})
         {
+            newSize = std::min(newSize, Capacity);
             while (Size < newSize)
                 Add_GetRef(value);
             while (Size > newSize)
                 PopBack();
         }
 
-        void SetSize(size_t newSize)
+        void SetSize(uint32 newSize)
         {
-            Size = newSize >= Capacity ? Capacity : newSize;
+            Size = std::min(newSize, Capacity);
         }
 
         void Fill(const T& value = {})
@@ -151,7 +201,7 @@ namespace Phoenix
 
         int32 IndexOf(const T& value)
         {
-            for (size_t i = 0; i < Size; ++i)
+            for (uint32 i = 0; i < Size; ++i)
             {
                 if (Data[i] == value)
                     return (int32)i;
@@ -164,12 +214,18 @@ namespace Phoenix
             return IndexOf(value) != INDEX_NONE;
         }
 
-        void RemoveAt(size_t index)
+        void RemoveAt(uint32 index)
         {
-            for (size_t i = index; i < Size - 1; ++i)
+            if (!IsValidIndex(index))
+            {
+                return;
+            }
+
+            for (uint32 i = index; i < Size - 1; ++i)
             {
                 Data[i] = Data[i + 1];
             }
+
             --Size;
         }
 
@@ -371,7 +427,7 @@ namespace Phoenix
 
     private:
         T Data[N];
-        size_t Size = 0;
+        uint32 Size = 0;
     };
 
     static_assert(std::contiguous_iterator<TFixedArray<int, 1>::Iter>);

@@ -4,14 +4,16 @@
 #include <algorithm>
 
 #include "Platform.h"
+#include "FixedArray.h"
 
 namespace Phoenix
 {
-    template <class TItem, class TGetItemKey, class TContainer>
+    template <class TItem, uint32 N, class TGetItemKey>
     class TFixedSortedList
     {
     public:
 
+        static constexpr uint32 Capacity = N;
         static const TGetItemKey GetItemKey;
         using TKey = decltype(GetItemKey(TItem{}));
 
@@ -32,12 +34,10 @@ namespace Phoenix
 
         bool PushBack(const TItem& item)
         {
-            if (Items.IsFull())
+            if (!Items.Add(item))
             {
                 return false;
             }
-
-            Items.Add(item);
 
             if (Items.Back().IsValid())
             {
@@ -59,7 +59,10 @@ namespace Phoenix
                 return false;
             }
 
-            Items.Add(item);
+            if (!Items.Add(item))
+            {
+                return false;
+            }
 
             if (Items.Back().IsValid())
             {
@@ -77,7 +80,10 @@ namespace Phoenix
                 return false;
             }
 
-            Items.EmplaceBack(std::forward<TArgs>(args)...);
+            if (!Items.EmplaceBack(std::forward<TArgs>(args)...))
+            {
+                return false;
+            }
 
             if (Items.Back().IsValid())
             {
@@ -259,11 +265,18 @@ namespace Phoenix
 
         uint32 RemoveAll(const TKey& key)
         {
+            if (Items.IsEmpty())
+            {
+                return false;
+            }
+
             uint32 numRemoved = 0;
 
             auto begin = Items.begin();
             auto end = Items.end();
             auto sortedEnd = begin + SortedNum;
+
+            PHX_ASSERT(sortedEnd <= end);
 
             // Search the sorted section
             if (sortedEnd != begin)
@@ -284,7 +297,7 @@ namespace Phoenix
 
             // Search the unsorted section
             auto iter = sortedEnd;
-            while (iter != end)
+            while (iter < end)
             {
                 TItem& item = *iter;
                 if (GetItemKey(item) == key && item.IsValid())
@@ -301,9 +314,16 @@ namespace Phoenix
 
         const TItem* GetFirstSubItem(const TKey& key, uint32& outIndex) const
         {
+            if (Items.IsEmpty())
+            {
+                return nullptr;
+            }
+
             auto begin = Items.begin();
             auto end = Items.end();
             auto sortedEnd = begin + SortedNum;
+
+            PHX_ASSERT(sortedEnd <= end);
 
             // Search the sorted section
             if (sortedEnd != begin)
@@ -323,7 +343,7 @@ namespace Phoenix
 
             // Search the unsorted section
             auto iter = sortedEnd;
-            while (iter != end)
+            while (iter < end)
             {
                 const TItem& item = *iter;
                 if (GetItemKey(item) == key && item.IsValid())
@@ -339,6 +359,11 @@ namespace Phoenix
 
         const TItem* GetNextSubItem(const TKey& key, uint32 currIndex, uint32& outIndex) const
         {
+            if (Items.IsEmpty())
+            {
+                return nullptr;
+            }
+
             uint32 index = currIndex + 1;
 
             // Search the sorted section
@@ -372,15 +397,27 @@ namespace Phoenix
 
         const TItem* GetSubItem(const TKey& key, uint32 subIndex) const
         {
+            if (Items.IsEmpty())
+            {
+                return nullptr;
+            }
+
             return FindSubItemInternal(key, subIndex);
         }
 
         uint32 GetNumSubItems(const TKey& key) const
         {
+            if (Items.IsEmpty())
+            {
+                return 0;
+            }
+
             auto begin = Items.begin();
             auto end = Items.end();
             auto sortedEnd = begin + SortedNum;
             uint32 numItems = 0;
+
+            PHX_ASSERT(sortedEnd <= end);
 
             // Search the sorted section
             if (sortedEnd != begin)
@@ -398,7 +435,7 @@ namespace Phoenix
 
             // Search the unsorted section
             auto iter = sortedEnd;
-            while (iter != end)
+            while (iter < end)
             {
                 const TItem& item = *iter;
                 if (GetItemKey(item) == key && item.IsValid())
@@ -414,9 +451,16 @@ namespace Phoenix
         template <class TCallback>
         void ForEachSubItem(const TKey& key, const TCallback& callback) const
         {
+            if (Items.IsEmpty())
+            {
+                return;
+            }
+
             auto begin = Items.begin();
             auto end = Items.end();
             auto sortedEnd = begin + SortedNum;
+
+            PHX_ASSERT(sortedEnd <= end);
 
             // Search the sorted section
             if (sortedEnd != begin)
@@ -435,7 +479,7 @@ namespace Phoenix
 
             // Search the unsorted section
             auto iter = sortedEnd;
-            while (iter != end)
+            while (iter < end)
             {
                 const TItem& item = *iter;
                 if (GetItemKey(item) == key && item.IsValid())
@@ -448,6 +492,11 @@ namespace Phoenix
 
         void Sort()
         {
+            if (Items.IsEmpty())
+            {
+                return;
+            }
+
             std::stable_sort(Items.begin(), Items.end(), SortInvalidItemsToBack());
 
             auto iter = Items.end();
@@ -458,12 +507,14 @@ namespace Phoenix
 
             SortedNum = static_cast<uint32>(iter - Items.begin());
 
-            if (iter->IsValid())
+            if (SortedNum == 0 && iter->IsValid())
             {
                 ++SortedNum;
             }
 
-            Items.SetNum(SortedNum);
+            SortedNum = std::min(SortedNum, Capacity);
+
+            Items.SetSize(SortedNum);
         }
 
     private:
@@ -507,6 +558,8 @@ namespace Phoenix
             auto end = Items.end();
             auto sortedEnd = begin + SortedNum;
 
+            PHX_ASSERT(sortedEnd <= end);
+
             // Search the sorted section
             if (sortedEnd != begin)
             {
@@ -523,7 +576,7 @@ namespace Phoenix
 
             // Search the unsorted section
             auto iter = sortedEnd;
-            while (iter != end)
+            while (iter < end)
             {
                 if (*iter == item)
                 {
@@ -541,6 +594,8 @@ namespace Phoenix
             auto end = Items.end();
             auto sortedEnd = begin + SortedNum;
 
+            PHX_ASSERT(sortedEnd <= end);
+
             // Search the sorted section
             if (sortedEnd != begin)
             {
@@ -557,7 +612,7 @@ namespace Phoenix
 
             // Search the unsorted section
             auto iter = sortedEnd;
-            while (iter != end)
+            while (iter < end)
             {
                 const TItem& item = *iter;
                 if (GetItemKey(item) == key && item.IsValid() && index-- == 0)
@@ -594,16 +649,11 @@ namespace Phoenix
                 }
             }
 
-            if (i == Items.Num())
+            // Make room for a new item if there was no invalid item slot.
+            if (i == Items.Num() && !Items.AddDefaulted())
             {
                 // Queue is full, can't add any new items.
-                if (Items.IsFull())
-                {
-                    return false;
-                }
-
-                // Make room for a new item.
-                Items.SetNum(Items.Num() + 1);
+                return false;
             }
 
             // Shift all items back towards the invalid slot.
@@ -619,6 +669,8 @@ namespace Phoenix
 
         bool InsertInternal(uint32 index, const TItem& item)
         {
+            PHX_ASSERT(index < Capacity);
+
             if (!ShiftItemsTowardsBack(index))
             {
                 return false;
@@ -643,6 +695,8 @@ namespace Phoenix
         template <class ...TArgs>
         bool EmplaceInsertInternal(uint32 index, TArgs&&... args)
         {
+            PHX_ASSERT(index < Capacity);
+
             if (!ShiftItemsTowardsBack(index))
             {
                 return false;
@@ -664,11 +718,11 @@ namespace Phoenix
             return true;
         }
 
-        TContainer Items;
+        TFixedArray<TItem, Capacity> Items;
         uint32 SortedNum = 0;
         uint32 NumValidItems = 0;
     };
 
-    template <class TItem, class TGetItemKey, class TContainer>
-    const TGetItemKey TFixedSortedList<TItem, TGetItemKey, TContainer>::GetItemKey = {};
+    template <class TItem, uint32 N, class TGetItemKey>
+    const TGetItemKey TFixedSortedList<TItem, N, TGetItemKey>::GetItemKey = {};
 }

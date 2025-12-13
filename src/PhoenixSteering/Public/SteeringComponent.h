@@ -20,7 +20,7 @@ namespace Phoenix::Steering
     {
         PHX_ECS_DECLARE_COMPONENT(SteeringComponent)
 
-        ESteerFlags Flags = ESteerFlags::None;
+        ESteerFlags Flags = ESteerFlags::Active;
 
         ECS::EntityId GoalEntity;
         Vec2 GoalPos;

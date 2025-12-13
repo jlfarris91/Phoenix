@@ -52,7 +52,15 @@
     #define PHX_THREAD_PAUSE() { do {} while(0); }
 #endif
 
-#define PHX_ASSERT(...) assert(__VA_ARGS__)
+#if _WIN32 && NDEBUG
+
+#define PHX_ASSERT(expression) if (!(expression)) __debugbreak()
+
+#else
+
+#define PHX_ASSERT(expression) assert(expression)
+
+#endif
 
 #ifndef PHX_CONCAT
 #   define PHX_CONCAT(x, y) PHX_CONCAT_INDIRECT(x, y)
