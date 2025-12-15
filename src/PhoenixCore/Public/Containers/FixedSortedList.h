@@ -475,6 +475,25 @@ namespace Phoenix
         // Executes a callback for each item in the list.
         // Note that this operation is O(N).
         template <class TCallback>
+        void ForEachItem(const TCallback& callback)
+        {
+            if (Items.IsEmpty())
+            {
+                return;
+            }
+
+            for (TItem& item : Items)
+            {
+                if (item.IsValid())
+                {
+                    callback(item);
+                }
+            }
+        }
+
+        // Executes a callback for each item in the list.
+        // Note that this operation is O(N).
+        template <class TCallback>
         void ForEachItem(const TCallback& callback) const
         {
             if (Items.IsEmpty())

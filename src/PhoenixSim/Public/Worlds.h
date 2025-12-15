@@ -62,7 +62,7 @@ namespace Phoenix
         bool IsShutDown() const;
         bool IsActive() const;
 
-        simtime_t GetSimTime() const;
+        Time GetSimTime() const;
 
         World& operator=(const World& other);
         World& operator=(World&& other) noexcept;
@@ -123,7 +123,7 @@ namespace Phoenix
     struct PHOENIXSIM_API WorldDynamicBlock : BufferBlockBase
     {
         PHX_DECLARE_BLOCK_DYNAMIC(WorldDynamicBlock)
-        dt_t SimTime = 0;
+        Time SimTime = 0;
     };
 
     class PHOENIXSIM_API WorldManager

@@ -92,7 +92,7 @@ bool World::IsActive() const
     return HasNoneFlags(Flags, EWorldFlags::Initialized, EWorldFlags::ShutDown);
 }
 
-simtime_t World::GetSimTime() const
+Time World::GetSimTime() const
 {
     return GetBlockRef<WorldDynamicBlock>().SimTime;
 }
