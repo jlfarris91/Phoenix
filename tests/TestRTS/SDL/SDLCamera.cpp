@@ -1,7 +1,7 @@
 
 #include "SDLCamera.h"
 
-#include "Platform.h"
+#include <PhoenixSim/Platform.h>
 
 using namespace Phoenix;
 

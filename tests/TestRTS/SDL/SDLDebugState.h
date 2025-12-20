@@ -4,8 +4,9 @@
 #include <SDL3/SDL_events.h>
 #include <SDL3/SDL_keycode.h>
 
-#include "Debug.h"
-#include "Platform.h"
+#include <PhoenixSim/Debug.h>
+#include <PhoenixSim/Platform.h>
+
 #include "SDLViewport.h"
 
 namespace Phoenix

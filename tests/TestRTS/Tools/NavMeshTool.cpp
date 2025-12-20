@@ -4,13 +4,14 @@
 #include <fstream>
 #include <SDL3/SDL_events.h>
 
-#include "Actions.h"
-#include "FeatureNavigation.h"
-#include "FixedPoint/FixedVector.h"
-#include "Session.h"
+#include <nlohmann/json.hpp>
+
+#include <PhoenixSim/Actions.h>
+#include <PhoenixSim/Session.h>
+#include <PhoenixSim/FixedPoint/FixedVector.h>
+
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
-#include "nlohmann/json.hpp"
 
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;

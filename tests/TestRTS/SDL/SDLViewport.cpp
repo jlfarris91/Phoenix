@@ -3,7 +3,8 @@
 
 #include <SDL3/SDL_render.h>
 
-#include "Platform.h"
+#include <PhoenixSim/Platform.h>
+
 #include "SDLCamera.h"
 
 using namespace Phoenix;

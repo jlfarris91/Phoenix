@@ -3,17 +3,19 @@
 
 #include <SDL3/SDL_events.h>
 
-#include "FeatureECS.h"
-#include "FixedPoint/FixedVector.h"
-#include "Session.h"
+#include <PhoenixSim/Session.h>
+#include <PhoenixSim/ECS/FeatureECS.h>
+#include <PhoenixSim/FixedPoint/FixedVector.h>
+
+#include <PhoenixRTS/Commands/Commands.h>
+#include <PhoenixRTS/Selection/FeatureSelection.h>
+#include <PhoenixRTS/Orders/FeatureOrderQueue.h>
+#include <PhoenixRTS/Units/UnitId.h>
+
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
-#include "Commands/Commands.h"
-
-#include "Selection/FeatureSelection.h"
-#include "Orders/FeatureOrderQueue.h"
-#include "Units/UnitId.h"
+#include "PhoenixSim/Flags.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -94,10 +96,17 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
         renderer.DrawCircle(transformPtr->Position, 1.0, Color::Green);
 
         Vec2 lastTargetPos = transformPtr->Position;
-        FeatureOrderQueue::ForEachOrder(world, { entityId }, [&](const Order& order)
+        FeatureOrderQueue::ForEachOrder(world, UnitId(entityId), [&](const Order& order)
         {
-            renderer.DrawLine(lastTargetPos, order.Location, Color::Blue);
-            lastTargetPos = order.Location;
+            Vec2 orderPos = order.TargetLocation;
+
+            if (order.TargetEntity != EntityId::Invalid && FeatureECS::IsEntityValid(world, order.TargetEntity))
+            {
+                orderPos = FeatureECS::GetWorldPosition(world, order.TargetEntity);
+            }
+
+            renderer.DrawLine(lastTargetPos, orderPos, Color::Blue);
+            lastTargetPos = order.TargetLocation;
         });
     });
 }
@@ -266,16 +275,52 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         BoxSelectDragEnd.Reset();
     }
 
+    {
+        TArray<EntityTransform> entities;
+        FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
+
+        EntityId closestEntity;
+        Distance closestDist = Distance::Max;
+        for (const EntityTransform& entity : entities)
+        {
+            Distance dist = Vec2::Distance(entity.TransformComponent->Transform.Position, CursorWorldPos);
+            if (dist < closestDist)
+            {
+                closestDist = dist;
+                closestEntity = entity.EntityId;
+            }
+            break;
+        }
+
+        HoverTarget = closestEntity;
+    }
+
     if (state.MouseButtonReleased(SDL_BUTTON_RIGHT))
     {
         if (!CameraDragPos.IsSet())
         {
-            // Issue move command to selection
+            FName abilityId = "MoveAbility"_n;
+            uint8 commandIndex = 0;
+            ECommandFlags commandFlags = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandFlags::Queued : ECommandFlags::Replace;
+            EntityId targetEntity = EntityId::Invalid;
+            Vec2 targetLocation = state.GetWorldMousePos();
+
+            if (HoverTarget != EntityId::Invalid)
+            {
+                SetFlagRef(commandFlags, ECommandFlags::Smart);
+                abilityId = FName::None;
+                commandIndex = 0;
+                targetEntity = HoverTarget;
+                targetLocation = FeatureECS::GetWorldPosition(world, targetEntity);
+            }
+
+            // Issue command to selection
             Command command;
-            command.Type = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandType::Queued : ECommandType::Order;
-            command.AbilityId = "MoveAbility"_n;
-            command.CommandIndex = 0;
-            command.TargetLocation = state.GetWorldMousePos();
+            command.Flags = commandFlags;
+            command.AbilityId = abilityId;
+            command.CommandIndex = commandIndex;
+            command.TargetEntity = targetEntity;
+            command.TargetLocation = targetLocation;
             Session->EnqueueAction(command);
         }
 

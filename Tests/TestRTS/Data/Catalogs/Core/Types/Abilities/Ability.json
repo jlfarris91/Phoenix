@@ -1,4 +1,9 @@
 {
     "id": "Ability",
-    "type": "Object"
+    "type": "Object",
+    "properties": {
+        "smart_cast": {
+            "type": "Object#SmartCast"
+        }
+    }
 }

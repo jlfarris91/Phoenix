@@ -4,7 +4,8 @@
 #include <vector>
 #include <SDL3/SDL_render.h>
 
-#include "Color.h"
+#include <PhoenixSim/Color.h>
+
 #include "SDLCamera.h"
 #include "SDLViewport.h"
 

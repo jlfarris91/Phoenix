@@ -1,0 +1,65 @@
+
+#pragma once
+
+#include "PhoenixSim/Containers/Optional.h"
+#include "PhoenixSim/LDS/Json/JsonCatalogBuilderBase.h"
+
+namespace Phoenix::LDS::Json
+{
+    template <class TCatalog = Catalog>
+    struct JsonCatalogObjectBuilder : JsonCatalogBuilderBase<TCatalog>
+    {
+        using json = nlohmann::json;
+
+        JsonCatalogObjectBuilder(const JsonDataSource* dataSource, TCatalog* catalog);
+
+        bool RegisterAllObjects();
+
+        bool RegisterObject(const json& objectJson);
+
+        bool ProcessJsonObject(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath);
+
+        bool ProcessObjectProperties(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath);
+
+        bool ProcessObjectRef(const PHXString& rootObjectId, const json& json, const PHXString& jsonPath);
+
+        bool ProcessArray(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath);
+
+        bool ProcessEnum(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath);
+
+        bool ProcessEnumFlags(
+            const PHXString& rootObjectId,
+            const json& json,
+            const PHXString& jsonPath,
+            const PHXString& typePath);
+
+        bool ProcessValueProperty(const PHXString& rootObjectId, const json& json, const PHXString& path);
+
+        const LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId);
+
+        template <class ...TArgs>
+        void EmplaceObjectRecord(const PHXString& rootObjectId, const PHXString& path, TArgs&&... args);
+
+        TOptional<FName> TypeIdOverride;
+        TOptional<PHXString> PathPostFix;
+        ELDSCatalogRecordStore RecordStore = ELDSCatalogRecordStore::Object;
+    };
+}
+
+#include "PhoenixSim/LDS/Json/JsonCatalogObjectBuilder.inl"

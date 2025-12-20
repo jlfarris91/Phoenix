@@ -3,9 +3,9 @@
 
 #include <SDL3/SDL_render.h>
 
-#include "Debug.h"
-#include "Color.h"
-#include "Platform.h"
+#include <PhoenixSim/Debug.h>
+#include <PhoenixSim/Color.h>
+#include <PhoenixSim/Platform.h>
 
 namespace Phoenix
 {

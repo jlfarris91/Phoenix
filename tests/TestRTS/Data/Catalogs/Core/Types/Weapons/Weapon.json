@@ -45,24 +45,31 @@
                 "description": "The time between the start of one attack and the start of the next."
             }
         },
-        "period_rand_delay": {
-            "type": "Object",
-            "properties": {
-                "minimum": {
-                    "type": "Time",
-                    "default": -0.05,
-                    "attributes": {
-                        "description": "The minimum random delay to add to the weapon's period."
-                    }
-                },
-                "maximum": {
-                    "type": "Time",
-                    "default": 0.01,
-                    "attributes": {
-                        "description": "The maximum random delay to add to the weapon's period."
-                    }
-                }
+        "period_rand_delay_min": {
+            "type": "Time",
+            "default": -0.05,
+            "attributes": {
+                "description": "The minimum random delay to add to the weapon's period."
             }
+        },
+        "period_rand_delay_max": {
+            "type": "Time",
+            "default": 0.01,
+            "attributes": {
+                "description": "The maximum random delay to add to the weapon's period."
+            }
+        },
+        "preswing_initial": {
+            "type": "Time",
+            "default": 0.0
+        },
+        "preswing_repeat": {
+            "type": "Time",
+            "default": 0.0
+        },
+        "preswing_cooldown": {
+            "type": "Time",
+            "default": 0.0
         },
         "range_acquire": {
             "type": "Distance",
@@ -71,14 +78,14 @@
                 "description": "The distance at which the weapon can automatically acquire targets."
             }
         },
-        "range_minimum": {
+        "range_min": {
             "type": "Distance",
             "default": 0.0,
             "attributes": {
                 "description": "The minimum distance at which the weapon can hit targets."
             }
         },
-        "range_maximum": {
+        "range_max": {
             "type": "Distance",
             "default": 3.0,
             "attributes": {
@@ -92,7 +99,7 @@
                 "description": "Additional range allowed before an attack is cancelled mid-swing."
             }
         },
-        "swing": {
+        "swing_time": {
             "type": "Time",
             "default": 0.5,
             "minimum": 0.0,
@@ -105,6 +112,9 @@
         },
         "effect": {
             "type": "ObjectRef#Effect"
+        },
+        "target_filter": {
+            "type": "Object#TargetFilter"
         },
         "validator": {
             "type": "ObjectRef#Validator"

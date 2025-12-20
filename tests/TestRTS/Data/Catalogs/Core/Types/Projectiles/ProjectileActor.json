@@ -1,0 +1,12 @@
+{
+    "id": "ProjectileActor",
+    "type": "Object",
+    "properties": {
+        "asset": {
+            "type": "Asset#Actor"
+        },
+        "tint": {
+            "type": "Object#Color"
+        }
+    }
+}

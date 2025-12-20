@@ -3,8 +3,9 @@
 
 #include <SDL3/SDL_events.h>
 
-#include "FixedPoint/FixedVector.h"
-#include "Session.h"
+#include <PhoenixSim/Session.h>
+#include <PhoenixSim/FixedPoint/FixedVector.h>
+
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"

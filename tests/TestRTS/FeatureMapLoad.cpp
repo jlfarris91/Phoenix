@@ -1,10 +1,10 @@
 
 #include "FeatureMapLoad.h"
 
-#include "BodyComponent.h"
-#include "FeatureLDS.h"
-#include "SteeringComponent.h"
-#include "Json/JsonDataSource.h"
+#include <PhoenixSim/LDS/FeatureLDS.h>
+#include <PhoenixSim/LDS/Json/JsonDataSource.h>
+#include <PhoenixPhysics/BodyComponent.h>
+#include <PhoenixSteering/SteeringComponent.h>
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

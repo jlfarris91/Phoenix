@@ -1,4 +1,17 @@
 {
     "id": "Projectile",
-    "type": "Object"
+    "type": "Object",
+    "properties": {
+        "actor": {
+            "type": "ObjectRef#ProjectileActor"
+        },
+        "health": {
+            "type": "Value",
+            "default": 100.0
+        },
+        "radius": {
+            "type": "Distance",
+            "default": 0.1
+        }
+    }
 }

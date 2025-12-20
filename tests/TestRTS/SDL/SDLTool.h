@@ -3,7 +3,8 @@
 #pragma once
 
 #include "imgui_impl_sdl3.h"
-#include "Worlds.h"
+
+#include <PhoenixSim/Worlds.h>
 
 namespace Phoenix
 {

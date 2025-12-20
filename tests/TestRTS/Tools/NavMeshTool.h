@@ -1,11 +1,12 @@
 
 #pragma once
 
-#include "Color.h"
-#include "FeatureNavigation.h"
-#include "FixedPoint/FixedVector.h"
-#include "Optional.h"
-#include "Reflection.h"
+#include <PhoenixSim/Color.h>
+#include <PhoenixSim/FixedPoint/FixedVector.h>
+#include <PhoenixSim/Containers/Optional.h>
+#include <PhoenixSim/Reflection.h>
+#include <PhoenixSim/Navigation/FeatureNavigation.h>
+
 #include "../SDL/SDLTool.h"
 
 namespace Phoenix

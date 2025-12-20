@@ -3,8 +3,10 @@
 
 #include <SDL3/SDL_rect.h>
 
-#include "Optional.h"
-#include "Reflection.h"
+#include <PhoenixSim/Containers/Optional.h>
+#include <PhoenixSim/ECS/EntityId.h>
+#include <PhoenixSim/Reflection.h>
+
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLTool.h"
 
@@ -39,5 +41,6 @@ namespace Phoenix
         TOptional<SDL_FPoint> CameraDragPos;
         TOptional<SDL_FPoint> CursorDragStart;
         TOptional<SDL_FPoint> BoxSelectDragStart, BoxSelectDragEnd;
+        ECS::EntityId HoverTarget;
     };
 }

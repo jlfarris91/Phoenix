@@ -16,33 +16,38 @@
 #include <SDL3/SDL_timer.h>
 
 // Phoenix
-#include "Session.h"
-#include "Worlds.h"
-#include "Color.h"
-#include "MortonCode.h"
+#include <PhoenixSim/Color.h>
+#include <PhoenixSim/MortonCode.h>
+#include <PhoenixSim/FPSCalc.h>
+#include <PhoenixSim/Parallel.h>
+#include <PhoenixSim/Session.h>
+#include <PhoenixSim/Worlds.h>
+#include <PhoenixSim/Features.h>
 
 // Phoenix features
-#include "FeatureLDS.h"
-#include "FeatureBlackboard.h"
-#include "FeatureECS.h"
-#include "FeatureNavigation.h"
-#include "FeaturePhysics.h"
-#include "FeatureSteering.h"
+#include <PhoenixSim/LDS/FeatureLDS.h>
+#include <PhoenixSim/Blackboard/FeatureBlackboard.h>
+#include <PhoenixSim/ECS/FeatureECS.h>
+#include <PhoenixSim/Navigation/FeatureNavigation.h>
+#include <PhoenixPhysics/FeaturePhysics.h>
+#include <PhoenixSteering/FeatureSteering.h>
 
 // RTS Features
-#include "Units/FeatureUnit.h"
-#include "Abilities/FeatureAbilities.h"
-#include "Orders/FeatureOrderQueue.h"
-#include "Selection/FeatureSelection.h"
-#include "Tools/PlayerController.h"
+#include <PhoenixRTS/Units/FeatureUnit.h>
+#include <PhoenixRTS/Abilities/FeatureAbilities.h>
+#include <PhoenixRTS/Effects/FeatureEffects.h>
+#include <PhoenixRTS/Orders/FeatureOrderQueue.h>
+#include <PhoenixRTS/Selection/FeatureSelection.h>
 
-// RTS Abilities
-#include "Abilities/MoveAbility.h"
+// RTS Abilities, Effects, Responses
+#include <PhoenixRTS/Abilities/MoveAbilityHandler.h>
+#include "PhoenixRTS/Abilities/AttackAbilityHandler.h"
+#include <PhoenixRTS/Effects/EffectDamageHandler.h>
+#include <PhoenixRTS/Effects/ResponseDamageHandler.h>
 
-// Remove me
-#include "Json/LDSJsonTests.h"
-#include "BodyComponent.h"
-#include "SteeringComponent.h"
+// Remove Me
+#include <PhoenixSim/LDS/Json/LDSJsonTests.h>
+#include <PhoenixPhysics/BodyComponent.h>
 
 // SDL impl
 #include "SDL/SDLCamera.h"
@@ -56,6 +61,7 @@
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
 #include "Tools/NavMeshTool.h"
+#include "Tools/PlayerController.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -114,11 +120,21 @@ void InitSession()
     TSharedPtr<FeatureSteering> steeringFeature = std::make_shared<FeatureSteering>();
     TSharedPtr<RTS::FeatureUnit> unitFeature = std::make_shared<RTS::FeatureUnit>();
     TSharedPtr<RTS::FeatureAbilities> abilitiesFeature = std::make_shared<RTS::FeatureAbilities>();
+    TSharedPtr<RTS::FeatureEffects> effectsFeature = std::make_shared<RTS::FeatureEffects>();
     TSharedPtr<RTS::FeatureOrderQueue> orderQueueFeature = std::make_shared<RTS::FeatureOrderQueue>();
     TSharedPtr<RTS::FeatureSelection> selectionFeature = std::make_shared<RTS::FeatureSelection>();
     // TSharedPtr<FeatureLua> luaFeature = std::make_shared<FeatureLua>();
 
-    abilitiesFeature->RegisterAbility(std::make_shared<RTS::MoveAbility>());
+    // Register ability handlers
+    abilitiesFeature->RegisterAbilityHandler<RTS::MoveAbilityHandler>();
+    abilitiesFeature->RegisterAbilityHandler<RTS::AttackAbilityHandler>();
+
+    // Register effect handlers
+    effectsFeature->RegisterEffectHandler<RTS::EffectDamageHandler>();
+
+    // Register response handlers
+    effectsFeature->RegisterResponseHandler<RTS::ResponseHandlerBase>();
+    effectsFeature->RegisterResponseHandler<RTS::ResponseDamageHandler>();
 
     SessionCtorArgs sessionArgs;
     sessionArgs.DataDirectory = "./Data";
@@ -131,6 +147,7 @@ void InitSession()
     sessionArgs.FeatureSetArgs.Features.push_back(steeringFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(unitFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(abilitiesFeature);
+    sessionArgs.FeatureSetArgs.Features.push_back(effectsFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(orderQueueFeature);
     sessionArgs.FeatureSetArgs.Features.push_back(selectionFeature);
     // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
@@ -292,7 +309,7 @@ void OnAppRenderWorld()
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
                 Color color;
-                if (!FeatureECS::GetBlackboardValue(*GCurrWorldView, entity, "actor_tint"_n, color))
+                if (!FeatureECS::TryGetBlackboardValue(*GCurrWorldView, entity, "actor_tint"_n, color))
                 {
                     color = Color::Red;
                 }
@@ -692,9 +709,12 @@ void OnAppEvent(SDL_Event* event)
 {
     GDebugState->ProcessAppEvent(event);
 
-    for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
+    if (GCurrWorldView)
     {
-        tool->OnAppEvent(*GCurrWorldView, *GDebugState, event);
+        for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
+        {
+            tool->OnAppEvent(*GCurrWorldView, *GDebugState, event);
+        }
     }
 }
 

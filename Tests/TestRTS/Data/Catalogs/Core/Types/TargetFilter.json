@@ -1,0 +1,9 @@
+{
+    "id": "TargetFilter",
+    "type": "Object",
+    "properties": {
+        "tags": {
+            "type": "Object#TagFilter"
+        }
+    }
+}

@@ -1,7 +1,8 @@
 
 #pragma once
 
-#include "Reflection.h"
+#include <PhoenixSim/Reflection.h>
+
 #include "../SDL/SDLTool.h"
 
 namespace Phoenix

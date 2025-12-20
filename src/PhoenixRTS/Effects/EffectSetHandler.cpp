@@ -1,0 +1,48 @@
+#include "PhoenixRTS/Effects/EffectSetHandler.h"
+
+#include "PhoenixSim/LDS/FeatureLDS.h"
+
+#include "PhoenixRTS/Data/DataEffectSet.h"
+#include "PhoenixRTS/Effects/FeatureEffects.h"
+
+using namespace Phoenix;
+using namespace Phoenix::ECS;
+using namespace Phoenix::RTS;
+
+EffectSetHandler::EffectSetHandler()
+    : EffectHandlerBase("EffectSet"_n)
+{
+}
+
+bool EffectSetHandler::Execute(WorldRef world, const EffectContext& context) const
+{
+    const LDS::ILDSQueryContext& lds = *context.LdsQueryContext;
+
+    EffectNodeId node = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.Parent);
+
+    Data::EffectSetPtr effectSet(context.EffectId);
+
+    // TODO (jfarris): validate the effect
+    // if (FeatureEffects::ValidateEffectNode())
+    {
+        effectSet.Effects().ForEachItem(lds, [&](uint32, const LDS::LDSObjectRefPtr& effectPtr)
+        {
+            FName effectId = effectPtr.GetReferenceId(lds);
+            if (FName::IsNoneOrEmpty(effectId))
+            {
+                return;
+            }
+
+            EffectsFeature->ExecuteEffect(world, node, effectId);
+        });
+    }
+
+    FeatureEffects::DereferenceEffectNode(world, node);
+
+    return true;
+}
+
+bool EffectSetHandler::CanExecute(WorldConstRef world, const EffectContext& context) const
+{
+    return true;
+}
