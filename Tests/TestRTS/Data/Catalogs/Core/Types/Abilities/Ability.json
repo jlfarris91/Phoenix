@@ -3,7 +3,10 @@
     "type": "Object",
     "properties": {
         "smart_cast": {
-            "type": "Object#SmartCast"
+            "type": "Object#SmartCast",
+            "default": {
+                "priority": 0
+            }
         }
     }
 }

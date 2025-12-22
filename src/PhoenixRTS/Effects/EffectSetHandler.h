@@ -9,7 +9,7 @@ namespace Phoenix::RTS
     public:
         EffectSetHandler();
 
-        bool Execute(WorldRef world, const EffectContext& context) const override;
-        bool CanExecute(WorldConstRef world, const EffectContext& context) const override;
+        bool Execute(WorldRef world, const EffectExecuteContext& context) const override;
+        bool CanExecute(WorldConstRef world, const EffectExecuteContext& context) const override;
     };
 }

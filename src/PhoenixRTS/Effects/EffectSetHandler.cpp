@@ -14,11 +14,11 @@ EffectSetHandler::EffectSetHandler()
 {
 }
 
-bool EffectSetHandler::Execute(WorldRef world, const EffectContext& context) const
+bool EffectSetHandler::Execute(WorldRef world, const EffectExecuteContext& context) const
 {
     const LDS::ILDSQueryContext& lds = *context.LdsQueryContext;
 
-    EffectNodeId node = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.Parent);
+    EffectNodeId node = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.ParentComponent);
 
     Data::EffectSetPtr effectSet(context.EffectId);
 
@@ -42,7 +42,7 @@ bool EffectSetHandler::Execute(WorldRef world, const EffectContext& context) con
     return true;
 }
 
-bool EffectSetHandler::CanExecute(WorldConstRef world, const EffectContext& context) const
+bool EffectSetHandler::CanExecute(WorldConstRef world, const EffectExecuteContext& context) const
 {
     return true;
 }

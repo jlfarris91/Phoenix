@@ -1,0 +1,20 @@
+{
+    "id": "BaseMeleeWeapon",
+    "base": "Weapon",
+    "range_acquire": 7.0,
+    "acquire_filter": {
+        "alliance": "Enemy",
+        "tags": {
+            "excluded": [ "status_sleeping" ],
+            "required": []
+        }
+    },
+    "flags": "Melee",
+    "target_filter": {
+        "alliance": "Ally|Enemy|Neutral|Player",
+        "tags": {
+            "excluded": [ "status_invulnerable "],
+            "required": []
+        }
+    }
+}

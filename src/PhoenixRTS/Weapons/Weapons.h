@@ -17,6 +17,9 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API Weapons
     {
+        // Returns true if the unit can use the weapon.
+        static bool CanUseWeapon(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
         // Gets the amount of ammo spent by a unit.
         static uint32 GetAmmoSpent(WorldConstRef world, const UnitId& unit, const FName& ammoId);
 
@@ -49,6 +52,12 @@ namespace Phoenix::RTS
         // Returns true if the weapon has ammo and is not currently cooling down.
         static bool HasAmmoAndNotOnCooldown(WorldConstRef world, const UnitId& unit, const FName& weaponId);
 
+        // Returns the minimum range of a given weapon.
+        static Distance GetMinWeaponRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
+        // Returns the maximum range of a given weapon.
+        static Distance GetMaxWeaponRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
         // Returns true if the target is within the minimum range of the weapon.
         static bool TargetIsTooClose(WorldConstRef world, const UnitId& unit, const ECS::EntityId& target, const FName& weaponId);
 
@@ -71,11 +80,43 @@ namespace Phoenix::RTS
             const FName& weaponId,
             Distance bonusRange = 0);
 
+        static Angle GetWeaponArcMin(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
+        static Angle GetWeaponArcSlop(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
+        static Angle GetWeaponArcPlusSlop(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
         // Returns true if the target passes the weapons target filter.
         static bool TargetPassesFilter(
             WorldConstRef world,
-            const UnitId& unit,
+            const UnitId& source,
             const ECS::EntityId& target,
             const FName& weaponId);
+
+        static Data::WeaponPtr FindBestEnabledWeapon(
+            WorldConstRef world,
+            const UnitId& unit,
+            const ECS::EntityId& target,
+            bool canUnitMove);
+
+        static Data::WeaponPtr FindBestEnabledWeapon(
+            WorldConstRef world,
+            const UnitId& unit,
+            const ECS::EntityId& target,
+            bool canUnitMove,
+            uint32& outIndex);
+
+        static Data::WeaponPtr FindBestEnabledWeapon(
+            WorldConstRef world,
+            const UnitId& unit,
+            const Vec2& target,
+            bool canUnitMove);
+
+        static Data::WeaponPtr FindBestEnabledWeapon(
+            WorldConstRef world,
+            const UnitId& unit,
+            const Vec2& target,
+            bool canUnitMove,
+            uint32& outIndex);
     };
 }

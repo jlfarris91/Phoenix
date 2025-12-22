@@ -11,6 +11,7 @@ bool TargetFilter::Read(const LDS::LDSReadObjectArgs& args, TargetFilter& outIte
 
     TargetFilterPtr dataPtr = args.CreatePtr<TargetFilterPtr>();
     success = dataPtr.Tags().TryReadObject(lds, outItem.TagFilter) && success;
+    success = dataPtr.Alliance().TryGetValue(lds, outItem.Alliance) && success;
 
     return success;
 }
@@ -23,4 +24,9 @@ TargetFilterPtr::TargetFilterPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecord
 TagFilterPtr TargetFilterPtr::Tags() const
 {
     return Object<TagFilterPtr>("tags");
+}
+
+Phoenix::LDS::TLDSEnumFlagsPtr<ETargetFilterAllianceFlags> TargetFilterPtr::Alliance() const
+{
+    return EnumFlags<ETargetFilterAllianceFlags>("alliance");
 }

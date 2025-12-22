@@ -6,6 +6,8 @@
 #include "PhoenixRTS/Data/DataEffectDamage.h"
 #include "PhoenixRTS/Effects/EffectComponent.h"
 #include "PhoenixRTS/Effects/FeatureEffects.h"
+#include "PhoenixRTS/Vitals/Damage.h"
+#include "PhoenixRTS/Vitals/FeatureVitals.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -16,11 +18,13 @@ EffectDamageHandler::EffectDamageHandler()
 {
 }
 
-bool EffectDamageHandler::Execute(WorldRef world, const EffectContext& context) const
+bool EffectDamageHandler::Execute(WorldRef world, const EffectExecuteContext& context) const
 {
     const LDS::ILDSQueryContext& lds = *context.LdsQueryContext;
 
-    EffectNodeId nodeId = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.Parent);
+    ExecuteEffectArgs args;
+    args.EffectId = context.EffectId;
+    EffectNodeId nodeId = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.ParentComponent, args);
 
     EffectComponent* nodeComp = FeatureEffects::GetEffectComponent(world, nodeId);
     if (!nodeComp)
@@ -67,6 +71,9 @@ bool EffectDamageHandler::Execute(WorldRef world, const EffectContext& context) 
             FeatureECS::AddTag(world, nodeId, "Weapon"_n);
         }
 
+        Value finalAmount = baseAmount + bonus;
+        FeatureEffects::SetEffectDamage(world, nodeId, finalAmount);
+
         FeatureEffects::DeferEffectExecution(world, nodeId);
     }
 
@@ -75,7 +82,24 @@ bool EffectDamageHandler::Execute(WorldRef world, const EffectContext& context) 
     return true;
 }
 
-bool EffectDamageHandler::CanExecute(WorldConstRef world, const EffectContext& context) const
+bool EffectDamageHandler::CanExecute(WorldConstRef world, const EffectExecuteContext& context) const
 {
+    return true;
+}
+
+bool EffectDamageHandler::Finalize(WorldRef world, const EffectFinalizeContext& context) const
+{
+    Value damageAmount = FeatureEffects::GetEffectDamage(world, context.EffectNodeId);
+
+    if (!Equals(damageAmount, Value(0), Value::Epsilon))
+    {
+        Damage damage;
+        damage.Amount = damageAmount;
+        damage.BaseAmount = damageAmount;
+        damage.SourceId = context.EffectComponent->SourceId;
+        damage.VitalId = "HealthVital"_n; // TODO (jfarris) ??
+        FeatureVitals::ApplyDamage(world, context.EffectComponent->TargetId, damage);
+    }
+
     return true;
 }

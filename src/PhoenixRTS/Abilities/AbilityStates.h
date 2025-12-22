@@ -4,6 +4,7 @@
 #include "PhoenixSim/FixedPoint/FixedTypes.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixRTS/DLLExport.h"
+#include "PhoenixRTS/Units/UnitId.h"
 
 namespace Phoenix::RTS
 {
@@ -24,6 +25,7 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API AbilityStateResult
     {
+        AbilityStateResult() = default;
         AbilityStateResult(EAbilityStateResult result, const FName& reason = FName::None)
             : Result(result)
             , Reason(reason)
@@ -32,7 +34,7 @@ namespace Phoenix::RTS
 
         operator EAbilityStateResult() const { return Result; }
 
-        EAbilityStateResult Result = EAbilityStateResult::Complete;
+        EAbilityStateResult Result = EAbilityStateResult::Fail;
         FName Reason;
     };
 
@@ -54,67 +56,71 @@ namespace Phoenix::RTS
         static constexpr FName FailedToExecuteEffect = "FailedToExecuteEffect"_n;
     };
 
-    struct PHOENIX_RTS_API MoveToEntityState
+    template <class TTarget>
+    struct PHOENIX_RTS_API BaseState
     {
-        ECS::EntityId Target;
-        Distance Range;
-
-        AbilityStateResult OnEnter(WorldRef world, const UnitId& unit, const ECS::EntityId& target, Distance range);
-        AbilityStateResult OnUpdate(WorldRef world, const UnitId& unit);
-        void OnInterrupt(WorldRef world, const UnitId& unit);
-        void OnExit(WorldRef world, const UnitId& unit);
+        TTarget Target;
     };
 
-    struct PHOENIX_RTS_API MoveToLocationState
+    using TargetEntityState = BaseState<ECS::EntityId>;
+    using TargetLocationState = BaseState<Vec2>;
+
+    struct PHOENIX_RTS_API MoveToEntityState : TargetEntityState
     {
-        Vec2 Target;
         Distance Range;
 
-        AbilityStateResult OnEnter(WorldRef world, const UnitId& unit, const Vec2& target, Distance range);
-        AbilityStateResult OnUpdate(WorldRef world, const UnitId& unit);
-        void OnInterrupt(WorldRef world, const UnitId& unit);
-        void OnExit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Enter(WorldRef world, const UnitId& unit, const ECS::EntityId& target, Distance range);
+        AbilityStateResult Update(WorldRef world, const UnitId& unit);
+        void Interrupt(WorldRef world, const UnitId& unit);
+        void Exit(WorldRef world, const UnitId& unit);
     };
 
-    struct PHOENIX_RTS_API FaceEntityState
+    struct PHOENIX_RTS_API MoveToLocationState : TargetLocationState
     {
-        ECS::EntityId Target;
+        Distance Range;
+
+        AbilityStateResult Enter(WorldRef world, const UnitId& unit, const Vec2& target, Distance range);
+        AbilityStateResult Update(WorldRef world, const UnitId& unit);
+        void Interrupt(WorldRef world, const UnitId& unit);
+        void Exit(WorldRef world, const UnitId& unit);
+    };
+
+    struct PHOENIX_RTS_API FaceEntityState : TargetEntityState
+    {
         Distance MaxRange;
         Angle Threshold;
 
-        AbilityStateResult OnEnter(
+        AbilityStateResult Enter(
             WorldRef world,
             const UnitId& unit,
             const ECS::EntityId& target,
             Distance range,
             Angle threshold = 5.0);
 
-        AbilityStateResult OnUpdate(WorldRef world, const UnitId& unit);
-        void OnInterrupt(WorldRef world, const UnitId& unit);
-        void OnExit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Update(WorldRef world, const UnitId& unit);
+        void Interrupt(WorldRef world, const UnitId& unit);
+        void Exit(WorldRef world, const UnitId& unit);
     };
 
-    struct PHOENIX_SIM_API FaceLocationState
+    struct PHOENIX_RTS_API FaceLocationState : TargetLocationState
     {
-        Vec2 Target;
         Distance MaxRange;
         Angle Threshold;
 
-        AbilityStateResult OnEnter(
+        AbilityStateResult Enter(
             WorldRef world,
             const UnitId& unit,
             const Vec2& target,
             Distance range,
             Angle threshold = 5.0);
 
-        AbilityStateResult OnUpdate(WorldRef world, const UnitId& unit);
-        void OnInterrupt(WorldRef world, const UnitId& unit);
-        void OnExit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Update(WorldRef world, const UnitId& unit);
+        void Interrupt(WorldRef world, const UnitId& unit);
+        void Exit(WorldRef world, const UnitId& unit);
     };
 
-    struct PHOENIX_RTS_API FollowEntityState
+    struct PHOENIX_RTS_API FollowEntityState : TargetEntityState
     {
-        ECS::EntityId Target;
         Distance FollowRange;
         Time RangeCheckTime;
 
@@ -124,10 +130,10 @@ namespace Phoenix::RTS
             Moving
         } SubState;
 
-        AbilityStateResult OnEnter(WorldRef world, const UnitId& unit, const ECS::EntityId& target, Distance range);
-        AbilityStateResult OnUpdate(WorldRef world, const UnitId& unit);
-        void OnInterrupt(WorldRef world, const UnitId& unit);
-        void OnExit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Enter(WorldRef world, const UnitId& unit, const ECS::EntityId& target, Distance range);
+        AbilityStateResult Update(WorldRef world, const UnitId& unit);
+        void Interrupt(WorldRef world, const UnitId& unit);
+        void Exit(WorldRef world, const UnitId& unit);
 
         AbilityStateResult SetSubState(WorldRef world, const UnitId& unit, ESubState subState);
     };

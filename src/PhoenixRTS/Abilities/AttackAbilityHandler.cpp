@@ -7,7 +7,6 @@
 #include "PhoenixPhysics/BodyComponent.h"
 
 #include "PhoenixSteering/FeatureSteering.h"
-#include "PhoenixSteering/SteeringComponent.h"
 
 #include "PhoenixRTS/Abilities/FeatureAbilities.h"
 #include "PhoenixRTS/Data/DataAttackAbility.h"
@@ -15,6 +14,7 @@
 #include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
+#include "PhoenixRTS/Weapons/Weapons.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -25,26 +25,24 @@ using namespace Phoenix::RTS;
 
 namespace AttackAbilitySystemDetail
 {
-    struct UpdateAttackAbilityComponentJob : IBufferJob<const SteeringComponent&, const TransformComponent&, AttackAbilityComponent&>
+    struct UpdateAttackAbilityComponentJob : IBufferJob<AttackAbilityComponent&>
     {
-        void Execute(const EntityComponentSpan<const SteeringComponent&, const TransformComponent&, AttackAbilityComponent&>& span) override
+        void Execute(const EntityComponentSpan<AttackAbilityComponent&>& span) override
         {
             PHX_PROFILE_ZONE_SCOPED_N("UpdateAttackAbilityComponentJob");
 
             TSharedPtr<FeatureAbilities> abilities = GetFeature<FeatureAbilities>(*World);
 
-            for (auto && [entityId, index, seekComp, transformComp, moveComp] : span)
+            for (auto && [entityId, index, attackComp] : span)
             {
-
-                if (moveComp.State == EAttackAbilityState::MoveToPosition)
+                if (attackComp.ActiveState != EAttackAbilityState::None)
                 {
-                    auto result = moveComp.ActiveState.MoveToPosition.OnUpdate(*World, UnitId(entityId));
+                    AbilityStateResult result = attackComp.Update(*World, UnitId(entityId));
                     if (result != EAbilityStateResult::Continue)
                     {
                         abilities->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
                     }
                 }
-
             }
         }
     };
@@ -59,9 +57,50 @@ void AttackAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& 
 }
 
 AttackAbilityComponent::AttackAbilityComponent()
-    : ActiveState(MoveToLocationState{})
-    , State(EAttackAbilityState::Idle)
+    : States(AttackTargetState{})
+    , ActiveState(EAttackAbilityState::None)
 {
+}
+
+AbilityStateResult AttackAbilityComponent::Update(WorldRef world, const UnitId& unit)
+{
+    switch (ActiveState)
+    {
+        case EAttackAbilityState::AttackEntity:     return States.AttackEntity.Update(world, unit);
+        case EAttackAbilityState::AttackLocation:   return States.AttackLocation.Update(world, unit);
+        case EAttackAbilityState::AttackMove:       return States.AttackMove.Update(world, unit);
+        case EAttackAbilityState::FollowEntity:     return States.FollowEntity.Update(world, unit);
+        default:                                    return EAbilityStateResult::Fail;
+    }
+}
+
+void AttackAbilityComponent::Interrupt(WorldRef world, const UnitId& unit)
+{
+    switch (ActiveState)
+    {
+        case EAttackAbilityState::AttackEntity:     return States.AttackEntity.Interrupt(world, unit);
+        case EAttackAbilityState::AttackLocation:   return States.AttackLocation.Interrupt(world, unit);
+        case EAttackAbilityState::AttackMove:       return States.AttackMove.Interrupt(world, unit);
+        case EAttackAbilityState::FollowEntity:     return States.FollowEntity.Interrupt(world, unit);
+        default:                                    break;
+    }
+
+    Exit(world, unit);
+}
+
+void AttackAbilityComponent::Exit(WorldRef world, const UnitId& unit)
+{
+    switch (ActiveState)
+    {
+        case EAttackAbilityState::AttackEntity:     return States.AttackEntity.Exit(world, unit);
+        case EAttackAbilityState::AttackLocation:   return States.AttackLocation.Exit(world, unit);
+        case EAttackAbilityState::AttackMove:       return States.AttackMove.Exit(world, unit);
+        case EAttackAbilityState::FollowEntity:     return States.FollowEntity.Exit(world, unit);
+        default:                                break;
+    }
+
+    ActiveState = EAttackAbilityState::None;
+    FeatureSteering::Stop(world, unit);
 }
 
 AttackAbilityHandler::AttackAbilityHandler()
@@ -173,12 +212,40 @@ uint32 AttackAbilityHandler::GetSmartCommandPriority(
 
 bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    AttackAbilityComponent* moveComp = FeatureECS::GetComponent<AttackAbilityComponent>(world, unit);
+    AttackAbilityComponent* attackComp = FeatureECS::GetComponent<AttackAbilityComponent>(world, unit);
+    if (!attackComp)
+    {
+        return false;
+    }
+
+    Data::AttackAbilityPtr attackAbility(order.AbilityId);
+    UnitId targetUnit = UnitId(order.TargetEntity);
+    Vec2 targetLocation = order.TargetLocation;
+    
 
     if (order.CommandIndex == Commands::Attack)
     {
-        moveComp->State = EAttackAbilityState::MoveToPosition;
-        moveComp->ActiveState.MoveToPosition.OnEnter(world, unit, order.TargetLocation, 0);
+        if (targetUnit != EntityId::Invalid)
+        {
+            if (ExecuteAttackTargetOrder(world, unit, targetUnit, attackAbility, *attackComp))
+            {
+                return true;
+            }
+        }
+        else
+        {
+            if (ExecuteAttackMoveOrder(world, unit, targetLocation, attackAbility, *attackComp))
+            {
+                return true;
+            }
+        }
+    }
+    else if (order.CommandIndex == Commands::AttackGround)
+    {
+        if (ExecuteAttackGroundOrder(world, unit, targetLocation, attackAbility, *attackComp))
+        {
+            return true;
+        }
     }
 
     return false;
@@ -186,15 +253,12 @@ bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, cons
 
 bool AttackAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    AttackAbilityComponent* moveComp = FeatureECS::GetComponent<AttackAbilityComponent>(world, unit);
-
-    if (moveComp->State == EAttackAbilityState::MoveToPosition)
+    if (AttackAbilityComponent* attackComp = FeatureECS::GetComponent<AttackAbilityComponent>(world, unit))
     {
-        moveComp->ActiveState.MoveToPosition.OnExit(world, unit);
-        moveComp->State = EAttackAbilityState::Idle;
+        attackComp->Interrupt(world, unit);
+        return true;
     }
-
-    return true;
+    return false;
 }
 
 uint32 AttackAbilityHandler::Acquire(const Order& order) const
@@ -205,4 +269,83 @@ uint32 AttackAbilityHandler::Acquire(const Order& order) const
 bool AttackAbilityHandler::SupportsMagicBox(const Order& order) const
 {
     return false;
+}
+
+bool AttackAbilityHandler::ExecuteAttackTargetOrder(
+    WorldRef world,
+    const UnitId& unit,
+    const UnitId& target,
+    const Data::AttackAbilityPtr& attackAbility,
+    AttackAbilityComponent& attackComp)
+{
+    if (target == unit ||
+        FeatureUnit::UnitIsDead(world, target) ||
+        FeatureUnit::UnitIsHidden(world, target) ||
+        !FeatureUnit::UnitIsDetected(world, unit, target))
+    {
+        return false;
+    }
+
+    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
+    Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);
+    if (weapon.IsValid())
+    {
+        attackComp.ActiveState = EAttackAbilityState::AttackEntity;
+        attackComp.States.AttackEntity.Enter(world, unit, target, weapon, attackAbility);
+        return true;
+    }
+
+    if (unitCanMove)
+    {
+        attackComp.ActiveState = EAttackAbilityState::FollowEntity;
+        attackComp.States.FollowEntity.Enter(world, unit, target, 0);
+        return true;
+    }
+
+    return false;
+}
+
+bool AttackAbilityHandler::ExecuteAttackMoveOrder(
+    WorldRef world,
+    const UnitId& unit,
+    const Vec2& target,
+    const Data::AttackAbilityPtr& attackAbility,
+    AttackAbilityComponent& attackComp)
+{
+    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
+    if (!unitCanMove)
+    {
+        return false;
+    }
+
+    Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, true);
+    if (weapon.IsValid())
+    {
+        attackComp.ActiveState = EAttackAbilityState::AttackEntity;
+        attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
+        return true;
+    }
+
+    attackComp.ActiveState = EAttackAbilityState::AttackMove;
+    attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
+    return true;
+}
+
+bool AttackAbilityHandler::ExecuteAttackGroundOrder(
+    WorldRef world,
+    const UnitId& unit,
+    const Vec2& target,
+    const Data::AttackAbilityPtr& attackAbility,
+    AttackAbilityComponent& attackComp)
+{
+    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
+    Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);
+    if (!weapon.IsValid())
+    {
+        return false;
+    }
+
+    attackComp.ActiveState = EAttackAbilityState::AttackLocation;
+    attackComp.States.AttackLocation.Enter(world, unit, target, weapon, attackAbility);
+    return true;
 }

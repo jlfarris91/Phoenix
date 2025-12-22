@@ -171,6 +171,8 @@ namespace Phoenix::RTS
 
         static EffectNodeId GetNamedParentOrScope(WorldConstRef world, EffectNodeId id, const FName& name);
 
+        static FName GetEffectNodeObjectId(WorldConstRef world, EffectNodeId id);
+
         //
         // Response Management
         //
@@ -224,6 +226,7 @@ namespace Phoenix::RTS
 
         void ProcessDeferredEffects(WorldRef world);
         void RespondToEffect(WorldRef world, EffectNodeId effectNodeId);
+        bool FinalizeEffect(WorldRef world, EffectNodeId effectNodeId, EffectComponent& effectComponent);
 
         using PriorityResponseHandler = TTuple<int32, TSharedPtr<IResponseHandler>, FName>;
 

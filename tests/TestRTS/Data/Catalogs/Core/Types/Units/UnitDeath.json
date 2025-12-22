@@ -4,7 +4,7 @@
     "properties": {
         "expiration_time": {
             "type": "Time",
-            "default": 60.0
+            "default": 10.0
         },
         "num_corpses_spawned": {
             "type": "Integer",

@@ -23,12 +23,17 @@ void Phoenix::RTS::IEffectHandler::OnWorldShutdown(WorldRef world)
 {
 }
 
-bool Phoenix::RTS::IEffectHandler::Execute(WorldRef world, const EffectContext& context) const
+bool Phoenix::RTS::IEffectHandler::Execute(WorldRef world, const EffectExecuteContext& context) const
 {
     return false;
 }
 
-bool Phoenix::RTS::IEffectHandler::CanExecute(WorldConstRef world, const EffectContext& context) const
+bool Phoenix::RTS::IEffectHandler::CanExecute(WorldConstRef world, const EffectExecuteContext& context) const
+{
+    return false;
+}
+
+bool Phoenix::RTS::IEffectHandler::Finalize(WorldRef world, const EffectFinalizeContext& context) const
 {
     return false;
 }
@@ -53,12 +58,12 @@ void Phoenix::RTS::EffectHandlerBase::Shutdown(SessionRef session)
     EffectsFeature.reset();
 }
 
-bool Phoenix::RTS::EffectHandlerBase::Execute(WorldRef world, const EffectContext& context) const
+bool Phoenix::RTS::EffectHandlerBase::Execute(WorldRef world, const EffectExecuteContext& context) const
 {
     return false;
 }
 
-bool Phoenix::RTS::EffectHandlerBase::CanExecute(WorldConstRef world, const EffectContext& context) const
+bool Phoenix::RTS::EffectHandlerBase::CanExecute(WorldConstRef world, const EffectExecuteContext& context) const
 {
     return true;
 }

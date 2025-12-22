@@ -28,7 +28,7 @@ namespace Phoenix::LDS
 
         bool RecordExists(const ILDSQueryContext& context) const;
 
-        bool ObjectExists(const ILDSQueryContext& context) const;
+        bool Exists(const ILDSQueryContext& context) const;
 
         const LDSRecord* GetRecord(const ILDSQueryContext& context) const;
 

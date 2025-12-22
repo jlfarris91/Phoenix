@@ -163,7 +163,7 @@ bool ResponseHandlerBase::Execute(WorldRef world, const ResponseContext& context
         EffectsFeature->ReleaseEffectScope(world, effectScopeId);
     }
 
-    return IResponseHandler::Execute(world, context);
+    return true;
 }
 
 bool ResponseHandlerBase::CanExecute(WorldConstRef world, const ResponseContext& context) const

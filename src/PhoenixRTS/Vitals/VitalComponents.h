@@ -8,12 +8,9 @@
 
 namespace Phoenix::RTS
 {
-    struct PHOENIX_RTS_API VitalsComponent : ECS::IComponent
+    struct PHOENIX_RTS_API HealthComponent : ECS::IComponent
     {
-        PHX_ECS_DECLARE_COMPONENT(VitalsComponent)
-
+        PHX_ECS_DECLARE_COMPONENT(HealthComponent)
         Vital<Value> Health;
-        Vital<Value> Energy;
-        Vital<Value> Shield;
     };
 }

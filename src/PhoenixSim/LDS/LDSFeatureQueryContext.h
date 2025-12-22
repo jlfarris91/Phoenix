@@ -27,6 +27,10 @@ namespace Phoenix::LDS
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
 
+        bool Exists(const FName& objectId) const override;
+
+        bool TypeExists(const FName& typeId) const;
+
     private:
         
         TSharedPtr<const Catalog> SessionStaticCatalog = nullptr;

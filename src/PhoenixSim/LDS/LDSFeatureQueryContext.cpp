@@ -170,3 +170,90 @@ const LDSRecord* LDSFeatureQueryContext::QueryTypeRecord(const LDSRecordPath& pa
     return nullptr;
 }
 
+bool LDSFeatureQueryContext::Exists(const FName& objectId) const
+{
+    if (Mode == ELDSCatalogRecordStore::Type)
+    {
+        return TypeExists(objectId);
+    }
+
+    // 1. Check the dynamic world catalog
+    if (WorldDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
+    {
+        if (WorldDynamicCatalog->HasObject(objectId))
+        {
+            return true;
+        }
+    }
+
+    // 2. Check the static world catalog
+    if (WorldStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
+    {
+        if (WorldStaticCatalog->HasObject(objectId))
+        {
+            return true;
+        }
+    }
+
+    // 3. Check the dynamic session catalog
+    if (SessionDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
+    {
+        if (SessionDynamicCatalog->HasObject(objectId))
+        {
+            return true;
+        }
+    }
+
+    // 4. Check the static session catalog
+    if (SessionStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
+    {
+        if (SessionStaticCatalog->HasObject(objectId))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool LDSFeatureQueryContext::TypeExists(const FName& typeId) const
+{
+    // 1. Check the dynamic world catalog
+    if (WorldDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
+    {
+        if (WorldDynamicCatalog->HasType(typeId))
+        {
+            return true;
+        }
+    }
+
+    // 2. Check the static world catalog
+    if (WorldStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
+    {
+        if (WorldStaticCatalog->HasType(typeId))
+        {
+            return true;
+        }
+    }
+
+    // 3. Check the dynamic session catalog
+    if (SessionDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
+    {
+        if (SessionDynamicCatalog->HasType(typeId))
+        {
+            return true;
+        }
+    }
+
+    // 4. Check the static session catalog
+    if (SessionStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
+    {
+        if (SessionStaticCatalog->HasType(typeId))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+

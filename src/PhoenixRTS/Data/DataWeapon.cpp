@@ -14,6 +14,11 @@ WeaponPtr::WeaponPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags f
 {
 }
 
+TargetFilterPtr WeaponPtr::AcquireFilter() const
+{
+    return Object<TargetFilterPtr>("acquire_filter");
+}
+
 WeaponAmmoRefPtr WeaponPtr::Ammo() const
 {
     return ObjectRef<WeaponAmmoRefPtr>("ammo");

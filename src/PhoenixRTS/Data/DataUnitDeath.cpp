@@ -13,3 +13,8 @@ UnitDeathPtr::UnitDeathPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryF
     : TLDSObjectPtr(path, flags)
 {
 }
+
+Phoenix::LDS::TimePtr UnitDeathPtr::ExpirationTime() const
+{
+    return Value<LDS::TimePtr>("expiration_time");
+}

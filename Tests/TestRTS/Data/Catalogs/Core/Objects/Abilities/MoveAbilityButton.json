@@ -6,7 +6,7 @@
         "display_name": "Move",
         "tooltip": {
             "title": "Move",
-            "body": "Order the unit to move a location, follow another unit or patrol."
+            "body": "Orders selected units to move to a target location or follow a target unit."
         }
     },
     "repeatable": false

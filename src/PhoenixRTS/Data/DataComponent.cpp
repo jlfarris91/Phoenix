@@ -13,3 +13,8 @@ ComponentPtr::ComponentPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryF
     : TLDSObjectPtr(path, flags)
 {
 }
+
+Phoenix::LDS::NamePtr ComponentPtr::TypeId() const
+{
+    return Value<LDS::NamePtr>("type_id");
+}

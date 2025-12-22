@@ -13,7 +13,43 @@
             "command_index": 0,
             "grid_slot": {
                 "grid_row": 0,
+                "grid_col": 0
+            }
+        },
+        {
+            "ability": "StopAbility",
+            "button": "StopAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
                 "grid_col": 1
+            }
+        },
+        {
+            "ability": "HoldPositionAbility",
+            "button": "HoldPositionAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 2
+            }
+        },
+        {
+            "ability": "AttackAbility",
+            "button": "AttackAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 3
+            }
+        },
+        {
+            "ability": "MoveAbility",
+            "button": "PatrolAbilityButton",
+            "command_index": 1,
+            "grid_slot": {
+                "grid_row": 1,
+                "grid_col": 0
             }
         }
     ],
@@ -25,5 +61,16 @@
     },
     "placement": {
         "outer_radius": 0.6
-    }
+    },
+    "vitals": [
+        {
+            "vital": "HealthVital",
+            "stats": {
+                "starting": 100,
+                "max": 100,
+                "regen": 1
+            }
+        }
+    ],
+    "weapons": [ "LancerWeapon" ]
 }

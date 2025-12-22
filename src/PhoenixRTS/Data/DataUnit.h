@@ -22,7 +22,7 @@
 #include "PhoenixRTS/Data/DataUnitPlacement.h"
 #include "PhoenixRTS/Data/DataUnitSupply.h"
 #include "PhoenixRTS/Data/DataUnitVision.h"
-#include "PhoenixRTS/Data/DataUnitVitals.h"
+#include "PhoenixRTS/Data/DataVitalStatsPair.h"
 #include "PhoenixRTS/Data/DataWeapon.h"
 
 namespace Phoenix::RTS::Data
@@ -55,7 +55,7 @@ namespace Phoenix::RTS::Data
         TArray2<TagPtr> Tags;
         UnitSupply Supply;
         UnitVision Vision;
-        UnitVitals Vitals;
+        TArray2<VitalStatsPair> Vitals;
         TArray2<WeaponPtr> Weapons;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Unit& outItem);
@@ -84,7 +84,7 @@ namespace Phoenix::RTS::Data
         LDS::TLDSObjectRefArrayPtr<TagPtr> Tags() const;
         UnitSupplyPtr Supply() const;
         UnitVisionPtr Vision() const;
-        UnitVitalsPtr Vitals() const;
+        LDS::TLDSObjectArrayPtr<VitalStatsPair> Vitals() const;
         LDS::TLDSObjectRefArrayPtr<WeaponPtr> Weapons() const;
     };
 

@@ -8,7 +8,7 @@ using namespace Phoenix::ECS;
 using namespace Phoenix::Steering; 
 using namespace Phoenix::RTS;
 
-AbilityStateResult MoveToEntityState::OnEnter(
+AbilityStateResult MoveToEntityState::Enter(
     WorldRef world,
     const UnitId& unit,
     const EntityId& target,
@@ -40,7 +40,7 @@ AbilityStateResult MoveToEntityState::OnEnter(
     return EAbilityStateResult::Continue;
 }
 
-AbilityStateResult MoveToEntityState::OnUpdate(WorldRef world, const UnitId& unit)
+AbilityStateResult MoveToEntityState::Update(WorldRef world, const UnitId& unit)
 {
     if (!FeatureECS::IsEntityValid(world, Target) || FeatureUnit::UnitIsDead(world, UnitId(Target)))
     {
@@ -70,17 +70,17 @@ AbilityStateResult MoveToEntityState::OnUpdate(WorldRef world, const UnitId& uni
     return EAbilityStateResult::Continue;
 }
 
-void MoveToEntityState::OnInterrupt(WorldRef world, const UnitId& unit)
+void MoveToEntityState::Interrupt(WorldRef world, const UnitId& unit)
 {
-    OnExit(world, unit);
+    Exit(world, unit);
 }
 
-void MoveToEntityState::OnExit(WorldRef world, const UnitId& unit)
+void MoveToEntityState::Exit(WorldRef world, const UnitId& unit)
 {
     FeatureSteering::Stop(world, unit);
 }
 
-AbilityStateResult MoveToLocationState::OnEnter(WorldRef world, const UnitId& unit, const Vec2& target, Distance range)
+AbilityStateResult MoveToLocationState::Enter(WorldRef world, const UnitId& unit, const Vec2& target, Distance range)
 {
     Target = target;
     Range = range;
@@ -103,7 +103,7 @@ AbilityStateResult MoveToLocationState::OnEnter(WorldRef world, const UnitId& un
     return EAbilityStateResult::Continue;
 }
 
-AbilityStateResult MoveToLocationState::OnUpdate(WorldRef world, const UnitId& unit)
+AbilityStateResult MoveToLocationState::Update(WorldRef world, const UnitId& unit)
 {
     if (FeatureUnit::UnitIsImmobilized(world, unit))
     {
@@ -128,17 +128,17 @@ AbilityStateResult MoveToLocationState::OnUpdate(WorldRef world, const UnitId& u
     return EAbilityStateResult::Continue;
 }
 
-void MoveToLocationState::OnInterrupt(WorldRef world, const UnitId& unit)
+void MoveToLocationState::Interrupt(WorldRef world, const UnitId& unit)
 {
-    OnExit(world, unit);
+    Exit(world, unit);
 }
 
-void MoveToLocationState::OnExit(WorldRef world, const UnitId& unit)
+void MoveToLocationState::Exit(WorldRef world, const UnitId& unit)
 {
     FeatureSteering::Stop(world, unit);
 }
 
-AbilityStateResult FaceEntityState::OnEnter(
+AbilityStateResult FaceEntityState::Enter(
     WorldRef world,
     const UnitId& unit,
     const EntityId& target,
@@ -182,7 +182,7 @@ AbilityStateResult FaceEntityState::OnEnter(
     return EAbilityStateResult::Continue;
 }
 
-AbilityStateResult FaceEntityState::OnUpdate(WorldRef world, const UnitId& unit)
+AbilityStateResult FaceEntityState::Update(WorldRef world, const UnitId& unit)
 {
     if (!FeatureUnit::UnitCanTurn(world, unit))
     {
@@ -217,17 +217,17 @@ AbilityStateResult FaceEntityState::OnUpdate(WorldRef world, const UnitId& unit)
     return EAbilityStateResult::Continue;
 }
 
-void FaceEntityState::OnInterrupt(WorldRef world, const UnitId& unit)
+void FaceEntityState::Interrupt(WorldRef world, const UnitId& unit)
 {
-    OnExit(world, unit);
+    Exit(world, unit);
 }
 
-void FaceEntityState::OnExit(WorldRef world, const UnitId& unit)
+void FaceEntityState::Exit(WorldRef world, const UnitId& unit)
 {
     FeatureSteering::Stop(world, unit);
 }
 
-AbilityStateResult FaceLocationState::OnEnter(
+AbilityStateResult FaceLocationState::Enter(
     WorldRef world,
     const UnitId& unit,
     const Vec2& target,
@@ -261,7 +261,7 @@ AbilityStateResult FaceLocationState::OnEnter(
     return EAbilityStateResult::Continue;
 }
 
-AbilityStateResult FaceLocationState::OnUpdate(WorldRef world, const UnitId& unit)
+AbilityStateResult FaceLocationState::Update(WorldRef world, const UnitId& unit)
 {
     if (!FeatureUnit::UnitCanTurn(world, unit))
     {
@@ -291,17 +291,17 @@ AbilityStateResult FaceLocationState::OnUpdate(WorldRef world, const UnitId& uni
     return EAbilityStateResult::Continue;
 }
 
-void FaceLocationState::OnInterrupt(WorldRef world, const UnitId& unit)
+void FaceLocationState::Interrupt(WorldRef world, const UnitId& unit)
 {
-    OnExit(world, unit);
+    Exit(world, unit);
 }
 
-void FaceLocationState::OnExit(WorldRef world, const UnitId& unit)
+void FaceLocationState::Exit(WorldRef world, const UnitId& unit)
 {
     FeatureSteering::Stop(world, unit);
 }
 
-AbilityStateResult FollowEntityState::OnEnter(
+AbilityStateResult FollowEntityState::Enter(
     WorldRef world,
     const UnitId& unit,
     const EntityId& target,
@@ -309,10 +309,10 @@ AbilityStateResult FollowEntityState::OnEnter(
 {
     Target = target;
     FollowRange = range;
-    return OnUpdate(world, unit);
+    return Update(world, unit);
 }
 
-AbilityStateResult FollowEntityState::OnUpdate(WorldRef world, const UnitId& unit)
+AbilityStateResult FollowEntityState::Update(WorldRef world, const UnitId& unit)
 {
     if (SubState == ESubState::Moving)
     {
@@ -346,12 +346,12 @@ AbilityStateResult FollowEntityState::OnUpdate(WorldRef world, const UnitId& uni
     return EAbilityStateResult::Continue;
 }
 
-void FollowEntityState::OnInterrupt(WorldRef world, const UnitId& unit)
+void FollowEntityState::Interrupt(WorldRef world, const UnitId& unit)
 {
-    OnExit(world, unit);
+    Exit(world, unit);
 }
 
-void FollowEntityState::OnExit(WorldRef world, const UnitId& unit)
+void FollowEntityState::Exit(WorldRef world, const UnitId& unit)
 {
     FeatureSteering::Stop(world, unit);
 }

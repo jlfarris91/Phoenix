@@ -134,9 +134,9 @@ UnitVisionPtr UnitPtr::Vision() const
     return Object<UnitVision>("vision");
 }
 
-UnitVitalsPtr UnitPtr::Vitals() const
+Phoenix::LDS::TLDSObjectArrayPtr<VitalStatsPair> UnitPtr::Vitals() const
 {
-    return Object<UnitVitals>("vitals");
+    return ObjectArray<VitalStatsPair>("vitals");
 }
 
 Phoenix::LDS::TLDSObjectRefArrayPtr<WeaponPtr> UnitPtr::Weapons() const

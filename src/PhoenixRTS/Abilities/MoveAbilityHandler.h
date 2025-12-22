@@ -34,9 +34,13 @@ namespace Phoenix::RTS
         {
             MoveToLocationState MoveToPosition;
             FollowEntityState FollowEntity;
-        } ActiveState;
+        } States;
 
-        EMoveAbilityState State = EMoveAbilityState::Idle;
+        EMoveAbilityState ActiveState = EMoveAbilityState::Idle;
+
+        AbilityStateResult Update(WorldRef world, const UnitId& unit);
+        void Interrupt(WorldRef world, const UnitId& unit);
+        void Exit(WorldRef world, const UnitId& unit);
     };
 
     class PHOENIX_RTS_API MoveAbilityHandler : public AbilityHandlerBase
@@ -55,23 +59,18 @@ namespace Phoenix::RTS
         MoveAbilityHandler();
 
         void Initialize(SessionRef session) override;
-
         void Shutdown(SessionRef session) override;
 
         void OnWorldInitialize(WorldRef world) override;
-
         void OnWorldShutdown(WorldRef world) override;
 
         bool AddAbility(WorldRef world, const UnitId& unit) const override;
-
         bool RemoveAbility(WorldRef world, const UnitId& unit) const override;
-
         bool HasAbility(WorldConstRef world, const UnitId& unit) const override;
 
         bool IgnoreCommand(WorldConstRef world, const AbilityCommandContext& context, const Command& command) const override;
 
         uint32 GetCommandPriority(WorldConstRef world, const AbilityCommandContext& context, const Command& command) const override;
-
         uint32 GetSmartCommandPriority(WorldConstRef world, const AbilityCommandContext& context, const Command& command) const override;
 
         bool ExecuteOrder(WorldRef world, const UnitId& unit, const Order& order) const override;

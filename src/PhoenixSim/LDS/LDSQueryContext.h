@@ -30,6 +30,8 @@ namespace Phoenix::LDS
             T& outValue,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;
 
+        virtual bool Exists(const FName& objectId) const = 0;
+
         virtual bool RecordExists(
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;

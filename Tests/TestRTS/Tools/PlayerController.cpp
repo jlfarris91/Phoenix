@@ -312,6 +312,8 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
                 commandIndex = 0;
                 targetEntity = HoverTarget;
                 targetLocation = FeatureECS::GetWorldPosition(world, targetEntity);
+
+                abilityId = "AttackAbility"_n;
             }
 
             // Issue command to selection

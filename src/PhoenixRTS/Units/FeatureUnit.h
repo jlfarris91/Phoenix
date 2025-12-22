@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "PhoenixSim/ECS/Component.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 
@@ -9,18 +8,20 @@
 #include "PhoenixRTS/Units/UnitId.h"
 #include "PhoenixRTS/Commands/Commands.h"
 
+namespace Phoenix::ECS
+{
+    class ISystem;
+}
+
 namespace Phoenix::RTS
 {
+    struct Damage;
     class IAbilityHandler;
 
-    struct PHOENIX_RTS_API UnitComponent : ECS::IComponent
+    namespace Data
     {
-        PHX_ECS_DECLARE_COMPONENT_BEGIN(UnitComponent)
-        PHX_ECS_DECLARE_COMPONENT_END()
-
-        uint8 OwningPlayer = 0;
-        FName UnitData;
-    };
+        struct UnitPtr;
+    }
 
     enum class PHOENIX_RTS_API ESpawnUnitFlags : uint8
     {
@@ -66,16 +67,9 @@ namespace Phoenix::RTS
 
         static FName GetUnitDataId(WorldConstRef world, UnitId unit);
 
+        static Data::UnitPtr GetUnitData(WorldConstRef world, UnitId unit);
+
         static uint8 GetOwningPlayer(WorldConstRef world, UnitId unit);
-
-        // Returns the current health of a unit.
-        static Value GetHealth(WorldConstRef world, UnitId unit);
-
-        // Returns the current max health of a unit.
-        static Value GetHealthMax(WorldConstRef world, UnitId unit);
-
-        // Returns the current health regen of a unit.
-        static Value GetHealthRegen(WorldConstRef world, UnitId unit);
 
         static bool UnitCanMove(WorldConstRef world, UnitId unit);
 
@@ -87,8 +81,30 @@ namespace Phoenix::RTS
 
         static bool UnitIsDead(WorldConstRef world, UnitId unit);
 
+        static bool UnitIsHidden(WorldConstRef world, UnitId unit);
+
+        static bool UnitIsDetected(WorldConstRef world, UnitId unit, UnitId target);
+
+        static bool UnitIsCargo(WorldConstRef world, UnitId unit);
+
+        // Returns the time that the unit will expire.
+        static Time GetExpirationTime(WorldRef world, UnitId unit);
+
+        // Sets a timer for a unit to expire.
+        static bool SetExpirationTimer(WorldRef world, UnitId unit, Time expirationTime);
+
+        // Clears an active time for a unit to expire.
+        static bool ClearExpirationTimer(WorldRef world, UnitId unit);
+
+        // Returns true if the unit had an expiration timer set and the timer has expired.
+        static bool HasExpired(WorldRef world, UnitId unit);
+
     protected:
 
+        void Initialize() override;
+        void Shutdown() override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
+
+        TSharedPtr<ECS::ISystem> UnitSystem;
     };
 }

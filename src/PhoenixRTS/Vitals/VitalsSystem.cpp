@@ -5,7 +5,10 @@
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
 
-#include "PhoenixRTS/Vitals/VitalsComponent.h"
+#include "PhoenixRTS/Units/UnitId.h"
+#include "PhoenixRTS/Vitals/Damage.h"
+#include "PhoenixRTS/Vitals/FeatureVitals.h"
+#include "PhoenixRTS/Vitals/VitalComponents.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -13,30 +16,31 @@ using namespace Phoenix::RTS;
 
 namespace VitalsSystemDetail
 {
-    struct UpdateVitalsJob : IBufferJob<VitalsComponent&>
+    struct UpdateHealthComponentJob : IBufferJob<HealthComponent&>
     {
-        void Execute(const EntityComponentSpan<VitalsComponent&>& span) override
+        void Execute(const EntityComponentSpan<HealthComponent&>& span) override
         {
             PHX_PROFILE_ZONE_SCOPED_N("UpdateVitalsJob");
 
-            for (auto && [entityId, index, vitalsComp] : span)
+            for (auto && [entityId, index, healthComp] : span)
             {
-                vitalsComp.Health.Current += vitalsComp.Health.Regen;
-                if (vitalsComp.Health.Current >= vitalsComp.Health.Max)
+                if (healthComp.Health.Regen < 0.0)
                 {
-                    vitalsComp.Health.Current = vitalsComp.Health.Max;
+                    Damage damage;
+                    damage.VitalId = "HealthVital"_n;
+                    damage.SourceId = entityId;
+                    damage.Amount = -healthComp.Health.Regen;
+                    damage.BaseAmount = damage.Amount;
+                    damage.ArmorMultiplier = 0;
+                    FeatureVitals::ApplyDamage(*World, UnitId(entityId), damage);
                 }
-
-                vitalsComp.Energy.Current += vitalsComp.Energy.Regen;
-                if (vitalsComp.Energy.Current >= vitalsComp.Energy.Max)
+                else
                 {
-                    vitalsComp.Energy.Current = vitalsComp.Energy.Max;
-                }
-
-                vitalsComp.Shield.Current += vitalsComp.Shield.Regen;
-                if (vitalsComp.Shield.Current >= vitalsComp.Shield.Max)
-                {
-                    vitalsComp.Shield.Current = vitalsComp.Shield.Max;
+                    healthComp.Health.Current += healthComp.Health.Regen;
+                    if (healthComp.Health.Current >= healthComp.Health.Max)
+                    {
+                        healthComp.Health.Current = healthComp.Health.Max;
+                    }
                 }
             }
         }
@@ -47,6 +51,6 @@ void VitalsSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    VitalsSystemDetail::UpdateVitalsJob job;
+    VitalsSystemDetail::UpdateHealthComponentJob job;
     FeatureECS::ScheduleParallel(world, job);
 }

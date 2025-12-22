@@ -32,12 +32,20 @@ namespace Phoenix::RTS
         TOptional<uint8> TargetPlayer;
     };
 
-    struct PHOENIX_RTS_API EffectContext
+    struct PHOENIX_RTS_API EffectExecuteContext
     {
         EffectNodeId ParentId;
-        EffectComponent* Parent = nullptr;
+        EffectComponent* ParentComponent = nullptr;
         FName EffectId;
         ExecuteEffectArgs Overrides;
+        TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
+    };
+
+    struct PHOENIX_RTS_API EffectFinalizeContext
+    {
+        EffectNodeId EffectNodeId;
+        EffectComponent* EffectComponent = nullptr;
+        FName EffectId;
         TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
@@ -55,8 +63,10 @@ namespace Phoenix::RTS
         virtual void OnWorldInitialize(WorldRef world);
         virtual void OnWorldShutdown(WorldRef world);
 
-        virtual bool Execute(WorldRef world, const EffectContext& context) const;
-        virtual bool CanExecute(WorldConstRef world, const EffectContext& context) const;
+        virtual bool Execute(WorldRef world, const EffectExecuteContext& context) const;
+        virtual bool CanExecute(WorldConstRef world, const EffectExecuteContext& context) const;
+
+        virtual bool Finalize(WorldRef world, const EffectFinalizeContext& context) const;
     };
 
     class PHOENIX_RTS_API EffectHandlerBase : public IEffectHandler
@@ -70,8 +80,8 @@ namespace Phoenix::RTS
         void Initialize(SessionRef session) override;
         void Shutdown(SessionRef session) override;
 
-        bool Execute(WorldRef world, const EffectContext& context) const override;
-        bool CanExecute(WorldConstRef world, const EffectContext& context) const override;
+        bool Execute(WorldRef world, const EffectExecuteContext& context) const override;
+        bool CanExecute(WorldConstRef world, const EffectExecuteContext& context) const override;
 
         FName EffectId;
         TSharedPtr<FeatureEffects> EffectsFeature;

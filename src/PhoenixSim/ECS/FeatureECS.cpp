@@ -432,8 +432,7 @@ bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId)
 
     // Remove all blackboard keys associated with the entity
     BlackboardKeyQuery query(IgnoreKey, entityId, IgnoreType);
-    uint32 removed = FeatureBlackboard::GetBlackboard(world).RemoveAll(query);
-    PHX_ASSERT(removed == 3);
+    FeatureBlackboard::GetBlackboard(world).RemoveAll(query);
 
     block.Entities.Release(entityId);
 

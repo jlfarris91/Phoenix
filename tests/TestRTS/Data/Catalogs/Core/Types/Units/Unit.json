@@ -74,7 +74,10 @@
             "type": "Object#UnitVision"
         },
         "vitals": {
-            "type": "Object#UnitVitals"
+            "type": "Array",
+            "items": {
+                "type": "Object#VitalStatsPair"
+            }
         },
         "weapons": {
             "type": "Array",

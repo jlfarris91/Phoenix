@@ -340,7 +340,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    world.GetBlockRef<WorldDynamicBlock>().SimTime = time;
+    world.GetBlockRef<WorldDynamicBlock>().SimTime = Time::QT(time);
 
     FeatureUpdateArgs updateArgs;
     updateArgs.SimTime = time;

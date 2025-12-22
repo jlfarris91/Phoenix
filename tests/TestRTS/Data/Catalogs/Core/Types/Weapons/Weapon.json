@@ -5,6 +5,20 @@
         "ammo": {
             "type": "Object#WeaponAmmo"
         },
+        "backswing_time": {
+            "type": "Time",
+            "default": 0.5,
+            "minimum": 0.0,
+            "attributes": {
+                "description": "The time after damage is dealt before the weapon can begin its next attack."
+            }
+        },
+        "component": {
+            "type": "Asset#WeaponComponent"
+        },
+        "effect": {
+            "type": "ObjectRef#Effect"
+        },
         "facing_arc_min": {
             "type": "Degrees",
             "default": 10.0,
@@ -19,19 +33,15 @@
                 "description": "Additional arc allowed before an attack is cancelled mid-swing."
             }
         },
-        "backswing_time": {
-            "type": "Time",
-            "default": 0.5,
-            "minimum": 0.0,
-            "attributes": {
-                "description": "The time after damage is dealt before the weapon can begin its next attack."
-            }
-        },
         "flags": {
             "type": "EnumFlags",
             "items": [
-                "melee",
-                "channeled"
+                "CanAttackLocation",
+                "Melee",
+                "Channeled",
+                "ScanForNewTargets",
+                "HideUI",
+                "Passive"
             ]
         },
         "icon": {
@@ -107,17 +117,14 @@
                 "description": "The time it takes to perform the weapon's attack animation."
             }
         },
-        "component": {
-            "type": "Asset#WeaponComponent"
-        },
-        "effect": {
-            "type": "ObjectRef#Effect"
-        },
         "target_filter": {
             "type": "Object#TargetFilter"
         },
         "validator": {
             "type": "ObjectRef#Validator"
+        },
+        "acquire_filter": {
+            "type": "Object#TargetFilter"
         }
     }
 }

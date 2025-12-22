@@ -1,16 +1,13 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/LDSObjectModel.h"
-#include "PhoenixRTS/DLLExport.h"
+#include "PhoenixRTS/Data/DataVitalComponent.h"
 
 namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API Vital
     {
-        Value Starting;
-        Value Max;
-        Value Regen;
+        VitalComponentPtr Component;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Vital& outItem);
     };
@@ -19,10 +16,8 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Vital);
 
-        LDS::TLDSValuePtr<Phoenix::Value> Starting;
-        LDS::TLDSValuePtr<Phoenix::Value> Max;
-        LDS::TLDSValuePtr<Phoenix::Value> Regen;
+        VitalComponentRefPtr Component() const;
     };
 
-    PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(Vital)
+    PHX_LDS_DECLARE_ADDITIONAL_REF_PTR_TYPES_FOR(Vital)
 }

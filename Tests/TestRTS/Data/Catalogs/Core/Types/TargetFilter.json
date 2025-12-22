@@ -2,6 +2,16 @@
     "id": "TargetFilter",
     "type": "Object",
     "properties": {
+        "alliance": {
+            "type": "EnumFlags",
+            "items": [
+                "Ally",
+                "Enemy",
+                "Neutral",
+                "Player",
+                "Self"
+            ]
+        },
         "tags": {
             "type": "Object#TagFilter"
         }

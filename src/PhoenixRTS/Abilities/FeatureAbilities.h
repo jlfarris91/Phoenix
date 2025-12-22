@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "Ability.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixSim/Containers/Array.h"
@@ -20,6 +21,8 @@ namespace Phoenix::RTS
 {
     struct UnitId;
     struct Order;
+
+    using PrioritizedAbilityHandler = TTuple<UnitId, uint32, TSharedPtr<IAbilityHandler>>;
 
     class PHOENIX_RTS_API FeatureAbilities : public IFeature
     {
@@ -87,9 +90,26 @@ namespace Phoenix::RTS
         bool ExitActiveAbility(WorldRef world, UnitId unit) const;
 
         bool HandleCommand(WorldRef world, const Command& command);
-        bool HandleSmartCommand(WorldRef world, const Command& command);
+        bool HandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command) const;
 
-        bool HandleCommand(WorldRef world, const UnitId& unit, const Command& command) const;
+        uint32 GetPrioritizedHandlers(
+            WorldConstRef world,
+            const UnitId& unit,
+            const AbilityCommandContext& context,
+            const Command& command,
+            TArray2<PrioritizedAbilityHandler>& outHandlers);
+
+        bool GetHighestPriorityHandler(
+            WorldConstRef world,
+            const UnitId& unit,
+            const AbilityCommandContext& context,
+            const Command& command,
+            PrioritizedAbilityHandler& outHandler);
+
+        uint32 GetHighestPriorityHandlersForSelection(
+            WorldConstRef world,
+            const Command& command,
+            TArray2<PrioritizedAbilityHandler>& outHandlers);
 
         TMap<FName, TSharedPtr<IAbilityHandler>> AbilityIdToHandlerMap;
     };

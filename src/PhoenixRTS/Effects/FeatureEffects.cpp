@@ -168,7 +168,7 @@ uint16 FeatureEffects::ReleaseEffectScope(WorldRef world, EffectScopeId id)
 
 FName FeatureEffects::GetEffectScopeObjectId(WorldConstRef world, EffectScopeId id)
 {
-    return FeatureECS::GetBlackboardValue(world, id, "effect_scope_object_id"_n, FName::None);
+    return FeatureECS::GetBlackboardValue(world, id, "effect_node_object_id"_n, FName::None);
 }
 
 FName FeatureEffects::GetEffectScopeName(WorldConstRef world, EffectScopeId id)
@@ -363,12 +363,12 @@ EffectScopeId FeatureEffects::GetEffectScope(WorldConstRef world, EffectNodeId i
             return EffectScopeId{};
         }
 
-        if (entity->Kind == "EntityScope"_n)
+        if (entity->Kind == "EffectScope"_n)
         {
             return EffectScopeId(id);
         }
 
-        if (entity->Kind != "EntityNode"_n)
+        if (entity->Kind != "EffectNode"_n)
         {
             return EffectScopeId{};
         }
@@ -392,12 +392,12 @@ EffectNodeId FeatureEffects::GetNamedParentOrScope(WorldConstRef world, EffectNo
             return EffectNodeId{};
         }
 
-        if (entity->Kind == "EntityScope"_n)
+        if (entity->Kind == "EffectScope"_n)
         {
             return id;
         }
 
-        if (entity->Kind != "EntityNode"_n)
+        if (entity->Kind != "EffectNode"_n)
         {
             return EffectNodeId{};
         }
@@ -410,6 +410,11 @@ EffectNodeId FeatureEffects::GetNamedParentOrScope(WorldConstRef world, EffectNo
 
         id = GetEffectNodeParent(world, id);
     }
+}
+
+FName FeatureEffects::GetEffectNodeObjectId(WorldConstRef world, EffectNodeId id)
+{
+    return FeatureECS::GetBlackboardValue(world, id, "effect_node_object_id"_n, FName::None);
 }
 
 bool FeatureEffects::RegisterResponse(WorldRef world, EntityId entityId, const FName& responseId)
@@ -460,9 +465,9 @@ bool FeatureEffects::ExecuteEffect(
         return false;
     }
 
-    EffectContext context;
+    EffectExecuteContext context;
     context.ParentId = { scopeId };
-    context.Parent = comp;
+    context.ParentComponent = comp;
     context.EffectId = effectId;
     context.Overrides = overrides;
     context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
@@ -478,7 +483,24 @@ bool FeatureEffects::ExecuteEffect(
 bool FeatureEffects::DeferEffectExecution(WorldRef world, EffectNodeId id)
 {
     FeatureEffectsScratchBlock* block = world.GetBlock<FeatureEffectsScratchBlock>();
-    return block && block->DeferredEffects[block->DeferredEffectsWriteIndex].PushBack(id);
+    if (!block)
+    {
+        return false;
+    }
+
+    EffectComponent* comp = GetEffectComponent(world, id);
+    if (!comp)
+    {
+        return false;
+    }
+
+    if (!block->DeferredEffects[block->DeferredEffectsWriteIndex].PushBack(id))
+    {
+        return false;
+    }
+
+    ++comp->RefCount;
+    return true;
 }
 
 Value FeatureEffects::GetEffectDamage(WorldConstRef world, EffectNodeId id)
@@ -555,10 +577,7 @@ void FeatureEffects::RespondToEffect(WorldRef world, EffectNodeId effectNodeId)
     }
 
     EffectComponent* effectComponent = GetEffectComponent(world, effectNodeId);
-    if (!effectComponent)
-    {
-        return;
-    }
+    PHX_ASSERT(effectComponent);
 
     ResponseContext responseContext;
     responseContext.EffectNodeId = effectNodeId;
@@ -591,6 +610,33 @@ void FeatureEffects::RespondToEffect(WorldRef world, EffectNodeId effectNodeId)
             handler->Execute(world, responseContext);
         }
     }
+
+    FinalizeEffect(world, effectNodeId, *effectComponent);
+
+    DereferenceEffectNode(world, effectNodeId);
+}
+
+bool FeatureEffects::FinalizeEffect(WorldRef world, EffectNodeId effectNodeId, EffectComponent& effectComponent)
+{
+    FName effectObjectId = GetEffectNodeObjectId(world, effectNodeId);
+    if (FName::IsNoneOrEmpty(effectObjectId))
+    {
+        return false;
+    }
+
+    TSharedPtr<IEffectHandler> handler = FindEffectHandlerCached(world, effectObjectId);
+    if (!handler)
+    {
+        return false;
+    }
+
+    EffectFinalizeContext context;
+    context.EffectNodeId = effectNodeId;
+    context.EffectComponent = &effectComponent;
+    context.EffectId = effectObjectId;
+    context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+
+    return handler->Finalize(world, context);
 }
 
 void FeatureEffects::GetPrioritizedResponseHandlers(

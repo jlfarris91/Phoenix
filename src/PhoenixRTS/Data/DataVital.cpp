@@ -11,8 +11,10 @@ bool Vital::Read(const LDS::LDSReadObjectArgs& args, Vital& outItem)
 
 VitalPtr::VitalPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
-    , Starting(Value<Phoenix::Value>("starting"))
-    , Max(Value<Phoenix::Value>("max"))
-    , Regen(Value<Phoenix::Value>("regen"))
 {
+}
+
+VitalComponentRefPtr VitalPtr::Component() const
+{
+    return ObjectRef<VitalComponentRefPtr>("component");
 }

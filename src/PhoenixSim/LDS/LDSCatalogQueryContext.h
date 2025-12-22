@@ -43,6 +43,20 @@ namespace Phoenix::LDS
             return Catalog ? Catalog->FindTypeRecord(path.ObjectId, path.Path, flags) : nullptr;
         }
 
+        bool Exists(const FName& objectId) const override
+        {
+            if (!Catalog)
+            {
+                return false;
+            }
+            switch (Mode)
+            {
+                case ELDSCatalogRecordStore::Object:    return Catalog->HasObject(objectId);
+                case ELDSCatalogRecordStore::Type:      return Catalog->HasType(objectId);
+            }
+            return false;
+        }
+
     private:
         const TCatalog* Catalog;
         ELDSCatalogRecordStore Mode = ELDSCatalogRecordStore::Object;

@@ -4,6 +4,7 @@
 
 #include "PhoenixSteering/FeatureSteering.h"
 
+#include "PhoenixRTS/Data/DataWeapon.h"
 #include "PhoenixRTS/Effects/FeatureEffects.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Weapons/Weapons.h"
@@ -14,7 +15,7 @@ using namespace Phoenix::ECS;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
 
-AbilityStateResult WeaponStateBase::OnUpdate(WorldRef world, const UnitId& unit) const
+AbilityStateResult WeaponTargetEntityState::Update(WorldRef world, const UnitId& unit) const
 {
     if (!FeatureECS::IsEntityValid(world, Target) || FeatureUnit::UnitIsDead(world, UnitId(Target)))
     {
@@ -39,7 +40,7 @@ AbilityStateResult WeaponStateBase::OnUpdate(WorldRef world, const UnitId& unit)
     return EAbilityStateResult::Continue;
 }
 
-void WeaponStateBase::KeepPreSwingHot(WorldRef world, const UnitId& unit) const
+void WeaponTargetEntityState::KeepPreSwingHot(WorldRef world, const UnitId& unit) const
 {
     const LDS::ILDSQueryContext& queryContext = *LDS::FeatureLDS::StaticGetWorldQueryContext(world);
     Data::WeaponPtr weapon(WeaponId);
@@ -51,7 +52,7 @@ void WeaponStateBase::KeepPreSwingHot(WorldRef world, const UnitId& unit) const
     }
 }
 
-AbilityStateResult WeaponPreSwingState::OnEnter(
+AbilityStateResult WeaponPreSwingState::Enter(
     WorldRef world,
     const UnitId& unit,
     const Data::WeaponPtr& weapon,
@@ -72,12 +73,12 @@ AbilityStateResult WeaponPreSwingState::OnEnter(
     Value attackSpeed = 1.0;
     CompletedTime = world.GetSimTime() + duration * attackSpeed;
 
-    return OnUpdate(world, unit);
+    return Update(world, unit);
 }
 
-AbilityStateResult WeaponPreSwingState::OnUpdate(WorldRef world, const UnitId& unit) const
+AbilityStateResult WeaponPreSwingState::Update(WorldRef world, const UnitId& unit) const
 {
-    AbilityStateResult result = WeaponStateBase::OnUpdate(world, unit);
+    AbilityStateResult result = WeaponTargetEntityState::Update(world, unit);
     if (result != EAbilityStateResult::Continue)
     {
         return result;
@@ -91,12 +92,17 @@ AbilityStateResult WeaponPreSwingState::OnUpdate(WorldRef world, const UnitId& u
     return EAbilityStateResult::Continue;
 }
 
-void WeaponPreSwingState::OnInterrupt(WorldRef world, const UnitId& unit) const
+void WeaponPreSwingState::Interrupt(WorldRef world, const UnitId& unit) const
 {
     KeepPreSwingHot(world, unit);
 }
 
-AbilityStateResult WeaponCooldownState::OnEnter(
+void WeaponPreSwingState::Exit(WorldRef world, const UnitId& unit) const
+{
+    
+}
+
+AbilityStateResult WeaponCooldownState::Enter(
     WorldRef world,
     const UnitId& unit,
     const Data::WeaponPtr& weapon,
@@ -110,15 +116,15 @@ AbilityStateResult WeaponCooldownState::OnEnter(
     FName ammoId = weapon.Ammo().GetReferenceId(queryContext);
     if (Weapons::HasAmmoAndNotOnCooldown(world, unit, ammoId))
     {
-        return OnUpdate(world, unit);
+        return Update(world, unit);
     }
 
     return EAbilityStateResult::Complete;
 }
 
-AbilityStateResult WeaponCooldownState::OnUpdate(WorldRef world, const UnitId& unit) const
+AbilityStateResult WeaponCooldownState::Update(WorldRef world, const UnitId& unit) const
 {
-    AbilityStateResult result = WeaponStateBase::OnUpdate(world, unit);
+    AbilityStateResult result = WeaponTargetEntityState::Update(world, unit);
     if (result != EAbilityStateResult::Continue)
     {
         return result;
@@ -136,12 +142,16 @@ AbilityStateResult WeaponCooldownState::OnUpdate(WorldRef world, const UnitId& u
     return EAbilityStateResult::Continue;
 }
 
-void WeaponCooldownState::OnInterrupt(WorldRef world, const UnitId& unit) const
+void WeaponCooldownState::Interrupt(WorldRef world, const UnitId& unit) const
 {
     KeepPreSwingHot(world, unit);
 }
 
-AbilityStateResult WeaponSwingState::OnEnter(
+void WeaponCooldownState::Exit(WorldRef world, const UnitId& unit) const
+{
+}
+
+AbilityStateResult WeaponSwingState::Enter(
     WorldRef world,
     const UnitId& unit,
     const Data::WeaponPtr& weapon,
@@ -155,12 +165,12 @@ AbilityStateResult WeaponSwingState::OnEnter(
     Time swingDuration = weapon.SwingTime().GetValue(queryContext);
     CompletedTime = world.GetSimTime() + swingDuration;
 
-    return OnUpdate(world, unit);
+    return Update(world, unit);
 }
 
-AbilityStateResult WeaponSwingState::OnUpdate(WorldRef world, const UnitId& unit) const
+AbilityStateResult WeaponSwingState::Update(WorldRef world, const UnitId& unit) const
 {
-    AbilityStateResult result = WeaponStateBase::OnUpdate(world, unit);
+    AbilityStateResult result = WeaponTargetEntityState::Update(world, unit);
     if (result != EAbilityStateResult::Continue)
     {
         return result;
@@ -174,12 +184,16 @@ AbilityStateResult WeaponSwingState::OnUpdate(WorldRef world, const UnitId& unit
     return EAbilityStateResult::Continue;
 }
 
-void WeaponSwingState::OnInterrupt(WorldRef world, const UnitId& unit) const
+void WeaponSwingState::Interrupt(WorldRef world, const UnitId& unit) const
 {
     KeepPreSwingHot(world, unit);
 }
 
-AbilityStateResult WeaponExecuteState::OnEnter(
+void WeaponSwingState::Exit(WorldRef world, const UnitId& unit) const
+{
+}
+
+AbilityStateResult WeaponExecuteState::Enter(
     WorldRef world,
     const UnitId& unit,
     const Data::WeaponPtr& weapon,
@@ -232,9 +246,9 @@ AbilityStateResult WeaponExecuteState::OnEnter(
     return EAbilityStateResult::Complete;
 }
 
-AbilityStateResult WeaponExecuteState::OnUpdate(WorldRef world, const UnitId& unit) const
+AbilityStateResult WeaponExecuteState::Update(WorldRef world, const UnitId& unit) const
 {
-    AbilityStateResult result = WeaponStateBase::OnUpdate(world, unit);
+    AbilityStateResult result = WeaponTargetEntityState::Update(world, unit);
     if (result != EAbilityStateResult::Continue)
     {
         return result;
@@ -248,21 +262,21 @@ AbilityStateResult WeaponExecuteState::OnUpdate(WorldRef world, const UnitId& un
     return EAbilityStateResult::Continue;
 }
 
-void WeaponExecuteState::OnInterrupt(WorldRef world, const UnitId& unit)
+void WeaponExecuteState::Interrupt(WorldRef world, const UnitId& unit)
 {
     Interrupted = true;
     KeepPreSwingHot(world, unit);
-    OnExit(world, unit);
+    Exit(world, unit);
 }
 
-void WeaponExecuteState::OnExit(WorldRef world, const UnitId& unit) const
+void WeaponExecuteState::Exit(WorldRef world, const UnitId& unit) const
 {
     FeatureSteering::Stop(world, unit);
     FeatureEffects::EndEffectScopeChanneling(world, EffectScope);
     FeatureEffects::ReleaseEffectScope(world, EffectScope);
 }
 
-AbilityStateResult WeaponBackSwingState::OnEnter(
+AbilityStateResult WeaponBackSwingState::Enter(
     WorldRef world,
     const UnitId& unit,
     const Data::WeaponPtr& weapon,
@@ -276,12 +290,12 @@ AbilityStateResult WeaponBackSwingState::OnEnter(
     Time swingDuration = weapon.BackSwingTime().GetValue(queryContext);
     CompletedTime = world.GetSimTime() + swingDuration;
 
-    return OnUpdate(world, unit);
+    return Update(world, unit);
 }
 
-AbilityStateResult WeaponBackSwingState::OnUpdate(WorldRef world, const UnitId& unit) const
+AbilityStateResult WeaponBackSwingState::Update(WorldRef world, const UnitId& unit) const
 {
-    AbilityStateResult result = WeaponStateBase::OnUpdate(world, unit);
+    AbilityStateResult result = WeaponTargetEntityState::Update(world, unit);
     if (result != EAbilityStateResult::Continue)
     {
         return result;
@@ -295,12 +309,12 @@ AbilityStateResult WeaponBackSwingState::OnUpdate(WorldRef world, const UnitId& 
     return EAbilityStateResult::Continue;
 }
 
-void WeaponBackSwingState::OnInterrupt(WorldRef world, const UnitId& unit) const
+void WeaponBackSwingState::Interrupt(WorldRef world, const UnitId& unit) const
 {
     KeepPreSwingHot(world, unit);
 }
 
-void WeaponBackSwingState::OnExit(WorldRef world, const UnitId& unit) const
+void WeaponBackSwingState::Exit(WorldRef world, const UnitId& unit) const
 {
     FeatureSteering::Stop(world, unit);
 }

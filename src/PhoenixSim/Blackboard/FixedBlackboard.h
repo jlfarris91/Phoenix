@@ -293,13 +293,14 @@ namespace Phoenix::Blackboard
         {
             PHX_PROFILE_ZONE_SCOPED;
 
+            blackboard_key_t keyWithType = BlackboardKey::Create(key, BlackboardValueType<T>::Type);
             if constexpr (BlackboardComplexValueAccessor_SetValue<TFixedBlackboard, T>)
             {
-                return BlackboardComplexValueAccessor<TFixedBlackboard, T>::SetValue(*this, key, value);
+                return BlackboardComplexValueAccessor<TFixedBlackboard, T>::SetValue(*this, keyWithType, value);
             }
             else
             {
-                return SetValue(key, BlackboardValueConverter<T>::ConvertTo(value));
+                return SetValue(keyWithType, BlackboardValueConverter<T>::ConvertTo(value));
             }
         }
 
@@ -390,13 +391,7 @@ namespace Phoenix::Blackboard
                 ++numRemoved;
                 --NumActive;
 
-                uint32 nextIndex = IndexOfKey(query, index + 1);
-                if (!Items.IsValidIndex(nextIndex) && numRemoved < 3)
-                {
-                    __debugbreak();
-                }
-
-                index = nextIndex;
+                index = IndexOfKey(query, index + 1);
             }
 
             return numRemoved;

@@ -24,6 +24,7 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Weapon);
 
+        TargetFilterPtr AcquireFilter() const;
         WeaponAmmoRefPtr Ammo() const;
         LDS::AnglePtr FacingArcMin() const;
         LDS::AnglePtr FacingArcSlop() const;

@@ -210,15 +210,11 @@ void FeatureAbilities::Shutdown()
 bool FeatureAbilities::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args)
 {
     if (args.Action.Verb == "command"_n ||
-        args.Action.Verb == "command_queued"_n)
-    {
-        return HandleCommand(world, args.Action);
-    }
-
-    if (args.Action.Verb == "smart_command"_n ||
+        args.Action.Verb == "command_queued"_n ||
+        args.Action.Verb == "smart_command"_n ||
         args.Action.Verb == "smart_command_queued"_n)
     {
-        return HandleSmartCommand(world, args.Action);
+        return HandleCommand(world, args.Action);
     }
 
     return false;
@@ -262,138 +258,38 @@ bool FeatureAbilities::ExitActiveAbility(WorldRef world, UnitId unit) const
     return ability->InterruptOrder(world, unit, *currentOrder);
 }
 
+struct SortHandlersByPriority
+{
+    bool operator()(const PrioritizedAbilityHandler& a, const PrioritizedAbilityHandler& b) const
+    {
+        return std::get<1>(a) > std::get<1>(b);
+    }
+};
+
 bool FeatureAbilities::HandleCommand(WorldRef world, const Command& command)
 {
-    TSharedPtr<IAbilityHandler> ability = FindAbilityHandlerCached(world, command.AbilityId);
-    if (!ability)
+    TArray2<PrioritizedAbilityHandler> handlers;
+    if (GetHighestPriorityHandlersForSelection(world, command, handlers) == 0)
     {
         return false;
     }
 
-    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
-    if (selection == EntityId::Invalid)
-    {
-        return false;
-    }
-
-    AbilityCommandContext context;
-    context.AbilityId = command.AbilityId;
-    context.SelectionGroupId = FName::None;
-    context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
-
-    TArray<TTuple<UnitId, uint32>> handlers;
-
-    // Determine how to handle the command
-    FeatureECS::ForEachEntityInGroup(world, selection, [&](const EntityId& entity)
-    {
-        context.Unit = UnitId(entity);
-
-        if (ability->IgnoreCommand(world, context, command))
-        {
-            return;
-        }
-
-        uint32 priority = ability->GetCommandPriority(world, context, command);
-        if (priority != 0)
-        {
-            handlers.emplace_back(UnitId{entity}, priority);
-        }
-    });
-
-    struct SortHandlersByPriority
-    {
-        bool operator()(const TTuple<UnitId, uint32>& a, const TTuple<UnitId, uint32>& b) const
-        {
-            return std::get<1>(a) > std::get<1>(b);
-        }
-    };
-
-    if (handlers.size() > 1)
-    {
-        std::ranges::stable_sort(handlers, SortHandlersByPriority());
-    }
-
-    for (auto && [unit, priority] : handlers)
-    {
-        HandleCommand(world, unit, command);
-    }
-
-    return !handlers.empty();
-}
-
-bool FeatureAbilities::HandleSmartCommand(WorldRef world, const Command& command)
-{
-    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
-    if (selection == EntityId::Invalid)
-    {
-        return false;
-    }
-
-    AbilityCommandContext context;
-    context.AbilityId = FName::None;
-    context.SelectionGroupId = FName::None;
-    context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
-
-    TArray2<FName> abilityIds;
-
-    using UnitAbilityPriority = TTuple<UnitId, uint32, TSharedPtr<IAbilityHandler>>; 
-    TArray<UnitAbilityPriority> handlers;
-
-    // Determine how to handle the command
-    FeatureECS::ForEachEntityInGroup(world, selection, [&](const EntityId& entity)
-    {
-        context.Unit = UnitId(entity);
-
-        abilityIds.Reset();
-        GetAbilities(world, context.Unit, abilityIds);
-
-        for (const FName& abilityId : abilityIds)
-        {
-            TSharedPtr<IAbilityHandler> handler = FindAbilityHandlerCached(world, abilityId);
-            if (!handler)
-            {
-                return;
-            }
-
-            context.AbilityId = abilityId;
-
-            if (handler->IgnoreCommand(world, context, command))
-            {
-                return;
-            }
-
-            uint32 priority = handler->GetSmartCommandPriority(world, context, command);
-            if (priority != 0)
-            {
-                handlers.emplace_back(UnitId{entity}, priority, handler);
-            }
-        }
-    });
-
-    struct SortHandlersByPriority
-    {
-        bool operator()(const UnitAbilityPriority& a, const UnitAbilityPriority& b) const
-        {
-            return std::get<1>(a) > std::get<1>(b);
-        }
-    };
-
-    if (handlers.size() > 1)
-    {
-        std::ranges::stable_sort(handlers, SortHandlersByPriority());
-    }
+    bool handled = false;
 
     for (auto && [unit, priority, handler] : handlers)
     {
-        Command command2 = command;
-        command2.AbilityId = handler->GetAbilityId();
-        HandleCommand(world, unit, command2);
+        Command unitAbilityCommand = command;
+        unitAbilityCommand.AbilityId = handler->GetAbilityId();
+        if (HandleCommandForUnit(world, unit, unitAbilityCommand))
+        {
+            handled = true;
+        }
     }
 
-    return !handlers.empty();
+    return handled;
 }
 
-bool FeatureAbilities::HandleCommand(WorldRef world, const UnitId& unit, const Command& command) const
+bool FeatureAbilities::HandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command) const
 {
     TSharedPtr<IAbilityHandler> ability = FindAbilityHandler(world, command.AbilityId);
     if (!ability)
@@ -436,4 +332,107 @@ bool FeatureAbilities::HandleCommand(WorldRef world, const UnitId& unit, const C
     // TODO (jfarris): broadcast event that order was received
 
     return true;
+}
+
+uint32 FeatureAbilities::GetPrioritizedHandlers(
+    WorldConstRef world,
+    const UnitId& unit,
+    const AbilityCommandContext& context,
+    const Command& command,
+    TArray2<PrioritizedAbilityHandler>& outHandlers)
+{
+    TArray2<FName> abilityIds;
+    abilityIds.Reserve(8);
+
+    GetAbilities(world, unit, abilityIds);
+
+    uint32 numHandlers = 0;
+    for (const FName& abilityId : abilityIds)
+    {
+        TSharedPtr<IAbilityHandler> handler = FindAbilityHandlerCached(world, abilityId);
+        if (!handler)
+        {
+            continue;
+        }
+
+        AbilityCommandContext unitAbilityContext = context;
+        unitAbilityContext.Unit = unit;
+        unitAbilityContext.AbilityId = abilityId;
+
+        if (handler->IgnoreCommand(world, unitAbilityContext, command))
+        {
+            continue;
+        }
+
+        uint32 priority = 0;
+
+        if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
+        {
+            priority = handler->GetSmartCommandPriority(world, unitAbilityContext, command);
+        }
+        else
+        {
+            priority = handler->GetCommandPriority(world, unitAbilityContext, command);
+        }
+
+        if (priority != 0)
+        {
+            outHandlers.EmplaceBack(unit, priority, handler);
+            ++numHandlers;
+        }
+    }
+
+    if (outHandlers.Num() > 1)
+    {
+        std::ranges::stable_sort(outHandlers, SortHandlersByPriority());
+    }
+
+    return numHandlers;
+}
+
+bool FeatureAbilities::GetHighestPriorityHandler(
+    WorldConstRef world,
+    const UnitId& unit,
+    const AbilityCommandContext& context,
+    const Command& command,
+    PrioritizedAbilityHandler& outHandler)
+{
+    TArray2<PrioritizedAbilityHandler> handlers;
+    if (GetPrioritizedHandlers(world, unit, context, command, handlers) == 0)
+    {
+        return false;
+    }
+
+    outHandler = handlers.Front();
+    return true;
+}
+
+uint32 FeatureAbilities::GetHighestPriorityHandlersForSelection(
+    WorldConstRef world,
+    const Command& command,
+    TArray2<PrioritizedAbilityHandler>& outHandlers)
+{
+    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
+    if (selection == EntityId::Invalid)
+    {
+        return 0;
+    }
+
+    AbilityCommandContext context;
+    context.AbilityId = FName::None;
+    context.SelectionGroupId = FName::None;
+    context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+
+    uint32 numHandlers = 0;
+    FeatureECS::ForEachEntityInGroup(world, selection, [&](const EntityId& entity)
+    {
+        PrioritizedAbilityHandler handler;
+        if (GetHighestPriorityHandler(world, UnitId(entity), context, command, handler))
+        {
+            outHandlers.PushBack(handler);
+            ++numHandlers;
+        }
+    });
+
+    return numHandlers;
 }

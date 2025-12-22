@@ -388,6 +388,11 @@ void OnAppRenderUI()
             ImGui::Text("ImGui FPS:");
             ImGui::TableNextColumn();
             ImGui::Text("%.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Sim Time:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%llu (%f)", GSession->GetSimTime(), GSession->GetSimTime() / (float)Time::D);
             
             ImGui::EndTable();
         }

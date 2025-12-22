@@ -28,7 +28,7 @@ namespace Phoenix
         {
         }
 
-        constexpr explicit operator hash32_t() const
+        constexpr operator hash32_t() const
         {
             return Value;
         }

@@ -46,7 +46,7 @@ namespace Phoenix
         {
             size_t slot = FindSlot(key);
 
-            if (Items[slot].first != 0)
+            if (Items[slot].first != TKey{})
             {
                 // KVP already exists
                 if (Items[slot].first == key)
@@ -71,7 +71,7 @@ namespace Phoenix
         {
             size_t slot = FindSlot(key);
 
-            if (Items[slot].first != 0)
+            if (Items[slot].first != TKey{})
             {
                 // KVP already exists
                 if (Items[slot].first == key)
@@ -95,7 +95,7 @@ namespace Phoenix
         {
             size_t slot = FindSlot(key);
 
-            if (Items[slot].first != 0)
+            if (Items[slot].first != TKey{})
             {
                 // KVP already exists
                 if (Items[slot].first == key)
@@ -165,7 +165,7 @@ namespace Phoenix
         {
             size_t slot = FindSlot(key);
 
-            if (Items[slot].first != 0)
+            if (Items[slot].first != TKey{})
             {
                 // KVP already exists
                 if (Items[slot].first == key)
@@ -188,7 +188,7 @@ namespace Phoenix
         {
             size_t slot = FindSlot(key);
 
-            if (Items[slot].first != 0)
+            if (Items[slot].first != TKey{})
             {
                 // KVP already exists
                 if (Items[slot].first == key)
@@ -219,7 +219,7 @@ namespace Phoenix
             }
 
             // Mark slot as unoccupied
-            Items[i].first = 0;
+            Items[i].first = TKey{};
 
             PHX_ASSERT(Size > 0);
             --Size;
@@ -229,7 +229,7 @@ namespace Phoenix
             for (;;)
             {
                 j = (j + 1) % Capacity;
-                if (Items[j].first == 0)
+                if (Items[j].first == TKey{})
                 {
                     break;
                 }
@@ -255,7 +255,7 @@ namespace Phoenix
                 Items[i] = Items[j];
 
                 // Mark slot[j] as unoccupied
-                Items[j].first = 0;
+                Items[j].first = TKey{};
 
                 i = j;
             }
@@ -324,7 +324,7 @@ namespace Phoenix
             size_t hash = Hash(key);
             size_t index = hash % Capacity;
             size_t startIndex = index;
-            while (Items[index].first != 0 && Items[index].first != key)
+            while (Items[index].first != TKey{} && Items[index].first != key)
             {
                 index = (index + 1) % Capacity;
                 if (index == startIndex)
@@ -335,7 +335,7 @@ namespace Phoenix
 
         size_t FindNextOccupiedSlot(size_t index) const
         {
-            while (index < Capacity && Items[index].first == 0)
+            while (index < Capacity && Items[index].first == TKey{})
             {
                 ++index;
             }

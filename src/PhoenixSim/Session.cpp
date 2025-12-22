@@ -298,13 +298,6 @@ void Session::ProcessActions(simtime_t time)
             const simtime_t& timestamp = std::get<0>(*iter);
             const Action& action = std::get<1>(*iter);
 
-            // An action came in with a timestamp further along than the sim
-            if (timestamp < time)
-            {
-                // This should probably result in a desync
-                continue;
-            }
-
             // 
             if (timestamp > time)
             {

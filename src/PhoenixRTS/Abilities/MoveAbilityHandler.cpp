@@ -15,6 +15,7 @@
 #include "PhoenixRTS/Selection/FeatureSelection.h"
 #include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
+#include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitId.h"
 
 using namespace Phoenix;
@@ -26,34 +27,24 @@ using namespace Phoenix::RTS;
 
 namespace MoveAbilitySystemDetail
 {
-    struct UpdateMoveAbilityComponentJob : IBufferJob<const SteeringComponent&, const TransformComponent&, MoveAbilityComponent&>
+    struct UpdateMoveAbilityComponentJob : IBufferJob<MoveAbilityComponent&>
     {
-        void Execute(const EntityComponentSpan<const SteeringComponent&, const TransformComponent&, MoveAbilityComponent&>& span) override
+        void Execute(const EntityComponentSpan<MoveAbilityComponent&>& span) override
         {
             PHX_PROFILE_ZONE_SCOPED_N("UpdateMoveAbilityComponentJob");
 
             TSharedPtr<FeatureAbilities> abilities = GetFeature<FeatureAbilities>(*World);
 
-            for (auto && [entityId, index, seekComp, transformComp, moveComp] : span)
+            for (auto && [entityId, index, moveComp] : span)
             {
-
-                if (moveComp.State == EMoveAbilityState::MoveToPosition)
+                if (moveComp.ActiveState != EMoveAbilityState::Idle)
                 {
-                    auto result = moveComp.ActiveState.MoveToPosition.OnUpdate(*World, UnitId(entityId));
+                    AbilityStateResult result = moveComp.Update(*World, UnitId(entityId));
                     if (result != EAbilityStateResult::Continue)
                     {
                         abilities->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
                     }
                 }
-                if (moveComp.State == EMoveAbilityState::FollowEntity)
-                {
-                    auto result = moveComp.ActiveState.FollowEntity.OnUpdate(*World, UnitId(entityId));
-                    if (result != EAbilityStateResult::Continue)
-                    {
-                        abilities->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
-                    }
-                }
-
             }
         }
     };
@@ -68,9 +59,44 @@ void MoveAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
 }
 
 MoveAbilityComponent::MoveAbilityComponent()
-    : ActiveState(MoveToLocationState{})
-    , State(EMoveAbilityState::Idle)
+    : States(MoveToLocationState{})
+    , ActiveState(EMoveAbilityState::Idle)
 {
+}
+
+AbilityStateResult MoveAbilityComponent::Update(WorldRef world, const UnitId& unit)
+{
+    switch (ActiveState)
+    {
+        case EMoveAbilityState::MoveToPosition: return States.MoveToPosition.Update(world, unit);
+        case EMoveAbilityState::FollowEntity:   return States.FollowEntity.Update(world, unit);
+        default:                                return EAbilityStateResult::Fail;
+    }
+}
+
+void MoveAbilityComponent::Interrupt(WorldRef world, const UnitId& unit)
+{
+    switch (ActiveState)
+    {
+        case EMoveAbilityState::MoveToPosition: States.MoveToPosition.Interrupt(world, unit); break;
+        case EMoveAbilityState::FollowEntity:   States.FollowEntity.Interrupt(world, unit); break;
+        default:                                break;
+    }
+
+    Exit(world, unit);
+}
+
+void MoveAbilityComponent::Exit(WorldRef world, const UnitId& unit)
+{
+    switch (ActiveState)
+    {
+        case EMoveAbilityState::MoveToPosition: States.MoveToPosition.Exit(world, unit); break;
+        case EMoveAbilityState::FollowEntity:   States.FollowEntity.Exit(world, unit); break;
+        default:                                break;
+    }
+
+    ActiveState = EMoveAbilityState::Idle;
+    FeatureSteering::Stop(world, unit);
 }
 
 MoveAbilityHandler::MoveAbilityHandler()
@@ -141,6 +167,11 @@ bool MoveAbilityHandler::AddAbility(WorldRef world, const UnitId& unit) const
     steeringComp->SeparationRadius = unitData.Movement().SeparationRadius().GetValue(queryContext);
     steeringComp->SeparationStrength = unitData.Movement().SeparationStrength().GetValue(queryContext);
 
+    if (HasAnyFlags((Data::ECollisionFlags)steeringComp->CollisionMask, Data::ECollisionFlags::Ground))
+    {
+        FeatureECS::AddTag(world, unit, "movement_ground"_n);
+    }
+
     return true;
 }
 
@@ -208,19 +239,19 @@ bool MoveAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const 
 
     if (order.CommandIndex == Commands::Patrol)
     {
-        
+        // TODO (jfarris): implement patrol states
     }
     else 
     {
         if (order.TargetEntity != EntityId::Invalid && FeatureECS::IsEntityValid(world, order.TargetEntity))
         {
-            moveComp->State = EMoveAbilityState::FollowEntity;
-            moveComp->ActiveState.FollowEntity.OnEnter(world, unit, order.TargetEntity, 0);
+            moveComp->ActiveState = EMoveAbilityState::FollowEntity;
+            moveComp->States.FollowEntity.Enter(world, unit, order.TargetEntity, 0);
         }
         else
         {
-            moveComp->State = EMoveAbilityState::MoveToPosition;
-            moveComp->ActiveState.MoveToPosition.OnEnter(world, unit, order.TargetLocation, 0);
+            moveComp->ActiveState = EMoveAbilityState::MoveToPosition;
+            moveComp->States.MoveToPosition.Enter(world, unit, order.TargetLocation, 0);
         }
     }
 
@@ -229,21 +260,12 @@ bool MoveAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const 
 
 bool MoveAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    MoveAbilityComponent* moveComp = FeatureECS::GetComponent<MoveAbilityComponent>(world, unit);
-
-    if (moveComp->State == EMoveAbilityState::MoveToPosition)
+    if (MoveAbilityComponent* moveComp = FeatureECS::GetComponent<MoveAbilityComponent>(world, unit))
     {
-        moveComp->ActiveState.MoveToPosition.OnExit(world, unit);
-        moveComp->State = EMoveAbilityState::Idle;
+        moveComp->Interrupt(world, unit);
+        return true;
     }
-
-    if (moveComp->State == EMoveAbilityState::FollowEntity)
-    {
-        moveComp->ActiveState.FollowEntity.OnExit(world, unit);
-        moveComp->State = EMoveAbilityState::Idle;
-    }
-
-    return true;
+    return false;
 }
 
 uint32 MoveAbilityHandler::Acquire(const Order& order) const
