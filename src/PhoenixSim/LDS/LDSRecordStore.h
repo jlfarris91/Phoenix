@@ -3,6 +3,7 @@
 
 #include <execution>
 
+#include "PhoenixSim/Utils.h"
 #include "PhoenixSim/LDS/LDSValue.h"
 #include "PhoenixSim/Containers/Array.h"
 #include "PhoenixSim/Containers/FixedArray.h"
@@ -159,7 +160,10 @@ namespace Phoenix::LDS
                 // Iterate through the sorted records until we hit a new object id.
                 for (; index < SortedNum && Records[index].GetObjectId() == objectId; ++index)
                 {
-                    callback(Records[index]);
+                    if (InvokeForEachCallbackNoIndex(callback, Records[index]))
+                    {
+                        return;
+                    }
                 }
             }
 
@@ -169,7 +173,10 @@ namespace Phoenix::LDS
             {
                 if ((unsortedIter->GetId() & ObjectMask) == recordId)
                 {
-                    callback(*unsortedIter);
+                    if (InvokeForEachCallbackNoIndex(callback, *unsortedIter))
+                    {
+                        return;
+                    }
                 }
             }
         }

@@ -267,7 +267,10 @@ namespace Phoenix
                         continue;
                     }
 
-                    func(Handle(Id, i, instance->EntityId));
+                    if (InvokeForEachCallbackWithIndex(func, i, Handle(Id, i, instance->EntityId)))
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -283,7 +286,10 @@ namespace Phoenix
                         continue;
                     }
 
-                    func(instance->EntityId, GetComponentRef<TComponents>(i)...);
+                    if (InvokeForEachCallbackWithIndex(func, i, instance->EntityId, GetComponentRef<TComponents>(i)...))
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -299,7 +305,10 @@ namespace Phoenix
                         continue;
                     }
 
-                    func(instance->EntityId, GetComponentRef<TComponents>(i)...);
+                    if (InvokeForEachCallbackWithIndex(func, i, instance->EntityId, GetComponentRef<TComponents>(i)...))
+                    {
+                        break;
+                    }
                 }
             }
 
@@ -309,9 +318,10 @@ namespace Phoenix
                 for (uint8 i = 0; i < (uint8)Definition.GetNumComponents(); ++i)
                 {
                     const ComponentDefinition& componentDefinition = Definition[i];
-                    if (void* compPtr = GetComponent(handle, componentDefinition.Id))
+                    void* compPtr = GetComponent(handle, componentDefinition.Id);
+                    if (compPtr && InvokeForEachCallbackWithIndex(func, i, componentDefinition, compPtr))
                     {
-                        func(componentDefinition, compPtr);
+                        break;
                     }
                 }
             }
@@ -322,9 +332,10 @@ namespace Phoenix
                 for (uint8 i = 0; i < Definition.GetNumComponents(); ++i)
                 {
                     const ComponentDefinition& componentDefinition = Definition[i];
-                    if (const void* compPtr = GetComponent(handle, componentDefinition.Id))
+                    const void* compPtr = GetComponent(handle, componentDefinition.Id);
+                    if (compPtr && InvokeForEachCallbackWithIndex(func, i, componentDefinition, compPtr))
                     {
-                        func(componentDefinition, compPtr);
+                        break;
                     }
                 }
             }

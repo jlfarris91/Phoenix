@@ -7,6 +7,7 @@
 #include "PhoenixSim/Containers/FixedQueue.h"
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/Mesh/Mesh2.h"
+#include "PhoenixSim/Utils.h"
 
 #define MESH_TEMPLATE template <uint32 NFaces, class TFaceData, class TVecComp, class TIdx>
 #define MESH_CLASS TFixedCDTMesh2<NFaces, TFaceData, TVecComp, TIdx>
@@ -183,10 +184,10 @@ namespace Phoenix
     {
         for (uint32 i = 0; i < Vertices.Num(); ++i)
         {
-            if (TVec::Distance(Vertices[i], pos) < radius)
+            if (TVec::Distance(Vertices[i], pos) < radius &&
+                InvokeForEachCallbackWithIndex(callback, i, Vertices[i]))
             {
-                if (!callback(Vertices[i], i))
-                    return;
+                break;
             }
         }
     }
@@ -208,9 +209,9 @@ namespace Phoenix
             if ((HasAnyFlags(direction, EHalfEdgeDirection::Outgoing) && halfEdge.VertA == vertIndex) ||
                 (HasAnyFlags(direction, EHalfEdgeDirection::Incoming) && halfEdge.VertB == vertIndex))
             {
-                if (!callback(halfEdge, i))
+                if (InvokeForEachCallbackWithIndex(callback, i, halfEdge))
                 {
-                    return;
+                    break;
                 }
             }
         }
@@ -848,8 +849,8 @@ namespace Phoenix
     }
 
     MESH_TEMPLATE
-    template <class TPredicate>
-    void MESH_CLASS::ForEachHalfEdgeInFace(TIdx faceIndex, const TPredicate& callback) const
+    template <class TCallback>
+    void MESH_CLASS::ForEachHalfEdgeInFace(TIdx faceIndex, const TCallback& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -863,13 +864,17 @@ namespace Phoenix
             PHX_ASSERT(IsValidHalfEdge(edgeIndex));
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
-            callback(halfEdge);
+
+            if (InvokeForEachCallbackWithIndex(callback, i, halfEdge))
+            {
+                break;
+            }
         }
     }
 
     MESH_TEMPLATE
-    template <class TPredicate>
-    void MESH_CLASS::ForEachHalfEdgeIndexInFace(TIdx faceIndex, const TPredicate& callback) const
+    template <class TCallback>
+    void MESH_CLASS::ForEachHalfEdgeIndexInFace(TIdx faceIndex, const TCallback& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -881,15 +886,20 @@ namespace Phoenix
         for (uint32 i = 0; i < 3; ++i)
         {
             PHX_ASSERT(IsValidHalfEdge(edgeIndex));
-            callback(edgeIndex);
+
+            if (InvokeForEachCallbackWithIndex(callback, i, edgeIndex))
+            {
+                break;
+            }
+
             const THalfEdge& halfEdge = HalfEdges[edgeIndex];
             edgeIndex = halfEdge.Next;
         }
     }
 
     MESH_TEMPLATE
-    template <class TPredicate>
-    void MESH_CLASS::ForEachHalfEdgeTwinInFace(TIdx faceIndex, const TPredicate& callback) const
+    template <class TCallback>
+    void MESH_CLASS::ForEachHalfEdgeTwinInFace(TIdx faceIndex, const TCallback& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -908,13 +918,16 @@ namespace Phoenix
 
             const THalfEdge& twinEdge = HalfEdges[halfEdge.Twin];
 
-            callback(twinEdge);
+            if (InvokeForEachCallbackWithIndex(callback, i, twinEdge))
+            {
+                break;
+            }
         }
     }
 
     MESH_TEMPLATE
-    template <class TPredicate>
-    void MESH_CLASS::ForEachNeighboringFaceIndex(TIdx faceIndex, const TPredicate& callback) const
+    template <class TCallback>
+    void MESH_CLASS::ForEachNeighboringFaceIndex(TIdx faceIndex, const TCallback& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -936,13 +949,16 @@ namespace Phoenix
             if (!IsValidFace(twinEdge.Face))
                 continue;
 
-            callback(twinEdge.Face);
+            if (InvokeForEachCallbackWithIndex(callback, i, twinEdge.Face))
+            {
+                break;
+            }
         }
     }
 
     MESH_TEMPLATE
-    template <class TPredicate>
-    void MESH_CLASS::ForEachNeighboringFace(TIdx faceIndex, const TPredicate& callback) const
+    template <class TCallback>
+    void MESH_CLASS::ForEachNeighboringFace(TIdx faceIndex, const TCallback& callback) const
     {
         if (!IsValidFace(faceIndex))
             return;
@@ -966,7 +982,10 @@ namespace Phoenix
 
             const TFace& twinFace = Faces[twinEdge.Face];
 
-            callback(twinFace);
+            if (InvokeForEachCallbackWithIndex(callback, i, twinFace))
+            {
+                break;
+            }
         }
     }
 

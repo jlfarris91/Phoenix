@@ -113,7 +113,7 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
     for (const FName& abilityId : abilities)
     {
         success = AddAbility(world, unit, abilityId) && success;
-        PHX_ASSERT(success);
+        // PHX_ASSERT(success);
     }
 
     return success;

@@ -9,7 +9,7 @@
 
 namespace Phoenix::RTS
 {
-    enum class PHOENIX_SIM_API ETimerFlags : uint8
+    enum class PHOENIX_RTS_API ETimerFlags : uint8
     {
         None,
         Running = 1,
@@ -19,7 +19,7 @@ namespace Phoenix::RTS
         Invalid = 16
     };
 
-    struct PHOENIX_SIM_API Timer
+    struct PHOENIX_RTS_API Timer
     {
         FName Id;
         Time StartTime;
@@ -254,10 +254,7 @@ namespace Phoenix::RTS
         template <class TCallback>
         void ForEach(const TCallback& callback) const
         {
-            Timers.ForEachItem([&](const Timer& timer)
-            {
-                callback(timer);
-            });
+            Timers.ForEachItem(callback);
         }
 
         // Sort and tick all timers.

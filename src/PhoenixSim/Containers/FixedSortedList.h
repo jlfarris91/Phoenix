@@ -4,6 +4,7 @@
 #include <algorithm>
 
 #include "PhoenixSim/Platform.h"
+#include "PhoenixSim/Utils.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 
 namespace Phoenix
@@ -484,14 +485,14 @@ namespace Phoenix
 
             for (TItem& item : Items)
             {
-                if (item.IsValid())
+                if (item.IsValid() && InvokeForEachCallbackNoIndex(callback, item))
                 {
-                    callback(item);
+                    return;
                 }
             }
         }
 
-        // Executes a callback for each item in the list.
+        // Executes a callback for each const item in the list.
         // Note that this operation is O(N).
         template <class TCallback>
         void ForEachItem(const TCallback& callback) const
@@ -503,14 +504,33 @@ namespace Phoenix
 
             for (const TItem& item : Items)
             {
-                if (item.IsValid())
+                if (item.IsValid() && InvokeForEachCallbackNoIndex(callback, item))
                 {
-                    callback(item);
+                    return;
                 }
             }
         }
 
-        // Executes a callback for each item in the list.
+        // Executes a callback for each item in the list that passes a predicate.
+        // Note that this operation is O(N).
+        template <class TPredicate, class TCallback>
+        void ForEachItem(const TPredicate& pred, const TCallback& callback)
+        {
+            if (Items.IsEmpty())
+            {
+                return;
+            }
+
+            for (TItem& item : Items)
+            {
+                if (item.IsValid() && pred(item) && InvokeForEachCallbackNoIndex(callback, item))
+                {
+                    return;
+                }
+            }
+        }
+
+        // Executes a callback for each const item in the list that passes a predicate.
         // Note that this operation is O(N).
         template <class TPredicate, class TCallback>
         void ForEachItem(const TPredicate& pred, const TCallback& callback) const
@@ -522,15 +542,15 @@ namespace Phoenix
 
             for (const TItem& item : Items)
             {
-                if (item.IsValid() && pred(item))
+                if (item.IsValid() && pred(item) && InvokeForEachCallbackNoIndex(callback, item))
                 {
-                    callback(item);
+                    return;
                 }
             }
         }
 
-        template <class TCallback>
-        void ForEachSubItem(const TKey& key, const TCallback& callback) const
+        template <class TProjection, class TCallback>
+        void ForEachSubItem(const TKey& key, const TProjection& project, const TCallback& callback) const
         {
             if (Items.IsEmpty())
             {
@@ -543,6 +563,8 @@ namespace Phoenix
 
             PHX_ASSERT(sortedEnd <= end);
 
+            uint32 subIndex = 0;
+
             // Search the sorted section
             if (sortedEnd != begin)
             {
@@ -552,7 +574,11 @@ namespace Phoenix
                     const TItem& item = *iter;
                     if (item.IsValid())
                     {
-                        callback(item);
+                        if (InvokeForEachCallbackWithIndex(callback, subIndex, project(item)))
+                        {
+                            return;
+                        }
+                        ++subIndex;
                     }
                     ++iter;
                 }
@@ -565,10 +591,20 @@ namespace Phoenix
                 const TItem& item = *iter;
                 if (GetItemKey(item) == key && item.IsValid())
                 {
-                    callback(item);
+                    if (InvokeForEachCallbackWithIndex(callback, subIndex, project(item)))
+                    {
+                        return;
+                    }
+                    ++subIndex;
                 }
                 ++iter;
             }
+        }
+
+        template <class TCallback>
+        void ForEachSubItem(const TKey& key, const TCallback& callback) const
+        {
+            ForEachSubItem(key, DefaultProjection(), callback);
         }
 
         void Sort()
@@ -630,6 +666,22 @@ namespace Phoenix
             constexpr bool operator()(const TItem& item) const
             {
                 return !item.IsValid();
+            }
+        };
+
+        struct DefaultProjection
+        {
+            constexpr const TItem& operator()(const TItem& item) const
+            {
+                return item;
+            }
+        };
+
+        struct DefaultPredicate
+        {
+            constexpr bool operator()(const TItem&) const
+            {
+                return true;
             }
         };
 

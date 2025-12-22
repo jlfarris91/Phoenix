@@ -227,7 +227,10 @@ namespace Phoenix::LDS
             FName baseId = GetBaseObjectId(objectId);
             while (baseId != FName::None)
             {
-                callback(baseId);
+                if (InvokeForEachCallbackNoIndex(callback, baseId))
+                {
+                    break;
+                }
                 baseId = GetBaseObjectId(baseId);
             }
         }
@@ -239,7 +242,10 @@ namespace Phoenix::LDS
             FName baseId = GetBaseTypeId(objectOrTypeId);
             while (baseId != FName::None)
             {
-                callback(baseId);
+                if (InvokeForEachCallbackNoIndex(callback, baseId))
+                {
+                    break;
+                }
                 baseId = GetBaseTypeId(baseId);
             }
         }
@@ -251,7 +257,10 @@ namespace Phoenix::LDS
             FName baseId = GetBaseId(objectOrTypeId);
             while (baseId != FName::None)
             {
-                callback(baseId);
+                if (InvokeForEachCallbackNoIndex(callback, baseId))
+                {
+                    break;
+                }
                 baseId = GetBaseId(baseId);
             }
         }

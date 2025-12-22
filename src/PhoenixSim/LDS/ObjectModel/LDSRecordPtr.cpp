@@ -48,6 +48,11 @@ bool LDSRecordPtr::RecordExists(const ILDSQueryContext& context) const
     return context.RecordExists(Path);
 }
 
+bool LDSRecordPtr::ObjectExists(const ILDSQueryContext& context) const
+{
+    return IsValid() && context.RecordExists(Path.Append("id"));
+}
+
 const LDSRecord* LDSRecordPtr::GetRecord(const ILDSQueryContext& context) const
 {
     return context.QueryRecord(Path, Flags);

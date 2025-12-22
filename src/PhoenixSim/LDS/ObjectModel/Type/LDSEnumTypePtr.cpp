@@ -50,9 +50,10 @@ bool LDSEnumTypePtr::TryGetEnumItem(
     {
         if (itemPtr.Key.GetValue(context, FName::None) == key)
         {
-            foundItem = true;
             outItemPtr = itemPtr;
+            foundItem = true;
         }
+        return foundItem;
     });
     return foundItem;
 }

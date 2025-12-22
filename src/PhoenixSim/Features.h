@@ -252,7 +252,10 @@ namespace Phoenix
             const auto& channel = channelEntry->second;
             for (auto&& feature : channel)
             {
-                callback(*feature);
+                if (InvokeForEachCallbackNoIndex(callback, *feature))
+                {
+                    break;
+                }
             }
         }
 

@@ -78,19 +78,16 @@ namespace Phoenix::RTS
         template <class TCallback>
         void ForEach(const TCallback& callback) const
         {
-            Items.ForEachItem([&](const EntityResponse& item)
-            {
-                callback(item);
-            });
+            Items.ForEachItem(callback);
         }
 
         template <class TCallback>
         void ForEachResponse(ECS::EntityId entity, const TCallback& callback) const
         {
-            Items.ForEachSubItem(entity, [&](const EntityResponse& item)
+            Items.ForEachSubItem(entity, [&](const EntityResponse& item) -> const FName&
             {
-                callback(item.Response);
-            });
+                return item.Response;
+            }, callback);
         }
 
         void Sort()

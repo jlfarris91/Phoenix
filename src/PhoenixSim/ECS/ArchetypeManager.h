@@ -444,9 +444,9 @@ namespace Phoenix
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
                     TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list)
+                    if (list && InvokeForEachCallbackNoIndex(func, *list))
                     {
-                        func(*list);
+                        break;
                     }
                 }
             }
@@ -457,9 +457,9 @@ namespace Phoenix
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
                     const TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list)
+                    if (list && InvokeForEachCallbackNoIndex(func, *list))
                     {
-                        func(*list);
+                        break;
                     }
                 }
             }
@@ -470,9 +470,9 @@ namespace Phoenix
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
                     TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list && list->HasArchetypeDefinition(archetypeIdOrHash))
+                    if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && InvokeForEachCallbackNoIndex(func, *list))
                     {
-                        func(*list);
+                        break;
                     }
                 }
             }

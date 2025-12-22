@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <algorithm>
 
+#include "PhoenixSim/Utils.h"
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 
@@ -160,11 +161,11 @@ namespace Phoenix
         TMortonCodeRangeArray& outRanges,
         uint32 gridBits = MortonCodeGridBits);
 
-    template <class T, uint64 T::*MemPtr, class TRange, class TPred>
+    template <class T, uint64 T::*MemPtr, class TRange, class TCallback>
     void ForEachInMortonCodeRanges(
         const TRange& sorted,
         const TMortonCodeRangeArray& ranges,
-        const TPred& predicate)
+        const TCallback& callback)
     {
         bool wantsExit = false;
         for (auto && [min, max] : ranges)
@@ -179,17 +180,10 @@ namespace Phoenix
             });
             for (auto itr = itrLo; itr != itrHi; ++itr)
             {
-                if constexpr(std::is_same_v<decltype(predicate(std::declval<decltype(*sorted.begin())>())), bool>)
+                if (InvokeForEachCallbackNoIndex(callback, *itr))
                 {
-                    if (predicate(*itr))
-                    {
-                        wantsExit = true;
-                        break;
-                    }
-                }
-                else
-                {
-                    predicate(*itr);
+                    wantsExit = true;
+                    break;
                 }
             }
             if (wantsExit)

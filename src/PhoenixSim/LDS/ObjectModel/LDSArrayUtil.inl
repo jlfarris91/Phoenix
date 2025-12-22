@@ -50,7 +50,11 @@ namespace Phoenix::LDS
         uint32 count = GetSize(context, path, flags);
         for (uint32 i = 0; i < count; ++i)
         {
-            callback(i, GetItem<TItemPtr>(path, i, flags));
+            TItemPtr itemPtr = GetItem<TItemPtr>(path, i, flags);
+            if (InvokeForEachCallbackWithIndex(callback, i, itemPtr))
+            {
+                break;
+            }
         }
     }
 
@@ -64,7 +68,11 @@ namespace Phoenix::LDS
         uint32 count = GetSize(context, path, flags);
         for (uint32 i = 0; i < count; ++i)
         {
-            callback(i, GetItemValueAs<TValue, TValuePtr>(path, i, flags));
+            TValue itemValue = GetItemValueAs<TValue, TValuePtr>(path, i, flags);
+            if (InvokeForEachCallbackWithIndex(callback, i, itemValue))
+            {
+                break;
+            }
         }
     }
 
@@ -80,9 +88,13 @@ namespace Phoenix::LDS
         {
             TObjectPtr objectPtr = GetItem<TObjectPtr>(path, i, flags);
             TObject object;
-            if (objectPtr.TryReadObject(context, object))
+            if (!objectPtr.TryReadObject(context, object))
             {
-                callback(i, object);
+                continue;
+            }
+            if (InvokeForEachCallbackWithIndex(callback, i, object))
+            {
+                break;
             }
         }
     }
@@ -97,7 +109,11 @@ namespace Phoenix::LDS
         uint32 count = GetSize(context, path, flags);
         for (uint32 i = 0; i < count; ++i)
         {
-            callback(i, GetResolvedItemObject<TObjectPtr, TObjectRefPtr>(context, path, i, flags));
+            TObjectPtr objectPtr = GetResolvedItemObject<TObjectPtr, TObjectRefPtr>(context, path, i, flags);
+            if (InvokeForEachCallbackWithIndex(callback, i, objectPtr))
+            {
+                break;
+            }
         }
     }
 
@@ -113,9 +129,13 @@ namespace Phoenix::LDS
         {
             TObjectPtr objectPtr = GetResolvedItemObject<TObjectPtr, TObjectRefPtr>(context, path, i, flags);
             TObject object;
-            if (objectPtr.TryReadObject(context, object))
+            if (!objectPtr.TryReadObject(context, object))
             {
-                callback(i, object);
+                continue;
+            }
+            if (InvokeForEachCallbackWithIndex(callback, i, object))
+            {
+                break;
             }
         }
     }
