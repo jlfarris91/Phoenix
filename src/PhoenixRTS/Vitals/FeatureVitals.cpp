@@ -60,8 +60,10 @@ bool FeatureVitals::ApplyDamage(WorldRef world, EntityId target, const Damage& d
     return true;
 }
 
-void FeatureVitals::Initialize()
+void FeatureVitals::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
+    IFeature::Initialize(session);
+
     VitalsSystem = MakeShared<RTS::VitalsSystem>();
 
     TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();

@@ -27,14 +27,16 @@ namespace Phoenix::RTS
         TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
-    class PHOENIX_RTS_API IResponseHandler : TSharedAsThis<IResponseHandler>
+    class PHOENIX_RTS_API IResponseHandler : public IService
     {
+        PHX_DECLARE_TYPE_BEGIN(IResponseHandler)
+            PHX_REGISTER_BASE(IService)
+        PHX_DECLARE_TYPE_END()
+        
     public:
 
-        virtual ~IResponseHandler() = default;
-
-        virtual void Initialize(SessionRef session);
-        virtual void Shutdown(SessionRef session);
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Shutdown() override;
 
         virtual void OnWorldInitialize(WorldRef world);
         virtual void OnWorldShutdown(WorldRef world);
@@ -45,6 +47,10 @@ namespace Phoenix::RTS
 
         virtual bool Execute(WorldRef world, const ResponseContext& context) const;
         virtual bool CanExecute(WorldConstRef world, const ResponseContext& context) const;
+
+    protected:
+
+        TSharedPtr<FeatureEffects> EffectsFeature;
     };
 
     class PHOENIX_RTS_API ResponseHandlerBase : public IResponseHandler
@@ -52,9 +58,6 @@ namespace Phoenix::RTS
     public:
         ResponseHandlerBase();
         ResponseHandlerBase(const FName& responseId);
-
-        void Initialize(SessionRef session) override;
-        void Shutdown(SessionRef session) override;
 
         FName GetResponseId() const override;
 
@@ -64,7 +67,5 @@ namespace Phoenix::RTS
         bool CanExecute(WorldConstRef world, const ResponseContext& context) const override;
 
         FName ResponseId;
-
-        TSharedPtr<FeatureEffects> EffectsFeature;
     };
 }

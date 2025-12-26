@@ -576,97 +576,43 @@ namespace Phoenix
         static void Destruct(void* data) { static_cast<T*>(data)->~T(); }
     };
 
-
-#define PHX_DECLARE_TYPE_BEGIN(type) \
+#define PHX_DECLARE_TYPE_WITH_DESCRIPTOR_BEGIN(type, descriptorType) \
     public: \
         using ThisType = type; \
         static constexpr FName StaticTypeName = #type##_n; \
     private: \
         struct STypeDescriptor { \
-            static constexpr FName StaticName = #type##_n; \
+            static constexpr FName StaticTypeName = #type##_n; \
             static constexpr const char* StaticDisplayName = #type; \
-            static TypeDescriptor Construct() \
+            static descriptorType Construct() \
             { \
-                TypeDescriptor definition; \
+                descriptorType definition; \
                 definition.CName = #type; \
-                definition.Name = StaticName; \
+                definition.Name = StaticTypeName; \
                 definition.DisplayName = StaticDisplayName; \
                 definition.DefaultConstructFunc = &TTypeHelper<type>::DefaultConstruct;\
                 definition.DestructFunc = &TTypeHelper<type>::Destruct; \
                 definition.Size = sizeof(ThisType);
 
-#define PHX_DECLARE_TYPE_END() \
+#define PHX_DECLARE_TYPE_WITH_DESCRIPTOR_END(descriptorType) \
+                return definition; \
+            } \
+            static const descriptorType& StaticGet() \
+            { \
+                static descriptorType definition = Construct(); \
                 return definition; \
             } \
         }; \
     public: \
-        static const TypeDescriptor& GetStaticTypeDescriptor() { static TypeDescriptor sd = STypeDescriptor::Construct(); return sd; } \
+        static const TypeDescriptor& GetStaticTypeDescriptor() { return STypeDescriptor::StaticGet(); } \
         const TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); }
+
+#define PHX_DECLARE_TYPE_BEGIN(type) PHX_DECLARE_TYPE_WITH_DESCRIPTOR_BEGIN(type, Phoenix::TypeDescriptor)
+#define PHX_DECLARE_TYPE_END() PHX_DECLARE_TYPE_WITH_DESCRIPTOR_END(Phoenix::TypeDescriptor)
 
 #define PHX_DECLARE_TYPE(type) \
     PHX_DECLARE_TYPE_BEGIN(type) \
     PHX_DECLARE_TYPE_END()
-
-#define PHX_DECLARE_DERIVED_TYPE_BEGIN(type, base) \
-    public: \
-        using ThisType = type; \
-        using BaseType = base; \
-        static constexpr FName StaticTypeName = #type##_n; \
-    private: \
-        struct STypeDescriptor { \
-            static constexpr FName StaticName = #type##_n; \
-            static constexpr const char* StaticDisplayName = #type; \
-            static TypeDescriptor Construct() \
-            { \
-                TypeDescriptor definition; \
-                definition.CName = #type; \
-                definition.Name = StaticName; \
-                definition.DisplayName = StaticDisplayName; \
-                definition.DefaultConstructFunc = &TTypeHelper<type>::DefaultConstruct;\
-                definition.DestructFunc = &TTypeHelper<type>::Destruct; \
-                definition.Size = sizeof(ThisType); \
-                definition.RegisterBase<base>();
-
-#define PHX_DECLARE_DERIVED_TYPE_END() \
-                return definition; \
-            } \
-        }; \
-    public: \
-        static const TypeDescriptor& GetStaticTypeDescriptor() { static TypeDescriptor sd = ThisType::STypeDescriptor::Construct(); return sd; } \
-        const TypeDescriptor& GetTypeDescriptor() const override { return ThisType::GetStaticTypeDescriptor(); }
-
-#define PHX_DECLARE_DERIVED_TYPE(type, base) \
-    PHX_DECLARE_DERIVED_TYPE_BEGIN(type, base) \
-    PHX_DECLARE_DERIVED_TYPE_END()
-    
-#define PHX_DECLARE_INTERFACE_BEGIN(type) \
-    public: \
-        using ThisType = type; \
-        static constexpr FName StaticTypeName = #type##_n; \
-        virtual ~type() = default; \
-    private: \
-        struct STypeDescriptor { \
-            static constexpr FName StaticName = #type##_n; \
-            static constexpr const char* StaticDisplayName = #type; \
-            static TypeDescriptor Construct() \
-            { \
-                TypeDescriptor definition; \
-                definition.CName = #type; \
-                definition.Name = StaticName; \
-                definition.DisplayName = StaticDisplayName; \
-                definition.Size = sizeof(ThisType);
-
-#define PHX_DECLARE_INTERFACE_END() \
-                return definition; \
-            } \
-        }; \
-    public: \
-        static const TypeDescriptor& GetStaticTypeDescriptor() { static TypeDescriptor sd = STypeDescriptor::Construct(); return sd; } \
-        virtual const TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); }
-
-#define PHX_DECLARE_INTERFACE(type) \
-    PHX_DECLARE_INTERFACE_BEGIN(type) \
-    PHX_DECLARE_INTERFACE_END()
 
 #define PHX_REGISTER_FIELD(type, name) definition.RegisterProperty<ThisType, type>(#name, &ThisType::name);
 #define PHX_REGISTER_STATIC_FIELD(type, name) definition.RegisterProperty<type>(#name, &ThisType::name);

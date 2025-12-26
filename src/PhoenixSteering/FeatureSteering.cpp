@@ -176,9 +176,31 @@ bool FeatureSteering::UpdateSpeed(WorldRef world, const EntityId& entity, const 
     return true;
 }
 
-void FeatureSteering::Initialize()
+Distance FeatureSteering::GetEntityInnerRadius(WorldConstRef world, const EntityId& entity)
 {
-    IFeature::Initialize();
+    const SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!comp)
+    {
+        return 0.0;
+    }
+
+    return comp->InnerRadius;
+}
+
+Distance FeatureSteering::GetEntityOuterRadius(WorldConstRef world, const EntityId& entity)
+{
+    const SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!comp)
+    {
+        return 0.0;
+    }
+
+    return comp->OuterRadius;
+}
+
+void FeatureSteering::Initialize(const TSharedPtr<Phoenix::Session>& session)
+{
+    IFeature::Initialize(session);
 
     SteeringSystem = MakeShared<Steering::SteeringSystem>();
 

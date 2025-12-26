@@ -47,6 +47,7 @@ namespace Phoenix::RTS
         static constexpr FName FailedToTurn = "FailedToTurn"_n;
         static constexpr FName TargetLost = "TargetLost"_n;
         static constexpr FName TargetOutOfRange = "TargetOutOfRange"_n;
+        static constexpr FName TargetOutOfAngle = "TargetOutOfAngle"_n;
         static constexpr FName TargetTooClose = "TargetTooClose"_n;
         static constexpr FName TargetInvalid = "TargetInvalid"_n;
         static constexpr FName NoLongerSeekingGoal = "NoLongerSeekingGoal"_n;

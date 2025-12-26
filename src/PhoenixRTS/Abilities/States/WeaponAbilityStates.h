@@ -3,7 +3,7 @@
 #include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/FixedPoint/FixedTypes.h"
 
-#include "PhoenixRTS/Abilities/AbilityStates.h"
+#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
 #include "PhoenixRTS/Effects/EffectId.h"
 
 namespace Phoenix::RTS

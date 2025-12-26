@@ -2,7 +2,9 @@
 
 #include <map>
 
+#include "PhoenixSim/Containers/Array.h"
 #include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Services/Service.h"
 #include "PhoenixSim/Worlds.h"
 
 namespace Phoenix
@@ -13,25 +15,12 @@ namespace Phoenix
 }
 
 #define PHX_FEATURE_BEGIN(feature) \
-    public: \
-        using ThisType = feature; \
-        static constexpr FName StaticName = #feature##_n; \
-        virtual FName GetName() const override { return StaticName; } \
-    private: \
-        struct SFeatureDefinition { \
-            static constexpr FName StaticName = #feature##_n; \
-            static constexpr const char* StaticDisplayName = #feature; \
-            static FeatureDefinition Construct() \
-            { \
-                Phoenix::FeatureDefinition definition; \
-                definition.Name = StaticName; \
-                definition.DisplayName = StaticDisplayName; \
+        PHX_DECLARE_TYPE_WITH_DESCRIPTOR_BEGIN(feature, Phoenix::FeatureDefinition) \
+            PHX_REGISTER_BASE(Phoenix::IFeature)
 
 #define PHX_FEATURE_END() \
-                return definition; \
-            } \
-        }; \
-        const FeatureDefinition& GetFeatureDefinition() override { static FeatureDefinition fd = SFeatureDefinition::Construct(); return fd; }
+        PHX_DECLARE_TYPE_WITH_DESCRIPTOR_END(Phoenix::FeatureDefinition) \
+        const FeatureDefinition& GetFeatureDefinition() override { return STypeDescriptor::StaticGet(); }
 
 #define FEATURE_SESSION_BLOCK(block) definition.RegisterSessionBlock<block>();
 #define FEATURE_WORLD_BLOCK(block) definition.RegisterWorldBlock<block>();
@@ -80,25 +69,18 @@ namespace Phoenix
         Action Action;
     };
     
-    class PHOENIX_SIM_API IFeature : public TSharedAsThis<IFeature>
+    class PHOENIX_SIM_API IFeature : public IService
     {
-    public:
+        PHX_DECLARE_TYPE_BEGIN(IFeature)
+            PHX_REGISTER_BASE(IService)
+        PHX_DECLARE_TYPE_END()
 
-        virtual ~IFeature() {}
+    public:
 
         // Gets the name of the feature.
         virtual FName GetName() const;
 
         virtual const struct FeatureDefinition& GetFeatureDefinition() = 0;
-
-        // Gets the session that this feature belongs to.
-        Session* GetSession() const;
-
-        // Called when the feature is initialized.
-        virtual void Initialize();
-
-        // Called prior to the feature shutting down.
-        virtual void Shutdown();
 
         // Called when a new world is created and gives the feature a chance to initialize.
         virtual void OnWorldInitialize(WorldRef world);
@@ -149,7 +131,6 @@ namespace Phoenix
 
         friend class Session;
 
-        Session* Session = nullptr;
         nlohmann::json Config;
     };
 
@@ -186,7 +167,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API FeatureSetCtorArgs
     {
-        TArray<FeatureSharedPtr> Features;
+        TArray2<FeatureSharedPtr> Features;
     };
 
     struct PHOENIX_SIM_API FeatureDefinition : TypeDescriptor
@@ -231,16 +212,16 @@ namespace Phoenix
         template <class TFeature>
         TSharedPtr<TFeature> GetFeature() const
         {
-            return GetFeature<TFeature>(TFeature::StaticName);
+            return GetFeature<TFeature>(TFeature::StaticTypeName);
         }
 
-        TArray<FeatureSharedPtr> GetFeatures() const;
+        TArray2<FeatureSharedPtr> GetFeatures() const;
 
         // Gets an array containing all the names of the channels.
-        TArray<FName> GetChannelNames() const;
+        TArray2<FName> GetChannelNames() const;
         
-        TArray<FeatureSharedPtr> GetChannel(const FName& channelName) const;
-        const TArray<FeatureSharedPtr>& GetChannelRef(const FName& channelName) const;
+        TArray2<FeatureSharedPtr> GetChannel(const FName& channelName) const;
+        const TArray2<FeatureSharedPtr>& GetChannelRef(const FName& channelName) const;
 
         template <class TCallback>
         void ForEachFeatureInChannel(const FName& channelName, const TCallback& callback)
@@ -261,13 +242,13 @@ namespace Phoenix
 
     private:
         
-        void RegisterFeatureChannels(const TArray<FeatureSharedPtr>& featureDefs);
+        void RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& featureDefs);
 
         static int32 FindChannelInsertIndex(
-            const TArray<FeatureSharedPtr>& channelFeatures,
+            const TArray2<FeatureSharedPtr>& channelFeatures,
             const FeatureInsertPosition& insertPosition);
 
         TMap<FName, FeatureSharedPtr> Features;
-        TMap<FName, TArray<FeatureSharedPtr>> Channels;
+        TMap<FName, TArray2<FeatureSharedPtr>> Channels;
     };
 }

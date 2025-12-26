@@ -9,9 +9,9 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-EffectSetHandler::EffectSetHandler()
-    : EffectHandlerBase("EffectSet"_n)
+FName EffectSetHandler::GetEffectId() const
 {
+    return "EffectSet"_n;
 }
 
 bool EffectSetHandler::Execute(WorldRef world, const EffectExecuteContext& context) const

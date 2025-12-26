@@ -91,9 +91,9 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     return queryContext->QueryRecord(path, flags2);
 }
 
-void FeatureLDS::Initialize()
+void FeatureLDS::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
-    IFeature::Initialize();
+    IFeature::Initialize(session);
 
     // TODO (jfarris): load session-level catalogs from disk
     StaticSessionCatalog = MakeShared<Catalog>();

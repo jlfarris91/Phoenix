@@ -103,7 +103,7 @@ namespace Phoenix::Physics
 
         FeaturePhysics();
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
 
         static void QueryEntitiesInRange(WorldConstRef& world, const Vec2& pos, Distance range, TArray<EntityBody>& outEntities);
 

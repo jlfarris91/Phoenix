@@ -11,7 +11,7 @@ namespace Phoenix
             FEATURE_CHANNEL(Phoenix::FeatureChannels::WorldInitialize)
         PHX_FEATURE_END()
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
 
         void OnWorldInitialize(WorldRef world) override;
     };

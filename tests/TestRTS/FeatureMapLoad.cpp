@@ -11,9 +11,9 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::Physics;
 
-void FeatureMapLoad::Initialize()
+void FeatureMapLoad::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
-    IFeature::Initialize();
+    IFeature::Initialize(session);
 
     TSharedPtr<FeatureLDS> featureLDS = Session->GetFeature<FeatureLDS>();
 
@@ -28,8 +28,4 @@ void FeatureMapLoad::Initialize()
 void FeatureMapLoad::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
-
-    FName worldName = world.GetId();
-
-    
 }

@@ -57,9 +57,10 @@ namespace Phoenix
     }
 
     template <class T, class U>
-    constexpr void SetFlagRef(T& flags, U value, bool set = true)
+    constexpr T& SetFlagRef(T& flags, U value, bool set = true)
     {
         flags = SetFlag(flags, value, set);
+        return flags;
     }
 
     template <class T, class U>
@@ -69,8 +70,8 @@ namespace Phoenix
     }
 
     template <class T, class U>
-    constexpr void ClearFlagRef(T& flags, U value)
+    constexpr T& ClearFlagRef(T& flags, U value)
     {
-        SetFlagRef(flags, value, false);
+        return SetFlagRef(flags, value, false);
     }
 }

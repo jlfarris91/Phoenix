@@ -16,9 +16,9 @@
 
 using namespace Phoenix;
 
-void FeatureLua::Initialize()
+void FeatureLua::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
-    IFeature::Initialize();
+    IFeature::Initialize(session);
 
     BlockBuffer& buffer = Session->GetBuffer();
     FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
@@ -213,7 +213,7 @@ namespace detail
     }
 
     template <class TRet, class ...TArgs>
-    TOptional<TRet> TryExecuteLuaFunctionRet(Session* session, const char* funcName, TArgs&& ...args)
+    TOptional<TRet> TryExecuteLuaFunctionRet(const TSharedPtr<Session>& session, const char* funcName, TArgs&& ...args)
     {
         BlockBuffer& buffer = session->GetBuffer();
         FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
@@ -227,7 +227,7 @@ namespace detail
     }
 
     template <class ...TArgs>
-    bool TryExecuteLuaFunction(Session* session, const char* funcName, TArgs&& ...args)
+    bool TryExecuteLuaFunction(const TSharedPtr<Session>& session, const char* funcName, TArgs&& ...args)
     {
         BlockBuffer& buffer = session->GetBuffer();
         FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();

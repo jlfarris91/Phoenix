@@ -10,6 +10,10 @@ namespace Phoenix
     template <class T>
     struct TArray2
     {
+        TArray2() = default;
+        TArray2(const TArray2& other) = default;
+        TArray2(TArray2&& other) = default;
+
         T& operator[](size_t index)
         {
             return Data[index];
@@ -85,6 +89,11 @@ namespace Phoenix
         void EmplaceBack(TArgs&&... args)
         {
             (void)EmplaceBack_GetRef(std::forward<TArgs>(args)...);
+        }
+
+        void Insert(uint32 index, const T& item)
+        {
+            Data.insert(Data.begin() + index, item);
         }
 
         void PopBack()
@@ -173,6 +182,24 @@ namespace Phoenix
         auto end() const
         {
             return Data.end();
+        }
+
+        TArray2& operator=(const TArray2& other)
+        {
+            Data = other.Data;
+            return *this;
+        }
+
+        TArray2& operator=(std::initializer_list<T> list)
+        {
+            Data = list;
+            return *this;
+        }
+
+        TArray2& operator=(TArray2&& other) noexcept
+        {
+            Data = std::move(other.Data);
+            return *this;
         }
 
         std::vector<T> Data;

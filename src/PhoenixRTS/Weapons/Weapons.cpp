@@ -98,18 +98,25 @@ bool Weapons::HasAmmoAndNotOnCooldown(WorldConstRef world, const UnitId& unit, c
     return GetAmmoRemaining(world, unit, ammoId) > 0 && !IsCoolingDown(world, unit, weaponId);
 }
 
-Distance Weapons::GetMinWeaponRange(WorldConstRef world, const UnitId& unit, const FName& weaponId)
+Distance Weapons::GetMinRange(WorldConstRef world, const UnitId& unit, const FName& weaponId)
 {
     const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
     Data::WeaponPtr weapon(weaponId);
     return weapon.RangeMin().GetValue(lds);
 }
 
-Distance Weapons::GetMaxWeaponRange(WorldConstRef world, const UnitId& unit, const FName& weaponId)
+Distance Weapons::GetMaxRange(WorldConstRef world, const UnitId& unit, const FName& weaponId)
 {
     const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
     Data::WeaponPtr weapon(weaponId);
     return weapon.RangeMax().GetValue(lds);
+}
+
+Distance Weapons::GetAcquireRange(WorldConstRef world, const UnitId& unit, const FName& weaponId)
+{
+    const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
+    Data::WeaponPtr weapon(weaponId);
+    return weapon.RangeAcquire().GetValue(lds);
 }
 
 bool Weapons::TargetIsTooClose(WorldConstRef world, const UnitId& unit, const EntityId& target, const FName& weaponId)
@@ -188,6 +195,26 @@ Angle Weapons::GetWeaponArcPlusSlop(WorldConstRef world, const UnitId& unit, con
     return weapon.FacingArcMin().GetValue(lds) + weapon.FacingArcSlop().GetValue(lds);
 }
 
+bool Weapons::IsFacingTarget(
+    WorldConstRef world,
+    const UnitId& unit,
+    const EntityId& target,
+    const FName& weaponId)
+{
+    Angle arc = GetWeaponArcMin(world, unit, weaponId);
+    return FeatureECS::IsFacing(world, unit, target, arc);
+}
+
+bool Weapons::IsFacingTarget(
+    WorldConstRef world,
+    const UnitId& unit,
+    const Vec2& target,
+    const FName& weaponId)
+{
+    Angle arc = GetWeaponArcMin(world, unit, weaponId);
+    return FeatureECS::IsFacing(world, unit, target, arc);
+}
+
 bool Weapons::TargetPassesFilter(
     WorldConstRef world,
     const UnitId& source,
@@ -204,6 +231,24 @@ bool Weapons::TargetPassesFilter(
 
     Data::TargetFilter targetFilter = weapon.TargetFilter().ReadObject(lds);
     return TargetFiltering::PassesTargetFilter(world, targetFilter, source, target);
+}
+
+bool Weapons::TargetPassesAcquireFilter(
+    WorldConstRef world,
+    const UnitId& source,
+    const EntityId& target,
+    const FName& weaponId)
+{
+    const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
+
+    Data::WeaponPtr weapon(weaponId);
+    if (!weapon.Exists(lds))
+    {
+        return false;
+    }
+
+    Data::TargetFilter acquireFilter = weapon.AcquireFilter().ReadObject(lds);
+    return TargetFiltering::PassesTargetFilter(world, acquireFilter, source, target);
 }
 
 RTS::Data::WeaponPtr Weapons::FindBestEnabledWeapon(
@@ -257,7 +302,7 @@ RTS::Data::WeaponPtr Weapons::FindBestEnabledWeapon(
             return false;
         }
 
-        Distance weaponRange = GetMaxWeaponRange(world, unit, weaponObjectId);
+        Distance weaponRange = GetMaxRange(world, unit, weaponObjectId);
         if (FeatureECS::IsInRange(world, unit, target, weaponRange))
         {
             outIndex = index;
@@ -315,7 +360,7 @@ RTS::Data::WeaponPtr Weapons::FindBestEnabledWeapon(
             return false;
         }
 
-        Distance weaponRange = GetMaxWeaponRange(world, unit, weaponObjectId);
+        Distance weaponRange = GetMaxRange(world, unit, weaponObjectId);
         if (FeatureECS::IsInRange(world, unit, target, weaponRange))
         {
             outIndex = index;

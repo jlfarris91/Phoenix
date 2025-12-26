@@ -1,10 +1,10 @@
 
 #pragma once
 
+#include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/Features.h"
 
 #include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Commands/Commands.h"
 
 namespace Phoenix::RTS
 {
@@ -22,7 +22,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         TSharedPtr<VitalsSystem> VitalsSystem;

@@ -2,8 +2,9 @@
 
 #include "PhoenixSim/ECS/System.h"
 
-#include "PhoenixRTS/Abilities/Ability.h"
-#include "PhoenixRTS/Abilities/AttackAbilityStates.h"
+#include "PhoenixRTS/Abilities/AbilityComponent.h"
+#include "PhoenixRTS/Abilities/AbilityHandler.h"
+#include "PhoenixRTS/Abilities/Attack/AttackAbilityStates.h"
 
 namespace Phoenix::RTS
 {
@@ -42,10 +43,11 @@ namespace Phoenix::RTS
         void Exit(WorldRef world, const UnitId& unit);
     };
 
-    class PHOENIX_RTS_API AttackAbilityHandler : public AbilityHandlerBase
+    class PHOENIX_RTS_API AttackAbilityHandler : public IAbilityHandler
     {
-        PHX_DECLARE_DERIVED_TYPE_BEGIN(AttackAbilityHandler, AbilityHandlerBase)
-        PHX_DECLARE_DERIVED_TYPE_END()
+        PHX_DECLARE_TYPE_BEGIN(AttackAbilityHandler)
+            PHX_REGISTER_BASE(IAbilityHandler)
+        PHX_DECLARE_TYPE_END()
 
     public:
 
@@ -59,8 +61,10 @@ namespace Phoenix::RTS
 
         AttackAbilityHandler();
 
-        void Initialize(SessionRef session) override;
-        void Shutdown(SessionRef session) override;
+        FName GetCommandId() const override;
+
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Shutdown() override;
 
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
@@ -69,18 +73,27 @@ namespace Phoenix::RTS
         bool RemoveAbility(WorldRef world, const UnitId& unit) const override;
         bool HasAbility(WorldConstRef world, const UnitId& unit) const override;
 
-        uint32 GetCommandPriority(WorldConstRef world, const AbilityCommandContext& context, const Command& command) const override;
-        uint32 GetSmartCommandPriority(WorldConstRef world, const AbilityCommandContext& context, const Command& command) const override;
+        uint32 GetCommandPriority(WorldConstRef world, const CommandContext& context, const Command& command) const override;
 
         bool ExecuteOrder(WorldRef world, const UnitId& unit, const Order& order) const override;
 
         bool InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const override;
 
-        uint32 Acquire(const Order& order) const override;
+        uint32 AcquireOrder(WorldRef world, const UnitId& unit, const Order& order) const override;
 
         bool SupportsMagicBox(const Order& order) const override;
 
     private:
+
+        static uint32 GetAcquireCommandPriority(
+            WorldConstRef world,
+            const CommandContext& context,
+            const Command& command);
+
+        static uint32 GetSmartCommandPriority(
+            WorldConstRef world,
+            const CommandContext& context,
+            const Command& command);
 
         static bool ExecuteAttackTargetOrder(
             WorldRef world,

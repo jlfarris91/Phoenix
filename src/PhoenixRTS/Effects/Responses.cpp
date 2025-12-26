@@ -11,12 +11,16 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
-void IResponseHandler::Initialize(SessionRef session)
+void IResponseHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
+    IService::Initialize(session);
+    EffectsFeature = session->GetFeature<FeatureEffects>();
 }
 
-void IResponseHandler::Shutdown(SessionRef session)
+void IResponseHandler::Shutdown()
 {
+    IService::Shutdown();
+    EffectsFeature.reset();
 }
 
 void IResponseHandler::OnWorldInitialize(WorldRef world)
@@ -55,16 +59,6 @@ ResponseHandlerBase::ResponseHandlerBase()
 ResponseHandlerBase::ResponseHandlerBase(const FName& responseId)
     : ResponseId(responseId)
 {
-}
-
-void ResponseHandlerBase::Initialize(SessionRef session)
-{
-    EffectsFeature = session.GetFeature<FeatureEffects>();
-}
-
-void ResponseHandlerBase::Shutdown(SessionRef session)
-{
-    EffectsFeature.reset();
 }
 
 FName ResponseHandlerBase::GetResponseId() const

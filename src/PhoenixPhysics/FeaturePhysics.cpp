@@ -14,8 +14,10 @@ FeaturePhysics::FeaturePhysics()
 {
 }
 
-void FeaturePhysics::Initialize()
+void FeaturePhysics::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
+    IFeature::Initialize(session);
+
     PhysicsSystem = MakeShared<Physics::PhysicsSystem>();
 
     TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();

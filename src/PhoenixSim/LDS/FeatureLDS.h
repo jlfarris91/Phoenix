@@ -103,7 +103,7 @@ namespace Phoenix::LDS
 
     protected:
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnWorldInitialize(WorldRef world) override;

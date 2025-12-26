@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Abilities/AttackAbilityHandler.h"
+#include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
@@ -8,9 +8,9 @@
 
 #include "PhoenixSteering/FeatureSteering.h"
 
-#include "PhoenixRTS/Abilities/FeatureAbilities.h"
 #include "PhoenixRTS/Data/DataAttackAbility.h"
 #include "PhoenixRTS/Data/DataUnit.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
@@ -31,7 +31,7 @@ namespace AttackAbilitySystemDetail
         {
             PHX_PROFILE_ZONE_SCOPED_N("UpdateAttackAbilityComponentJob");
 
-            TSharedPtr<FeatureAbilities> abilities = GetFeature<FeatureAbilities>(*World);
+            TSharedPtr<FeatureOrders> ordersFeature = GetFeature<FeatureOrders>(*World);
 
             for (auto && [entityId, index, attackComp] : span)
             {
@@ -40,7 +40,7 @@ namespace AttackAbilitySystemDetail
                     AbilityStateResult result = attackComp.Update(*World, UnitId(entityId));
                     if (result != EAbilityStateResult::Continue)
                     {
-                        abilities->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
+                        ordersFeature->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
                     }
                 }
             }
@@ -78,10 +78,10 @@ void AttackAbilityComponent::Interrupt(WorldRef world, const UnitId& unit)
 {
     switch (ActiveState)
     {
-        case EAttackAbilityState::AttackEntity:     return States.AttackEntity.Interrupt(world, unit);
-        case EAttackAbilityState::AttackLocation:   return States.AttackLocation.Interrupt(world, unit);
-        case EAttackAbilityState::AttackMove:       return States.AttackMove.Interrupt(world, unit);
-        case EAttackAbilityState::FollowEntity:     return States.FollowEntity.Interrupt(world, unit);
+        case EAttackAbilityState::AttackEntity:     States.AttackEntity.Interrupt(world, unit); break;
+        case EAttackAbilityState::AttackLocation:   States.AttackLocation.Interrupt(world, unit); break;
+        case EAttackAbilityState::AttackMove:       States.AttackMove.Interrupt(world, unit); break;
+        case EAttackAbilityState::FollowEntity:     States.FollowEntity.Interrupt(world, unit); break;
         default:                                    break;
     }
 
@@ -92,11 +92,11 @@ void AttackAbilityComponent::Exit(WorldRef world, const UnitId& unit)
 {
     switch (ActiveState)
     {
-        case EAttackAbilityState::AttackEntity:     return States.AttackEntity.Exit(world, unit);
-        case EAttackAbilityState::AttackLocation:   return States.AttackLocation.Exit(world, unit);
-        case EAttackAbilityState::AttackMove:       return States.AttackMove.Exit(world, unit);
-        case EAttackAbilityState::FollowEntity:     return States.FollowEntity.Exit(world, unit);
-        default:                                break;
+        case EAttackAbilityState::AttackEntity:     States.AttackEntity.Exit(world, unit); break;
+        case EAttackAbilityState::AttackLocation:   States.AttackLocation.Exit(world, unit); break;
+        case EAttackAbilityState::AttackMove:       States.AttackMove.Exit(world, unit); break;
+        case EAttackAbilityState::FollowEntity:     States.FollowEntity.Exit(world, unit); break;
+        default:                                    break;
     }
 
     ActiveState = EAttackAbilityState::None;
@@ -104,20 +104,28 @@ void AttackAbilityComponent::Exit(WorldRef world, const UnitId& unit)
 }
 
 AttackAbilityHandler::AttackAbilityHandler()
-    : AbilityHandlerBase("AttackAbility"_n)
 {
     System = MakeShared<AttackAbilitySystem>();
 }
 
-void AttackAbilityHandler::Initialize(SessionRef session)
+FName AttackAbilityHandler::GetCommandId() const
 {
-    TSharedPtr<FeatureECS> ecs = session.GetFeature<FeatureECS>();
+    return "AttackAbility"_n;
+}
+
+void AttackAbilityHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+{
+    IAbilityHandler::Initialize(session);
+
+    TSharedPtr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
     ecs->RegisterSystem(System);
 }
 
-void AttackAbilityHandler::Shutdown(SessionRef session)
+void AttackAbilityHandler::Shutdown()
 {
-    TSharedPtr<FeatureECS> ecs = session.GetFeature<FeatureECS>();
+    IAbilityHandler::Shutdown();
+
+    TSharedPtr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
     ecs->UnregisterSystem(System);
 }
 
@@ -154,20 +162,30 @@ bool AttackAbilityHandler::HasAbility(WorldConstRef world, const UnitId& unit) c
 
 uint32 AttackAbilityHandler::GetCommandPriority(
     WorldConstRef world,
-    const AbilityCommandContext& context,
+    const CommandContext& context,
     const Command& command) const
 {
+    if (HasAnyFlags(command.Flags, ECommandFlags::Acquire))
+    {
+        return GetAcquireCommandPriority(world, context, command); 
+    }
+
+    if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
+    {
+        return GetSmartCommandPriority(world, context, command);
+    }
+
     return AbilityPriority::All();
 }
 
 uint32 AttackAbilityHandler::GetSmartCommandPriority(
     WorldConstRef world,
-    const AbilityCommandContext& context,
-    const Command& command) const
+    const CommandContext& context,
+    const Command& command)
 {
     const ILDSQueryContext& lds = *context.LdsQueryContext;
 
-    Data::AttackAbilityPtr abilityDataPtr(context.AbilityId);
+    Data::AttackAbilityPtr abilityDataPtr(command.CommandId);
 
     uint32 priority = abilityDataPtr.SmartCast().Priority().GetValue(lds);
     if (priority == 0)
@@ -218,7 +236,7 @@ bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, cons
         return false;
     }
 
-    Data::AttackAbilityPtr attackAbility(order.AbilityId);
+    Data::AttackAbilityPtr attackAbility(order.CommandId);
     UnitId targetUnit = UnitId(order.TargetEntity);
     Vec2 targetLocation = order.TargetLocation;
     
@@ -261,7 +279,7 @@ bool AttackAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, co
     return false;
 }
 
-uint32 AttackAbilityHandler::Acquire(const Order& order) const
+uint32 AttackAbilityHandler::AcquireOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
     return 0;
 }
@@ -269,6 +287,18 @@ uint32 AttackAbilityHandler::Acquire(const Order& order) const
 bool AttackAbilityHandler::SupportsMagicBox(const Order& order) const
 {
     return false;
+}
+
+uint32 AttackAbilityHandler::GetAcquireCommandPriority(
+    WorldConstRef world,
+    const CommandContext& context,
+    const Command& command)
+{
+    switch (command.CommandIndex)
+    {
+        case Commands::Attack: return Commands::Attack + 1;
+        default:               return 0;
+    }
 }
 
 bool AttackAbilityHandler::ExecuteAttackTargetOrder(

@@ -49,41 +49,26 @@ namespace Phoenix::RTS
         TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
-    class PHOENIX_RTS_API IEffectHandler : TSharedAsThis<IEffectHandler>
+    class PHOENIX_RTS_API IEffectHandler : public IService
     {
-    public:
+        PHX_DECLARE_TYPE_BEGIN(IEffectHandler)
+            PHX_REGISTER_BASE(IService)
+        PHX_DECLARE_TYPE_END()
 
-        virtual ~IEffectHandler() = default;
+    public:
 
         virtual FName GetEffectId() const;
 
-        virtual void Initialize(SessionRef session);
-        virtual void Shutdown(SessionRef session);
-
-        virtual void OnWorldInitialize(WorldRef world);
-        virtual void OnWorldShutdown(WorldRef world);
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Shutdown() override;
 
         virtual bool Execute(WorldRef world, const EffectExecuteContext& context) const;
         virtual bool CanExecute(WorldConstRef world, const EffectExecuteContext& context) const;
 
         virtual bool Finalize(WorldRef world, const EffectFinalizeContext& context) const;
-    };
 
-    class PHOENIX_RTS_API EffectHandlerBase : public IEffectHandler
-    {
-    public:
+    protected:
 
-        EffectHandlerBase(const FName& effectId);
-
-        FName GetEffectId() const override;
-
-        void Initialize(SessionRef session) override;
-        void Shutdown(SessionRef session) override;
-
-        bool Execute(WorldRef world, const EffectExecuteContext& context) const override;
-        bool CanExecute(WorldConstRef world, const EffectExecuteContext& context) const override;
-
-        FName EffectId;
         TSharedPtr<FeatureEffects> EffectsFeature;
     };
 }

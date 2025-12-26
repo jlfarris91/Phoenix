@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "Ability.h"
+#include "AbilityHandler.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixSim/Containers/Array.h"
@@ -21,8 +21,6 @@ namespace Phoenix::RTS
 {
     struct UnitId;
     struct Order;
-
-    using PrioritizedAbilityHandler = TTuple<UnitId, uint32, TSharedPtr<IAbilityHandler>>;
 
     class PHOENIX_RTS_API FeatureAbilities : public IFeature
     {
@@ -66,50 +64,13 @@ namespace Phoenix::RTS
 
         static uint32 GetAbilities(WorldConstRef world, const UnitId& unit, TArray2<FName>& outAbilityIds);
 
-        //
-        // Order Handling
-        //
-
-        static bool StaticHandleOrder(WorldRef world, const UnitId& unit, const Order& order);
-
-        bool HandleOrder(WorldRef world, const UnitId& unit, const Order& order) const;
-
-        static void StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success);
-
-        void OnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success) const;
-
     protected:
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
-
-        bool ExitActiveAbility(WorldRef world, UnitId unit) const;
-
-        bool HandleCommand(WorldRef world, const Command& command);
-        bool HandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command) const;
-
-        uint32 GetPrioritizedHandlers(
-            WorldConstRef world,
-            const UnitId& unit,
-            const AbilityCommandContext& context,
-            const Command& command,
-            TArray2<PrioritizedAbilityHandler>& outHandlers);
-
-        bool GetHighestPriorityHandler(
-            WorldConstRef world,
-            const UnitId& unit,
-            const AbilityCommandContext& context,
-            const Command& command,
-            PrioritizedAbilityHandler& outHandler);
-
-        uint32 GetHighestPriorityHandlersForSelection(
-            WorldConstRef world,
-            const Command& command,
-            TArray2<PrioritizedAbilityHandler>& outHandlers);
 
         TMap<FName, TSharedPtr<IAbilityHandler>> AbilityIdToHandlerMap;
     };

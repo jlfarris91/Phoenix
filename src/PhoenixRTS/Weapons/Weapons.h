@@ -4,7 +4,7 @@
 #include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 
-#include "PhoenixRTS/Abilities/WeaponAbilityStates.h"
+#include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
 
 namespace Phoenix::ECS
 {
@@ -53,10 +53,13 @@ namespace Phoenix::RTS
         static bool HasAmmoAndNotOnCooldown(WorldConstRef world, const UnitId& unit, const FName& weaponId);
 
         // Returns the minimum range of a given weapon.
-        static Distance GetMinWeaponRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+        static Distance GetMinRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
 
         // Returns the maximum range of a given weapon.
-        static Distance GetMaxWeaponRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+        static Distance GetMaxRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
+
+        // Returns the maximum acquisition range of a given weapon.
+        static Distance GetAcquireRange(WorldConstRef world, const UnitId& unit, const FName& weaponId);
 
         // Returns true if the target is within the minimum range of the weapon.
         static bool TargetIsTooClose(WorldConstRef world, const UnitId& unit, const ECS::EntityId& target, const FName& weaponId);
@@ -86,8 +89,27 @@ namespace Phoenix::RTS
 
         static Angle GetWeaponArcPlusSlop(WorldConstRef world, const UnitId& unit, const FName& weaponId);
 
+        static bool IsFacingTarget(
+            WorldConstRef world,
+            const UnitId& unit,
+            const ECS::EntityId& target,
+            const FName& weaponId);
+
+        static bool IsFacingTarget(
+            WorldConstRef world,
+            const UnitId& unit,
+            const Vec2& target,
+            const FName& weaponId);
+
         // Returns true if the target passes the weapons target filter.
         static bool TargetPassesFilter(
+            WorldConstRef world,
+            const UnitId& source,
+            const ECS::EntityId& target,
+            const FName& weaponId);
+
+        // Returns true if the target passes the weapons acquire filter.
+        static bool TargetPassesAcquireFilter(
             WorldConstRef world,
             const UnitId& source,
             const ECS::EntityId& target,

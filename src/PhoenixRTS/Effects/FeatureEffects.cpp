@@ -513,21 +513,21 @@ bool FeatureEffects::SetEffectDamage(WorldRef world, EffectNodeId id, Value dama
     return FeatureECS::SetBlackboardValue<Value>(world, id, "damage"_n, damage);
 }
 
-void FeatureEffects::Initialize()
+void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
-    IFeature::Initialize();
+    IFeature::Initialize(session);
 
     // Register default handlers
     RegisterEffectHandler<EffectSetHandler>();
 
     for (const TSharedPtr<IEffectHandler>& handler : EffectIdToHandlerMap | std::views::values)
     {
-        handler->Initialize(*Session);
+        handler->Initialize(Session);
     }
 
     for (const TSharedPtr<IResponseHandler>& handler : ResponseIdToHandlerMap | std::views::values)
     {
-        handler->Initialize(*Session);
+        handler->Initialize(Session);
     }
 }
 
@@ -537,12 +537,12 @@ void FeatureEffects::Shutdown()
 
     for (const TSharedPtr<IResponseHandler>& handler : ResponseIdToHandlerMap | std::views::values)
     {
-        handler->Shutdown(*Session);
+        handler->Shutdown();
     }
 
     for (const TSharedPtr<IEffectHandler>& handler : EffectIdToHandlerMap | std::views::values)
     {
-        handler->Shutdown(*Session);
+        handler->Shutdown();
     }
 }
 

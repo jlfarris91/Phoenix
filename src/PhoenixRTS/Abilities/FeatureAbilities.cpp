@@ -3,11 +3,9 @@
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/Abilities/Ability.h"
-#include "PhoenixRTS/Commands/Commands.h"
+#include "PhoenixRTS/Abilities/AbilityHandler.h"
 #include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Orders/FeatureOrderQueue.h"
-#include "PhoenixRTS/Selection/FeatureSelection.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
 
@@ -18,7 +16,7 @@ using namespace Phoenix::RTS;
 
 void FeatureAbilities::RegisterAbilityHandler(const TSharedPtr<IAbilityHandler>& handler)
 {
-    AbilityIdToHandlerMap.emplace(handler->GetAbilityId(), handler);
+    AbilityIdToHandlerMap.emplace(handler->GetCommandId(), handler);
 }
 
 bool FeatureAbilities::UnregisterAbilityHandler(const FName& abilityId)
@@ -136,64 +134,13 @@ uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, T
     return static_cast<uint32>(outAbilityIds.Num());
 }
 
-bool FeatureAbilities::StaticHandleOrder(WorldRef world, const UnitId& unit, const Order& order)
+void FeatureAbilities::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
-    TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
-    return feature && feature->HandleOrder(world, unit, order);
-}
-
-bool FeatureAbilities::HandleOrder(WorldRef world, const UnitId& unit, const Order& order) const
-{
-    TSharedPtr<IAbilityHandler> ability = FindAbilityHandler(world, order.AbilityId);
-    if (!ability)
-    {
-        return false;
-    }
-
-    // TODO (jfarris): should we allow an ability to deny exiting?
-    if (!ExitActiveAbility(world, unit))
-    {
-        return false;
-    }
-
-    if (!ability->ExecuteOrder(world, unit, order))
-    {
-        return false;
-    }
-
-    // TODO (jfarris): broadcast event that the order was executed
-
-    return true;
-}
-
-void FeatureAbilities::StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success)
-{
-    TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
-    feature->OnActiveOrderCompleted(world, unit, success);
-}
-
-void FeatureAbilities::OnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success) const
-{
-    ExitActiveAbility(world, unit);
-
-    // Remove the active order from the queue
-    FeatureOrderQueue::RemoveOrder(world, unit, 0);
-
-    // Handle the next head order
-    uint32 index;
-    if (const Order* order = FeatureOrderQueue::GetHeadOrder(world, unit, index))
-    {
-        StaticHandleOrder(world, unit, *order);
-    }
-}
-
-void FeatureAbilities::Initialize()
-{
-    IFeature::Initialize();
+    IFeature::Initialize(session);
 
     for (const TSharedPtr<IAbilityHandler>& ability : AbilityIdToHandlerMap | std::views::values)
     {
-        ability->Initialize(*Session);
+        ability->Initialize(Session);
     }
 }
 
@@ -203,21 +150,8 @@ void FeatureAbilities::Shutdown()
 
     for (const TSharedPtr<IAbilityHandler>& ability : AbilityIdToHandlerMap | std::views::values)
     {
-        ability->Shutdown(*Session);
+        ability->Shutdown();
     }
-}
-
-bool FeatureAbilities::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args)
-{
-    if (args.Action.Verb == "command"_n ||
-        args.Action.Verb == "command_queued"_n ||
-        args.Action.Verb == "smart_command"_n ||
-        args.Action.Verb == "smart_command_queued"_n)
-    {
-        return HandleCommand(world, args.Action);
-    }
-
-    return false;
 }
 
 void FeatureAbilities::OnWorldInitialize(WorldRef world)
@@ -238,201 +172,4 @@ void FeatureAbilities::OnWorldShutdown(WorldRef world)
     {
         ability->OnWorldShutdown(world);
     }
-}
-
-bool FeatureAbilities::ExitActiveAbility(WorldRef world, UnitId unit) const
-{
-    uint32 index;
-    const Order* currentOrder = FeatureOrderQueue::GetHeadOrder(world, unit, index);
-    if (!currentOrder)
-    {
-        return false;
-    }
-
-    TSharedPtr<IAbilityHandler> ability = FindAbilityHandler(world, currentOrder->AbilityId);
-    if (!ability)
-    {
-        return false;
-    }
-
-    return ability->InterruptOrder(world, unit, *currentOrder);
-}
-
-struct SortHandlersByPriority
-{
-    bool operator()(const PrioritizedAbilityHandler& a, const PrioritizedAbilityHandler& b) const
-    {
-        return std::get<1>(a) > std::get<1>(b);
-    }
-};
-
-bool FeatureAbilities::HandleCommand(WorldRef world, const Command& command)
-{
-    TArray2<PrioritizedAbilityHandler> handlers;
-    if (GetHighestPriorityHandlersForSelection(world, command, handlers) == 0)
-    {
-        return false;
-    }
-
-    bool handled = false;
-
-    for (auto && [unit, priority, handler] : handlers)
-    {
-        Command unitAbilityCommand = command;
-        unitAbilityCommand.AbilityId = handler->GetAbilityId();
-        if (HandleCommandForUnit(world, unit, unitAbilityCommand))
-        {
-            handled = true;
-        }
-    }
-
-    return handled;
-}
-
-bool FeatureAbilities::HandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command) const
-{
-    TSharedPtr<IAbilityHandler> ability = FindAbilityHandler(world, command.AbilityId);
-    if (!ability)
-    {
-        return false;
-    }
-
-    Order order;
-    order.AbilityId = command.AbilityId;
-    order.CommandIndex = command.CommandIndex;
-    order.TargetEntity = command.TargetEntity;
-    order.TargetLocation = command.TargetLocation;
-    order.Flags = EOrderFlags::None;
-
-    if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
-    {
-        SetFlagRef(order.Flags, EOrderFlags::Smart);
-    }
-
-    if (HasAnyFlags(command.Flags, ECommandFlags::Queued))
-    {
-        SetFlagRef(order.Flags, EOrderFlags::Queued);
-    }
-
-    if (ability->IsTransient(world, command.AbilityId))
-    {
-        return ability->ExecuteOrder(world, unit, order);
-    }
-
-    if (HasAnyFlags(command.Flags, ECommandFlags::Replace))
-    {
-        FeatureOrderQueue::ClearOrderQueue(world, unit);
-    }
-
-    if (!FeatureOrderQueue::EnqueueOrder(world, unit, order))
-    {
-        return false;
-    }
-
-    // TODO (jfarris): broadcast event that order was received
-
-    return true;
-}
-
-uint32 FeatureAbilities::GetPrioritizedHandlers(
-    WorldConstRef world,
-    const UnitId& unit,
-    const AbilityCommandContext& context,
-    const Command& command,
-    TArray2<PrioritizedAbilityHandler>& outHandlers)
-{
-    TArray2<FName> abilityIds;
-    abilityIds.Reserve(8);
-
-    GetAbilities(world, unit, abilityIds);
-
-    uint32 numHandlers = 0;
-    for (const FName& abilityId : abilityIds)
-    {
-        TSharedPtr<IAbilityHandler> handler = FindAbilityHandlerCached(world, abilityId);
-        if (!handler)
-        {
-            continue;
-        }
-
-        AbilityCommandContext unitAbilityContext = context;
-        unitAbilityContext.Unit = unit;
-        unitAbilityContext.AbilityId = abilityId;
-
-        if (handler->IgnoreCommand(world, unitAbilityContext, command))
-        {
-            continue;
-        }
-
-        uint32 priority = 0;
-
-        if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
-        {
-            priority = handler->GetSmartCommandPriority(world, unitAbilityContext, command);
-        }
-        else
-        {
-            priority = handler->GetCommandPriority(world, unitAbilityContext, command);
-        }
-
-        if (priority != 0)
-        {
-            outHandlers.EmplaceBack(unit, priority, handler);
-            ++numHandlers;
-        }
-    }
-
-    if (outHandlers.Num() > 1)
-    {
-        std::ranges::stable_sort(outHandlers, SortHandlersByPriority());
-    }
-
-    return numHandlers;
-}
-
-bool FeatureAbilities::GetHighestPriorityHandler(
-    WorldConstRef world,
-    const UnitId& unit,
-    const AbilityCommandContext& context,
-    const Command& command,
-    PrioritizedAbilityHandler& outHandler)
-{
-    TArray2<PrioritizedAbilityHandler> handlers;
-    if (GetPrioritizedHandlers(world, unit, context, command, handlers) == 0)
-    {
-        return false;
-    }
-
-    outHandler = handlers.Front();
-    return true;
-}
-
-uint32 FeatureAbilities::GetHighestPriorityHandlersForSelection(
-    WorldConstRef world,
-    const Command& command,
-    TArray2<PrioritizedAbilityHandler>& outHandlers)
-{
-    EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
-    if (selection == EntityId::Invalid)
-    {
-        return 0;
-    }
-
-    AbilityCommandContext context;
-    context.AbilityId = FName::None;
-    context.SelectionGroupId = FName::None;
-    context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
-
-    uint32 numHandlers = 0;
-    FeatureECS::ForEachEntityInGroup(world, selection, [&](const EntityId& entity)
-    {
-        PrioritizedAbilityHandler handler;
-        if (GetHighestPriorityHandler(world, UnitId(entity), context, command, handler))
-        {
-            outHandlers.PushBack(handler);
-            ++numHandlers;
-        }
-    });
-
-    return numHandlers;
 }

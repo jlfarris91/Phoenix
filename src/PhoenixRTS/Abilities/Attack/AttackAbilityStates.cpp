@@ -1,7 +1,8 @@
-#include "PhoenixRTS/Abilities/AttackAbilityStates.h"
+#include "PhoenixRTS/Abilities/Attack/AttackAbilityStates.h"
 
 #include "PhoenixRTS/Data/DataAttackAbility.h"
 #include "PhoenixRTS/Data/DataWeapon.h"
+#include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Weapons/Weapons.h"
 
 using namespace Phoenix;
@@ -19,7 +20,7 @@ AbilityStateResult AttackTargetState::Enter(
     Target = target;
     WeaponId = weapon.GetObjectId();
     AbilityId = attackAbility.GetObjectId();
-    Range = Weapons::GetMaxWeaponRange(world, unit, WeaponId);
+    Range = Weapons::GetMaxRange(world, unit, WeaponId);
     Arc = Weapons::GetWeaponArcMin(world, unit, WeaponId);
 
     return SetState(world, unit, EActiveState::MoveToEntity);
@@ -52,6 +53,14 @@ AbilityStateResult AttackTargetState::SetState(WorldRef world, const UnitId& uni
     ActiveState = state;
 
     return EnterActiveState(world, unit);
+}
+
+bool AttackTargetState::ReselectWeapon(WorldRef world, const UnitId& unit, const ECS::EntityId& target)
+{
+    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
+    Data::WeaponPtr newWeapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);
+    WeaponId = newWeapon.GetObjectId();
+    return newWeapon.IsValid();
 }
 
 AbilityStateResult AttackTargetState::EnterActiveState(WorldRef world, const UnitId& unit)
@@ -117,9 +126,31 @@ AbilityStateResult AttackTargetState::HandleActiveStateResult(
     {
         switch (newResult.Reason)
         {
+            default:
+            case AbilityStateReasons::TargetTooClose:
             case AbilityStateReasons::TargetLost:
+            {
+                // Continues to end the order
+                break;
+            }
             case AbilityStateReasons::TargetInvalid:
             {
+                // Re-evaluate the same target using the available enabled weapons.
+                if (ReselectWeapon(world, unit, Target))
+                {
+                    // If we found a valid weapon then start moving to the target.
+                    return SetState(world, unit, EActiveState::MoveToEntity);
+                }
+                break;
+            }
+            case AbilityStateReasons::TargetOutOfRange:
+            {
+                newResult = SetState(world, unit, EActiveState::MoveToEntity);
+                break;
+            }
+            case AbilityStateReasons::TargetOutOfAngle:
+            {
+                newResult = SetState(world, unit, EActiveState::FaceEntity);
                 break;
             }
         }
@@ -240,12 +271,11 @@ AbilityStateResult AttackTargetState::HandleWeaponBackSwingResult(
 {
     if (result.Result == EAbilityStateResult::Complete)
     {
-        if (!Weapons::TargetIsInRange(world, unit, Target, WeaponId))
+        // Try to retarget the same target with the current best weapon.
+        if (ReselectWeapon(world, unit, Target))
         {
-            return SetState(world, unit, EActiveState::MoveToEntity);
+            return SetState(world, unit, EActiveState::WeaponPreSwing);
         }
-
-        return SetState(world, unit, EActiveState::WeaponPreSwing);
     }
 
     return result;

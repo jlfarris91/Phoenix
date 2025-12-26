@@ -40,7 +40,7 @@ namespace Phoenix
             FEATURE_CHANNEL(FeatureChannels::DebugRender)
         PHX_FEATURE_END()
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnPreUpdate(const FeatureUpdateArgs& args) override;

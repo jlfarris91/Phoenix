@@ -1,4 +1,4 @@
-#include "PhoenixRTS/Abilities/WeaponAbilityStates.h"
+#include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
 
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
@@ -25,6 +25,11 @@ AbilityStateResult WeaponTargetEntityState::Update(WorldRef world, const UnitId&
     if (!Weapons::TargetPassesFilter(world, unit, Target, WeaponId))
     {
         return { EAbilityStateResult::Fail, AbilityStateReasons::TargetInvalid };
+    }
+
+    if (!Weapons::IsFacingTarget(world, unit, Target, WeaponId))
+    {
+        return { EAbilityStateResult::Fail, AbilityStateReasons::TargetOutOfAngle };
     }
 
     if (Weapons::TargetIsTooClose(world, unit, Target, WeaponId))

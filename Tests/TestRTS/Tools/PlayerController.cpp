@@ -3,19 +3,19 @@
 
 #include <SDL3/SDL_events.h>
 
-#include <PhoenixSim/Session.h>
 #include <PhoenixSim/ECS/FeatureECS.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
+#include <PhoenixSim/Flags.h>
+#include <PhoenixSim/Session.h>
 
-#include <PhoenixRTS/Commands/Commands.h>
+#include <PhoenixRTS/Orders/Commands.h>
 #include <PhoenixRTS/Selection/FeatureSelection.h>
-#include <PhoenixRTS/Orders/FeatureOrderQueue.h>
+#include <PhoenixRTS/Orders/FeatureOrders.h>
 #include <PhoenixRTS/Units/UnitId.h>
 
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
-#include "PhoenixSim/Flags.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -96,7 +96,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
         renderer.DrawCircle(transformPtr->Position, 1.0, Color::Green);
 
         Vec2 lastTargetPos = transformPtr->Position;
-        FeatureOrderQueue::ForEachOrder(world, UnitId(entityId), [&](const Order& order)
+        FeatureOrders::ForEachOrder(world, UnitId(entityId), [&](const Order& order)
         {
             Vec2 orderPos = order.TargetLocation;
 
@@ -301,7 +301,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         {
             FName abilityId = "MoveAbility"_n;
             uint8 commandIndex = 0;
-            ECommandFlags commandFlags = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandFlags::Queued : ECommandFlags::Replace;
+            ECommandFlags commandFlags = state.KeyDown(SDL_KMOD_SHIFT) ? ECommandFlags::Queue : ECommandFlags::Replace;
             EntityId targetEntity = EntityId::Invalid;
             Vec2 targetLocation = state.GetWorldMousePos();
 
@@ -319,7 +319,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             // Issue command to selection
             Command command;
             command.Flags = commandFlags;
-            command.AbilityId = abilityId;
+            command.CommandId = abilityId;
             command.CommandIndex = commandIndex;
             command.TargetEntity = targetEntity;
             command.TargetLocation = targetLocation;

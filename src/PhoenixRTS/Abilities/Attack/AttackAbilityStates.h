@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixRTS/Abilities/AbilityStates.h"
-#include "PhoenixRTS/Abilities/WeaponAbilityStates.h"
+#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
+#include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
 
 namespace Phoenix::RTS
 {
@@ -63,6 +63,10 @@ namespace Phoenix::RTS
     private:
 
         AbilityStateResult SetState(WorldRef world, const UnitId& unit, EActiveState state);
+
+        // Re-evaluates the available weapons and selects the best one for the target.
+        // Returns true if a valid weapon was selected.
+        bool ReselectWeapon(WorldRef world, const UnitId& unit, const ECS::EntityId& target);
 
         AbilityStateResult EnterActiveState(WorldRef world, const UnitId& unit);
         AbilityStateResult UpdateActiveState(WorldRef world, const UnitId& unit);

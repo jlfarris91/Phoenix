@@ -13,9 +13,9 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-EffectDamageHandler::EffectDamageHandler()
-    : EffectHandlerBase("EffectDamage"_n)
+FName EffectDamageHandler::GetEffectId() const
 {
+    return "EffectDamage"_n;
 }
 
 bool EffectDamageHandler::Execute(WorldRef world, const EffectExecuteContext& context) const

@@ -94,9 +94,13 @@ namespace Phoenix::Steering
         // Updates the speed properties of a steering component.
         static bool UpdateSpeed(WorldRef world, const ECS::EntityId& entity, const SteeringSpeedArgs& args);
 
+        static Distance GetEntityInnerRadius(WorldConstRef world, const ECS::EntityId& entity);
+
+        static Distance GetEntityOuterRadius(WorldConstRef world, const ECS::EntityId& entity);
+
     private:
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;

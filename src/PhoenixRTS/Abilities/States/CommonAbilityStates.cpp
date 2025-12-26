@@ -1,4 +1,4 @@
-#include "PhoenixRTS/Abilities/AbilityStates.h"
+#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
 
 #include "PhoenixSteering/FeatureSteering.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"

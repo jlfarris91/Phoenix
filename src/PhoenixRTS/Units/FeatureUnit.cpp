@@ -9,9 +9,8 @@
 
 #include "PhoenixSteering/SteeringComponent.h"
 
-#include "PhoenixRTS/Abilities/Ability.h"
+#include "PhoenixRTS/Abilities/AbilityHandler.h"
 #include "PhoenixRTS/Abilities/FeatureAbilities.h"
-#include "PhoenixRTS/Commands/Commands.h"
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitSystem.h"
@@ -137,6 +136,11 @@ uint8 FeatureUnit::GetOwningPlayer(WorldConstRef world, UnitId unit)
     return unitComp ? unitComp->OwningPlayer : 0;
 }
 
+uint8 FeatureUnit::GetOwningTeam(WorldConstRef world, UnitId unit)
+{
+    return 0;
+}
+
 bool FeatureUnit::UnitCanMove(WorldConstRef world, UnitId unit)
 {
     return true;
@@ -177,6 +181,16 @@ bool FeatureUnit::UnitIsCargo(WorldConstRef world, UnitId unit)
     return false;
 }
 
+bool FeatureUnit::UnitIsDormant(WorldConstRef world, UnitId unit)
+{
+    return false;
+}
+
+int32 FeatureUnit::GetAttackTargetPriority(WorldConstRef world, UnitId unit)
+{
+    return 0;
+}
+
 Time FeatureUnit::GetExpirationTime(WorldRef world, UnitId unit)
 {
     return FeatureECS::GetBlackboardValue<Time>(world, unit, "expiration_time"_n);
@@ -198,8 +212,70 @@ bool FeatureUnit::HasExpired(WorldRef world, UnitId unit)
     return expirationTime > 0 && world.GetSimTime() >= expirationTime;
 }
 
-void FeatureUnit::Initialize()
+uint32 FeatureUnit::QueryUnitsInRange(
+    WorldConstRef world,
+    const Vec2& pos,
+    Distance range,
+    TArray2<UnitId>& outUnits,
+    const UnitRangeQueryArgs& args)
 {
+    EntityRangeQueryArgs rangeQueryArgs;
+    rangeQueryArgs.Kinds = { "Unit"_n };
+
+    TArray<EntityTransform> entities;
+    FeatureECS::QueryEntitiesInRange(world, pos, range, entities);
+
+    uint32 numUnits = 0;
+    for (const EntityTransform& entity : entities)
+    {
+        UnitId entityAsUnit = UnitId(entity.EntityId);
+
+        if (std::ranges::find(args.Exclude, entityAsUnit) != args.Exclude.end())
+        {
+            continue;
+        }
+
+        if (HasNoneFlags(args.Flags, EUnitQueryFlags::Alive) && UnitIsAlive(world, entityAsUnit))
+        {
+            continue;
+        }
+
+        if (HasNoneFlags(args.Flags, EUnitQueryFlags::Dead) && UnitIsDead(world, entityAsUnit))
+        {
+            continue;
+        }
+
+        if (HasNoneFlags(args.Flags, EUnitQueryFlags::Cargo) && UnitIsCargo(world, entityAsUnit))
+        {
+            continue;
+        }
+
+        if (HasNoneFlags(args.Flags, EUnitQueryFlags::Hidden) && UnitIsHidden(world, entityAsUnit))
+        {
+            continue;
+        }
+
+        TeamMask teamMask = 1ull << GetOwningTeam(world, entityAsUnit);
+        if ((args.TeamMask & teamMask) == 0)
+        {
+            continue;
+        }
+
+        outUnits.PushBack(entityAsUnit);
+
+        if (++numUnits >= args.MaxNum)
+        {
+            break;
+        }
+    }
+
+    return numUnits;
+}
+
+void FeatureUnit::Initialize(const TSharedPtr<Phoenix::Session>& session)
+{
+    IFeature::Initialize(session);
+
     UnitSystem = MakeShared<RTS::UnitSystem>();
 
     TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();

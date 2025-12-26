@@ -8,37 +8,8 @@ namespace Phoenix::ECS
 {
     struct PHOENIX_SIM_API TransformComponent : IComponent
     {
-    public:
-        using ThisType = TransformComponent; 
-        using BaseType = IComponent; 
-        static constexpr FName StaticTypeName = "TransformComponent"_n; 
-        static const TypeDescriptor& GetStaticTypeDescriptor()
-        {
-            static TypeDescriptor sd = ThisType::STypeDescriptor::Construct(); 
-            return sd; 
-        }
-        const TypeDescriptor& GetTypeDescriptor() const override
-        {
-            return ThisType::GetStaticTypeDescriptor(); 
-        }
-    private:
-        struct STypeDescriptor
-        {
-            static constexpr FName StaticName = "TransformComponent"_n; 
-            static constexpr const char* StaticDisplayName = "TransformComponent"; 
-            static TypeDescriptor Construct()
-            {
-                TypeDescriptor definition; 
-                definition.CName = "TransformComponent"; 
-                definition.Name = StaticName; 
-                definition.DisplayName = StaticDisplayName; 
-                definition.DefaultConstructFunc = &TTypeHelper<TransformComponent>::DefaultConstruct; 
-                definition.DestructFunc = &TTypeHelper<TransformComponent>::Destruct; 
-                definition.Size = sizeof(ThisType); 
-                definition.RegisterBase<IComponent>(); 
-                return definition; 
-            }
-        };
+        PHX_ECS_DECLARE_COMPONENT(TransformComponent)
+
     public:
 
         // The id of another entity that the owning entity is attached to.

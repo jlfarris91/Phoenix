@@ -29,6 +29,7 @@
 #include <PhoenixSim/Blackboard/FeatureBlackboard.h>
 #include <PhoenixSim/ECS/FeatureECS.h>
 #include <PhoenixSim/Navigation/FeatureNavigation.h>
+#include "PhoenixSim/Services/ServiceContainerBuilder.h"
 #include <PhoenixPhysics/FeaturePhysics.h>
 #include <PhoenixSteering/FeatureSteering.h>
 
@@ -36,12 +37,12 @@
 #include <PhoenixRTS/Units/FeatureUnit.h>
 #include <PhoenixRTS/Abilities/FeatureAbilities.h>
 #include <PhoenixRTS/Effects/FeatureEffects.h>
-#include <PhoenixRTS/Orders/FeatureOrderQueue.h>
+#include <PhoenixRTS/Orders/FeatureOrders.h>
 #include <PhoenixRTS/Selection/FeatureSelection.h>
 
 // RTS Abilities, Effects, Responses
-#include <PhoenixRTS/Abilities/MoveAbilityHandler.h>
-#include "PhoenixRTS/Abilities/AttackAbilityHandler.h"
+#include <PhoenixRTS/Abilities/Move/MoveAbilityHandler.h>
+#include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
 #include <PhoenixRTS/Effects/EffectDamageHandler.h>
 #include <PhoenixRTS/Effects/ResponseDamageHandler.h>
 
@@ -112,45 +113,38 @@ void OnPostWorldUpdate(WorldConstRef world);
 
 void InitSession()
 {
-    TSharedPtr<FeatureBlackboard> blackboardFeature = std::make_shared<FeatureBlackboard>();
-    TSharedPtr<FeatureLDS> ldsFeature = std::make_shared<FeatureLDS>();
-    TSharedPtr<FeatureECS> ecsFeature = std::make_shared<FeatureECS>();
-    TSharedPtr<FeatureNavigation> navMeshFeature = std::make_shared<FeatureNavigation>();
-    TSharedPtr<FeaturePhysics> physicsFeature = std::make_shared<FeaturePhysics>();
-    TSharedPtr<FeatureSteering> steeringFeature = std::make_shared<FeatureSteering>();
-    TSharedPtr<RTS::FeatureUnit> unitFeature = std::make_shared<RTS::FeatureUnit>();
-    TSharedPtr<RTS::FeatureAbilities> abilitiesFeature = std::make_shared<RTS::FeatureAbilities>();
-    TSharedPtr<RTS::FeatureEffects> effectsFeature = std::make_shared<RTS::FeatureEffects>();
-    TSharedPtr<RTS::FeatureOrderQueue> orderQueueFeature = std::make_shared<RTS::FeatureOrderQueue>();
-    TSharedPtr<RTS::FeatureSelection> selectionFeature = std::make_shared<RTS::FeatureSelection>();
-    // TSharedPtr<FeatureLua> luaFeature = std::make_shared<FeatureLua>();
+    TSharedPtr<ServiceContainerBuilder> serviceContainerBuilder = MakeShared<ServiceContainerBuilder>();
+
+    // Register features
+    // ReSharper disable CppExpressionWithoutSideEffects
+    serviceContainerBuilder->RegisterService<FeatureBlackboard>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<FeatureLDS>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<FeatureECS>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<FeatureNavigation>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<FeaturePhysics>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<FeatureSteering>().As<IFeature>();
+    //serviceContainerBuilder->RegisterService<FeatureLua>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().As<IFeature>();
 
     // Register ability handlers
-    abilitiesFeature->RegisterAbilityHandler<RTS::MoveAbilityHandler>();
-    abilitiesFeature->RegisterAbilityHandler<RTS::AttackAbilityHandler>();
+    serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().As<RTS::IAbilityHandler>();
+    serviceContainerBuilder->RegisterService<RTS::AttackAbilityHandler>().As<RTS::IAbilityHandler>();
 
     // Register effect handlers
-    effectsFeature->RegisterEffectHandler<RTS::EffectDamageHandler>();
+    serviceContainerBuilder->RegisterService<RTS::EffectDamageHandler>().As<RTS::IEffectHandler>();
 
     // Register response handlers
-    effectsFeature->RegisterResponseHandler<RTS::ResponseHandlerBase>();
-    effectsFeature->RegisterResponseHandler<RTS::ResponseDamageHandler>();
+    serviceContainerBuilder->RegisterService<RTS::ResponseHandlerBase>().As<RTS::IResponseHandler>();
+    serviceContainerBuilder->RegisterService<RTS::ResponseDamageHandler>().As<RTS::IResponseHandler>();
 
     SessionCtorArgs sessionArgs;
     sessionArgs.DataDirectory = "./Data";
     sessionArgs.ConfigName = "DefaultSession";
-    sessionArgs.FeatureSetArgs.Features.push_back(blackboardFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(ldsFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(ecsFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(navMeshFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(physicsFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(steeringFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(unitFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(abilitiesFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(effectsFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(orderQueueFeature);
-    sessionArgs.FeatureSetArgs.Features.push_back(selectionFeature);
-    // sessionArgs.FeatureSetArgs.Features.push_back(luaFeature);
+    sessionArgs.ServiceContainerBuilder = serviceContainerBuilder;
     sessionArgs.OnPostWorldUpdate = OnPostWorldUpdate;
 
     GSession = Session::Create(sessionArgs);
@@ -177,7 +171,7 @@ void UpdateSessionWorker()
     GSessionThreadWantsExit = false;
 
     SessionStepArgs stepArgs;
-    stepArgs.StepHz = 120;
+    stepArgs.StepHz = Time::D / 2;
 
     while (!GSessionThreadWantsExit)
     {
@@ -336,7 +330,7 @@ void OnAppRenderWorld()
         }));
 
         // Let features draw to the renderer
-        TArray<FeatureSharedPtr> channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
+        TArray2<FeatureSharedPtr> channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
         for (const auto& feature : channelFeatures)
         {
             feature->OnDebugRender(*GCurrWorldView, *GDebugState, *GDebugRenderer);

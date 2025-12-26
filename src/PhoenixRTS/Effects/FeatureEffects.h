@@ -219,7 +219,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;

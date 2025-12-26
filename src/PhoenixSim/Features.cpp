@@ -4,20 +4,7 @@ using namespace Phoenix;
 
 FName IFeature::GetName() const
 {
-    return FName::None;
-}
-
-Session* IFeature::GetSession() const
-{
-    return Session;
-}
-
-void IFeature::Initialize()
-{
-}
-
-void IFeature::Shutdown()
-{
+    return StaticTypeName;
 }
 
 void IFeature::OnWorldInitialize(WorldRef world)
@@ -94,13 +81,13 @@ FeatureSharedPtr FeatureSet::GetFeature(const FName& name) const
     return feature->second;
 }
 
-TArray<FeatureSharedPtr> FeatureSet::GetFeatures() const
+TArray2<FeatureSharedPtr> FeatureSet::GetFeatures() const
 {
-    TArray<FeatureSharedPtr> features;
-    features.reserve(Features.size());
+    TArray2<FeatureSharedPtr> features;
+    features.Reserve(static_cast<uint32>(Features.size()));
     for (auto&& feature : Features)
     {
-        features.push_back(feature.second);
+        features.PushBack(feature.second);
     }
     return features;
 }
@@ -126,20 +113,20 @@ FeatureSet::FeatureSet(const FeatureSetCtorArgs& args)
     RegisterFeatureChannels(args.Features);
 }
 
-TArray<FName> FeatureSet::GetChannelNames() const
+TArray2<FName> FeatureSet::GetChannelNames() const
 {
-    TArray<FName> channelNames;
-    channelNames.reserve(Channels.size());
+    TArray2<FName> channelNames;
+    channelNames.Reserve(static_cast<uint32>(Channels.size()));
     for (auto&& channels : Channels)
     {
-        channelNames.push_back(channels.first);
+        channelNames.PushBack(channels.first);
     }
     return channelNames;
 }
 
-TArray<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
+TArray2<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
 {
-    TArray<FeatureSharedPtr> features;
+    TArray2<FeatureSharedPtr> features;
     auto&& channelIter = Channels.find(channelName);
     if (channelIter != Channels.end())
     {
@@ -148,12 +135,12 @@ TArray<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
     return features;
 }
 
-const TArray<FeatureSharedPtr>& FeatureSet::GetChannelRef(const FName& channelName) const
+const TArray2<FeatureSharedPtr>& FeatureSet::GetChannelRef(const FName& channelName) const
 {
     auto channelIter = Channels.find(channelName);
     if (channelIter == Channels.end())
     {
-        static TArray<FeatureSharedPtr> staticEmpty;
+        static TArray2<FeatureSharedPtr> staticEmpty;
         return staticEmpty;
     }
     return channelIter->second;
@@ -166,7 +153,7 @@ struct FeatureChannelInsert
     FeatureInsertPosition InsertPosition;
 };
 
-void FeatureSet::RegisterFeatureChannels(const TArray<FeatureSharedPtr>& features)
+void FeatureSet::RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& features)
 {
     TArray<FeatureChannelInsert> remainingInserts;
 
@@ -211,7 +198,7 @@ void FeatureSet::RegisterFeatureChannels(const TArray<FeatureSharedPtr>& feature
             }
 
             // The channel exists, try to insert the feature relative to another existing in the channel
-            TArray<FeatureSharedPtr>& channel = Channels[featureInsert.Channel];
+            TArray2<FeatureSharedPtr>& channel = Channels[featureInsert.Channel];
 
             int32 insertIndex = FindChannelInsertIndex(channel, featureInsert.InsertPosition);
 
@@ -221,7 +208,7 @@ void FeatureSet::RegisterFeatureChannels(const TArray<FeatureSharedPtr>& feature
                 continue;
             }
 
-            channel.insert(channel.begin() + insertIndex, featureIter->second);
+            channel.Insert(insertIndex, featureIter->second);
             remainingInserts.erase(remainingInserts.begin() + i--);
             insertedAnything = true;
         }
@@ -237,15 +224,15 @@ void FeatureSet::RegisterFeatureChannels(const TArray<FeatureSharedPtr>& feature
 }
 
 int32 FeatureSet::FindChannelInsertIndex(
-    const TArray<FeatureSharedPtr>& channelFeatures,
+    const TArray2<FeatureSharedPtr>& channelFeatures,
     const FeatureInsertPosition& insertPosition)
 {
     if (insertPosition.RelativePosition == EFeatureInsertPosition::Default)
     {
-        return static_cast<int32>(channelFeatures.size());
+        return static_cast<int32>(channelFeatures.Num());
     }
 
-    for (size_t i = 0; i < channelFeatures.size(); ++i)
+    for (size_t i = 0; i < channelFeatures.Num(); ++i)
     {
         if (channelFeatures[i]->GetName() != insertPosition.FeatureName)
         {

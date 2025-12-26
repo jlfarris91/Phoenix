@@ -6,22 +6,24 @@
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/FPSCalc.h"
 #include "PhoenixSim/Containers/Optional.h"
+#include "Services/ServiceLocator.h"
 
 namespace Phoenix
 {
+    class ServiceContainer;
     class WorldManager;
-}
-
-namespace Phoenix
-{
+    class IFeature;
+    class ServiceContainerBuilder;
+    
     struct PHOENIX_SIM_API SessionCtorArgs
     {
-        FeatureSetCtorArgs FeatureSetArgs;
-        PostWorldUpdateDelegate OnPostWorldUpdate;
-
         PHXString DataDirectory;
         PHXString ConfigName;
         TOptional<nlohmann::json> CustomConfig;
+
+        TSharedPtr<ServiceContainerBuilder> ServiceContainerBuilder;
+
+        PostWorldUpdateDelegate OnPostWorldUpdate;
     };
 
     struct PHOENIX_SIM_API SessionStepArgs
@@ -32,12 +34,14 @@ namespace Phoenix
         FName WorldName = FName::None;
     };
 
-    class PHOENIX_SIM_API Session : public TSharedAsThis<Session>, public BlockBufferOwner<Session>
+    class PHOENIX_SIM_API Session : public TSharedAsThis<Session>
+                                  , public BlockBufferOwner<Session>
+                                  , public ServiceLocator<Session>
     {
     public:
 
         Session() = default;
-        ~Session();
+        ~Session() override;
 
         static TSharedPtr<Session> Create(const SessionCtorArgs& args);
 
@@ -68,6 +72,7 @@ namespace Phoenix
 
         FeatureSet* GetFeatureSet() const;
         WorldManager* GetWorldManager() const;
+        ServiceContainer* GetServiceContainer() const;
 
         // Returns the absolute directory to the session data.
         PHXString GetDataDirectory() const;
@@ -77,6 +82,12 @@ namespace Phoenix
 
         // Returns the absolute directory for a world.
         PHXString GetWorldDirectory(const PHXString& worldType) const;
+
+        // Begin ServiceLocator implementation
+        TSharedPtr<IService> GetService(const FName& typeId) const override;
+        uint32 GetServices(const FName& typeId, TArray2<TSharedPtr<IService>>& outServices) const override;
+        const TArray2<TSharedPtr<IService>>& GetServices() const override;
+        // End ServiceLocator implementation
 
     private:
 
@@ -96,6 +107,7 @@ namespace Phoenix
 
         TSharedPtr<FeatureSet> FeatureSet;
         TSharedPtr<WorldManager> WorldManager;
+        TSharedPtr<ServiceContainer> ServiceContainer;
 
         TArray<TTuple<simtime_t, Action>> ActionQueue;
         std::shared_mutex ActionQueueMutex;

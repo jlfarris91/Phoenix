@@ -49,9 +49,14 @@ namespace Phoenix::ECS
         TArray<TSharedPtr<ISystem>> Systems;
     };
 
+    struct EntityRangeQueryArgs
+    {
+        TOptional<TSet<FName>> Kinds;
+    };
+
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
-    PHX_FEATURE_BEGIN(FeatureECS)
+        PHX_FEATURE_BEGIN(FeatureECS)
             FEATURE_WORLD_BLOCK(FeatureECSDynamicBlock)
             FEATURE_WORLD_BLOCK(FeatureECSScratchBlock)
             FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
@@ -255,7 +260,7 @@ namespace Phoenix::ECS
         template <class T>
         static T& GetComponentRef(WorldRef world, EntityId entityId)
         {
-            IComponent& comp = GetComponentRef(world, entityId, T::StaticName);
+            IComponent& comp = GetComponentRef(world, entityId, T::StaticTypeName);
             return static_cast<T&>(comp);
         }
 
@@ -263,7 +268,7 @@ namespace Phoenix::ECS
         template <class T>
         static const T& GetComponentRef(WorldConstRef world, EntityId entityId)
         {
-            const IComponent& comp = GetComponentRef(world, entityId, T::StaticName);
+            const IComponent& comp = GetComponentRef(world, entityId, T::StaticTypeName);
             return static_cast<const T&>(comp);
         }
 
@@ -603,9 +608,19 @@ namespace Phoenix::ECS
         // Returns true if the entity is within range of the target location.
         static bool IsFacing(WorldConstRef world, EntityId entity, const Vec2& target, Angle threshold);
 
-        static void QueryEntitiesInRange(WorldConstRef world, const Vec2& pos, Distance range, TArray<EntityTransform>& outEntities);
+        static void QueryEntitiesInRange(
+            WorldConstRef world,
+            const Vec2& pos,
+            Distance range,
+            TArray<EntityTransform>& outEntities,
+            const EntityRangeQueryArgs& args = {});
 
-        static void QueryEntitiesInRect(WorldConstRef world, const Vec2& min, const Vec2& max, TArray<EntityTransform>& outEntities);
+        static void QueryEntitiesInRect(
+            WorldConstRef world,
+            const Vec2& min,
+            const Vec2& max,
+            TArray<EntityTransform>& outEntities,
+            const EntityRangeQueryArgs& args = {});
 
         bool bDebugDrawMortonCodeBoundaries = false;
         bool bDebugDrawEntityZCodes = false;

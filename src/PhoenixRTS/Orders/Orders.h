@@ -15,7 +15,8 @@ namespace Phoenix::RTS
         None = 0,
         Replace = 1,
         Queued = 2,
-        Smart = 4
+        Acquire = 4,
+        Smart = 8
     };
 
     enum class PHOENIX_RTS_API EOrderPriorityType : uint8
@@ -26,7 +27,7 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API Order
     {
-        FName AbilityId = FName::None;
+        FName CommandId = FName::None;
         uint8 CommandIndex = 0;
         ECS::EntityId TargetEntity = ECS::EntityId::Invalid;
         Vec2 TargetLocation;

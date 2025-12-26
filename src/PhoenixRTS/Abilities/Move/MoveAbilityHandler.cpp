@@ -1,5 +1,5 @@
 ﻿
-#include "PhoenixRTS/Abilities/MoveAbilityHandler.h"
+#include "PhoenixRTS/Abilities/Move/MoveAbilityHandler.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
@@ -9,9 +9,9 @@
 #include "PhoenixSteering/FeatureSteering.h"
 #include "PhoenixSteering/SteeringComponent.h"
 
-#include "PhoenixRTS/Abilities/FeatureAbilities.h"
 #include "PhoenixRTS/Data/DataMoveAbility.h"
 #include "PhoenixRTS/Data/DataUnit.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/Selection/FeatureSelection.h"
 #include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
@@ -33,7 +33,7 @@ namespace MoveAbilitySystemDetail
         {
             PHX_PROFILE_ZONE_SCOPED_N("UpdateMoveAbilityComponentJob");
 
-            TSharedPtr<FeatureAbilities> abilities = GetFeature<FeatureAbilities>(*World);
+            TSharedPtr<FeatureOrders> ordersFeature = GetFeature<FeatureOrders>(*World);
 
             for (auto && [entityId, index, moveComp] : span)
             {
@@ -42,7 +42,7 @@ namespace MoveAbilitySystemDetail
                     AbilityStateResult result = moveComp.Update(*World, UnitId(entityId));
                     if (result != EAbilityStateResult::Continue)
                     {
-                        abilities->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
+                        ordersFeature->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
                     }
                 }
             }
@@ -100,20 +100,28 @@ void MoveAbilityComponent::Exit(WorldRef world, const UnitId& unit)
 }
 
 MoveAbilityHandler::MoveAbilityHandler()
-    : AbilityHandlerBase("MoveAbility"_n)
 {
     System = MakeShared<MoveAbilitySystem>();
 }
 
-void MoveAbilityHandler::Initialize(SessionRef session)
+FName MoveAbilityHandler::GetCommandId() const
 {
-    TSharedPtr<FeatureECS> ecs = session.GetFeature<FeatureECS>();
+    return "MoveAbility"_n;
+}
+
+void MoveAbilityHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+{
+    IAbilityHandler::Initialize(session);
+
+    TSharedPtr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
     ecs->RegisterSystem(System);
 }
 
-void MoveAbilityHandler::Shutdown(SessionRef session)
+void MoveAbilityHandler::Shutdown()
 {
-    TSharedPtr<FeatureECS> ecs = session.GetFeature<FeatureECS>();
+    IAbilityHandler::Shutdown();
+
+    TSharedPtr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
     ecs->UnregisterSystem(System);
 }
 
@@ -187,7 +195,7 @@ bool MoveAbilityHandler::HasAbility(WorldConstRef world, const UnitId& unit) con
 
 bool MoveAbilityHandler::IgnoreCommand(
     WorldConstRef world,
-    const AbilityCommandContext& context,
+    const CommandContext& context,
     const Command& command) const
 {
     uint32 owningPlayer = FeatureUnit::GetOwningPlayer(world, context.Unit);
@@ -197,40 +205,20 @@ bool MoveAbilityHandler::IgnoreCommand(
 
 uint32 MoveAbilityHandler::GetCommandPriority(
     WorldConstRef world,
-    const AbilityCommandContext& context,
+    const CommandContext& context,
     const Command& command) const
 {
+    if (HasAnyFlags(command.Flags, ECommandFlags::Acquire))
+    {
+        return GetAcquireCommandPriority(world, context, command);
+    }
+
+    if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
+    {
+        return GetSmartCommandPriority(world, context, command);
+    }
+
     return AbilityPriority::All();
-}
-
-uint32 MoveAbilityHandler::GetSmartCommandPriority(
-    WorldConstRef world,
-    const AbilityCommandContext& context,
-    const Command& command) const
-{
-    const ILDSQueryContext& lds = *context.LdsQueryContext;
-    Data::MoveAbilityPtr dataPtr(context.AbilityId);
-
-    uint32 priority = dataPtr.SmartCast().Priority().GetValue(lds);
-    if (priority == 0)
-    {
-        return 0;
-    }
-
-    Data::TargetFilter targetFilter = dataPtr.SmartCast().Filter().ReadObject(lds);
-
-    const bool magicBoxed = false;
-    const bool treatsAsEnemy = false;
-
-    if (magicBoxed ||
-        command.TargetEntity == EntityId::Invalid ||
-        !treatsAsEnemy &&
-        TargetFiltering::PassesTargetFilter(world, targetFilter, context.Unit, command.TargetEntity))
-    {
-        return priority;
-    }
-
-    return 0;
 }
 
 bool MoveAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const Order& order) const
@@ -268,12 +256,45 @@ bool MoveAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, cons
     return false;
 }
 
-uint32 MoveAbilityHandler::Acquire(const Order& order) const
+uint32 MoveAbilityHandler::AcquireOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
     return 0;
 }
 
-bool MoveAbilityHandler::SupportsMagicBox(const Order& order) const
+uint32 MoveAbilityHandler::GetAcquireCommandPriority(
+    WorldConstRef world,
+    const CommandContext& context,
+    const Command& command)
 {
-    return false;
+    return 0;
+}
+
+uint32 MoveAbilityHandler::GetSmartCommandPriority(
+    WorldConstRef world,
+    const CommandContext& context,
+    const Command& command)
+{
+    const ILDSQueryContext& lds = *context.LdsQueryContext;
+    Data::MoveAbilityPtr dataPtr(command.CommandId);
+
+    uint32 priority = dataPtr.SmartCast().Priority().GetValue(lds);
+    if (priority == 0)
+    {
+        return 0;
+    }
+
+    Data::TargetFilter targetFilter = dataPtr.SmartCast().Filter().ReadObject(lds);
+
+    const bool magicBoxed = false;
+    const bool treatsAsEnemy = false;
+
+    if (magicBoxed ||
+        command.TargetEntity == EntityId::Invalid ||
+        !treatsAsEnemy &&
+        TargetFiltering::PassesTargetFilter(world, targetFilter, context.Unit, command.TargetEntity))
+    {
+        return priority;
+    }
+
+    return 0;
 }

@@ -2,6 +2,8 @@
 #include "Session.h"
 #include "Features.h"
 #include "Worlds.h"
+#include "Profiling.h"
+#include "Services/ServiceContainerBuilder.h"
 
 #include <algorithm>
 #ifdef _WIN32
@@ -12,14 +14,13 @@
 
 #include <fstream>
 
-#include "Profiling.h"
-
 using namespace Phoenix;
 
 Session::~Session()
 {
     FeatureSet.reset();
     WorldManager.reset();
+    ServiceContainer.reset();
 }
 
 TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
@@ -34,6 +35,15 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
         session->CustomConfig = args.CustomConfig.Get();
     }
 
+    if (args.ServiceContainerBuilder)
+    {
+        session->ServiceContainer = args.ServiceContainerBuilder->Build();
+    }
+    else
+    {
+        session->ServiceContainer = MakeShared<Phoenix::ServiceContainer>();
+    }
+
     auto featuresIter = session->Config.find("features");
     if (featuresIter != session->Config.end())
     {
@@ -43,14 +53,16 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
         }
     }
 
-    session->FeatureSet = std::make_shared<Phoenix::FeatureSet>(args.FeatureSetArgs);
+    FeatureSetCtorArgs featureSetCtorArgs;
+    session->ServiceContainer->GetServices2<IFeature>(featureSetCtorArgs.Features);
+    session->FeatureSet = MakeShared<Phoenix::FeatureSet>(featureSetCtorArgs);
 
     WorldManagerCtorArgs worldManagerArgs;
     worldManagerArgs.Session = session;
     worldManagerArgs.FeatureSet = session->FeatureSet;
     worldManagerArgs.OnPostWorldUpdate = args.OnPostWorldUpdate;
     worldManagerArgs.Config = session->Config["worlds"];
-    session->WorldManager = std::make_shared<Phoenix::WorldManager>(worldManagerArgs);
+    session->WorldManager = MakeShared<Phoenix::WorldManager>(worldManagerArgs);
 
     BlockBuffer::CtorArgs sessionBlockArgs;
     for (const FeatureSharedPtr& feature : session->FeatureSet->GetFeatures())
@@ -71,10 +83,9 @@ void Session::Initialize()
 {
     LoadConfig();
 
-    for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
+    for (const TSharedPtr<IService>& service : ServiceContainer->GetServices())
     {
-        feature->Session = this;
-        feature->Initialize();
+        service->Initialize(shared_from_this());
     }
 
     StartTime = PHX_SYS_CLOCK_NOW();
@@ -86,10 +97,9 @@ void Session::Initialize()
 
 void Session::Shutdown()
 {
-    for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
+    for (const TSharedPtr<IService>& service : ServiceContainer->GetServices())
     {
-        feature->Shutdown();
-        feature->Session = nullptr;
+        service->Shutdown();
     }
 }
 
@@ -207,6 +217,11 @@ WorldManager* Session::GetWorldManager() const
     return WorldManager.get();
 }
 
+ServiceContainer* Session::GetServiceContainer() const
+{
+    return ServiceContainer.get();
+}
+
 PHXString Session::GetDataDirectory() const
 {
     return DataDirectory.generic_string();
@@ -220,6 +235,21 @@ PHXString Session::GetWorldsDirectory() const
 PHXString Session::GetWorldDirectory(const PHXString& worldType) const
 {
     return (DataDirectory / "Worlds" / worldType).generic_string();
+}
+
+TSharedPtr<IService> Session::GetService(const FName& typeId) const
+{
+    return ServiceContainer->GetService(typeId);
+}
+
+uint32 Session::GetServices(const FName& typeId, TArray2<TSharedPtr<IService>>& outServices) const
+{
+    return ServiceContainer->GetServices(typeId, outServices);
+}
+
+const TArray2<TSharedPtr<IService>>& Session::GetServices() const
+{
+    return ServiceContainer->GetServices();
 }
 
 void Session::LoadConfig()
@@ -325,7 +355,7 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Pre-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreUpdate");
-        const TArray<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreUpdate);
+        const TArray2<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreUpdate(updateArgs);
@@ -335,7 +365,7 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Update
     {
         PHX_PROFILE_ZONE_SCOPED_N("Update");
-        const TArray<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::Update);
+        const TArray2<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::Update);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnUpdate(updateArgs);
@@ -345,7 +375,7 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Post-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostUpdate");
-        const TArray<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostUpdate);
+        const TArray2<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostUpdate(updateArgs);

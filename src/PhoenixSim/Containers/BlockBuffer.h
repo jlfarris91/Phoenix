@@ -190,7 +190,7 @@ namespace Phoenix
     PHX_DECLARE_TYPE_END()
 
 #define PHX_DECLARE_BLOCK(block, type) \
-    static constexpr FName StaticName = #block##_n; \
+    static constexpr FName StaticTypeName = #block##_n; \
     static constexpr EBufferBlockType StaticType = type;
 
 #define PHX_DECLARE_BLOCK_STATIC_BEGIN(block) \

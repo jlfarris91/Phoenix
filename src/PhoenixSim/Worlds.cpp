@@ -316,7 +316,7 @@ FName WorldManager::GenerateNewWorldId(const FName& worldType)
 
 void WorldManager::InitializeWorld(WorldRef world) const
 {
-    TArray<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldInitialize);
+    TArray2<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldInitialize);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldInitialize(world);
@@ -327,7 +327,7 @@ void WorldManager::InitializeWorld(WorldRef world) const
 
 void WorldManager::ShutdownWorld(WorldRef world) const
 {
-    TArray<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldShutdown);
+    TArray2<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldShutdown);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldShutdown(world);
@@ -356,7 +356,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreWorldUpdate");
 
-        const TArray<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PreWorldUpdate);
+        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PreWorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreWorldUpdate(world, updateArgs);
@@ -367,7 +367,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("WorldUpdate");
 
-        const TArray<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::WorldUpdate);
+        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::WorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnWorldUpdate(world, updateArgs);
@@ -378,7 +378,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostWorldUpdate");
 
-        const TArray<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PostWorldUpdate);
+        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PostWorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostWorldUpdate(world, updateArgs);
@@ -405,7 +405,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreHandleWorldAction");
 
-        const TArray<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PreHandleWorldAction);
+        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PreHandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreHandleWorldAction(world, actionArgs);
@@ -416,7 +416,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("HandleWorldAction");
 
-        const TArray<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::HandleWorldAction);
+        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::HandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnHandleWorldAction(world, actionArgs);
@@ -427,7 +427,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostHandleWorldAction");
 
-        const TArray<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PostHandleWorldAction);
+        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PostHandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostHandleWorldAction(world, actionArgs);

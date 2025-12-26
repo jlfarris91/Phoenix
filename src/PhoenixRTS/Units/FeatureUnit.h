@@ -6,7 +6,9 @@
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixRTS/Commands/Commands.h"
+#include "PhoenixRTS/Orders/Commands.h"
+#include "PhoenixRTS/Teams/Teams.h"
+#include "PhoenixSim/Containers/Array.h"
 
 namespace Phoenix::ECS
 {
@@ -40,6 +42,24 @@ namespace Phoenix::RTS
         Distance MaxRange = 16;
     };
 
+    enum class EUnitQueryFlags
+    {
+        None,
+        Alive = 1,
+        Dead = 2,
+        Cargo = 4,
+        Hidden = 8,
+        AliveOrDead = Alive | Dead
+    };
+
+    struct UnitRangeQueryArgs
+    {
+        EUnitQueryFlags Flags = EUnitQueryFlags::AliveOrDead;
+        TeamMask TeamMask = Teams::All;
+        TArray<UnitId> Exclude;
+        uint32 MaxNum = 64;
+    };
+
     class PHOENIX_RTS_API FeatureUnit : public IFeature
     {
         PHX_FEATURE_BEGIN(FeatureUnit)
@@ -71,6 +91,8 @@ namespace Phoenix::RTS
 
         static uint8 GetOwningPlayer(WorldConstRef world, UnitId unit);
 
+        static uint8 GetOwningTeam(WorldConstRef world, UnitId unit);
+
         static bool UnitCanMove(WorldConstRef world, UnitId unit);
 
         static bool UnitCanTurn(WorldConstRef world, UnitId unit);
@@ -87,6 +109,10 @@ namespace Phoenix::RTS
 
         static bool UnitIsCargo(WorldConstRef world, UnitId unit);
 
+        static bool UnitIsDormant(WorldConstRef world, UnitId unit);
+
+        static int32 GetAttackTargetPriority(WorldConstRef world, UnitId unit);
+
         // Returns the time that the unit will expire.
         static Time GetExpirationTime(WorldRef world, UnitId unit);
 
@@ -99,9 +125,16 @@ namespace Phoenix::RTS
         // Returns true if the unit had an expiration timer set and the timer has expired.
         static bool HasExpired(WorldRef world, UnitId unit);
 
+        static uint32 QueryUnitsInRange(
+            WorldConstRef world,
+            const Vec2& pos,
+            Distance range,
+            TArray2<UnitId>& outUnits,
+            const UnitRangeQueryArgs& args);
+
     protected:
 
-        void Initialize() override;
+        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 

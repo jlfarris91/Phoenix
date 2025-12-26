@@ -853,7 +853,8 @@ void FeatureECS::QueryEntitiesInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TArray<EntityTransform>& outEntities)
+    TArray<EntityTransform>& outEntities,
+    const EntityRangeQueryArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -874,6 +875,17 @@ void FeatureECS::QueryEntitiesInRange(
         ranges,
         [&](const EntityTransform& entityTransform)
         {
+            const Entity* entity = GetEntityPtr(world, entityTransform.EntityId);
+            if (!entity)
+            {
+                return;
+            }
+
+            if (args.Kinds.IsSet() && !args.Kinds.Get().contains(entity->Kind))
+            {
+                return;
+            }
+
             const Vec2& entityPos = entityTransform.TransformComponent->Transform.Position;
             if (Vec2::Distance(pos, entityPos) < range)
             {
@@ -886,7 +898,8 @@ void FeatureECS::QueryEntitiesInRect(
     WorldConstRef world,
     const Vec2& min,
     const Vec2& max,
-    TArray<EntityTransform>& outEntities)
+    TArray<EntityTransform>& outEntities,
+    const EntityRangeQueryArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 

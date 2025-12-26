@@ -1,12 +1,14 @@
 
 #include "PhoenixRTS/Units/UnitSystem.h"
 
-#include "FeatureUnit.h"
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
 
+#include "PhoenixRTS/TargetFiltering/TargetScanner.h"
+#include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
+#include "PhoenixSim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -21,6 +23,7 @@ namespace UnitSystemDetail
             PHX_PROFILE_ZONE_SCOPED_N("UpdateUnitsJob");
 
             WorldRef world = *World;
+            auto lds = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
 
             for (auto && [entityId, index, unitComp] : span)
             {
@@ -30,6 +33,15 @@ namespace UnitSystemDetail
                 if (FeatureUnit::HasExpired(world, unit))
                 {
                     FeatureECS::ReleaseEntity(world, unit);
+                    continue;
+                }
+
+                if (!FeatureUnit::UnitIsDormant(world, unit))
+                {
+                    TargetScanArgs args;
+                    args.Flags = ETargetScanFlags::AutoAcquire;
+                    args.LdsQueryContext = lds;
+                    TargetScanner::ScanForTarget(world, unit, args);
                 }
             }
         }
