@@ -51,14 +51,11 @@ namespace Phoenix::LDS
 
     class PHOENIX_SIM_API FeatureLDS : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureLDS)
-            FEATURE_SESSION_BLOCK(FeatureLDSSessionDynamicBlock)
-            FEATURE_WORLD_BLOCK(FeatureLDSWorldDynamicBlock)
-            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureLDS)
 
     public:
+
+        FeatureLDS();
 
         // Gets the static session-level catalog.
         TSharedPtr<Catalog> GetStaticSessionCatalog();

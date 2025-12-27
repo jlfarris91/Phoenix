@@ -45,9 +45,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API MoveAbilityHandler : public IAbilityHandler
     {
-        PHX_DECLARE_TYPE_BEGIN(MoveAbilityHandler)
-            PHX_REGISTER_BASE(IAbilityHandler)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_TYPE_WITH_BASE(MoveAbilityHandler, IAbilityHandler)
 
     public:
 
@@ -79,14 +77,7 @@ namespace Phoenix::RTS
 
         bool InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const override;
 
-        uint32 AcquireOrder(WorldRef world, const UnitId& unit, const Order& order) const override;
-
     private:
-
-        static uint32 GetAcquireCommandPriority(
-            WorldConstRef world,
-            const CommandContext& context,
-            const Command& command);
 
         static uint32 GetSmartCommandPriority(
             WorldConstRef world,

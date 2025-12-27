@@ -6,6 +6,13 @@
 using namespace Phoenix;
 using namespace Phoenix::Blackboard;
 
+FeatureBlackboard::FeatureBlackboard()
+{
+    FEATURE_SESSION_BLOCK(FeatureBlackboardDynamicSessionBlock)
+    FEATURE_WORLD_BLOCK(FeatureBlackboardDynamicWorldBlock)
+    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+}
+
 void FeatureBlackboard::OnPostUpdate(const FeatureUpdateArgs& args)
 {
     IFeature::OnPostUpdate(args);

@@ -165,17 +165,25 @@ uint32 AttackAbilityHandler::GetCommandPriority(
     const CommandContext& context,
     const Command& command) const
 {
-    if (HasAnyFlags(command.Flags, ECommandFlags::Acquire))
-    {
-        return GetAcquireCommandPriority(world, context, command); 
-    }
-
     if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
     {
         return GetSmartCommandPriority(world, context, command);
     }
 
     return AbilityPriority::All();
+}
+
+AcquireResult AttackAbilityHandler::AcquireOrder(
+    WorldConstRef world,
+    const AcquireContext& context,
+    const AcquireRequest& request) const
+{
+    if (request.Verb == "Attack"_n)
+    {
+        return { context.AbilityId, Commands::Attack };
+    }
+
+    return {};
 }
 
 uint32 AttackAbilityHandler::GetSmartCommandPriority(
@@ -236,12 +244,12 @@ bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, cons
         return false;
     }
 
-    Data::AttackAbilityPtr attackAbility(order.CommandId);
+    Data::AttackAbilityPtr attackAbility(order.OrderId);
     UnitId targetUnit = UnitId(order.TargetEntity);
     Vec2 targetLocation = order.TargetLocation;
     
 
-    if (order.CommandIndex == Commands::Attack)
+    if (order.OrderIndex == Commands::Attack)
     {
         if (targetUnit != EntityId::Invalid)
         {
@@ -258,7 +266,7 @@ bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, cons
             }
         }
     }
-    else if (order.CommandIndex == Commands::AttackGround)
+    else if (order.OrderIndex == Commands::AttackGround)
     {
         if (ExecuteAttackGroundOrder(world, unit, targetLocation, attackAbility, *attackComp))
         {
@@ -279,26 +287,9 @@ bool AttackAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, co
     return false;
 }
 
-uint32 AttackAbilityHandler::AcquireOrder(WorldRef world, const UnitId& unit, const Order& order) const
-{
-    return 0;
-}
-
 bool AttackAbilityHandler::SupportsMagicBox(const Order& order) const
 {
     return false;
-}
-
-uint32 AttackAbilityHandler::GetAcquireCommandPriority(
-    WorldConstRef world,
-    const CommandContext& context,
-    const Command& command)
-{
-    switch (command.CommandIndex)
-    {
-        case Commands::Attack: return Commands::Attack + 1;
-        default:               return 0;
-    }
 }
 
 bool AttackAbilityHandler::ExecuteAttackTargetOrder(

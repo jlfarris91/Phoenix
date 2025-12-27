@@ -2,17 +2,9 @@
 
 using namespace Phoenix;
 
-FName IFeature::GetName() const
+const FeatureDefinition& IFeature::GetFeatureDefinition()
 {
-    return StaticTypeName;
-}
-
-void IFeature::OnWorldInitialize(WorldRef world)
-{
-}
-
-void IFeature::OnWorldShutdown(WorldRef world)
-{
+    return Definition;
 }
 
 void IFeature::OnPreUpdate(const FeatureUpdateArgs& args)
@@ -107,7 +99,8 @@ FeatureSet::FeatureSet(const FeatureSetCtorArgs& args)
 {
     for (const FeatureSharedPtr& feature : args.Features)
     {
-        Features.insert_or_assign(feature->GetName(), feature);
+        const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
+        Features.insert_or_assign(typeDescriptor.GetFName(), feature);
     }
 
     RegisterFeatureChannels(args.Features);
@@ -162,7 +155,8 @@ void FeatureSet::RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& featur
         FeatureDefinition featureDefinition = feature->GetFeatureDefinition();
         for (const FeatureChannelInsertArgs& channelInsert : featureDefinition.Channels)
         {
-            remainingInserts.emplace_back(feature->GetName(), channelInsert.Channel, channelInsert.InsertPosition);
+            const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
+            remainingInserts.emplace_back(typeDescriptor.GetFName(), channelInsert.Channel, channelInsert.InsertPosition);
         }
     }
 
@@ -234,7 +228,8 @@ int32 FeatureSet::FindChannelInsertIndex(
 
     for (size_t i = 0; i < channelFeatures.Num(); ++i)
     {
-        if (channelFeatures[i]->GetName() != insertPosition.FeatureName)
+        const TypeDescriptor& typeDescriptor = channelFeatures[i]->GetTypeDescriptor();
+        if (typeDescriptor.GetFName() != insertPosition.FeatureName)
         {
             continue;
         }

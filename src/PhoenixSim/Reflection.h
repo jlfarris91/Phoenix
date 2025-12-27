@@ -2,7 +2,10 @@
 #pragma once
 
 #include <memory>
+#include <ranges>
 
+#include "Flags.h"
+#include "Utils.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Platform.h"
 
@@ -26,6 +29,12 @@ namespace Phoenix
         Name,
         FixedPoint,
         COUNT
+    };
+
+    enum class PHOENIX_SIM_API ETypeDescriptorFlags
+    {
+        None = 0,
+        Interface = 1,
     };
 
     struct PHOENIX_SIM_API IMethodPointer
@@ -434,7 +443,7 @@ namespace Phoenix
         virtual ~TypeDescriptor() {}
 
         const char* GetCName() const { return CName; }
-        FName GetFName() const { return Name; }
+        FName GetFName() const { return FName; }
         PHXString GetDisplayName() const { return DisplayName; }
         size_t GetSize() const { return Size; }
 
@@ -532,6 +541,11 @@ namespace Phoenix
             return descriptor;
         }
 
+        bool IsInterface() const
+        {
+            return HasAnyFlags(Flags, ETypeDescriptorFlags::Interface);
+        }
+
         void DefaultConstruct(void* data) const
         {
             if (DefaultConstructFunc)
@@ -548,16 +562,98 @@ namespace Phoenix
             }
         }
 
+        bool IsA(const FName& baseTypeId) const
+        {
+            for (const BaseDescriptor& baseDescriptor : Bases | std::ranges::views::values)
+            {
+                if (baseDescriptor.Descriptor->FName == baseTypeId)
+                {
+                    return true;
+                }
+                return baseDescriptor.Descriptor->IsA(baseTypeId);
+            }
+            return false;
+        }
+
+        template <class TBase>
+        bool IsA() const
+        {
+            return IsA(TBase::StaticTypeName);
+        }
+
+        template <class TCallback>
+        void ForEachInterface(const TCallback& callback) const
+        {
+            for (const BaseDescriptor& baseDescriptor : Bases | std::ranges::views::values)
+            {
+                if (baseDescriptor.Descriptor->IsInterface())
+                {
+                    InvokeForEachCallbackNoIndex(callback, *baseDescriptor.Descriptor);
+                }
+
+                baseDescriptor.Descriptor->ForEachInterface(callback);
+            }
+        }
+
         TMap<PHXString, PropertyDescriptor> Properties;
         TMap<PHXString, MethodDescriptor> Methods;
         TMap<PHXString, BaseDescriptor> Bases;
         void (*DefaultConstructFunc)(void*) = nullptr;
         void (*DestructFunc)(void*) = nullptr;
         const char* CName;
-        FName Name;
+        FName FName;
         const char* DisplayName;
-        size_t Size; 
+        size_t Size;
+        ETypeDescriptorFlags Flags = ETypeDescriptorFlags::None;
     };
+
+    template <class TClass>
+    bool IsA(const FName& baseTypeId)
+    {
+        return TClass::GetStaticTypeDescriptor().IsA(baseTypeId);
+    }
+
+    template <class TClass, class TBase>
+    bool IsA()
+    {
+        return TClass::GetStaticTypeDescriptor().template IsA<TBase>();
+    }
+
+    template <class TBase, class TClass>
+    bool IsA(const TClass* ptr)
+    {
+        return ptr->GetTypeDescriptor().template IsA<TBase>();
+    }
+
+    template <class TBase, class TClass>
+    bool IsA(const TSharedPtr<TClass>& ptr)
+    {
+        return ptr->GetTypeDescriptor().template IsA<TBase>();
+    }
+
+    template <class TBase, class TClass>
+    TBase* Cast(TClass* ptr)
+    {
+        return IsA<TBase>(ptr) ? static_cast<TBase*>(ptr) : nullptr;
+    }
+
+    template <class TBase, class TClass>
+    const TBase* Cast(const TClass* ptr)
+    {
+        return IsA<TBase>(ptr) ? static_cast<const TBase*>(ptr) : nullptr;
+    }
+
+    template <class TBase, class TClass>
+    TSharedPtr<TBase> Cast(const TSharedPtr<TClass>& ptr)
+    {
+        return IsA<TBase>(ptr) ? std::static_pointer_cast<TBase>(ptr) : nullptr;
+    }
+
+    template <class TBase, class TClass>
+    TSharedPtr<const TBase> Cast(const TSharedPtr<const TClass>& ptr)
+    {
+        return IsA<TBase>(ptr) ? std::static_pointer_cast<const TBase>(ptr) : nullptr;
+    }
 
     template <class T, class T2 = void>
     struct TTypeHelper;
@@ -565,8 +661,15 @@ namespace Phoenix
     template <class T>
     struct TTypeHelper<T, std::enable_if_t<!std::is_default_constructible_v<T>>>
     {
-        static void DefaultConstruct(void* data) { memset(data, 0, sizeof(T)); }
-        static void Destruct(void* data) { static_cast<T*>(data)->~T(); }
+        static void DefaultConstruct(void* data)
+        {
+            PHX_ASSERT(false);
+            // memset(data, 0, sizeof(T));
+        }
+        static void Destruct(void* data)
+        {
+            static_cast<T*>(data)->~T();
+        }
     };
 
     template <class T>
@@ -576,50 +679,116 @@ namespace Phoenix
         static void Destruct(void* data) { static_cast<T*>(data)->~T(); }
     };
 
-#define PHX_DECLARE_TYPE_WITH_DESCRIPTOR_BEGIN(type, descriptorType) \
+    template <class>
+    struct TTypeDescriptor
+    {
+        using Type = TypeDescriptor;
+    };
+
+    template <class T>
+    concept IsValidBaseType = requires
+    {
+        T::GetStaticTypeDescriptor();
+    };
+
+#define PHX_DECLARE_TYPE_BEGIN_(type, base, flags) \
     public: \
         using ThisType = type; \
-        static constexpr FName StaticTypeName = #type##_n; \
+        using BaseType = base; \
     private: \
         struct STypeDescriptor { \
-            static constexpr FName StaticTypeName = #type##_n; \
-            static constexpr const char* StaticDisplayName = #type; \
-            static descriptorType Construct() \
+            static constexpr FName StaticFName = #type##_n; \
+            static constexpr const char* StaticCName = #type; \
+            static auto Construct() \
             { \
-                descriptorType definition; \
-                definition.CName = #type; \
-                definition.Name = StaticTypeName; \
-                definition.DisplayName = StaticDisplayName; \
-                definition.DefaultConstructFunc = &TTypeHelper<type>::DefaultConstruct;\
-                definition.DestructFunc = &TTypeHelper<type>::Destruct; \
-                definition.Size = sizeof(ThisType);
+                TypeDescriptor descriptor; \
+                descriptor.Flags = flags; \
+                descriptor.Size = sizeof(type); \
+                descriptor.DefaultConstructFunc = &TTypeHelper<type>::DefaultConstruct; \
+                descriptor.DestructFunc = &TTypeHelper<type>::Destruct; \
+                descriptor.FName = type::STypeDescriptor::StaticFName; \
+                descriptor.CName = type::STypeDescriptor::StaticCName; \
+                descriptor.DisplayName = type::STypeDescriptor::StaticCName; \
+                if constexpr ( IsValidBaseType<base> ) \
+                { \
+                    descriptor.RegisterBase<base>(); \
+                }
 
-#define PHX_DECLARE_TYPE_WITH_DESCRIPTOR_END(descriptorType) \
-                return definition; \
+#define PHX_DECLARE_TYPE_END_() \
+                return descriptor; \
             } \
-            static const descriptorType& StaticGet() \
+            static const auto& StaticGet() \
             { \
-                static descriptorType definition = Construct(); \
+                static TypeDescriptor definition = Construct(); \
                 return definition; \
             } \
         }; \
     public: \
+        static constexpr FName StaticTypeName = STypeDescriptor::StaticFName; \
         static const TypeDescriptor& GetStaticTypeDescriptor() { return STypeDescriptor::StaticGet(); } \
-        const TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); }
 
-#define PHX_DECLARE_TYPE_BEGIN(type) PHX_DECLARE_TYPE_WITH_DESCRIPTOR_BEGIN(type, Phoenix::TypeDescriptor)
-#define PHX_DECLARE_TYPE_END() PHX_DECLARE_TYPE_WITH_DESCRIPTOR_END(Phoenix::TypeDescriptor)
+//
+// Declare type with base
+//
+
+#define PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, base) PHX_DECLARE_TYPE_BEGIN_(type, base, ETypeDescriptorFlags::None)
+#define PHX_DECLARE_TYPE_WITH_BASE_END() \
+    PHX_DECLARE_TYPE_END_() \
+    const TypeDescriptor& GetTypeDescriptor() const override { return GetStaticTypeDescriptor(); } \
+
+#define PHX_DECLARE_TYPE_WITH_BASE(type, base) \
+    PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, base) \
+    PHX_DECLARE_TYPE_WITH_BASE_END()
+
+//
+// Declare type
+//
+
+#define PHX_DECLARE_TYPE_BEGIN(type) PHX_DECLARE_TYPE_BEGIN_(type, void, ETypeDescriptorFlags::None)
+#define PHX_DECLARE_TYPE_END() \
+    PHX_DECLARE_TYPE_END_() \
+    virtual const TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); } \
 
 #define PHX_DECLARE_TYPE(type) \
     PHX_DECLARE_TYPE_BEGIN(type) \
     PHX_DECLARE_TYPE_END()
 
-#define PHX_REGISTER_FIELD(type, name) definition.RegisterProperty<ThisType, type>(#name, &ThisType::name);
-#define PHX_REGISTER_STATIC_FIELD(type, name) definition.RegisterProperty<type>(#name, &ThisType::name);
-#define PHX_REGISTER_PROPERTY(type, name) definition.RegisterProperty<ThisType, type>(#name, &ThisType::Get##name, &ThisType::Set##name);
-#define PHX_REGISTER_STATIC_PROPERTY(type, name) definition.RegisterProperty<type>(#name, &ThisType::Get##name, &ThisType::Set##name);
-#define PHX_REGISTER_METHOD(name) definition.RegisterMethod<ThisType>(#name, &ThisType::name);
-#define PHX_REGISTER_CONST_METHOD(name) definition.RegisterConstMethod<ThisType>(#name, &ThisType::name);
-#define PHX_REGISTER_STATIC_METHOD(name) definition.RegisterStaticMethod(#name, &ThisType::name);
-#define PHX_REGISTER_BASE(name) definition.RegisterBase<name>();
+//
+// Declare interface with base
+//
+
+#define PHX_DECLARE_INTERFACE_WITH_BASE_BEGIN(type, base) PHX_DECLARE_TYPE_BEGIN_(type, base, ETypeDescriptorFlags::Interface)
+#define PHX_DECLARE_INTERFACE_WITH_BASE_END() PHX_DECLARE_TYPE_WITH_BASE_END()
+
+#define PHX_DECLARE_INTERFACE_WITH_BASE(type, base) \
+    PHX_DECLARE_INTERFACE_WITH_BASE_BEGIN(type, base) \
+    PHX_DECLARE_INTERFACE_WITH_BASE_END()
+
+//
+// Declare interface
+//
+
+#define PHX_DECLARE_INTERFACE_BEGIN(type) \
+    public: \
+        virtual ~type() = default; \
+    PHX_DECLARE_INTERFACE_WITH_BASE_BEGIN(type, void)
+
+#define PHX_DECLARE_INTERFACE_END() PHX_DECLARE_TYPE_END()
+
+#define PHX_DECLARE_INTERFACE(type) \
+    PHX_DECLARE_INTERFACE_BEGIN(type) \
+    PHX_DECLARE_INTERFACE_END()
+
+//
+// Member registration
+//
+
+#define PHX_REGISTER_FIELD(type, name) descriptor.RegisterProperty<ThisType, type>(#name, &ThisType::name);
+#define PHX_REGISTER_STATIC_FIELD(type, name) descriptor.RegisterProperty<type>(#name, &ThisType::name);
+#define PHX_REGISTER_PROPERTY(type, name) descriptor.RegisterProperty<ThisType, type>(#name, &ThisType::Get##name, &ThisType::Set##name);
+#define PHX_REGISTER_STATIC_PROPERTY(type, name) descriptor.RegisterProperty<type>(#name, &ThisType::Get##name, &ThisType::Set##name);
+#define PHX_REGISTER_METHOD(name) descriptor.RegisterMethod<ThisType>(#name, &ThisType::name);
+#define PHX_REGISTER_CONST_METHOD(name) descriptor.RegisterConstMethod<ThisType>(#name, &ThisType::name);
+#define PHX_REGISTER_STATIC_METHOD(name) descriptor.RegisterStaticMethod(#name, &ThisType::name);
+#define PHX_REGISTER_BASE(name) descriptor.RegisterBase<name>();
 }

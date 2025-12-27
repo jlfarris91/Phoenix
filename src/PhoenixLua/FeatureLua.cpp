@@ -16,6 +16,26 @@
 
 using namespace Phoenix;
 
+FeatureLua::FeatureLua()
+{
+    FEATURE_SESSION_BLOCK(FeatureLuaDynamicBlock)
+    FEATURE_CHANNEL(FeatureChannels::PreUpdate)
+    FEATURE_CHANNEL(FeatureChannels::Update)
+    FEATURE_CHANNEL(FeatureChannels::PostUpdate)
+    FEATURE_CHANNEL(FeatureChannels::PreHandleAction)
+    FEATURE_CHANNEL(FeatureChannels::HandleAction)
+    FEATURE_CHANNEL(FeatureChannels::PostHandleAction)
+    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::DebugRender)
+}
+
 void FeatureLua::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);

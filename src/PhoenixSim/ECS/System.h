@@ -25,7 +25,7 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API ISystem
     {
-        PHX_DECLARE_TYPE(ISystem)
+        PHX_DECLARE_INTERFACE(ISystem)
 
         virtual FName GetName() const { return FName::None; }
 
@@ -58,11 +58,8 @@ namespace Phoenix::ECS
     };
 }
 
-#define PHX_ECS_DECLARE_SYSTEM_BEGIN(type) \
-    PHX_DECLARE_TYPE_BEGIN(type) \
-        PHX_REGISTER_BASE(ECS::ISystem)
-
-#define PHX_ECS_DECLARE_SYSTEM_END() PHX_DECLARE_TYPE_END()
+#define PHX_ECS_DECLARE_SYSTEM_BEGIN(type) PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, Phoenix::ECS::ISystem)
+#define PHX_ECS_DECLARE_SYSTEM_END() PHX_DECLARE_TYPE_WITH_BASE_END()
 
 #define PHX_ECS_DECLARE_SYSTEM(type) \
     PHX_ECS_DECLARE_SYSTEM_BEGIN(type) \

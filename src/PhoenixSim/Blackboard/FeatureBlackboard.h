@@ -31,13 +31,11 @@ namespace Phoenix::Blackboard
     
     class PHOENIX_SIM_API FeatureBlackboard final : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureBlackboard)
-            FEATURE_SESSION_BLOCK(FeatureBlackboardDynamicSessionBlock)
-            FEATURE_WORLD_BLOCK(FeatureBlackboardDynamicWorldBlock)
-            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureBlackboard)
 
     public:
+
+        FeatureBlackboard();
 
         void OnPostUpdate(const FeatureUpdateArgs& args) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;

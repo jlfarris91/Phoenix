@@ -88,6 +88,13 @@ namespace Phoenix::RTS
             return Items.RemoveAll(entity);
         }
 
+        const Order* GetFirstOrder(ECS::EntityId entity) const
+        {
+            uint32 outIndex;
+            const EntityOrder* item = Items.GetFirstSubItem(entity, outIndex);
+            return item ? &item->Order : nullptr;
+        }
+
         const Order* GetFirstOrder(ECS::EntityId entity, uint32& outIndex) const
         {
             const EntityOrder* item = Items.GetFirstSubItem(entity, outIndex);

@@ -46,14 +46,7 @@ namespace Phoenix::Pathfinding
 
     class PHOENIX_SIM_API FeatureNavigation : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureNavigation)
-            FEATURE_WORLD_BLOCK(FeatureNavMeshStaticBlock)
-            FEATURE_WORLD_BLOCK(FeatureNavMeshDynamicBlock)
-            FEATURE_WORLD_BLOCK(FeatureNavMeshScratchBlock)
-            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::DebugRender)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureNavigation)
 
     public:
 

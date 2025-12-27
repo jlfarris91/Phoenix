@@ -8,8 +8,6 @@ namespace Phoenix::RTS
 {
     struct PHOENIX_RTS_API IAbilityComponent : ECS::IComponent
     {
-        PHX_DECLARE_TYPE_BEGIN(IAbilityComponent)
-            PHX_REGISTER_BASE(IComponent)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_INTERFACE_WITH_BASE(IAbilityComponent, ECS::IComponent)
     };
 }

@@ -12,6 +12,9 @@ using namespace Phoenix::Physics;
 
 FeaturePhysics::FeaturePhysics()
 {
+    FEATURE_WORLD_BLOCK(FeaturePhysicsDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeaturePhysicsScratchBlock)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 
 void FeaturePhysics::Initialize(const TSharedPtr<Phoenix::Session>& session)

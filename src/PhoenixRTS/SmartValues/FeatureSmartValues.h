@@ -20,12 +20,11 @@ namespace Phoenix::RTS
 
     class FeatureSmartValues : public IFeature
     {
+        PHX_DECLARE_FEATURE_TYPE(FeatureSmartValues)
+
     public:
 
-        PHX_FEATURE_BEGIN(FeatureSmartValues)
-            FEATURE_WORLD_BLOCK(FeatureSmartValuesDynamicBlock)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-        PHX_FEATURE_END()
+        FeatureSmartValues();
 
         static SmartValueAffectorHandle AcquireAffector(WorldRef world);
 

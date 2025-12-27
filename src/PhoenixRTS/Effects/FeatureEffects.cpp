@@ -13,6 +13,13 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
+FeatureEffects::FeatureEffects()
+{
+    FEATURE_WORLD_BLOCK(FeatureEffectsDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeatureEffectsScratchBlock)
+    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+}
+
 void FeatureEffects::RegisterEffectHandler(const TSharedPtr<IEffectHandler>& handler)
 {
     EffectIdToHandlerMap.emplace(handler->GetEffectId(), handler);
@@ -520,14 +527,20 @@ void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
     // Register default handlers
     RegisterEffectHandler<EffectSetHandler>();
 
-    for (const TSharedPtr<IEffectHandler>& handler : EffectIdToHandlerMap | std::views::values)
+    TArray2<TSharedPtr<IEffectHandler>> effectHandlers;
+    Session->GetServices2<IEffectHandler>(effectHandlers);
+
+    for (const auto& effectHandler : effectHandlers)
     {
-        handler->Initialize(Session);
+        RegisterEffectHandler(effectHandler);
     }
 
-    for (const TSharedPtr<IResponseHandler>& handler : ResponseIdToHandlerMap | std::views::values)
+    TArray2<TSharedPtr<IResponseHandler>> responseHandlers;
+    Session->GetServices2<IResponseHandler>(responseHandlers);
+
+    for (const auto& responseHandler : responseHandlers)
     {
-        handler->Initialize(Session);
+        RegisterResponseHandler(responseHandler);
     }
 }
 
@@ -535,14 +548,14 @@ void FeatureEffects::Shutdown()
 {
     IFeature::Shutdown();
 
-    for (const TSharedPtr<IResponseHandler>& handler : ResponseIdToHandlerMap | std::views::values)
+    while (!ResponseIdToHandlerMap.empty())
     {
-        handler->Shutdown();
+        UnregisterResponseHandler(ResponseIdToHandlerMap.begin()->first);
     }
 
-    for (const TSharedPtr<IEffectHandler>& handler : EffectIdToHandlerMap | std::views::values)
+    while (!EffectIdToHandlerMap.empty())
     {
-        handler->Shutdown();
+        UnregisterEffectHandler(EffectIdToHandlerMap.begin()->first);
     }
 }
 

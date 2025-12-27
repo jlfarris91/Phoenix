@@ -7,9 +7,7 @@ namespace Phoenix::RTS
 {
     class PHOENIX_RTS_API EffectDamageHandler : public IEffectHandler
     {
-        PHX_DECLARE_TYPE_BEGIN(IEffectHandler)
-            PHX_REGISTER_BASE(IEffectHandler)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_TYPE_WITH_BASE(EffectDamageHandler, IEffectHandler)
 
     public:
 

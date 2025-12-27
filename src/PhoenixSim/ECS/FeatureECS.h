@@ -56,21 +56,10 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureECS)
-            FEATURE_WORLD_BLOCK(FeatureECSDynamicBlock)
-            FEATURE_WORLD_BLOCK(FeatureECSScratchBlock)
-            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::DebugRender)
+        PHX_DECLARE_FEATURE_TYPE_BEGIN(FeatureECS)
             PHX_REGISTER_FIELD(bool, bDebugDrawMortonCodeBoundaries)
             PHX_REGISTER_FIELD(bool, bDebugDrawEntityZCodes)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE_END()
 
     public:
 

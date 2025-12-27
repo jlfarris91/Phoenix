@@ -10,12 +10,20 @@
 #include "PhoenixRTS/Abilities/FeatureAbilities.h"
 #include "PhoenixRTS/Orders/CommandHandler.h"
 #include "PhoenixRTS/Selection/FeatureSelection.h"
+#include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
+
+FeatureOrders::FeatureOrders()
+{
+    FEATURE_WORLD_BLOCK(FeatureOrdersDynamicBlock)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+}
 
 void FeatureOrders::RegisterCommandHandler(const TSharedPtr<ICommandHandler>& handler)
 {
@@ -81,22 +89,22 @@ bool FeatureOrders::EnqueueOrder(WorldRef world, const UnitId& unit, const Order
 
     if (block.OrderQueue.GetNumOrders(unit) == 1)
     {
-        StaticHandleOrder(world, unit, order);
+        StaticExecuteHeadOrder(world, unit);
     }
 
     return true;
-}
-
-bool FeatureOrders::DequeueOrder(WorldRef world, const UnitId& unit, Order& outOrder)
-{
-    FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
-    return block.OrderQueue.DequeueOrder(unit, outOrder);
 }
 
 bool FeatureOrders::InsertOrder(WorldRef world, const UnitId& unit, const Order& order, uint32 orderIndex)
 {
     FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
     return block.OrderQueue.InsertOrder(unit, order, orderIndex);
+}
+
+const Order* FeatureOrders::GetHeadOrder(WorldConstRef world, const UnitId& unit)
+{
+    const FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
+    return block.OrderQueue.GetFirstOrder(unit);
 }
 
 const Order* FeatureOrders::GetHeadOrder(WorldConstRef world, const UnitId& unit, uint32& outIndex)
@@ -133,16 +141,19 @@ bool FeatureOrders::HasOrders(WorldConstRef world, const UnitId& unit)
 bool FeatureOrders::RemoveOrder(WorldRef world, const UnitId& unit, uint32 index)
 {
     FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
-    if (block.OrderQueue.RemoveOrder(unit, index))
+
+    if (index == 0)
     {
-        return true;
+        StaticInterruptHeadOrder(world, unit);
     }
-    return false;
+
+    return block.OrderQueue.RemoveOrder(unit, index);
 }
 
 uint32 FeatureOrders::ClearOrderQueue(WorldRef world, const UnitId& unit)
 {
     FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
+    StaticInterruptHeadOrder(world, unit);
     return block.OrderQueue.RemoveAllOrders(unit);
 }
 
@@ -215,34 +226,56 @@ bool FeatureOrders::HandleCommandForUnit(WorldRef world, const UnitId& unit, con
     return HandleCommandForUnitInternal(world, unit, unitAbilityCommand, handler);
 }
 
-bool FeatureOrders::StaticHandleOrder(WorldRef world, const UnitId& unit, const Order& order)
+bool FeatureOrders::StaticRequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request)
 {
     TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
-    return feature && feature->HandleOrder(world, unit, order);
+    return feature->RequestAcquireOrder(world, unit, request);
 }
 
-bool FeatureOrders::HandleOrder(WorldRef world, const UnitId& unit, const Order& order)
+bool FeatureOrders::RequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request)
 {
-    TSharedPtr<ICommandHandler> handler = FindCommandHandler(world, order.CommandId);
-    if (!handler)
+    TArray2<FName> abilityIds;
+    abilityIds.Reserve(8);
+
+    // TODO (jfarris): there
+    FeatureAbilities::GetAbilities(world, unit, abilityIds);
+
+    AcquireContext context;
+    context.Unit = unit;
+    context.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+
+    Order order;
+    order.Flags = EOrderFlags::Acquire;
+    order.Kind = request.Kind;
+    order.TargetEntity = request.TargetEntity;
+    order.TargetLocation = request.TargetLocation;
+
+    for (const FName& abilityId : abilityIds)
     {
-        return false;
+        TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, abilityId);
+        if (!handler)
+        {
+            continue;
+        }
+
+        context.AbilityId = abilityId;
+
+        AcquireResult result = handler->AcquireOrder(world, context, request);
+        if (FName::IsNoneOrEmpty(result.CommandId))
+        {
+            continue;
+        }
+        
+        order.OrderId = result.CommandId;
+        order.OrderIndex = result.CommandIndex;
+
+        if (AcquireOrder(world, unit, order))
+        {
+            return true;
+        }
     }
 
-    // TODO (jfarris): should we allow an ability to deny exiting?
-    if (!InterruptActiveOrder(world, unit))
-    {
-        return false;
-    }
-
-    if (!handler->ExecuteOrder(world, unit, order))
-    {
-        return false;
-    }
-
-    // TODO (jfarris): broadcast event that the order was executed
-
-    return true;
+    return false;
 }
 
 void FeatureOrders::StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success)
@@ -253,26 +286,25 @@ void FeatureOrders::StaticOnActiveOrderCompleted(WorldRef world, const UnitId& u
 
 void FeatureOrders::OnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success)
 {
-    InterruptActiveOrder(world, unit);
+    InterruptHeadOrder(world, unit);
 
     // Remove the active order from the queue
     RemoveOrder(world, unit, 0);
 
     // Handle the next head order
-    uint32 index;
-    if (const Order* order = GetHeadOrder(world, unit, index))
-    {
-        StaticHandleOrder(world, unit, *order);
-    }
+    ExecuteHeadOrder(world, unit);
 }
 
 void FeatureOrders::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    for (const TSharedPtr<ICommandHandler>& handler : CommandIdToHandlerMap | std::views::values)
+    TArray2<TSharedPtr<ICommandHandler>> handlers;
+    Session->GetServices2<ICommandHandler>(handlers);
+
+    for (const TSharedPtr<ICommandHandler>& handler : handlers)
     {
-        handler->Initialize(Session);
+        RegisterCommandHandler(handler);
     }
 }
 
@@ -280,29 +312,9 @@ void FeatureOrders::Shutdown()
 {
     IFeature::Shutdown();
 
-    for (const TSharedPtr<ICommandHandler>& handler : CommandIdToHandlerMap | std::views::values)
+    while (!CommandIdToHandlerMap.empty())
     {
-        handler->Shutdown();
-    }
-}
-
-void FeatureOrders::OnWorldInitialize(WorldRef world)
-{
-    IFeature::OnWorldInitialize(world);
-
-    for (const TSharedPtr<ICommandHandler>& handler : CommandIdToHandlerMap | std::views::values)
-    {
-        handler->OnWorldInitialize(world);
-    }
-}
-
-void FeatureOrders::OnWorldShutdown(WorldRef world)
-{
-    IFeature::OnWorldShutdown(world);
-
-    for (const TSharedPtr<ICommandHandler>& handler : CommandIdToHandlerMap | std::views::values)
-    {
-        handler->OnWorldShutdown(world);
+        UnregisterCommandHandler(CommandIdToHandlerMap.begin()->first);
     }
 }
 
@@ -341,18 +353,24 @@ bool FeatureOrders::HandleCommandForUnitInternal(
     const Command& command,
     const TSharedPtr<ICommandHandler>& handler)
 {
+    if (!FeatureUnit::UnitCanReceiveCommands(world, unit))
+    {
+        return false;
+    }
+
     PHX_ASSERT(!FName::IsNoneOrEmpty(command.CommandId));
 
     Order order;
-    order.CommandId = command.CommandId;
-    order.CommandIndex = command.CommandIndex;
+    order.OrderId = command.CommandId;
+    order.OrderIndex = command.CommandIndex;
     order.TargetEntity = command.TargetEntity;
     order.TargetLocation = command.TargetLocation;
     order.Flags = EOrderFlags::None;
+    order.Kind = command.Kind;
 
-    if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
+    if (HasAnyFlags(command.Flags, ECommandFlags::Replace))
     {
-        SetFlagRef(order.Flags, EOrderFlags::Smart);
+        SetFlagRef(order.Flags, EOrderFlags::Replace);
     }
 
     if (HasAnyFlags(command.Flags, ECommandFlags::Queue))
@@ -360,19 +378,9 @@ bool FeatureOrders::HandleCommandForUnitInternal(
         SetFlagRef(order.Flags, EOrderFlags::Queued);
     }
 
-    if (HasAnyFlags(command.Flags, ECommandFlags::Acquire))
-    {
-        SetFlagRef(order.Flags, EOrderFlags::Acquire);
-    }
-
     if (handler->IsTransient(world, order))
     {
-        return handler->ExecuteOrder(world, unit, order);
-    }
-
-    if (HasAnyFlags(order.Flags, EOrderFlags::Acquire))
-    {
-        return false;
+        return ExecuteTransientOrder(world, unit, order, handler);
     }
 
     if (HasAnyFlags(order.Flags, EOrderFlags::Replace))
@@ -390,22 +398,97 @@ bool FeatureOrders::HandleCommandForUnitInternal(
     return true;
 }
 
-bool FeatureOrders::InterruptActiveOrder(WorldRef world, const UnitId& unit)
+bool FeatureOrders::StaticExecuteHeadOrder(WorldRef world, const UnitId& unit)
 {
-    uint32 index;
-    const Order* currentOrder = GetHeadOrder(world, unit, index);
-    if (!currentOrder)
+    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    return feature->ExecuteHeadOrder(world, unit);
+}
+
+bool FeatureOrders::ExecuteHeadOrder(WorldRef world, const UnitId& unit)
+{
+    if (const Order* headOrder = GetHeadOrder(world, unit))
     {
-        return false;
+        TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, headOrder->OrderId);
+        if (!handler)
+        {
+            return false;
+        }
+
+        // Don't actively scan for new targets when executing an order.
+        FeatureUnit::SetTargetScanLevel(world, unit, ETargetScanLevel::None);
+
+        return handler->ExecuteOrder(world, unit, *headOrder);
     }
 
-    TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, currentOrder->CommandId);
+    // Return to scanning when there are no orders left in the queue.
+    FeatureUnit::ResetTargetScanLevel(world, unit);
+    return false;
+}
+
+bool FeatureOrders::ExecuteTransientOrder(
+    WorldRef world,
+    const UnitId& unit,
+    const Order& order,
+    const TSharedPtr<ICommandHandler>& handler)
+{
+    return handler->ExecuteOrder(world, unit, order);
+}
+
+bool FeatureOrders::StaticInterruptHeadOrder(WorldRef world, const UnitId& unit)
+{
+    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    return feature->InterruptHeadOrder(world, unit);
+}
+
+bool FeatureOrders::InterruptHeadOrder(WorldRef world, const UnitId& unit)
+{
+    const Order* headOrder = GetHeadOrder(world, unit);
+    return headOrder && InterruptOrder(world, unit, *headOrder);
+}
+
+bool FeatureOrders::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order)
+{
+    TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, order.OrderId);
     if (!handler)
     {
         return false;
     }
 
-    return handler->InterruptOrder(world, unit, *currentOrder);
+    return handler->InterruptOrder(world, unit, order);
+}
+
+bool FeatureOrders::AcquireOrder(WorldRef world, const UnitId& unit, const Order& order)
+{
+    FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
+
+    if (const Order* headOrder = block.OrderQueue.GetFirstOrder(unit))
+    {
+        // If a head order exists and was acquired then interrupt it and replace it.
+        if (HasAnyFlags(headOrder->Flags, EOrderFlags::Acquire))
+        {
+            if (!InterruptOrder(world, unit, *headOrder))
+            {
+                return false;
+            }
+
+            if (!RemoveOrder(world, unit, 0))
+            {
+                return false;
+            }
+        }
+        // Otherwise, just interrupt the current order.
+        else if (!InterruptOrder(world, unit, *headOrder))
+        {
+            return false;
+        }
+    }
+
+    if (!block.OrderQueue.InsertOrder(unit, order, 0))
+    {
+        return false;
+    }
+
+    return ExecuteHeadOrder(world, unit);
 }
 
 struct SortHandlersByPriority
@@ -423,6 +506,11 @@ uint32 FeatureOrders::GetPrioritizedHandlers(
     const Command& command,
     TArray2<PrioritizedCommandHandler>& outHandlers)
 {
+    if (!FeatureUnit::UnitCanReceiveCommands(world, unit))
+    {
+        return 0;
+    }
+
     TArray2<FName> abilityIds;
     abilityIds.Reserve(8);
 

@@ -24,22 +24,69 @@ TargetScanResult TargetScanner::ScanForTarget(WorldRef world, UnitId unit, const
 {
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
-
-    // Abilities take the highest priority
-    TargetScanResult result = ScanForAbilityTarget(world, unit, args);
-    if (result.IsValid())
-    {
-        return result;
-    }
-
-    return ScanForWeaponTarget(world, unit, args);
+    return ScanForTargetInternal(world, unit, modifiedArgs);
 }
 
 TargetScanResult TargetScanner::ScanForAbilityTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
 {
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
+    return ScanForAbilityTargetInternal(world, unit, modifiedArgs);
+}
 
+TargetScanResult TargetScanner::ScanForWeaponTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+{
+    TargetScanArgs modifiedArgs = args;
+    PopulateTargetScanArgs(world, unit, modifiedArgs);
+    return ScanForWeaponTargetInternal(world, unit, modifiedArgs);
+}
+
+void TargetScanner::PopulateTargetScanArgs(WorldConstRef world, UnitId unit, TargetScanArgs& args)
+{
+    if (!args.UnitDataId.IsSet())
+    {
+        args.UnitDataId = FeatureUnit::GetUnitDataId(world, unit);
+    }
+
+    if (!args.Location.IsSet())
+    {
+        args.Location = FeatureECS::GetWorldPosition(world, unit);
+    }
+
+    if (!args.LastScanTarget.IsSet())
+    {
+        TOptional<EntityId> currTarget = FeatureOrders::GetHeadOrderTargetEntity(world, unit);
+        if (currTarget.IsSet())
+        {
+            args.LastScanTarget = currTarget.Get();
+        }
+    }
+
+    if (!args.LdsQueryContext)
+    {
+        args.LdsQueryContext = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
+    }
+
+    if (!FeatureUnit::UnitCanMove(world, unit))
+    {
+        SetFlagRef(args.Flags, ETargetScanFlags::UnitCannotMove);
+    }
+}
+
+TargetScanResult TargetScanner::ScanForTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+{
+    // Abilities take the highest priority
+    TargetScanResult result = ScanForAbilityTargetInternal(world, unit, args);
+    if (result.IsValid())
+    {
+        return result;
+    }
+
+    return ScanForWeaponTargetInternal(world, unit, args);
+}
+
+TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+{
     TArray2<FName> abilityIds;
     if (!FeatureAbilities::GetAbilities(world, unit, abilityIds))
     {
@@ -70,15 +117,19 @@ TargetScanResult TargetScanner::ScanForAbilityTarget(WorldRef world, UnitId unit
     return {};
 }
 
-TargetScanResult TargetScanner::ScanForWeaponTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
 {
-    TargetScanArgs modifiedArgs = args;
-    PopulateTargetScanArgs(world, unit, modifiedArgs);
-
+    if (args.Level < ETargetScanLevel::Offensive)
+    {
+        return {};
+    }
+    
     const LDS::ILDSQueryContext& lds = *args.LdsQueryContext;
 
     const FName& unitDataId = args.UnitDataId.Get();
     const Vec2& scanPos = args.Location.Get();
+
+    EntityId lastScanTarget = args.LastScanTarget.GetValue(EntityId::Invalid);
     EntityId target = EntityId::Invalid;
 
     Data::UnitPtr unitData(unitDataId);
@@ -176,45 +227,15 @@ TargetScanResult TargetScanner::ScanForWeaponTarget(WorldRef world, UnitId unit,
 
     FName bestWeaponId = weapons[bestWeaponIndex.Get()].GetObjectId();
 
-    if (HasAnyFlags(args.Flags, ETargetScanFlags::AutoAcquire))
+    if (lastScanTarget != target && HasAnyFlags(args.Flags, ETargetScanFlags::AutoAcquire))
     {
-        Command command;
-        command.Flags = ECommandFlags::Acquire;
-        command.Kind = bestWeaponId;
-        FeatureOrders::StaticHandleCommandForUnit(world, unit, command);
+        AcquireRequest request;
+        request.Verb = "Attack"_n;
+        request.TargetEntity = target;
+        request.TargetLocation = FeatureECS::GetWorldPosition(world, target);
+        request.Kind = bestWeaponId;
+        FeatureOrders::StaticRequestAcquireOrder(world, unit, request);
     }
 
     return { target, {}, bestWeaponId };
-}
-
-void TargetScanner::PopulateTargetScanArgs(WorldConstRef world, UnitId unit, TargetScanArgs& args)
-{
-    if (!args.UnitDataId.IsSet())
-    {
-        args.UnitDataId = FeatureUnit::GetUnitDataId(world, unit);
-    }
-
-    if (!args.Location.IsSet())
-    {
-        args.Location = FeatureECS::GetWorldPosition(world, unit);
-    }
-
-    if (!args.LastScanTarget.IsSet())
-    {
-        TOptional<EntityId> currTarget = FeatureOrders::GetHeadOrderTargetEntity(world, unit);
-        if (!currTarget.IsSet())
-        {
-            args.LastScanTarget = currTarget.Get();
-        }
-    }
-
-    if (!args.LdsQueryContext)
-    {
-        args.LdsQueryContext = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
-    }
-
-    if (!FeatureUnit::UnitCanMove(world, unit))
-    {
-        SetFlagRef(args.Flags, ETargetScanFlags::UnitCannotMove);
-    }
 }

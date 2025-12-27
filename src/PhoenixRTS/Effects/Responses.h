@@ -29,17 +29,12 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API IResponseHandler : public IService
     {
-        PHX_DECLARE_TYPE_BEGIN(IResponseHandler)
-            PHX_REGISTER_BASE(IService)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_INTERFACE_WITH_BASE(IResponseHandler, IService)
         
     public:
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
-
-        virtual void OnWorldInitialize(WorldRef world);
-        virtual void OnWorldShutdown(WorldRef world);
 
         virtual FName GetResponseId() const;
 
@@ -55,7 +50,10 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API ResponseHandlerBase : public IResponseHandler
     {
+        PHX_DECLARE_TYPE_WITH_BASE(ResponseHandlerBase, IResponseHandler)
+
     public:
+
         ResponseHandlerBase();
         ResponseHandlerBase(const FName& responseId);
 

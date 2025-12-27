@@ -16,6 +16,8 @@ namespace Phoenix
             return As(TService::StaticTypeName);
         }
 
+        const ServiceRegistrar& AsInterfaces() const;
+
     private:
 
         ServiceContainerBuilder* Builder;
@@ -32,7 +34,7 @@ namespace Phoenix
         ServiceRegistrar RegisterService(TArgs&&... args)
         {
             TSharedPtr<TService> service = MakeShared<TService>(std::forward<TArgs>(args)...);
-            return { this, service };
+            return RegisterService(service);
         }
 
         TSharedPtr<ServiceContainer> Build();
@@ -42,6 +44,7 @@ namespace Phoenix
         friend struct ServiceRegistrar;
 
         void RegisterServiceAs(const TSharedPtr<IService>& service, const FName& typeId);
+        void RegisterServiceAsInterfaces(const TSharedPtr<IService>& service);
 
         ServiceContainer Container;
     };

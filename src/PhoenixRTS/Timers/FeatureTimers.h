@@ -30,14 +30,11 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureTimers : IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureTimers)
-            FEATURE_SESSION_BLOCK(FeatureTimersDynamicSessionBlock)
-            FEATURE_WORLD_BLOCK(FeatureTimersDynamicWorldBlock)
-            FEATURE_CHANNEL(FeatureChannels::PreUpdate)
-            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureTimers)
 
     public:
+
+        FeatureTimers();
 
         using SessionTimerManager = decltype(FeatureTimersDynamicSessionBlock::TimerManager);
         using WorldTimerManager = decltype(FeatureTimersDynamicWorldBlock::TimerManager);

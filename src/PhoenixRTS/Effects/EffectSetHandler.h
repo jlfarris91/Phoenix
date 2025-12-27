@@ -6,9 +6,7 @@ namespace Phoenix::RTS
 {
     class PHOENIX_RTS_API EffectSetHandler final : public IEffectHandler
     {
-        PHX_DECLARE_TYPE_BEGIN(EffectSetHandler)
-            PHX_REGISTER_BASE(IEffectHandler)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_TYPE_WITH_BASE(EffectSetHandler, IEffectHandler)
         
     public:
 

@@ -93,11 +93,7 @@ namespace Phoenix::Physics
 
     class PHOENIX_PHYSICS_API FeaturePhysics : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeaturePhysics)
-            FEATURE_WORLD_BLOCK(FeaturePhysicsDynamicBlock)
-            FEATURE_WORLD_BLOCK(FeaturePhysicsScratchBlock)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeaturePhysics)
 
     public:
 

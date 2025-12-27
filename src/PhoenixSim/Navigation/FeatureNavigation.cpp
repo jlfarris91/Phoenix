@@ -13,6 +13,12 @@ using namespace Phoenix::Pathfinding;
 
 FeatureNavigation::FeatureNavigation()
 {
+    FEATURE_WORLD_BLOCK(FeatureNavMeshStaticBlock)
+    FEATURE_WORLD_BLOCK(FeatureNavMeshDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeatureNavMeshScratchBlock)
+    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::DebugRender)
 }
 
 void FeatureNavigation::RebuildNavMesh(WorldRef world)

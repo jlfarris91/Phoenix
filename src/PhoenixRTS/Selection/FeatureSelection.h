@@ -34,12 +34,11 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureSelection : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureSelection)
-            FEATURE_WORLD_BLOCK(FeatureSelectionDynamicBlock)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureSelection)
 
     public:
+
+        FeatureSelection();
 
         static constexpr uint32 MaxNumGroupsPerPlayer = PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER;
 

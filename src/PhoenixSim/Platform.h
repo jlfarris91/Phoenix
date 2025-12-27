@@ -58,7 +58,7 @@
 
 #else
 
-#define PHX_ASSERT(expression) assert(expression)
+#define PHX_ASSERT(expression) assert((expression))
 
 #endif
 

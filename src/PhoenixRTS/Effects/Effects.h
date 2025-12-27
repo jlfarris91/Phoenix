@@ -51,9 +51,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API IEffectHandler : public IService
     {
-        PHX_DECLARE_TYPE_BEGIN(IEffectHandler)
-            PHX_REGISTER_BASE(IService)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_INTERFACE_WITH_BASE(IEffectHandler, IService)
 
     public:
 

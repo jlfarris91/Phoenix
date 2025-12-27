@@ -17,3 +17,11 @@ void IService::Shutdown()
 {
     Session.reset();
 }
+
+void IService::OnWorldInitialize(WorldRef world)
+{
+}
+
+void IService::OnWorldShutdown(WorldRef world)
+{
+}

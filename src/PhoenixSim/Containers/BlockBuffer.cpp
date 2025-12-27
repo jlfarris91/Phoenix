@@ -13,9 +13,6 @@ BlockBuffer::Block::Block(const BlockDefinition& definition)
 {
 }
 
-BlockBuffer::BlockBuffer()
-= default;
-
 BlockBuffer::BlockBuffer(const CtorArgs& args)
 {
     Blocks.reserve(args.Definitions.size());

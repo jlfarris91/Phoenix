@@ -16,6 +16,7 @@
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
+#include "PhoenixRTS/Units/FeatureUnit.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -283,12 +284,18 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         Distance closestDist = Distance::Max;
         for (const EntityTransform& entity : entities)
         {
+            if (FeatureUnit::UnitIsDead(world, UnitId(entity.EntityId)))
+            {
+                continue;
+            }
+
             Distance dist = Vec2::Distance(entity.TransformComponent->Transform.Position, CursorWorldPos);
             if (dist < closestDist)
             {
                 closestDist = dist;
                 closestEntity = entity.EntityId;
             }
+
             break;
         }
 

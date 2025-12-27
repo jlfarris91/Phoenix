@@ -7,6 +7,7 @@
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Units/UnitId.h"
 #include "PhoenixRTS/Orders/Commands.h"
+#include "PhoenixRTS/TargetFiltering/TargetScanLevel.h"
 #include "PhoenixRTS/Teams/Teams.h"
 #include "PhoenixSim/Containers/Array.h"
 
@@ -62,11 +63,11 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureUnit : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureUnit)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureUnit)
 
     public:
+
+        FeatureUnit();
 
         static UnitId SpawnUnit(
             WorldRef world,
@@ -110,6 +111,14 @@ namespace Phoenix::RTS
         static bool UnitIsCargo(WorldConstRef world, UnitId unit);
 
         static bool UnitIsDormant(WorldConstRef world, UnitId unit);
+
+        static bool UnitCanReceiveCommands(WorldConstRef world, UnitId unit);
+
+        static ETargetScanLevel GetTargetScanLevel(WorldConstRef world, UnitId unit);
+        
+        static bool SetTargetScanLevel(WorldRef world, UnitId unit, ETargetScanLevel scanLevel);
+
+        static bool ResetTargetScanLevel(WorldRef world, UnitId unit);
 
         static int32 GetAttackTargetPriority(WorldConstRef world, UnitId unit);
 

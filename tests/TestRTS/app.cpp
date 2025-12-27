@@ -99,6 +99,7 @@ World* GCurrWorldView = nullptr;
 
 struct EntityBodyShape
 {
+    EntityId EntityId;
     Transform2D Transform;
     Distance Radius;
     SDL_Color Color;
@@ -117,29 +118,29 @@ void InitSession()
 
     // Register features
     // ReSharper disable CppExpressionWithoutSideEffects
-    serviceContainerBuilder->RegisterService<FeatureBlackboard>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<FeatureLDS>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<FeatureECS>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<FeatureNavigation>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<FeaturePhysics>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<FeatureSteering>().As<IFeature>();
-    //serviceContainerBuilder->RegisterService<FeatureLua>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().As<IFeature>();
-    serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().As<IFeature>();
+    serviceContainerBuilder->RegisterService<FeatureBlackboard>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureLDS>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureECS>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
+    //serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().AsInterfaces();
 
     // Register ability handlers
-    serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().As<RTS::IAbilityHandler>();
-    serviceContainerBuilder->RegisterService<RTS::AttackAbilityHandler>().As<RTS::IAbilityHandler>();
+    serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::AttackAbilityHandler>().AsInterfaces();
 
     // Register effect handlers
-    serviceContainerBuilder->RegisterService<RTS::EffectDamageHandler>().As<RTS::IEffectHandler>();
+    serviceContainerBuilder->RegisterService<RTS::EffectDamageHandler>().AsInterfaces();
 
     // Register response handlers
-    serviceContainerBuilder->RegisterService<RTS::ResponseHandlerBase>().As<RTS::IResponseHandler>();
-    serviceContainerBuilder->RegisterService<RTS::ResponseDamageHandler>().As<RTS::IResponseHandler>();
+    serviceContainerBuilder->RegisterService<RTS::ResponseHandlerBase>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::ResponseDamageHandler>().AsInterfaces();
 
     SessionCtorArgs sessionArgs;
     sessionArgs.DataDirectory = "./Data";
@@ -284,6 +285,8 @@ void OnAppRenderWorld()
     // Realize the sim world
     if (GCurrWorldView)
     {
+        World& worldView = *GCurrWorldView;
+
         PHX_PROFILE_ZONE_SCOPED_N("RealizeWorld");
 
         GEntityBodies.clear();
@@ -292,18 +295,19 @@ void OnAppRenderWorld()
         builder.RequireAllComponents<const TransformComponent&, const BodyComponent&>();
         auto query = builder.GetQuery();
 
-        FeatureECS::ForEachEntity(*GCurrWorldView, query, TFunction([](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
+        FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
         {
             for (auto && [entity, index, transformComp, bodyComp] : span)
             {
                 EntityBodyShape entityBodyShape;
+                entityBodyShape.EntityId = entity;
                 entityBodyShape.Transform = transformComp.Transform;
                 entityBodyShape.Radius = bodyComp.Radius;
                 entityBodyShape.ZCode = transformComp.ZCode;
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
                 Color color;
-                if (!FeatureECS::TryGetBlackboardValue(*GCurrWorldView, entity, "actor_tint"_n, color))
+                if (!FeatureECS::TryGetBlackboardValue(worldView, entity, "actor_tint"_n, color))
                 {
                     color = Color::Red;
                 }
@@ -318,7 +322,7 @@ void OnAppRenderWorld()
                 if (bodyComp.Movement == EBodyMovement::Attached &&
                     transformComp.AttachParent != EntityId::Invalid)
                 {
-                    if (TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(*GCurrWorldView, transformComp.AttachParent))
+                    if (TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(worldView, transformComp.AttachParent))
                     {
                         entityBodyShape.Transform.Position = parentTransformComp->Transform.Position + entityBodyShape.Transform.Position.Rotate(parentTransformComp->Transform.Rotation);
                         entityBodyShape.Transform.Rotation += parentTransformComp->Transform.Rotation;
@@ -329,34 +333,55 @@ void OnAppRenderWorld()
             }
         }));
 
+        for (const EntityBodyShape& entityBodyShape : GEntityBodies)
+        {
+            if (RTS::FeatureUnit::UnitIsDead(worldView, RTS::UnitId(entityBodyShape.EntityId)))
+            {
+                Vec2 pt = Vec2::XAxis * entityBodyShape.Radius;
+                Vec2 pt1 = pt.Rotate(RAD_45);
+                Vec2 pt2 = pt.Rotate(RAD_135);
+                Vec2 pt3 = pt.Rotate(RAD_225);
+                Vec2 pt4 = pt.Rotate(RAD_315);
+
+                Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
+                pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
+                pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
+                pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
+                pt4 = entityBodyShape.Transform.Position + transform.RotateVector(pt4);
+
+                Color color(entityBodyShape.Color.r, entityBodyShape.Color.g, entityBodyShape.Color.b);
+                GDebugRenderer->DrawLine(pt1, pt3, color);
+                GDebugRenderer->DrawLine(pt2, pt4, color);
+            }
+            else
+            {
+                Vec2 pt1 = Vec2::XAxis * entityBodyShape.Radius;
+                Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
+                Vec2 pt3 = pt1.Rotate(Deg2Rad(135));
+
+                Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
+                pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
+                pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
+                pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
+
+                Vec2 points[4] = { pt1, pt2, pt3, pt1 };
+
+                Color color(entityBodyShape.Color.r, entityBodyShape.Color.g, entityBodyShape.Color.b);
+                GDebugRenderer->DrawLines(points, 4, color);
+            }
+        }
+
         // Let features draw to the renderer
         TArray2<FeatureSharedPtr> channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
         for (const auto& feature : channelFeatures)
         {
-            feature->OnDebugRender(*GCurrWorldView, *GDebugState, *GDebugRenderer);
+            feature->OnDebugRender(worldView, *GDebugState, *GDebugRenderer);
         }
 
         for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
         {
-            tool->OnAppRenderWorld(*GCurrWorldView, *GDebugState, *GDebugRenderer);
+            tool->OnAppRenderWorld(worldView, *GDebugState, *GDebugRenderer);
         }
-    }
-
-    for (const EntityBodyShape& entityBodyShape : GEntityBodies)
-    {
-        Vec2 pt1 = Vec2::XAxis * entityBodyShape.Radius;
-        Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
-        Vec2 pt3 = pt1.Rotate(Deg2Rad(135));
-
-        Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
-        pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
-        pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
-        pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
-
-        Vec2 points[4] = { pt1, pt2, pt3, pt1 };
-
-        Color color(entityBodyShape.Color.r, entityBodyShape.Color.g, entityBodyShape.Color.b);
-        GDebugRenderer->DrawLines(points, 4, color);
     }
 }
 
@@ -395,10 +420,10 @@ void OnAppRenderUI()
         {
             for (const auto& feature : GSession->GetFeatureSet()->GetFeatures())
             {
-                const auto& featureDefinition = feature->GetFeatureDefinition();
-                if (ImGui::CollapsingHeader(featureDefinition.DisplayName))
+                const auto& typeDescriptor = feature->GetTypeDescriptor();
+                if (ImGui::CollapsingHeader(typeDescriptor.DisplayName))
                 {
-                    DrawPropertyGrid(feature.get(), featureDefinition);
+                    DrawPropertyGrid(feature.get(), typeDescriptor);
                 }
             }
         }

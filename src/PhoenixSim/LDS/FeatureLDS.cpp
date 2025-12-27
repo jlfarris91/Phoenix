@@ -12,6 +12,14 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::LDS::Json;
 namespace fs = std::filesystem;
 
+FeatureLDS::FeatureLDS()
+{
+    FEATURE_SESSION_BLOCK(FeatureLDSSessionDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeatureLDSWorldDynamicBlock)
+    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+}
+
 TSharedPtr<Catalog> FeatureLDS::GetStaticSessionCatalog()
 {
     return StaticSessionCatalog;

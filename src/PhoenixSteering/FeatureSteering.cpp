@@ -9,6 +9,13 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::Steering;
 
+FeatureSteering::FeatureSteering()
+{
+    FEATURE_WORLD_BLOCK(FeatureSteeringDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeatureSteeringScratchBlock)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+}
+
 bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, const Vec2& target)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);

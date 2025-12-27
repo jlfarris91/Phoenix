@@ -11,6 +11,11 @@
 #define PHX_RTS_ORDER_QUEUE_MAX_ORDERS 4096
 #endif
 
+namespace Phoenix::RTS
+{
+    struct AcquireRequest;
+}
+
 namespace Phoenix::ECS
 {
     struct EntityId;
@@ -36,13 +41,11 @@ namespace Phoenix::RTS
     // Manages the order queues of all units in the game.
     class PHOENIX_RTS_API FeatureOrders : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureOrders)
-            FEATURE_WORLD_BLOCK(FeatureOrdersDynamicBlock)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureOrders)
 
     public:
+
+        FeatureOrders();
 
         //
         // Command Handler Management
@@ -73,11 +76,12 @@ namespace Phoenix::RTS
         // Attempts to enqueue a new order to a unit's order queue.
         static bool EnqueueOrder(WorldRef world, const UnitId& unit, const Order& order);
 
-        // Attempts to dequeue the head order from a unit's order queue.
-        static bool DequeueOrder(WorldRef world, const UnitId& unit, Order& outOrder);
-
         // Attempts to insert an order at a given order index to a unit's order queue.
+        // TODO (jfarris): do we want callers to be able to do this?
         static bool InsertOrder(WorldRef world, const UnitId& unit, const Order& order, uint32 orderIndex);
+
+        // Gets the first order of a unit's order queue.
+        static const Order* GetHeadOrder(WorldConstRef world, const UnitId& unit);
 
         // Gets the first order of a unit's order queue.
         // Use outIndex to find the next order. Note that it is an absolute index, not the unit's order index.
@@ -130,10 +134,10 @@ namespace Phoenix::RTS
         // Order Handling
         //
 
-        static bool StaticHandleOrder(WorldRef world, const UnitId& unit, const Order& order);
+        static bool StaticRequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request);
 
-        bool HandleOrder(WorldRef world, const UnitId& unit, const Order& order);
-
+        bool RequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request);
+        
         static void StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success);
 
         void OnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success);
@@ -143,8 +147,6 @@ namespace Phoenix::RTS
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnWorldInitialize(WorldRef world) override;
-        void OnWorldShutdown(WorldRef world) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 
@@ -156,7 +158,22 @@ namespace Phoenix::RTS
             const Command& command,
             const TSharedPtr<ICommandHandler>& handler);
 
-        bool InterruptActiveOrder(WorldRef world, const UnitId& unit);
+        static bool StaticExecuteHeadOrder(WorldRef world, const UnitId& unit);
+        bool ExecuteHeadOrder(WorldRef world, const UnitId& unit);
+
+        static bool ExecuteTransientOrder(
+            WorldRef world,
+            const UnitId& unit,
+            const Order& order,
+            const TSharedPtr<ICommandHandler>& handler);
+
+        static bool StaticInterruptHeadOrder(WorldRef world, const UnitId& unit);
+        bool InterruptHeadOrder(WorldRef world, const UnitId& unit);
+        
+        bool InterruptOrder(WorldRef world, const UnitId& unit, const Order& order);
+
+        // Interrupts the current order and inserts a new order at the head of the order queue.
+        bool AcquireOrder(WorldRef world, const UnitId& unit, const Order& order);
 
         uint32 GetPrioritizedHandlers(
             WorldConstRef world,

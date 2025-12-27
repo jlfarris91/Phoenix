@@ -19,14 +19,6 @@ void Phoenix::RTS::ICommandHandler::Shutdown()
     OrdersFeature.reset();
 }
 
-void Phoenix::RTS::ICommandHandler::OnWorldInitialize(WorldRef world)
-{
-}
-
-void Phoenix::RTS::ICommandHandler::OnWorldShutdown(WorldRef world)
-{
-}
-
 bool Phoenix::RTS::ICommandHandler::IgnoreCommand(
     WorldConstRef world,
     const CommandContext& context,
@@ -43,6 +35,14 @@ Phoenix::uint32 Phoenix::RTS::ICommandHandler::GetCommandPriority(
     return false;
 }
 
+Phoenix::RTS::AcquireResult Phoenix::RTS::ICommandHandler::AcquireOrder(
+    WorldConstRef world,
+    const AcquireContext& context,
+    const AcquireRequest& request) const
+{
+    return AcquireResult{};
+}
+
 bool Phoenix::RTS::ICommandHandler::IsTransient(WorldConstRef world, const Order& order) const
 {
     return false;
@@ -56,14 +56,6 @@ bool Phoenix::RTS::ICommandHandler::ExecuteOrder(WorldRef world, const UnitId& u
 bool Phoenix::RTS::ICommandHandler::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
     return false;
-}
-
-Phoenix::uint32 Phoenix::RTS::ICommandHandler::AcquireOrder(
-    WorldRef world,
-    const UnitId& unit,
-    const Order& order) const
-{
-    return 0;
 }
 
 bool Phoenix::RTS::ICommandHandler::SupportsMagicBox(const Order& order) const

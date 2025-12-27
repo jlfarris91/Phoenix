@@ -5,7 +5,6 @@
 
 #include "PhoenixRTS/Abilities/AbilityHandler.h"
 #include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
 
@@ -13,6 +12,13 @@ using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
+
+FeatureAbilities::FeatureAbilities()
+{
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+}
 
 void FeatureAbilities::RegisterAbilityHandler(const TSharedPtr<IAbilityHandler>& handler)
 {
@@ -138,9 +144,12 @@ void FeatureAbilities::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    for (const TSharedPtr<IAbilityHandler>& ability : AbilityIdToHandlerMap | std::views::values)
+    TArray2<TSharedPtr<IAbilityHandler>> handlers;
+    Session->GetServices2<IAbilityHandler>(handlers);
+
+    for (const TSharedPtr<IAbilityHandler>& handler : handlers)
     {
-        ability->Initialize(Session);
+        RegisterAbilityHandler(handler);
     }
 }
 
@@ -148,28 +157,8 @@ void FeatureAbilities::Shutdown()
 {
     IFeature::Shutdown();
 
-    for (const TSharedPtr<IAbilityHandler>& ability : AbilityIdToHandlerMap | std::views::values)
+    while (!AbilityIdToHandlerMap.empty())
     {
-        ability->Shutdown();
-    }
-}
-
-void FeatureAbilities::OnWorldInitialize(WorldRef world)
-{
-    IFeature::OnWorldInitialize(world);
-
-    for (const TSharedPtr<IAbilityHandler>& ability : AbilityIdToHandlerMap | std::views::values)
-    {
-        ability->OnWorldInitialize(world);
-    }
-}
-
-void FeatureAbilities::OnWorldShutdown(WorldRef world)
-{
-    IFeature::OnWorldShutdown(world);
-
-    for (const TSharedPtr<IAbilityHandler>& ability : AbilityIdToHandlerMap | std::views::values)
-    {
-        ability->OnWorldShutdown(world);
+        UnregisterAbilityHandler(AbilityIdToHandlerMap.begin()->first);
     }
 }

@@ -36,9 +36,10 @@ namespace UnitSystemDetail
                     continue;
                 }
 
-                if (!FeatureUnit::UnitIsDormant(world, unit))
+                if (!FeatureUnit::UnitIsDead(world, unit) && !FeatureUnit::UnitIsDormant(world, unit))
                 {
                     TargetScanArgs args;
+                    args.Level = FeatureUnit::GetTargetScanLevel(world, unit);
                     args.Flags = ETargetScanFlags::AutoAcquire;
                     args.LdsQueryContext = lds;
                     TargetScanner::ScanForTarget(world, unit, args);

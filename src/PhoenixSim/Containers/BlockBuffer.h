@@ -46,7 +46,7 @@ namespace Phoenix
             size_t Offset = 0;
         };
 
-        BlockBuffer();
+        BlockBuffer() = default;
         BlockBuffer(const CtorArgs& args);
         BlockBuffer(const BlockBuffer& other);
         BlockBuffer(BlockBuffer&& other) noexcept;
@@ -93,13 +93,17 @@ namespace Phoenix
         template <class TBlock>
         TBlock& GetBlockRef()
         {
-            return *GetBlock<TBlock>();
+            TBlock* block = GetBlock<TBlock>();
+            PHX_ASSERT(block);
+            return *block;
         }
 
         template <class TBlock>
         const TBlock& GetBlockRef() const
         {
-            return *GetBlock<TBlock>();
+            const TBlock* block = GetBlock<TBlock>();
+            PHX_ASSERT(block);
+            return *block;
         }
 
     private:
@@ -111,7 +115,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API BufferBlockBase
     {
-        virtual ~BufferBlockBase() {}
+        virtual ~BufferBlockBase() = default;
         virtual const TypeDescriptor& GetTypeDescriptor() const = 0;
     };
 
@@ -131,37 +135,37 @@ namespace Phoenix
         template <class TBlock>
         TBlock* GetBlock(const FName& name)
         {
-            return reinterpret_cast<TBlock*>(GetBlock(name));
+            return ThisAsT()->GetBuffer().template GetBlock<TBlock>(name);
         }
 
         template <class TBlock>
         const TBlock* GetBlock(const FName& name) const
         {
-            return reinterpret_cast<const TBlock*>(GetBlock(name));
+            return ThisAsT()->GetBuffer().template GetBlock<TBlock>(name);
         }
 
         template <class TBlock>
         TBlock* GetBlock()
         {
-            return reinterpret_cast<TBlock*>(GetBlock(TBlock::StaticTypeName));
+            return ThisAsT()->GetBuffer().template GetBlock<TBlock>();
         }
 
         template <class TBlock>
         const TBlock* GetBlock() const
         {
-            return reinterpret_cast<const TBlock*>(GetBlock(TBlock::StaticTypeName));
+            return ThisAsT()->GetBuffer().template GetBlock<TBlock>();
         }
 
         template <class TBlock>
         TBlock& GetBlockRef()
         {
-            return *GetBlock<TBlock>();
+            return ThisAsT()->GetBuffer().template GetBlockRef<TBlock>();
         }
 
         template <class TBlock>
         const TBlock& GetBlockRef() const
         {
-            return *GetBlock<TBlock>();
+            return ThisAsT()->GetBuffer().template GetBlockRef<TBlock>();
         }
 
     private:

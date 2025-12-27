@@ -1,5 +1,6 @@
 #pragma once
 
+#include "TargetScanLevel.h"
 #include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 
@@ -26,6 +27,7 @@ namespace Phoenix::RTS
         TOptional<Vec2> Location;
         TOptional<ECS::EntityId> LastScanTarget;
         ETargetScanFlags Flags = ETargetScanFlags::None;
+        ETargetScanLevel Level = ETargetScanLevel::None;
         TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
@@ -49,5 +51,11 @@ namespace Phoenix::RTS
     private:
 
         static void PopulateTargetScanArgs(WorldConstRef world, UnitId unit, TargetScanArgs& args);
+
+        static TargetScanResult ScanForTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args);
+
+        static TargetScanResult ScanForAbilityTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args);
+
+        static TargetScanResult ScanForWeaponTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args);
     };
 }

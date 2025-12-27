@@ -306,7 +306,7 @@ namespace Phoenix::RTS
             if (sortedEnd != begin)
             {
                 auto iter = std::lower_bound(begin, sortedEnd, id & mask, SortedMaskedValueIdPred{mask});
-                while (iter != sortedEnd && iter->Id == handle)
+                while (iter != sortedEnd && iter->Id == id)
                 {
                     if (iter->IsValid() && orderIndex-- == 0)
                     {

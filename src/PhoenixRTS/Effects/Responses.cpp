@@ -23,14 +23,6 @@ void IResponseHandler::Shutdown()
     EffectsFeature.reset();
 }
 
-void IResponseHandler::OnWorldInitialize(WorldRef world)
-{
-}
-
-void IResponseHandler::OnWorldShutdown(WorldRef world)
-{
-}
-
 FName IResponseHandler::GetResponseId() const
 {
     return FName::None;

@@ -322,6 +322,14 @@ void WorldManager::InitializeWorld(WorldRef world) const
         feature->OnWorldInitialize(world);
     }
 
+    for (const TSharedPtr<IService>& service : Session.lock()->GetServices())
+    {
+        if (!IsA<IFeature>(service))
+        {
+            service->OnWorldInitialize(world);
+        }
+    }
+
     SetFlagRef(world.Flags, EWorldFlags::Initialized, true);
 }
 
@@ -331,6 +339,14 @@ void WorldManager::ShutdownWorld(WorldRef world) const
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldShutdown(world);
+    }
+
+    for (const TSharedPtr<IService>& service : Session.lock()->GetServices())
+    {
+        if (!IsA<IFeature>(service))
+        {
+            service->OnWorldShutdown(world);
+        }
     }
 
     SetFlagRef(world.Flags, EWorldFlags::ShutDown, true);

@@ -23,6 +23,11 @@ using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
 
+FeatureUnit::FeatureUnit()
+{
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+}
+
 UnitId FeatureUnit::SpawnUnit(
     WorldRef world,
     const FName& unitData,
@@ -94,6 +99,8 @@ UnitId FeatureUnit::SpawnUnit(
 
     // TODO (jfarris): dispatch with a unit spawned event instead
     FeatureAbilities::AddAbilitiesFromData(world, unitId, unitData);
+
+    ResetTargetScanLevel(world, unitId);
 
     return unitId;
 }
@@ -184,6 +191,27 @@ bool FeatureUnit::UnitIsCargo(WorldConstRef world, UnitId unit)
 bool FeatureUnit::UnitIsDormant(WorldConstRef world, UnitId unit)
 {
     return false;
+}
+
+bool FeatureUnit::UnitCanReceiveCommands(WorldConstRef world, UnitId unit)
+{
+    return !UnitIsDead(world, unit);
+}
+
+ETargetScanLevel FeatureUnit::GetTargetScanLevel(WorldConstRef world, UnitId unit)
+{
+    return FeatureECS::GetBlackboardValue<ETargetScanLevel>(world, unit, "target_scan_level"_n);
+}
+
+bool FeatureUnit::SetTargetScanLevel(WorldRef world, UnitId unit, ETargetScanLevel scanLevel)
+{
+    return FeatureECS::SetBlackboardValue(world, unit, "target_scan_level"_n, scanLevel);
+}
+
+bool FeatureUnit::ResetTargetScanLevel(WorldRef world, UnitId unit)
+{
+    // TODO (jfarris): pull this default scan level value from unit data?
+    return SetTargetScanLevel(world, unit, ETargetScanLevel::Offensive);
 }
 
 int32 FeatureUnit::GetAttackTargetPriority(WorldConstRef world, UnitId unit)

@@ -2,6 +2,7 @@
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Worlds.h"
 
 namespace Phoenix
 {
@@ -9,7 +10,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IService : TSharedAsThis<IService>
     {
-        PHX_DECLARE_TYPE(IService)
+        PHX_DECLARE_INTERFACE(IService)
 
     public:
 
@@ -18,6 +19,9 @@ namespace Phoenix
 
         virtual void Initialize(const TSharedPtr<Session>& session);
         virtual void Shutdown();
+
+        virtual void OnWorldInitialize(WorldRef world);
+        virtual void OnWorldShutdown(WorldRef world);
 
     protected:
 

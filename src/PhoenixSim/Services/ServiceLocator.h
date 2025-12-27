@@ -52,7 +52,7 @@ namespace Phoenix
             {
                 outServices.PushBack(std::static_pointer_cast<TService>(service));
             }
-            return services.Num();
+            return static_cast<uint32>(services.Num());
         }
 
         const TArray2<TSharedPtr<IService>>& GetServices() const override

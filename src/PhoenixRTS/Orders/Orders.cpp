@@ -3,8 +3,8 @@
 
 bool Phoenix::RTS::Order::operator==(const Order& other) const
 {
-    return CommandId == other.CommandId &&
-           CommandIndex == other.CommandIndex &&
+    return OrderId == other.OrderId &&
+           OrderIndex == other.OrderIndex &&
            TargetEntity == other.TargetEntity &&
            Vec2::Equals(TargetLocation, other.TargetLocation) &&
            Flags == other.Flags;

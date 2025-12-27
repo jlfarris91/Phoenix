@@ -41,9 +41,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API IAbilityHandler : public ICommandHandler
     {
-        PHX_DECLARE_TYPE_BEGIN(IAbilityHandler)
-            PHX_REGISTER_BASE(ICommandHandler)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_INTERFACE_WITH_BASE(IAbilityHandler, ICommandHandler)
 
     public:
 

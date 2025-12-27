@@ -293,7 +293,9 @@ void Session::ApplyConfig()
     {
         feature->Config.clear();
 
-        auto featureConfigIter = FeatureConfigs.find(feature->GetName());
+        const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
+        
+        auto featureConfigIter = FeatureConfigs.find(typeDescriptor.GetFName());
         if (featureConfigIter != FeatureConfigs.end())
         {
             feature->Config = featureConfigIter->second;

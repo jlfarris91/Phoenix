@@ -50,13 +50,11 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureEffects : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureEffects)
-            FEATURE_WORLD_BLOCK(FeatureEffectsDynamicBlock)
-            FEATURE_WORLD_BLOCK(FeatureEffectsScratchBlock)
-            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureEffects)
 
     public:
+
+        FeatureEffects();
 
         //
         // Effect Handlers

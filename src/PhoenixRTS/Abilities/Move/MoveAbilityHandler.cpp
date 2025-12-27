@@ -208,11 +208,6 @@ uint32 MoveAbilityHandler::GetCommandPriority(
     const CommandContext& context,
     const Command& command) const
 {
-    if (HasAnyFlags(command.Flags, ECommandFlags::Acquire))
-    {
-        return GetAcquireCommandPriority(world, context, command);
-    }
-
     if (HasAnyFlags(command.Flags, ECommandFlags::Smart))
     {
         return GetSmartCommandPriority(world, context, command);
@@ -225,7 +220,7 @@ bool MoveAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const 
 {
     MoveAbilityComponent* moveComp = FeatureECS::GetComponent<MoveAbilityComponent>(world, unit);
 
-    if (order.CommandIndex == Commands::Patrol)
+    if (order.OrderIndex == Commands::Patrol)
     {
         // TODO (jfarris): implement patrol states
     }
@@ -254,19 +249,6 @@ bool MoveAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, cons
         return true;
     }
     return false;
-}
-
-uint32 MoveAbilityHandler::AcquireOrder(WorldRef world, const UnitId& unit, const Order& order) const
-{
-    return 0;
-}
-
-uint32 MoveAbilityHandler::GetAcquireCommandPriority(
-    WorldConstRef world,
-    const CommandContext& context,
-    const Command& command)
-{
-    return 0;
 }
 
 uint32 MoveAbilityHandler::GetSmartCommandPriority(

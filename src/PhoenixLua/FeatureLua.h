@@ -19,26 +19,11 @@ namespace Phoenix
 
     class PHOENIX_LUA_API FeatureLua : public IFeature
     {
+        PHX_DECLARE_FEATURE_TYPE(FeatureLua)
+
     public:
 
-        PHX_FEATURE_BEGIN(FeatureLua)
-            FEATURE_SESSION_BLOCK(FeatureLuaDynamicBlock)
-            FEATURE_CHANNEL(FeatureChannels::PreUpdate)
-            FEATURE_CHANNEL(FeatureChannels::Update)
-            FEATURE_CHANNEL(FeatureChannels::PostUpdate)
-            FEATURE_CHANNEL(FeatureChannels::PreHandleAction)
-            FEATURE_CHANNEL(FeatureChannels::HandleAction)
-            FEATURE_CHANNEL(FeatureChannels::PostHandleAction)
-            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-            FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::DebugRender)
-        PHX_FEATURE_END()
+        FeatureLua();
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;

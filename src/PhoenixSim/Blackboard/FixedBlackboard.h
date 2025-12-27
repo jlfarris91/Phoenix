@@ -269,6 +269,13 @@ namespace Phoenix::Blackboard
 
         bool SetValue(blackboard_key_t key, blackboard_value_t value)
         {
+            uint32 index = IndexOfKey(key);
+            if (Items.IsValidIndex(index))
+            {
+                Items[index].second = value;
+                return true;
+            }
+            
             return InsertKVP(key, value);
         }
 

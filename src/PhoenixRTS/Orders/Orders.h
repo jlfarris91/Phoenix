@@ -15,23 +15,17 @@ namespace Phoenix::RTS
         None = 0,
         Replace = 1,
         Queued = 2,
-        Acquire = 4,
-        Smart = 8
-    };
-
-    enum class PHOENIX_RTS_API EOrderPriorityType : uint8
-    {
-        Replace,
-        Queue
+        Acquire = 4
     };
 
     struct PHOENIX_RTS_API Order
     {
-        FName CommandId = FName::None;
-        uint8 CommandIndex = 0;
+        EOrderFlags Flags = EOrderFlags::None;
+        uint32 Kind;
+        FName OrderId = FName::None;
+        uint8 OrderIndex = 0;
         ECS::EntityId TargetEntity = ECS::EntityId::Invalid;
         Vec2 TargetLocation;
-        EOrderFlags Flags = EOrderFlags::None;
 
         bool operator==(const Order& other) const;
         bool operator!=(const Order& other) const;

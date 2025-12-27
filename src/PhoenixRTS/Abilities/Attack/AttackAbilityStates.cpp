@@ -55,7 +55,7 @@ AbilityStateResult AttackTargetState::SetState(WorldRef world, const UnitId& uni
     return EnterActiveState(world, unit);
 }
 
-bool AttackTargetState::ReselectWeapon(WorldRef world, const UnitId& unit, const ECS::EntityId& target)
+bool AttackTargetState::ReselectWeapon(WorldRef world, const UnitId& unit, const EntityId& target)
 {
     bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
     Data::WeaponPtr newWeapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);

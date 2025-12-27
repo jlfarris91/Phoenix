@@ -24,13 +24,11 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureAbilities : public IFeature
     {
-        PHX_FEATURE_BEGIN(FeatureAbilities)
-            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-        PHX_FEATURE_END()
+        PHX_DECLARE_FEATURE_TYPE(FeatureAbilities)
 
     public:
+
+        FeatureAbilities();
 
         //
         // Ability Handlers
@@ -68,9 +66,6 @@ namespace Phoenix::RTS
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
-
-        void OnWorldInitialize(WorldRef world) override;
-        void OnWorldShutdown(WorldRef world) override;
 
         TMap<FName, TSharedPtr<IAbilityHandler>> AbilityIdToHandlerMap;
     };

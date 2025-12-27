@@ -5,6 +5,14 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
+FeatureTimers::FeatureTimers()
+{
+    FEATURE_SESSION_BLOCK(FeatureTimersDynamicSessionBlock)
+    FEATURE_WORLD_BLOCK(FeatureTimersDynamicWorldBlock)
+    FEATURE_CHANNEL(FeatureChannels::PreUpdate)
+    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+}
+
 FeatureTimers::SessionTimerManager* FeatureTimers::GetSessionTimerManager(SessionRef session)
 {
     FeatureTimersDynamicSessionBlock* block = session.GetBlock<FeatureTimersDynamicSessionBlock>();

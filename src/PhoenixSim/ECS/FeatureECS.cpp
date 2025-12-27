@@ -56,9 +56,21 @@ namespace FeatureECSDetail
 
 FeatureECS::FeatureECS()
 {
+    FEATURE_WORLD_BLOCK(FeatureECSDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeatureECSScratchBlock)
+    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
+    FEATURE_CHANNEL(FeatureChannels::DebugRender)
 }
 
 FeatureECS::FeatureECS(const FeatureECSCtorArgs& args)
+    : FeatureECS()
 {
     for (const TSharedPtr<ISystem>& system : args.Systems)
     {
@@ -846,7 +858,7 @@ bool FeatureECS::IsFacing(WorldConstRef world, EntityId entity, const Vec2& targ
     Angle entityFacing = entityTransform->Rotation;
     Angle targetFacing = (target - entityTransform->Position).AsRadians();
 
-    return Abs(AngleDelta(entityFacing, targetFacing)) <= threshold;
+    return Abs(AngleDelta(entityFacing, targetFacing)) <= Deg2Rad(threshold);
 }
 
 void FeatureECS::QueryEntitiesInRange(
