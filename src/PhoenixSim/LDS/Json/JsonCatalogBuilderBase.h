@@ -26,7 +26,7 @@ namespace Phoenix::LDS::Json
     };
 
     template <class TCatalog = Catalog>
-    struct JsonCatalogBuilderBase : ILogger<JsonCatalogBuilderLogMessage>
+    struct JsonCatalogBuilderBase : ILogCollectionOwner<JsonCatalogBuilderLogMessage>
     {
         using json = nlohmann::json;
 

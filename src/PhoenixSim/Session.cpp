@@ -14,6 +14,8 @@
 
 #include <fstream>
 
+#include "Logging.h"
+
 using namespace Phoenix;
 
 Session::~Session()
@@ -256,9 +258,14 @@ void Session::LoadConfig()
 {
     Config.clear();
 
-    std::ifstream configStream(DataDirectory / (ConfigName + ".json"));
+    std::filesystem::path sessionConfigPath = DataDirectory / (ConfigName + ".json");
+
+    LogVerbose("Loading config at path {0}", sessionConfigPath.string());
+
+    std::ifstream configStream(sessionConfigPath);
     if (!configStream.is_open())
     {
+        LogWarning("Failed to load config at path {0}", sessionConfigPath.string());
         return;
     }
 

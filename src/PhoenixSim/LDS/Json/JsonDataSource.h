@@ -8,7 +8,7 @@
 
 namespace Phoenix::LDS::Json
 {
-    class JsonDataSource : ILogger<LogMessage>
+    class JsonDataSource : ILogCollectionOwner<LogMessage>
     {
     public:
 

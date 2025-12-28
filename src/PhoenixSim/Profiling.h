@@ -16,8 +16,9 @@ namespace Phoenix
             uint32 Color;
         };
 
-        struct PHOENIX_SIM_API IProfiler
+        class PHOENIX_SIM_API IProfiler
         {
+        public:
             virtual ~IProfiler() = default;
 
             virtual void SetThreadName(const char* txt, int32_t hint) = 0;

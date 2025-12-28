@@ -4,8 +4,9 @@
 using namespace Phoenix;
 using namespace Phoenix::Profiling;
 
-struct NullProfiler : IProfiler
+class NullProfiler : public IProfiler
 {
+public:
     void SetThreadName(const char* txt, int32_t hint) override {}
     void BeginZone(const SourceLocation* srcLoc, int32 depth = INDEX_NONE) override {}
     void EndZone() override {}

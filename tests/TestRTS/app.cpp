@@ -58,6 +58,8 @@
 #include "SDL/SDLViewport.h"
 
 // Test App Tools
+#include "Console.h"
+#include "Logger.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -78,6 +80,8 @@ SDL_Renderer* GRenderer;
 FPSCalc GRendererFPS;
 
 Profiling::TracyProfiler GTracyProfiler;
+TSharedPtr<Logger> GLogger;
+bool GShowConsoleWindow = true;
 
 TSharedPtr<Session> GSession;
 bool GSessionThreadWantsExit = false;
@@ -212,6 +216,10 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     {
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
+
+    GLogger = MakeShared<Logger>("./Phoenix.log"); 
+    SetLogger(GLogger);
+    InitConsole(GLogger);
 
     Json::RunLDSJsonTests();
 
@@ -727,6 +735,8 @@ void OnAppRenderUI()
 
         ImGui::End();
     }
+
+    ShowConsole(&GShowConsoleWindow);
 }
 
 void OnAppEvent(SDL_Event* event)
@@ -746,6 +756,8 @@ void OnAppShutdown()
 {
     GSessionThreadWantsExit = true;
     GSessionThread->join();
+
+    GLogger.reset();
 }
 
 void DrawGrid()

@@ -179,4 +179,9 @@ namespace Phoenix
     struct Index { static constexpr T None = -1; };
 
     constexpr int32 INDEX_NONE = Index<int32>::None;
+
+    std::wstring ToWideString(const std::string& str);
+
+    size_t PHOENIX_SIM_API GetNowLocalTimeString(char* buffer, size_t sizeInBytes);
+    size_t PHOENIX_SIM_API GetNowUnixTimeString(char* buffer, size_t sizeInBytes);
 }

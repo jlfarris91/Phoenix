@@ -1,0 +1,22 @@
+[2025-12-28 02:36:33] [Warn]: Object type 'properties' is empty.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type 'properties' is empty.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type 'properties' is empty.
+[2025-12-28 02:36:33] [Error]: Object is missing required 'id' property.
+[2025-12-28 02:36:33] [Error]: Object is missing required 'base' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Error]: Object with id 'TestObject' has already been registered.
+[2025-12-28 02:36:33] [Error]: No base object or type registered with id 'TestBaseObject'.
+[2025-12-28 02:36:33] [Error]: Root objects must be of type Object.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object defines an array with 3 items but the max allowed is 2
+[2025-12-28 02:36:33] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-28 02:36:33] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'

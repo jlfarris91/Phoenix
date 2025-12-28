@@ -3,7 +3,7 @@
 
 namespace Phoenix
 {
-    template <class T, size_t N>
+    template <class T, size_t N, bool AllowOverwrite = false>
     struct TFixedQueue
     {
         using ValueT = T;
@@ -38,8 +38,12 @@ namespace Phoenix
 
         constexpr void Enqueue(const T& value)
         {
-            PHX_ASSERT(!IsFull());
+            PHX_ASSERT(AllowOverwrite || !IsFull());
             Data[End] = value;
+            if (AllowOverwrite && IsFull())
+            {
+                Start = MoveIndex(Start, 1);
+            }
             End = MoveIndex(End, 1);
         }
 
