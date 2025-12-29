@@ -814,6 +814,12 @@ Vec2 FeatureECS::GetWorldPosition(WorldConstRef world, EntityId entityId)
     return comp ? comp->Transform.Position : Vec2::Zero;
 }
 
+Angle FeatureECS::GetWorldFacing(WorldConstRef world, EntityId entityId)
+{
+    const TransformComponent* comp = GetComponent<TransformComponent>(world, entityId);
+    return comp ? comp->Transform.Rotation : 0;
+}
+
 bool FeatureECS::IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range)
 {
     auto targetTransform = GetWorldTransformPtr(world, target);

@@ -12,9 +12,25 @@ bool Command::Read(const LDSReadObjectArgs& args, Command& outItem)
 
 CommandPtr::CommandPtr(const LDSRecordPath& path, ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
-    , Ability(ObjectRef<LDSObjectRefPtr>("ability"))
-    , Button(ObjectRef<CommandButtonPtr>("button"))
-    , CommandIndex(Value<uint8>("command_index"))
-    , GridSlot(Object<CommandGridSlotPtr>("grid_slot"))
 {
+}
+
+LDSObjectRefPtr CommandPtr::Ability() const
+{
+    return ObjectRef<LDSObjectRefPtr>("ability");
+}
+
+TLDSObjectRefPtr<CommandButton> CommandPtr::Button() const
+{
+    return ObjectRef<CommandButtonPtr>("button");
+}
+
+TLDSValuePtr<unsigned char> CommandPtr::CommandIndex() const
+{
+    return Value<uint8>("command_index");
+}
+
+CommandGridSlotPtr CommandPtr::GridSlot() const
+{
+    return Object<CommandGridSlotPtr>("grid_slot");
 }

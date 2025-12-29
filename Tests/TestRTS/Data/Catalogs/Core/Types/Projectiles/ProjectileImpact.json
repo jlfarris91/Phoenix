@@ -1,0 +1,15 @@
+﻿{
+    "id": "ProjectileImpact",
+    "type": "Object",
+    "properties": {
+        "fx": {
+            "type": "ObjectRef#FXActor"
+        },
+        "offset": {
+            "type": "Vector3"
+        },
+        "socket": {
+            "type": "Name"
+        }
+    }
+}

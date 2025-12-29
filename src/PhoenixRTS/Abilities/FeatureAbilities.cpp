@@ -130,7 +130,7 @@ uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, T
     Data::UnitPtr unitPtr(FeatureUnit::GetUnitDataId(world, unit));
     (void)unitPtr.Commands().ForEachItem(queryContext, [&](uint32, const Data::CommandPtr& command)
     {
-        FName abilityId = command.Ability.GetReferenceId(queryContext);
+        FName abilityId = command.Ability().GetReferenceId(queryContext);
         if (!FName::IsNoneOrEmpty(abilityId))
         {
             outAbilityIds.PushBackUnique(abilityId);

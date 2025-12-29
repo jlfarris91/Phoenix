@@ -65,27 +65,27 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Unit)
 
-        LDS::TLDSObjectRefPtr<UnitActorPtr> Actor() const;
+        UnitActorRefPtr Actor() const;
         UnitArmorPtr Armor() const;
-        LDS::TLDSObjectRefArrayPtr<BuffPtr> Buffs() const;
+        BuffRefArrayPtr Buffs() const;
         UnitBuildPtr BuildStats() const;
         UnitCargoPtr CargoStats() const;
         LDS::TLDSEnumFlagsPtr<ECollisionFlags> CollisionFlags() const;
-        LDS::TLDSObjectArrayPtr<Command> Commands() const;
-        LDS::TLDSObjectArrayPtr<Component> Components() const;
+        CommandArrayPtr Commands() const;
+        ComponentArrayPtr Components() const;
         UnitDeathPtr DeathStats() const;
         UnitEffectsPtr Effects() const;
-        LDS::TLDSObjectRefPtr<FactionPtr> Faction() const;
+        FactionRefPtr Faction() const;
         UnitFlagsPtr Flags() const;
         FogVisibilityPtr Fog() const;
         UnitInfoPtr Info() const;
         UnitMovementPtr Movement() const;
         UnitPlacementPtr Placement() const;
-        LDS::TLDSObjectRefArrayPtr<TagPtr> Tags() const;
+        TagRefArrayPtr Tags() const;
         UnitSupplyPtr Supply() const;
         UnitVisionPtr Vision() const;
-        LDS::TLDSObjectArrayPtr<VitalStatsPair> Vitals() const;
-        LDS::TLDSObjectRefArrayPtr<WeaponPtr> Weapons() const;
+        VitalStatsPairArrayPtr Vitals() const;
+        WeaponRefArrayPtr Weapons() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_REF_PTR_TYPES_FOR(Unit)

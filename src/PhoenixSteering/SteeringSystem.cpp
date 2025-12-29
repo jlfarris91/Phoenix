@@ -77,7 +77,7 @@ namespace SteeringDetail
             PHX_PROFILE_ZONE_SCOPED;
 
             // Only step entities actively seeking a goal
-            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+            if (!HasAnyFlags(steerComp.Flags, ESteeringFlags::SeekingGoal))
             {
                 return;
             }
@@ -99,7 +99,7 @@ namespace SteeringDetail
                 {
                     // Target entity is no longer a valid target
                     steerComp.GoalEntity = EntityId::Invalid;
-                    ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
+                    ClearFlagRef(steerComp.Flags, ESteeringFlags::SeekingGoal);
                     return;
                 }
             }
@@ -125,11 +125,11 @@ namespace SteeringDetail
             // The entity has reached its goal
             if (distance < ArrivalThreshold)
             {
-                SetFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
+                SetFlagRef(steerComp.Flags, ESteeringFlags::ArrivedAtGoal);
 
                 if (clearSeekingGoal)
                 {
-                    ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
+                    ClearFlagRef(steerComp.Flags, ESteeringFlags::SeekingGoal);
                 }
             }
 
@@ -176,7 +176,7 @@ namespace SteeringDetail
         Vec2 CalculateVelocity(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
         {
             // Only step entities actively seeking a goal
-            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+            if (!HasAnyFlags(steerComp.Flags, ESteeringFlags::SeekingGoal))
             {
                 return Vec2::Zero;
             }
@@ -318,7 +318,7 @@ namespace SteeringDetail
             CollideWithWorld(transformComp, steerComp);
 
             bool moved = !Vec2::Equals(steerComp.PreviousPos, transformComp.Transform.Position);
-            SetFlagRef(steerComp.Flags, ESteerFlags::Active, moved);
+            SetFlagRef(steerComp.Flags, ESteeringFlags::Active, moved);
         }
 
         void CollideWithWorld(
@@ -347,7 +347,7 @@ namespace SteeringDetail
                 transformCompA,
                 steerCompA] : span)
             {
-                if (HasNoneFlags(steerCompA.Flags, ESteerFlags::Active))
+                if (HasNoneFlags(steerCompA.Flags, ESteeringFlags::Active))
                 {
                     continue;
                 }
@@ -410,8 +410,8 @@ namespace SteeringDetail
                     transformCompA.Transform.Position -= separation;
                     transformCompB.Transform.Position += separation;
 
-                    SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
-                    SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
+                    SetFlagRef(steerCompA.Flags, ESteeringFlags::Active);
+                    SetFlagRef(steerCompB.Flags, ESteeringFlags::Active);
                 }
             }
         }

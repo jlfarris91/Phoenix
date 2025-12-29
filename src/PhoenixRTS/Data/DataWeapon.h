@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "DataTargetFilter.h"
-#include "PhoenixSim/LDS/LDSObjectModel.h"
-#include "PhoenixRTS/DLLExport.h"
+#include "PhoenixRTS/Data/DataComponent.h"
+#include "PhoenixRTS/Data/DataEffect.h"
+#include "PhoenixRTS/Data/DataTargetFilter.h"
 #include "PhoenixRTS/Data/DataIcon.h"
 #include "PhoenixRTS/Data/DataWeaponAmmo.h"
 
@@ -43,8 +43,8 @@ namespace Phoenix::RTS::Data
         LDS::DistancePtr RangeSlop() const;
         LDS::TimePtr SwingTime() const;
         TargetFilterPtr TargetFilter() const;
-        LDS::LDSObjectRefPtr Component() const;
-        LDS::LDSObjectRefPtr Effect() const;
+        ComponentRefPtr Component() const;
+        EffectRefPtr Effect() const;
         ValidatorRefPtr Validator() const;
     };
 

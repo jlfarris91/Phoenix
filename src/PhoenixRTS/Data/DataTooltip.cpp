@@ -10,21 +10,37 @@ bool Tooltip::Read(const LDS::LDSReadObjectArgs& args, Tooltip& outItem)
     bool success = true;
 
     TooltipPtr dataPtr = args.CreatePtr<TooltipPtr>();
-    success = dataPtr.Title.TryGetValue(queryContext, outItem.Title) && success;
-    success = dataPtr.SubTitle.TryGetValue(queryContext, outItem.SubTitle) && success;
-    success = dataPtr.Body.TryGetValue(queryContext, outItem.Body) && success;
+    success = dataPtr.Title().TryGetValue(queryContext, outItem.Title) && success;
+    success = dataPtr.SubTitle().TryGetValue(queryContext, outItem.SubTitle) && success;
+    success = dataPtr.Body().TryGetValue(queryContext, outItem.Body) && success;
 
     outItem.Items.Reset();
-    dataPtr.Items.ReadObjects(queryContext, outItem.Items);
+    dataPtr.Items().ReadObjects(queryContext, outItem.Items);
 
     return success;
 }
 
 TooltipPtr::TooltipPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
-    , Title(Value<FName>("title"))
-    , SubTitle(Value<FName>("sub_title"))
-    , Body(Value<FName>("body"))
-    , Items(ObjectArray<TooltipItem>("items"))
 {
+}
+
+Phoenix::LDS::TLDSValuePtr<Phoenix::FName> TooltipPtr::Title() const
+{
+    return Value<FName>("title");
+}
+
+Phoenix::LDS::TLDSValuePtr<Phoenix::FName> TooltipPtr::SubTitle() const
+{
+    return Value<FName>("sub_title");
+}
+
+Phoenix::LDS::TLDSValuePtr<Phoenix::FName> TooltipPtr::Body() const
+{
+    return Value<FName>("body");
+}
+
+Phoenix::LDS::TLDSObjectArrayPtr<TooltipItem> TooltipPtr::Items() const
+{
+    return ObjectArray<TooltipItem>("items");
 }

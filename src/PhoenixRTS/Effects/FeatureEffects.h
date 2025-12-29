@@ -157,7 +157,7 @@ namespace Phoenix::RTS
 
         static uint32 ReferenceEffectNode(WorldRef world, EffectNodeId id);
 
-        static uint32 ReferenceEffectNode(EffectComponent& effectComp);
+        static uint32 ReferenceEffectNode(WorldRef world, EffectNodeId id, EffectComponent& effectComp);
 
         static uint32 DereferenceEffectNode(WorldRef world, EffectNodeId id);
 
@@ -207,6 +207,7 @@ namespace Phoenix::RTS
             const ExecuteEffectArgs& overrides = {});
 
         static bool DeferEffectExecution(WorldRef world, EffectNodeId id);
+        static bool DeferEffectExecution(WorldRef world, EffectNodeId id, EffectComponent& comp);
 
         //
         // Specializations

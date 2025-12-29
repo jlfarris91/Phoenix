@@ -9,7 +9,7 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-FName EffectSetHandler::GetEffectId() const
+FName EffectSetHandler::GetEffectTypeId() const
 {
     return "EffectSet"_n;
 }

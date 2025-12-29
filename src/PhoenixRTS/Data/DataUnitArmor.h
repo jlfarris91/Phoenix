@@ -19,8 +19,8 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(UnitArmor)
 
-        LDS::TLDSValuePtr<Phoenix::Value> Value;
-        IconPtr Icon;
+        LDS::TLDSValuePtr<Phoenix::Value> Value() const;
+        IconPtr Icon() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(UnitArmor)

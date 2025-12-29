@@ -1,12 +1,10 @@
 {
     "id": "UnitActor",
+    "base": "Actor",
     "type": "Object",
     "properties": {
         "asset": {
-            "type": "Asset#Actor"
-        },
-        "tint": {
-            "type": "Object#Color"
+            "type": "Asset#UnitActor"
         }
     }
 }

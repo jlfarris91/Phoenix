@@ -18,10 +18,10 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Command);
 
-        LDS::LDSObjectRefPtr Ability;
-        LDS::TLDSObjectRefPtr<CommandButton> Button;
-        LDS::TLDSValuePtr<uint8> CommandIndex;
-        CommandGridSlotPtr GridSlot;
+        LDS::LDSObjectRefPtr Ability() const;
+        LDS::TLDSObjectRefPtr<CommandButton> Button() const;
+        LDS::TLDSValuePtr<uint8> CommandIndex() const;
+        CommandGridSlotPtr GridSlot() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(Command)

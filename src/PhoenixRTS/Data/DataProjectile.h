@@ -1,14 +1,21 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/LDSObjectModel.h"
-#include "PhoenixRTS/DLLExport.h"
+#include "DataProjectileLaunch.h"
+#include "DataProjectileMovement.h"
 #include "PhoenixRTS/Data/DataProjectileActor.h"
+#include "PhoenixRTS/Data/DataProjectileImpact.h"
 
 namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API Projectile
     {
+        ProjectileActorPtr Actor;
+        Value Health;
+        ProjectileImpact Impact;
+        ProjectileLaunch Launch;
+        ProjectileMovement Movement;
+        
         static bool Read(const LDS::LDSReadObjectArgs& args, Projectile& outItem);
     };
 
@@ -16,9 +23,11 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Projectile);
 
-        ProjectileActorRefPtr Actor;
-        LDS::TLDSValuePtr<Phoenix::Value> Health;
-        LDS::TLDSValuePtr<Distance> Radius;
+        ProjectileActorRefPtr Actor() const;
+        LDS::ValuePtr Health() const;
+        ProjectileImpactPtr Impact() const;
+        ProjectileLaunchPtr Launch() const;
+        ProjectileMovementPtr Movement() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_REF_PTR_TYPES_FOR(Projectile)

@@ -585,6 +585,8 @@ namespace Phoenix::ECS
 
         static Vec2 GetWorldPosition(WorldConstRef world, EntityId entityId);
 
+        static Angle GetWorldFacing(WorldConstRef world, EntityId entityId);
+
         // Returns true if the entity is within range of the target entity.
         static bool IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range);
 

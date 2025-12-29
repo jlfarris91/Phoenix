@@ -10,15 +10,23 @@ bool UnitArmor::Read(const LDS::LDSReadObjectArgs& args, UnitArmor& outItem)
     bool success = true;
 
     UnitArmorPtr dataPtr = args.CreatePtr<UnitArmorPtr>();
-    success = dataPtr.Value.TryGetValue(queryContext, outItem.Value) && success;
-    success = dataPtr.Icon.TryReadObject(queryContext, outItem.Icon) && success;
+    success = dataPtr.Value().TryGetValue(queryContext, outItem.Value) && success;
+    success = dataPtr.Icon().TryReadObject(queryContext, outItem.Icon) && success;
 
     return success;
 }
 
 UnitArmorPtr::UnitArmorPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
-    , Value(TLDSObjectPtr::Value<FName>("value"))
-    , Icon(Object<Data::Icon>("icon"))
 {
+}
+
+Phoenix::LDS::TLDSValuePtr<Phoenix::TFixed<12>> UnitArmorPtr::Value() const
+{
+    return TLDSObjectPtr::Value<FName>("value");
+}
+
+IconPtr UnitArmorPtr::Icon() const
+{
+    return Object<Data::Icon>("icon");
 }

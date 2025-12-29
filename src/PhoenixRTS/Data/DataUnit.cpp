@@ -39,29 +39,29 @@ UnitPtr::UnitPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags
 {
 }
 
-Phoenix::LDS::TLDSObjectRefPtr<UnitActorPtr> UnitPtr::Actor() const
+UnitActorRefPtr UnitPtr::Actor() const
 {
-    return ObjectRef<UnitActor>("actor");
+    return ObjectRef<UnitActorRefPtr>("actor");
 }
 
 UnitArmorPtr UnitPtr::Armor() const
 {
-    return Object<UnitArmor>("armor");
+    return Object<UnitArmorPtr>("armor");
 }
 
-Phoenix::LDS::TLDSObjectRefArrayPtr<BuffPtr> UnitPtr::Buffs() const
+BuffRefArrayPtr UnitPtr::Buffs() const
 {
-    return ObjectRefArray<Buff>("buffs");
+    return ObjectRefArray<BuffRefArrayPtr>("buffs");
 }
 
 UnitBuildPtr UnitPtr::BuildStats() const
 {
-    return Object<UnitBuild>("build_stats");
+    return Object<UnitBuildPtr>("build_stats");
 }
 
 UnitCargoPtr UnitPtr::CargoStats() const
 {
-    return Object<UnitCargo>("cargo");
+    return Object<UnitCargoPtr>("cargo");
 }
 
 Phoenix::LDS::TLDSEnumFlagsPtr<ECollisionFlags> UnitPtr::CollisionFlags() const
@@ -69,77 +69,77 @@ Phoenix::LDS::TLDSEnumFlagsPtr<ECollisionFlags> UnitPtr::CollisionFlags() const
     return EnumFlags<ECollisionFlags>("collision");
 }
 
-Phoenix::LDS::TLDSObjectArrayPtr<Command> UnitPtr::Commands() const
+CommandArrayPtr UnitPtr::Commands() const
 {
-    return ObjectArray<Command>("commands");
+    return ObjectArray<CommandArrayPtr>("commands");
 }
 
-Phoenix::LDS::TLDSObjectArrayPtr<Component> UnitPtr::Components() const
+ComponentArrayPtr UnitPtr::Components() const
 {
-    return ObjectArray<Command>("components");
+    return ObjectArray<ComponentArrayPtr>("components");
 }
 
 UnitDeathPtr UnitPtr::DeathStats() const
 {
-    return Object<UnitDeath>("death_stats");
+    return Object<UnitDeathPtr>("death_stats");
 }
 
 UnitEffectsPtr UnitPtr::Effects() const
 {
-    return Object<UnitEffects>("death_stats");
+    return Object<UnitEffectsPtr>("death_stats");
 }
 
-Phoenix::LDS::TLDSObjectRefPtr<FactionPtr> UnitPtr::Faction() const
+FactionRefPtr UnitPtr::Faction() const
 {
-    return ObjectRef<Data::Faction>("faction");
+    return ObjectRef<FactionRefPtr>("faction");
 }
 
 UnitFlagsPtr UnitPtr::Flags() const
 {
-    return Object<UnitFlags>("flags");
+    return Object<UnitFlagsPtr>("flags");
 }
 
 FogVisibilityPtr UnitPtr::Fog() const
 {
-    return Object<FogVisibility>("fog");
+    return Object<FogVisibilityPtr>("fog");
 }
 
 UnitInfoPtr UnitPtr::Info() const
 {
-    return Object<UnitInfo>("info");
+    return Object<UnitInfoPtr>("info");
 }
 
 UnitMovementPtr UnitPtr::Movement() const
 {
-    return Object<UnitMovement>("movement");
+    return Object<UnitMovementPtr>("movement");
 }
 
 UnitPlacementPtr UnitPtr::Placement() const
 {
-    return Object<UnitPlacement>("placement");
+    return Object<UnitPlacementPtr>("placement");
 }
 
-Phoenix::LDS::TLDSObjectRefArrayPtr<TagPtr> UnitPtr::Tags() const
+TagRefArrayPtr UnitPtr::Tags() const
 {
-    return ObjectRefArray<Tag>("tags");
+    return ObjectRefArray<TagRefArrayPtr>("tags");
 }
 
 UnitSupplyPtr UnitPtr::Supply() const
 {
-    return Object<UnitSupply>("supply");
+    return Object<UnitSupplyPtr>("supply");
 }
 
 UnitVisionPtr UnitPtr::Vision() const
 {
-    return Object<UnitVision>("vision");
+    return Object<UnitVisionPtr>("vision");
 }
 
-Phoenix::LDS::TLDSObjectArrayPtr<VitalStatsPair> UnitPtr::Vitals() const
+VitalStatsPairArrayPtr UnitPtr::Vitals() const
 {
-    return ObjectArray<VitalStatsPair>("vitals");
+    return ObjectArray<VitalStatsPairArrayPtr>("vitals");
 }
 
-Phoenix::LDS::TLDSObjectRefArrayPtr<WeaponPtr> UnitPtr::Weapons() const
+WeaponRefArrayPtr UnitPtr::Weapons() const
 {
-    return ObjectRefArray<Weapon>("weapons");
+    return ObjectRefArray<WeaponRefArrayPtr>("weapons");
 }

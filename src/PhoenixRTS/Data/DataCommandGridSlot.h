@@ -15,10 +15,10 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(CommandGridSlot);
 
-        LDS::TLDSValuePtr<uint32> GridRow;
-        LDS::TLDSValuePtr<uint32> GridColumn;
-        LDS::TLDSValuePtr<uint32> SubMenu;
-        LDS::TLDSValuePtr<uint32> TargetSubMenu;
+        LDS::TLDSValuePtr<uint32> GridRow() const;
+        LDS::TLDSValuePtr<uint32> GridColumn() const;
+        LDS::TLDSValuePtr<uint32> SubMenu() const;
+        LDS::TLDSValuePtr<uint32> TargetSubMenu() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(CommandGridSlot)

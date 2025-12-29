@@ -1,0 +1,15 @@
+﻿{
+  "id": "Actor",
+  "type": "Object",
+  "properties": {
+    "asset": {
+      "type": "Asset#Actor"
+    },
+    "minimap_icon": {
+      "type": "Object#MinimapIcon"
+    },
+    "tint": {
+      "type": "Object#Color"
+    }
+  }
+}

@@ -11,9 +11,25 @@ bool CommandGridSlot::Read(const LDS::LDSReadObjectArgs& args, CommandGridSlot& 
 
 CommandGridSlotPtr::CommandGridSlotPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
-    , GridRow(Value<uint32>("grid_row"))
-    , GridColumn(Value<uint32>("grid_col"))
-    , SubMenu(Value<uint32>("sub_menu"))
-    , TargetSubMenu(Value<uint32>("target_sub_menu"))
 {
+}
+
+Phoenix::LDS::TLDSValuePtr<unsigned int> CommandGridSlotPtr::GridRow() const
+{
+    return Value<uint32>("grid_row");
+}
+
+Phoenix::LDS::TLDSValuePtr<unsigned int> CommandGridSlotPtr::GridColumn() const
+{
+    return Value<uint32>("grid_col");
+}
+
+Phoenix::LDS::TLDSValuePtr<unsigned int> CommandGridSlotPtr::SubMenu() const
+{
+    return Value<uint32>("sub_menu");
+}
+
+Phoenix::LDS::TLDSValuePtr<unsigned int> CommandGridSlotPtr::TargetSubMenu() const
+{
+    return Value<uint32>("target_sub_menu");
 }

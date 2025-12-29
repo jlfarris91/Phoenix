@@ -1,25 +1,21 @@
 
 #pragma once
 
-#include "PhoenixSim/Color.h"
 #include "PhoenixSim/LDS/LDSObjectModel.h"
+
 #include "PhoenixRTS/DLLExport.h"
+#include "PhoenixRTS/Data/DataActor.h"
 
 namespace Phoenix::RTS::Data
 {
-    struct PHOENIX_RTS_API ProjectileActor
+    struct PHOENIX_RTS_API ProjectileActor : Actor
     {
-        FName Asset;
-        Color Tint;
-
         static bool Read(const LDS::LDSReadObjectArgs& args, ProjectileActor& outItem);
     };
 
-    struct PHOENIX_RTS_API ProjectileActorPtr : LDS::TLDSObjectPtr<ProjectileActor>
+    struct PHOENIX_RTS_API ProjectileActorPtr : ActorPtr
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(ProjectileActor);
-        LDS::NamePtr Asset;
-        LDS::TLDSValuePtr<Color> Tint;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_REF_PTR_TYPES_FOR(ProjectileActor)

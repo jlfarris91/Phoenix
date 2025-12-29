@@ -27,7 +27,7 @@ bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, con
     steerComp->Mode = ESteerMode::Move;
     steerComp->GoalPos = target;
     steerComp->GoalEntity = EntityId::Invalid;
-    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
+    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
     return true;
 }
 
@@ -47,7 +47,7 @@ bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const
     steerComp->Mode = ESteerMode::Move;
     steerComp->GoalEntity = target;
     steerComp->GoalPos = Vec2::Zero;
-    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
+    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
     return true;
 }
 
@@ -59,7 +59,7 @@ bool FeatureSteering::IsMoving(WorldConstRef world, const EntityId& entity)
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
+    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteeringFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasFinishedMoving(WorldConstRef world, const EntityId& entity)
@@ -70,7 +70,7 @@ bool FeatureSteering::HasFinishedMoving(WorldConstRef world, const EntityId& ent
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
+    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteeringFlags::ArrivedAtGoal);
 }
 
 bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const EntityId& target)
@@ -84,7 +84,7 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const E
     steerComp->Mode = ESteerMode::Turn;
     steerComp->GoalPos = Vec2::Zero;
     steerComp->GoalEntity = target;
-    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
+    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
     return true;
 }
 
@@ -99,7 +99,7 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const V
     steerComp->Mode = ESteerMode::Turn;
     steerComp->GoalPos = target;
     steerComp->GoalEntity = EntityId::Invalid;
-    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
+    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
     return true;
 }
 
@@ -111,7 +111,7 @@ bool FeatureSteering::IsTurning(WorldConstRef world, const EntityId& entity)
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
+    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteeringFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& entity)
@@ -122,7 +122,7 @@ bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& en
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
+    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteeringFlags::ArrivedAtGoal);
 }
 
 TOptional<ESteerMode> FeatureSteering::GetSteeringMode(WorldRef world, const EntityId& entity)
@@ -139,7 +139,7 @@ bool FeatureSteering::IsSeekingGoal(WorldRef world, const EntityId& entity)
         return false;
     }
 
-    return HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
+    return HasAnyFlags(steerComp->Flags, ESteeringFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasArrivedAtGoal(WorldRef world, const EntityId& entity)
@@ -150,7 +150,7 @@ bool FeatureSteering::HasArrivedAtGoal(WorldRef world, const EntityId& entity)
         return false;
     }
 
-    return HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
+    return HasAnyFlags(steerComp->Flags, ESteeringFlags::ArrivedAtGoal);
 }
 
 bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
@@ -164,8 +164,8 @@ bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
     steerComp->Mode = ESteerMode::Idle;
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->GoalPos = Vec2::Zero;
-    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, false);
-    SetFlagRef(steerComp->Flags, ESteerFlags::ArrivedAtGoal, false);
+    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, false);
+    SetFlagRef(steerComp->Flags, ESteeringFlags::ArrivedAtGoal, false);
     return true;
 }
 

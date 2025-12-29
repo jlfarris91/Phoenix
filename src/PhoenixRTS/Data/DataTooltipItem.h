@@ -25,9 +25,9 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(TooltipItem)
 
-        LDS::TLDSValuePtr<FName> Label;
-        LDS::TLDSValuePtr<FName> Value;
-        ValidatorRefPtr Validator;
+        LDS::TLDSValuePtr<FName> Label() const;
+        LDS::TLDSValuePtr<FName> Value() const;
+        ValidatorRefPtr Validator() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(TooltipItem)

@@ -94,7 +94,7 @@ UnitId FeatureUnit::SpawnUnit(
 
     // TODO (jfarris): don't need this since the app will be able to read this value
     Data::UnitActorPtr actorPtr = dataPtr.Actor().ResolveObject(lds);
-    Color color = Color(actorPtr.Tint.GetValue(lds, Color::White));
+    Color color = Color(actorPtr.Tint().GetValue(lds, Color::White));
     FeatureECS::SetBlackboardValue(world, unitId, "actor_tint"_n, color);
 
     // TODO (jfarris): dispatch with a unit spawned event instead

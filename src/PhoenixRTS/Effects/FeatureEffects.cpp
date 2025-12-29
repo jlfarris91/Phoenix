@@ -22,7 +22,7 @@ FeatureEffects::FeatureEffects()
 
 void FeatureEffects::RegisterEffectHandler(const TSharedPtr<IEffectHandler>& handler)
 {
-    EffectIdToHandlerMap.emplace(handler->GetEffectId(), handler);
+    EffectIdToHandlerMap.emplace(handler->GetEffectTypeId(), handler);
 }
 
 bool FeatureEffects::UnregisterEffectHandler(const FName& baseObjectId)
@@ -308,7 +308,7 @@ EffectNodeId FeatureEffects::AcquireEffectNode(
         return EffectNodeId{};
     }
 
-    ReferenceEffectNode(parent);
+    ReferenceEffectNode(world, parentId, parent);
 
     return effectNodeId;
 }
@@ -326,12 +326,17 @@ const EffectComponent* FeatureEffects::GetEffectComponent(WorldConstRef world, E
 uint32 FeatureEffects::ReferenceEffectNode(WorldRef world, EffectNodeId id)
 {
     EffectComponent* nodeComp = FeatureECS::GetOrAddComponent<EffectComponent>(world, id);
-    return nodeComp ? ReferenceEffectNode(*nodeComp) : 0;
+    return nodeComp ? ReferenceEffectNode(world, id, *nodeComp) : 0;
 }
 
-uint32 FeatureEffects::ReferenceEffectNode(EffectComponent& effectComp)
+uint32 FeatureEffects::ReferenceEffectNode(WorldRef world, EffectNodeId id, EffectComponent& effectComp)
 {
-    return ++effectComp.RefCount;
+    ++effectComp.RefCount;
+
+    // Recursively reference parent nodes too
+    ReferenceEffectNode(world, GetEffectNodeParent(world, id));
+
+    return effectComp.RefCount;
 }
 
 uint32 FeatureEffects::DereferenceEffectNode(WorldRef world, EffectNodeId id)
@@ -347,16 +352,16 @@ uint32 FeatureEffects::DereferenceEffectNode(WorldRef world, EffectNodeId id, Ef
         return 0;
     }
 
-    if (--effectComp.RefCount == 0)
-    {
-        FeatureECS::ForEachEntityInGroup(world, id, [](const EntityId& entity)
-        {
-            
-        });
+    --effectComp.RefCount;
 
+    // Recursively dereference parent nodes too
+    DereferenceEffectNode(world, GetEffectNodeParent(world, id));
+
+    if (effectComp.RefCount == 0)
+    {
         FeatureECS::ReleaseEntity(world, id);
     }
-
+    
     return effectComp.RefCount;
 }
 
@@ -489,14 +494,14 @@ bool FeatureEffects::ExecuteEffect(
 
 bool FeatureEffects::DeferEffectExecution(WorldRef world, EffectNodeId id)
 {
+    EffectComponent* comp = GetEffectComponent(world, id);
+    return comp && DeferEffectExecution(world, id, *comp);
+}
+
+bool FeatureEffects::DeferEffectExecution(WorldRef world, EffectNodeId id, EffectComponent& comp)
+{
     FeatureEffectsScratchBlock* block = world.GetBlock<FeatureEffectsScratchBlock>();
     if (!block)
-    {
-        return false;
-    }
-
-    EffectComponent* comp = GetEffectComponent(world, id);
-    if (!comp)
     {
         return false;
     }
@@ -506,7 +511,8 @@ bool FeatureEffects::DeferEffectExecution(WorldRef world, EffectNodeId id)
         return false;
     }
 
-    ++comp->RefCount;
+    // Keep the effect alive until it is finalized
+    ReferenceEffectNode(world, id, comp);
     return true;
 }
 
@@ -626,7 +632,7 @@ void FeatureEffects::RespondToEffect(WorldRef world, EffectNodeId effectNodeId)
 
     FinalizeEffect(world, effectNodeId, *effectComponent);
 
-    DereferenceEffectNode(world, effectNodeId);
+    DereferenceEffectNode(world, effectNodeId, *effectComponent);
 }
 
 bool FeatureEffects::FinalizeEffect(WorldRef world, EffectNodeId effectNodeId, EffectComponent& effectComponent)

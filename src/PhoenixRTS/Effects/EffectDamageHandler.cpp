@@ -13,7 +13,7 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-FName EffectDamageHandler::GetEffectId() const
+FName EffectDamageHandler::GetEffectTypeId() const
 {
     return "EffectDamage"_n;
 }
@@ -77,7 +77,7 @@ bool EffectDamageHandler::Execute(WorldRef world, const EffectExecuteContext& co
         FeatureEffects::DeferEffectExecution(world, nodeId);
     }
 
-    FeatureEffects::DereferenceEffectNode(world, nodeId);
+    FeatureEffects::DereferenceEffectNode(world, nodeId, *nodeComp);
 
     return true;
 }

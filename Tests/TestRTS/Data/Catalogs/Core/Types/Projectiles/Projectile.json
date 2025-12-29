@@ -5,13 +5,18 @@
         "actor": {
             "type": "ObjectRef#ProjectileActor"
         },
+        "impact": {
+            "type": "Object#ProjectileImpact"
+        },
         "health": {
             "type": "Value",
             "default": 100.0
         },
-        "radius": {
-            "type": "Distance",
-            "default": 0.1
+        "launch": {
+            "type": "Object#ProjectileLaunch"
+        },
+        "movement": {
+            "type": "Object#ProjectileMovement"
         }
     }
 }

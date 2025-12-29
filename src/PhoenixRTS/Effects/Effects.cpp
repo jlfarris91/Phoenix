@@ -2,7 +2,7 @@
 
 #include "PhoenixRTS/Effects/FeatureEffects.h"
 
-Phoenix::FName Phoenix::RTS::IEffectHandler::GetEffectId() const
+Phoenix::FName Phoenix::RTS::IEffectHandler::GetEffectTypeId() const
 {
     return FName::None;
 }

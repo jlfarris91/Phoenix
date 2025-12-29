@@ -1,7 +1,9 @@
 
 #pragma once
 
+#include "PhoenixSim/Color.h"
 #include "PhoenixSim/FixedPoint/FixedTypes.h"
+#include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/LDS/LDSRecordQueryFlags.h"
 #include "PhoenixSim/LDS/ObjectModel/LDSRecordPtr.h"
 
@@ -52,6 +54,9 @@ namespace Phoenix::LDS
     using SpeedPtr = TLDSValuePtr<Speed>;
     using TimePtr = TLDSValuePtr<Time>;
     using NamePtr = TLDSValuePtr<FName>;
+    using Vec2Ptr = TLDSValuePtr<Vec2>;
+    using Vec3Ptr = TLDSValuePtr<Vec3>;
+    using ColorPtr = TLDSValuePtr<Color>;
 }
 
 #include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.inl"

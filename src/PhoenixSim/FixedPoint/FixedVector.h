@@ -310,6 +310,16 @@ namespace Phoenix
     template <class T> const TVec2<T> TVec2<T>::Min = { T::Min, T::Min };
     template <class T> const TVec2<T> TVec2<T>::Max = { T::Max, T::Max };
 
+    template <class T = Fixed32_8>
+    struct TVec3
+    {
+        T X = 0;
+        T Y = 0;
+        T Z = 0;
+    };
+
+    using Vec3 = TVec3<Distance>;
+    
     template <class> struct TZero {};
     template <uint32 Td, class T> struct TZero<TFixed<Td, T>> { static constexpr TFixed<Td, T> Value = 0; };
     template <class T> struct TZero<TVec2<T>> { static constexpr TVec2<T> Value = TVec2<T>(0, 0); };

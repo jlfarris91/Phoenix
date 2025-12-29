@@ -1,0 +1,27 @@
+﻿{
+    "id": "ProjectileLaunch",
+    "type": "Object",
+    "properties": {
+        "fx": {
+            "type": "ObjectRef#FXActor"
+        },
+        "offset": {
+            "type": "Vector3"
+        },
+        "pitch": {
+            "type": "Angle"
+        },
+        "pitch_rand": {
+            "type": "Angle"
+        },
+        "roll": {
+            "type": "Angle"
+        },
+        "roll_rand": {
+            "type": "Angle"
+        },
+        "socket": {
+            "type": "Name"
+        }
+    }
+}

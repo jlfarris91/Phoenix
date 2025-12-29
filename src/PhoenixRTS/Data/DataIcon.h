@@ -21,9 +21,9 @@ namespace Phoenix::RTS::Data
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Icon)
 
-        LDS::TLDSValuePtr<FName> Asset;
-        LDS::TLDSValuePtr<FName> DisplayName;
-        TooltipPtr Tooltip;
+        LDS::NamePtr Asset() const;
+        LDS::NamePtr DisplayName() const;
+        TooltipPtr Tooltip() const;
     };
 
     PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(Icon)

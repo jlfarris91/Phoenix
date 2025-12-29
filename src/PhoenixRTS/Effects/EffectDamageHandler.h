@@ -11,7 +11,7 @@ namespace Phoenix::RTS
 
     public:
 
-        FName GetEffectId() const override;
+        FName GetEffectTypeId() const override;
 
         bool Execute(WorldRef world, const EffectExecuteContext& context) const override;
         bool CanExecute(WorldConstRef world, const EffectExecuteContext& context) const override;

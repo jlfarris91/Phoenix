@@ -18,5 +18,6 @@ namespace Phoenix::RTS::Data
         LDS::NamePtr TypeId() const;
     };
 
+    PHX_LDS_DECLARE_ADDITIONAL_OBJ_PTR_TYPES_FOR(Component)
     PHX_LDS_DECLARE_ADDITIONAL_REF_PTR_TYPES_FOR(Component)
 }

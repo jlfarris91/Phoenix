@@ -72,6 +72,8 @@ void FeatureVitals::Initialize(const TSharedPtr<Phoenix::Session>& session)
 
 void FeatureVitals::Shutdown()
 {
+    IFeature::Shutdown();
+
     if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
     {
         featureECS->UnregisterSystem(VitalsSystem);

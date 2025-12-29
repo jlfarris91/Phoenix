@@ -55,7 +55,7 @@ namespace Phoenix::RTS
 
     public:
 
-        virtual FName GetEffectId() const;
+        virtual FName GetEffectTypeId() const;
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;

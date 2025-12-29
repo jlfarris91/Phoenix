@@ -15,12 +15,13 @@ namespace Phoenix::Steering
         Turn
     };
 
-    enum class PHOENIX_STEERING_API ESteerFlags
+    enum class PHOENIX_STEERING_API ESteeringFlags
     {
         None = 0,
         SeekingGoal = 1,
         ArrivedAtGoal = 2,
-        Active = 4
+        Active = 4,
+        LockFacing = 8
     };
 
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
@@ -28,7 +29,7 @@ namespace Phoenix::Steering
         PHX_ECS_DECLARE_COMPONENT(SteeringComponent)
 
         ESteerMode Mode = ESteerMode::Idle;
-        ESteerFlags Flags = ESteerFlags::Active;
+        ESteeringFlags Flags = ESteeringFlags::Active;
 
         ECS::EntityId GoalEntity;
         Vec2 GoalPos;

@@ -11,7 +11,15 @@ bool CommandButton::Read(const LDS::LDSReadObjectArgs& args, CommandButton& outI
 
 CommandButtonPtr::CommandButtonPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
-    , Icon(Object<IconPtr>("icon"))
-    , IsRepeatable(Value<bool>("repeatable"))
 {
+}
+
+IconPtr CommandButtonPtr::Icon() const
+{
+    return Object<IconPtr>("icon");
+}
+
+Phoenix::LDS::TLDSValuePtr<bool> CommandButtonPtr::IsRepeatable() const
+{
+    return Value<bool>("repeatable");
 }

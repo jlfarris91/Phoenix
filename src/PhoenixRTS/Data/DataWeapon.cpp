@@ -109,14 +109,14 @@ TargetFilterPtr WeaponPtr::TargetFilter() const
     return Object<TargetFilterPtr>("target_filter");
 }
 
-Phoenix::LDS::LDSObjectRefPtr WeaponPtr::Component() const
+ComponentRefPtr WeaponPtr::Component() const
 {
-    return ObjectRef<LDS::LDSObjectRefPtr>("component");
+    return ObjectRef<ComponentRefPtr>("component");
 }
 
-Phoenix::LDS::LDSObjectRefPtr WeaponPtr::Effect() const
+EffectRefPtr WeaponPtr::Effect() const
 {
-    return ObjectRef<LDS::LDSObjectRefPtr>("effect");
+    return ObjectRef<EffectRefPtr>("effect");
 }
 
 ValidatorRefPtr WeaponPtr::Validator() const
