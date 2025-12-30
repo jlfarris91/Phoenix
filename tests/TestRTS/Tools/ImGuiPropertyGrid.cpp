@@ -114,7 +114,7 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
 
 void DrawPropertyGrid(void* obj, const TypeDescriptor& descriptor)
 {
-    if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY))
+    if (ImGui::BeginTable("##properties", 2))
     {
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 2.0f); // Default twice larger

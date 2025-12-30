@@ -49,10 +49,19 @@ namespace Phoenix::LDS::Json
         }
 
         PHXString baseId = baseIter->get<PHXString>();
-
         EmplaceObjectRecord(rootObjectId, "/base", LDSTypedValue(baseId));
 
         const LDSRecord* objectTypeRecord = FindTypeRecordForObject(rootObjectId, "/type"_n);
+        if (!objectTypeRecord && this->DataSource)
+        {
+            const nlohmann::json* baseObjectJson = this->DataSource->FindObject(baseId);
+            if (baseObjectJson && !this->Catalog->HasObject(baseId))
+            {
+                RegisterObject(*baseObjectJson);
+                objectTypeRecord = FindTypeRecordForObject(rootObjectId, "/type"_n);
+            }
+        }
+
         if (!objectTypeRecord)
         {
             this->LogError("No base object or type registered with id '{}'.", baseId).Context(rootObjectId);

@@ -19,7 +19,10 @@
             "type": "ObjectRef#Effect"
         },
         "launch_target": {
-            "type": "Object#EffectTarget"
+            "type": "Object#EffectTarget",
+            "default": {
+                "flags": "Entity|Location|Source"
+            }
         },
         "periodic_effect": {
             "type": "ObjectRef#Effect"

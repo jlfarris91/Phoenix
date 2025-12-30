@@ -44,6 +44,7 @@
 #include <PhoenixRTS/Abilities/Move/MoveAbilityHandler.h>
 #include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
 #include <PhoenixRTS/Effects/EffectDamageHandler.h>
+#include "PhoenixRTS/Effects/EffectLaunchProjectileHandler.h"
 #include <PhoenixRTS/Effects/ResponseDamageHandler.h>
 
 // Remove Me
@@ -60,6 +61,8 @@
 // Test App Tools
 #include "Console.h"
 #include "Logger.h"
+#include "PhoenixRTS/Data/DataProjectile.h"
+#include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -111,7 +114,24 @@ struct EntityBodyShape
     Distance VelLen;
 };
 
+struct ProjectileEntity
+{
+    EntityId EntityId;
+    Transform2D Transform;
+    FName Asset;
+    Color Tint;
+};
+
 std::vector<EntityBodyShape> GEntityBodies;
+std::vector<ProjectileEntity> GProjectileEntities;
+
+struct LineModel
+{
+    std::vector<std::tuple<Color, std::vector<Line2>>> LineBatches;
+};
+
+std::map<FName, LineModel> GLineModels;
+LineModel GDefaultLineModel;
 
 void UpdateSessionWorker();
 void OnPostWorldUpdate(WorldConstRef world);
@@ -141,6 +161,7 @@ void InitSession()
 
     // Register effect handlers
     serviceContainerBuilder->RegisterService<RTS::EffectDamageHandler>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::EffectLaunchProjectileHandler>().AsInterfaces();
 
     // Register response handlers
     serviceContainerBuilder->RegisterService<RTS::ResponseHandlerBase>().AsInterfaces();
@@ -207,6 +228,56 @@ void OnPostWorldUpdate(WorldConstRef world)
 
 void DrawGrid();
 
+bool LoadLineModel(const std::filesystem::path& rootAssetPath, const std::filesystem::path& relativeFilePath)
+{
+    std::filesystem::path absoluteFilePath = absolute(rootAssetPath / relativeFilePath);
+
+    std::ifstream fileStream(absoluteFilePath);
+    if (!fileStream.is_open())
+    {
+        GLogger->LogError("Failed to open line model file '{}'", absoluteFilePath.string());
+        return false;
+    }
+
+    nlohmann::json json;
+
+    try
+    {
+        json = nlohmann::json::parse(fileStream, nullptr, false);
+    }
+    catch (const nlohmann::detail::exception& ex)
+    {
+        GLogger->LogError("Failed to load line model file '{}': {}", absoluteFilePath.string(), ex.what());
+        return false;
+    }
+
+    LineModel model;
+
+    for (auto& colorJson : json["colors"])
+    {
+        std::string hexStr = colorJson.get<std::string>();
+        Color color = Color::FromHex(hexStr.c_str());
+        model.LineBatches.emplace_back(color, std::vector<Line2>());
+    }
+
+    nlohmann::json& data = json["data"];
+    uint32 i = 0;
+    while (i + 5 <= data.size())
+    {
+        Line2 line;
+        uint32 colorIdx = data[i++].get<int>();
+        line.Start.X = data[i++].get<float>();
+        line.Start.Y = data[i++].get<float>();
+        line.End.X = data[i++].get<float>();
+        line.End.Y = data[i++].get<float>();
+        std::get<1>(model.LineBatches[colorIdx]).push_back(line);
+    }
+
+    GLineModels.emplace(relativeFilePath.string(), model);
+
+    return true;
+}
+
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 {
     // SetProfiler(&GTracyProfiler);
@@ -248,6 +319,20 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     GTools.push_back(GPlayerController);
 
     GActiveTools.push_back(GPlayerController);
+
+    Vec2 pt1 = Vec2::XAxis;
+    Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
+    Vec2 pt3 = pt1.Rotate(Deg2Rad(135));
+
+    GDefaultLineModel.LineBatches = {
+        {
+            Color::White,
+            { { pt1, pt2 }, { pt2, pt3 }, { pt3, pt1 }, }
+        }
+    };
+
+    std::filesystem::path rootAssetPath = std::filesystem::absolute("./Data/Catalogs/Core/Assets");
+    LoadLineModel(rootAssetPath, "Abilities/Weapons/Arrow/ArrowMissile.json");
 }
 
 void OnAppRenderWorld()
@@ -298,6 +383,7 @@ void OnAppRenderWorld()
         PHX_PROFILE_ZONE_SCOPED_N("RealizeWorld");
 
         GEntityBodies.clear();
+        GProjectileEntities.clear();
 
         EntityQueryBuilder builder;
         builder.RequireAllComponents<const TransformComponent&, const BodyComponent&>();
@@ -341,6 +427,29 @@ void OnAppRenderWorld()
             }
         }));
 
+        builder.Reset();
+        builder.RequireAllComponents<const TransformComponent&, const RTS::ProjectileComponent&>();
+        query = builder.GetQuery();
+
+        const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(worldView);
+
+        FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const RTS::ProjectileComponent&>& span)
+        {
+            for (auto && [entity, index, transformComp, projectileComp] : span)
+            {
+                RTS::Data::ProjectilePtr projectileData(projectileComp.ProjectileDataId);
+                RTS::Data::ProjectileActorPtr projectileActorData = projectileData.Actor().ResolveObject(lds);
+
+                ProjectileEntity projectileEntity;
+                projectileEntity.EntityId = entity;
+                projectileEntity.Transform = transformComp.Transform;
+                projectileEntity.Asset = projectileActorData.Asset().GetValue(lds);
+                projectileEntity.Tint = projectileActorData.Tint().GetValue(lds);
+
+                GProjectileEntities.push_back(projectileEntity);
+            }
+        }));
+
         for (const EntityBodyShape& entityBodyShape : GEntityBodies)
         {
             if (RTS::FeatureUnit::UnitIsDead(worldView, RTS::UnitId(entityBodyShape.EntityId)))
@@ -376,6 +485,36 @@ void OnAppRenderWorld()
 
                 Color color(entityBodyShape.Color.r, entityBodyShape.Color.g, entityBodyShape.Color.b);
                 GDebugRenderer->DrawLines(points, 4, color);
+            }
+        }
+
+        for (const ProjectileEntity& projectileEntity : GProjectileEntities)
+        {
+            LineModel worldModel;
+
+            const LineModel* model = nullptr;
+
+            auto modelIter = GLineModels.find(projectileEntity.Asset);
+            if (modelIter != GLineModels.end())
+            {
+                model = &modelIter->second;
+            }
+            else
+            {
+                model = &GDefaultLineModel;
+            }
+
+            worldModel = *model;
+
+            for (auto && [color, lines] : worldModel.LineBatches)
+            {
+                for (auto& line : lines)
+                {
+                    line.Start = projectileEntity.Transform.TransformPoint(line.Start);
+                    line.End = projectileEntity.Transform.TransformPoint(line.End);
+                }
+
+                GDebugRenderer->DrawLines(lines.data(), lines.size(), color * projectileEntity.Tint);
             }
         }
 
@@ -451,6 +590,7 @@ void OnAppRenderUI()
             {
                 GActiveTools.push_back(tool);
                 DrawPropertyGrid(tool.get(), descriptor);
+                tool->OnAppRenderUI(io);
             }
         }
 

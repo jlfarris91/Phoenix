@@ -73,16 +73,10 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
             renderer.DrawCircle(entity.TransformComponent->Transform.Position, 1.0, Color::Green);
         }
     }
-    else
+    else if (FeatureUnit::UnitIsAlive(world, UnitId(HoverTarget)))
     {
-        TArray<EntityTransform> entities;
-        FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
-
-        for (const EntityTransform& entity : entities)
-        {
-            renderer.DrawCircle(entity.TransformComponent->Transform.Position, 1.0, Color::Green);
-            break;
-        }
+        Vec2 pos = FeatureECS::GetWorldPosition(world, HoverTarget);
+        renderer.DrawCircle(pos, 1.0, Color::Green);
     }
 
     EntityId selectionGroup = FeatureSelection::GetPlayerSelection(world, playerId, groupId);

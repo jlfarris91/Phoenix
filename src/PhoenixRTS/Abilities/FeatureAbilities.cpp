@@ -64,7 +64,13 @@ TSharedPtr<IAbilityHandler> FeatureAbilities::FindAbilityHandler(WorldConstRef w
             return {};
         }
 
-        currentObjectId = baseRecord->GetValueAs<FName>();
+        FName baseId = baseRecord->GetValueAs<FName>();
+        if (baseId == currentObjectId)
+        {
+            return {};
+        }
+
+        currentObjectId = baseId;
     }
 }
 

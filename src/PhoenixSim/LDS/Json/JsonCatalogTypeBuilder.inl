@@ -46,6 +46,24 @@ namespace Phoenix::LDS::Json
         if (baseIter != typeJson.end())
         {
             PHXString baseId = baseIter->get<PHXString>();
+
+            const LDSRecord* baseTypeRecord = this->Catalog->FindTypeRecord(baseId, "/type"_n);
+            if (!baseTypeRecord && this->DataSource)
+            {
+                const nlohmann::json* baseTypeJson = this->DataSource->FindType(baseId);
+                if (baseTypeJson && !this->Catalog->HasType(baseId))
+                {
+                    RegisterType(*baseTypeJson);
+                    baseTypeRecord = this->Catalog->FindTypeRecord(baseId, "/type"_n);
+                }
+            }
+
+            if (!baseTypeRecord)
+            {
+                this->LogError("No base type registered with id '{}'.", baseId).Context(typeId);
+                return false;
+            }
+
             this->Catalog->EmplaceTypeRecord(typeId, "/base"_n, LDSTypedValue(baseId));
         }
 

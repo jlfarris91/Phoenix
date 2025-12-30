@@ -1,0 +1,7 @@
+{
+    "id": "Archer_Weapon_EffectDamage",
+    "base": "EffectDamage",
+    "amount": 10,
+    "damage_tags": [ "damage_ranged" ],
+    "tag_bonuses": []
+}

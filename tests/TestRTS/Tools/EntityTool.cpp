@@ -7,14 +7,16 @@
 #include <PhoenixSim/Session.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 
+#include "../ImGuiUtils.h"
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
 
 using namespace Phoenix;
 
-EntityTool::EntityTool(TSharedPtr<Phoenix::Session> session)
+EntityTool::EntityTool(const TSharedPtr<Phoenix::Session>& session)
     : Session(session)
 {
+    UnitLabels = { "Lancer", "Archer" };
 }
 
 void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
@@ -34,7 +36,7 @@ void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDL
 
 void EntityTool::OnAppRenderUI(ImGuiIO& io)
 {
-    
+    WrapPanel(UnitLabels, SelectedUnitIndex);
 }
 
 void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
@@ -42,11 +44,11 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
     // Spawn entities
-    if (state.MouseButtonDown(SDL_BUTTON_LEFT))
+    if (state.MouseButtonDown(SDL_BUTTON_LEFT) && SelectedUnitIndex < UnitLabels.size())
     {
         Action action;
         action.Verb = "spawn_entity"_n;
-        action.Data[0].Name = "Lancer"_n;
+        action.Data[0].Name = UnitLabels[SelectedUnitIndex];
         action.Data[1].Distance = mouseWorldPos.X;
         action.Data[2].Distance = mouseWorldPos.Y;
         action.Data[3].Degrees = Vec2::RandUnitVector().AsRadians();

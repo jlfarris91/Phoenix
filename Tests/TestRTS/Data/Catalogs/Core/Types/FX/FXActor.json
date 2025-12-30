@@ -1,0 +1,10 @@
+{
+    "id": "FXActor",
+    "base": "Actor",
+    "type": "Object",
+    "properties": {
+        "asset": {
+            "type": "Asset#FXActor"
+        }
+    }
+}

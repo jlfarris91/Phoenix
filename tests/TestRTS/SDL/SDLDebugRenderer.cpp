@@ -83,6 +83,14 @@ void SDLDebugRenderer::DrawLines(const Vec2* points, size_t num, const Color& co
     }
 }
 
+void SDLDebugRenderer::DrawLines(const Line2* lines, size_t num, const Color& color)
+{
+    for (size_t i = 0; i < num; ++i)
+    {
+        DrawLine(lines[i].Start, lines[i].End, color);
+    }
+}
+
 void SDLDebugRenderer::DrawRay(const Vec2& start, const Vec2& dir, const Color& color)
 {
     DrawLine(start, start + dir, color);

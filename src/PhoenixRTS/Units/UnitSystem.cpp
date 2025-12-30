@@ -54,5 +54,5 @@ void UnitSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
     PHX_PROFILE_ZONE_SCOPED;
 
     UnitSystemDetail::UpdateUnitsJob job;
-    FeatureECS::ScheduleParallel(world, job);
+    FeatureECS::Schedule(world, job);
 }

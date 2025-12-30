@@ -231,6 +231,7 @@ namespace SteeringDetail
             if (dd <= accel2)
             {
                 v = d;
+                vv = Vec2::SqrxQ(v);
             }
             else if (dd <= stopDist2)
             {

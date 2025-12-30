@@ -28,6 +28,8 @@ namespace Phoenix
 
         void DrawLines(const Vec2* points, size_t num, const Color& color) override;
 
+        void DrawLines(const Line2* lines, size_t num, const Color& color) override;
+
         void DrawRay(const Vec2& start, const Vec2& dir, const Color& color) override;
 
         void DrawRect(const Vec2& min, const Vec2& max, const Color& color) override;

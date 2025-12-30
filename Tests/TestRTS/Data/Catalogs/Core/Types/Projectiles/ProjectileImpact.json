@@ -6,7 +6,7 @@
             "type": "ObjectRef#FXActor"
         },
         "offset": {
-            "type": "Vector3"
+            "type": "Object#Vector3"
         },
         "socket": {
             "type": "Name"

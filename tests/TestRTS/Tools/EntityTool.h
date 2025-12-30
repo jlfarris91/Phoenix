@@ -18,7 +18,7 @@ namespace Phoenix
             PHX_REGISTER_FIELD(float, PushForce)
         PHX_DECLARE_TYPE_END()
 
-        EntityTool(TSharedPtr<Session> session);
+        EntityTool(const TSharedPtr<Session>& session);
 
         void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
@@ -29,6 +29,8 @@ namespace Phoenix
         uint32 SpawnCount = 1;
         float MoveSpeed = 10.0f;
         float PushForce = 100.0f;
+
+        size_t SelectedUnitIndex = 0;
+        std::vector<std::string> UnitLabels;
     };
-    
 }

@@ -1,7 +1,7 @@
 {
-    "id": "BaseMeleeWeapon",
+    "id": "BaseRangedWeapon",
     "base": "Weapon",
-    "range_acquire": 6.0,
+    "range_acquire": 10.0,
     "acquire_filter": {
         "alliance": "Enemy",
         "tags": {
@@ -9,7 +9,6 @@
             "required": []
         }
     },
-    "flags": "Melee",
     "target_filter": {
         "alliance": "Ally|Enemy|Neutral|Player",
         "tags": {

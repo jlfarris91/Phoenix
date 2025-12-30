@@ -55,7 +55,7 @@ void MoveAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
     ISystem::OnWorldUpdate(world, args);
 
     MoveAbilitySystemDetail::UpdateMoveAbilityComponentJob job;
-    FeatureECS::ScheduleParallel(world, job);
+    FeatureECS::Schedule(world, job);
 }
 
 MoveAbilityComponent::MoveAbilityComponent()

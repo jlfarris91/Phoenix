@@ -1,0 +1,20 @@
+{
+    "id": "Arrow_Projectile",
+    "base": "Projectile",
+    "actor": "Arrow_ProjectileActor",
+    "impact": {
+        "socket": "chest"
+    },
+    "launch": {
+        "pitch": 45.0,
+        "pitch_rand": 5.0,
+        "roll": 0.0,
+        "roll_rand": 5.0,
+        "socket": "weapon"
+    },
+    "movement": {
+        "acceleration_time": 0.03,
+        "max_speed": 10.0,
+        "radius": 0.0
+    }
+}

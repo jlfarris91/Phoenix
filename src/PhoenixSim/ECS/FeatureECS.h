@@ -525,7 +525,7 @@ namespace Phoenix::ECS
             WorldPtr worldPtr = &world;
 
             uint32 startIndex = 0;
-            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](auto& list)
+            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](ArchetypeList& list)
             {
                 if (job.GetQuery().PassesFilter(list.GetDefinition()))
                 {

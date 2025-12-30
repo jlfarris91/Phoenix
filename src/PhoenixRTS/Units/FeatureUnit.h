@@ -141,6 +141,9 @@ namespace Phoenix::RTS
             TArray2<UnitId>& outUnits,
             const UnitRangeQueryArgs& args);
 
+        // TODO (jfarris): make this event-driven?
+        static void OnUnitKilled(WorldRef world, UnitId unit, ECS::EntityId source);
+
     protected:
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;

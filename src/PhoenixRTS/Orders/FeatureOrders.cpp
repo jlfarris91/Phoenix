@@ -12,6 +12,7 @@
 #include "PhoenixRTS/Selection/FeatureSelection.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
+#include "PhoenixSim/Logging.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -69,7 +70,13 @@ TSharedPtr<ICommandHandler> FeatureOrders::FindCommandHandler(WorldConstRef worl
             return {};
         }
 
-        currentObjectId = baseRecord->GetValueAs<FName>();
+        FName baseId = baseRecord->GetValueAs<FName>();
+        if (baseId == currentObjectId)
+        {
+            return {};
+        }
+
+        currentObjectId = baseId;
     }
 }
 
@@ -360,6 +367,8 @@ bool FeatureOrders::HandleCommandForUnitInternal(
 
     PHX_ASSERT(!FName::IsNoneOrEmpty(command.CommandId));
 
+    LogVerbose("Unit {0} issued order {1} with target {2}", (uint32)unit, (uint32)command.CommandId, (uint32)command.TargetEntity);
+
     Order order;
     order.OrderId = command.CommandId;
     order.OrderIndex = command.CommandIndex;
@@ -460,6 +469,8 @@ bool FeatureOrders::InterruptOrder(WorldRef world, const UnitId& unit, const Ord
 bool FeatureOrders::AcquireOrder(WorldRef world, const UnitId& unit, const Order& order)
 {
     FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
+
+    LogVerbose("Unit {0} acquired order {1} with target {2}", (uint32)unit, (uint32)order.OrderId, (uint32)order.TargetEntity);
 
     if (const Order* headOrder = block.OrderQueue.GetFirstOrder(unit))
     {

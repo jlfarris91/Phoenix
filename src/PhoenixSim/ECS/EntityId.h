@@ -11,7 +11,7 @@ namespace Phoenix::ECS
     {
         static const EntityId Invalid;
 
-        constexpr EntityId() : Id(0) {}
+        constexpr EntityId() = default;
         constexpr EntityId(entityid_t raw) : Id(raw) {}
         constexpr EntityId(const EntityId& other) = default;
 
@@ -22,7 +22,7 @@ namespace Phoenix::ECS
         constexpr bool operator!=(const EntityId& other) const { return Id != other.Id; }
 
     private:
-        entityid_t Id;
+        entityid_t Id = -1;
     };
 }
 

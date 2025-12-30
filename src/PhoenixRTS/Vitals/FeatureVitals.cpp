@@ -10,6 +10,7 @@
 #include "PhoenixRTS/Vitals/Damage.h"
 #include "PhoenixRTS/Vitals/VitalComponents.h"
 #include "PhoenixRTS/Vitals/VitalsSystem.h"
+#include "PhoenixSim/Logging.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -47,15 +48,13 @@ bool FeatureVitals::ApplyDamage(WorldRef world, EntityId target, const Damage& d
     // TODO (jfarris): this should move to some sort of Vitals handler
     if (amount >= health)
     {
-        FeatureECS::SetBlackboardValue(world, target, "dead"_n, true);
-
-        Data::UnitPtr unitData = FeatureUnit::GetUnitData(world, UnitId(target));
-        Time expirationTime = unitData.DeathStats().ExpirationTime().GetValue(lds);
-        FeatureUnit::SetExpirationTimer(world, UnitId(target), expirationTime);
+        FeatureUnit::OnUnitKilled(world, UnitId(target), damage.SourceId);
     }
 
     healthComponent->Health.Current -= amount;
     healthComponent->Health.Current = Max(healthComponent->Health.Current, 0);
+
+    LogVerbose("Unit {0} dealt {1} damage to unit {2}. New health is {3}", (uint32)damage.SourceId, (uint32)amount, (uint32)target, (double)healthComponent->Health.Current);
 
     return true;
 }

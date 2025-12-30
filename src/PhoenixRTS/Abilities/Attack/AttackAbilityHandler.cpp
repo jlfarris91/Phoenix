@@ -53,7 +53,7 @@ void AttackAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& 
     ISystem::OnWorldUpdate(world, args);
 
     AttackAbilitySystemDetail::UpdateAttackAbilityComponentJob job;
-    FeatureECS::ScheduleParallel(world, job);
+    FeatureECS::Schedule(world, job);
 }
 
 AttackAbilityComponent::AttackAbilityComponent()

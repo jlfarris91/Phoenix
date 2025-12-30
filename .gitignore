@@ -2,3 +2,4 @@
 *.user
 /.idea
 Phoenix.sln
+tests/TestRTS/Phoenix.log

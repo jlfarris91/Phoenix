@@ -3,6 +3,7 @@
 
 #include <cctype>
 #include <cstdio>
+#include <mutex>
 
 #include "imgui.h"
 
@@ -17,6 +18,8 @@ struct Console
     bool                    AutoScroll;
     bool                    ScrollToBottom;
     std::shared_ptr<Logger> Logger;
+    std::mutex              LogMutex;
+    std::vector<std::string> LogFlush;
 
     Console()
     {
@@ -45,7 +48,8 @@ struct Console
         Logger = logger;
         logger->OnLog([this](Phoenix::ELogLevel level, const std::string& msg)
         {
-            AddLog("[%s]: %s", ToString(level), msg.c_str());
+            std::lock_guard lock(LogMutex);
+            LogFlush.push_back(std::format("[{0}]: {1}", ToString(level), msg));
         });
     }
 
@@ -81,6 +85,16 @@ struct Console
         {
             ImGui::End();
             return;
+        }
+
+        // Copy logs from the logger
+        {
+            std::lock_guard lock(LogMutex);
+            for (const std::string& log : LogFlush)
+            {
+                AddLog(log.c_str());
+            }
+            LogFlush.clear();
         }
 
         // As a specific feature guaranteed by the library, after calling Begin() the last Item represent the title bar.
@@ -153,6 +167,7 @@ struct Console
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1)); // Tighten spacing
             if (copy_to_clipboard)
                 ImGui::LogToClipboard();
+
             for (const char* item : Items)
             {
                 if (!Filter.PassFilter(item))
@@ -172,6 +187,7 @@ struct Console
                 if (has_color)
                     ImGui::PopStyleColor();
             }
+            
             if (copy_to_clipboard)
                 ImGui::LogFinish();
 

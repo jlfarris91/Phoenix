@@ -7,6 +7,7 @@
         },
         "flags": {
             "type": "EnumFlags",
+            "default": "Entity|Location|Target",
             "items": [
                 "Entity",
                 "Location",

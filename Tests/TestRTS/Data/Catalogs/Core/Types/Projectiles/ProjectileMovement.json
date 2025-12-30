@@ -5,9 +5,6 @@
         "acceleration_time": {
             "type": "Time"
         },
-        "collision": {
-
-        },
         "flags": {
             "type": "EnumFlags",
             "items": [

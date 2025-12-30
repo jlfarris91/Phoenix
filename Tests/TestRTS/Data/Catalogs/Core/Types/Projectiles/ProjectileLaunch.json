@@ -6,19 +6,19 @@
             "type": "ObjectRef#FXActor"
         },
         "offset": {
-            "type": "Vector3"
+            "type": "Object#Vector3"
         },
         "pitch": {
-            "type": "Angle"
+            "type": "Degrees"
         },
         "pitch_rand": {
-            "type": "Angle"
+            "type": "Degrees"
         },
         "roll": {
-            "type": "Angle"
+            "type": "Degrees"
         },
         "roll_rand": {
-            "type": "Angle"
+            "type": "Degrees"
         },
         "socket": {
             "type": "Name"

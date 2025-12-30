@@ -12,9 +12,11 @@
 #include "PhoenixRTS/Abilities/AbilityHandler.h"
 #include "PhoenixRTS/Abilities/FeatureAbilities.h"
 #include "PhoenixRTS/Data/DataUnit.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitSystem.h"
 #include "PhoenixRTS/Vitals/VitalComponents.h"
+#include "PhoenixSim/Logging.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -165,12 +167,12 @@ bool FeatureUnit::UnitIsImmobilized(WorldConstRef world, UnitId unit)
 
 bool FeatureUnit::UnitIsAlive(WorldConstRef world, UnitId unit)
 {
-    return !UnitIsDead(world, unit);
+    return FeatureECS::IsEntityValid(world, unit) && !UnitIsDead(world, unit);
 }
 
 bool FeatureUnit::UnitIsDead(WorldConstRef world, UnitId unit)
 {
-    return FeatureECS::GetBlackboardValue<bool>(world, unit, "dead"_n);
+    return FeatureECS::GetBlackboardValue<bool>(world, unit, "status_dead"_n);
 }
 
 bool FeatureUnit::UnitIsHidden(WorldConstRef world, UnitId unit)
@@ -205,6 +207,7 @@ ETargetScanLevel FeatureUnit::GetTargetScanLevel(WorldConstRef world, UnitId uni
 
 bool FeatureUnit::SetTargetScanLevel(WorldRef world, UnitId unit, ETargetScanLevel scanLevel)
 {
+    LogVerbose("Setting {0} scan level to {1}", (uint32)unit, (uint8)scanLevel);
     return FeatureECS::SetBlackboardValue(world, unit, "target_scan_level"_n, scanLevel);
 }
 
@@ -298,6 +301,26 @@ uint32 FeatureUnit::QueryUnitsInRange(
     }
 
     return numUnits;
+}
+
+void FeatureUnit::OnUnitKilled(WorldRef world, UnitId unit, EntityId source)
+{
+    if (UnitIsDead(world, unit))
+    {
+        return;
+    }
+
+    FeatureECS::SetBlackboardValue(world, unit, "status_dead"_n, true);
+
+    const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
+
+    Data::UnitPtr unitData = GetUnitData(world, unit);
+    Time expirationTime = unitData.DeathStats().ExpirationTime().GetValue(lds);
+    SetExpirationTimer(world, unit, expirationTime);
+
+    FeatureOrders::ClearOrderQueue(world, unit);
+
+    LogInfo("Unit {0} was killed by {1}", (uint32)unit, (uint32)source);
 }
 
 void FeatureUnit::Initialize(const TSharedPtr<Phoenix::Session>& session)
