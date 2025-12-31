@@ -5,12 +5,14 @@
 
 namespace Phoenix::RTS
 {
+    struct UnitId;
+
     namespace Data
     {
         struct AttackAbilityPtr;
     }
 
-    enum class PHOENIX_RTS_API EAttackAbilityState
+    enum class PHOENIX_RTS_API EAttackAbilityState : uint8
     {
         None,
         AttackEntity,

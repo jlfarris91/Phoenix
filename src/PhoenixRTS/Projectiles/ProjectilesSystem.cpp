@@ -8,8 +8,8 @@
 
 #include "PhoenixSteering/FeatureSteering.h"
 
-#include "PhoenixRTS/Data/DataProjectile.h"
 #include "PhoenixRTS/Projectiles/ProjectileComponent.h"
+#include "PhoenixRTS/Projectiles/ProjectileId.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -25,14 +25,16 @@ namespace ProjectilesSystemDetail
 
             WorldRef world = *World;
             const LDS::ILDSQueryContext& lds = *LDS::FeatureLDS::StaticGetWorldQueryContext(world);
-            
+
             for (auto && [entityId, index, transformComp, projectileComp] : span)
             {
-                Distance range = RTS::Data::ProjectilePtr(projectileComp.ProjectileDataId).Movement().Radius().GetValue(lds);
-                if (!Steering::FeatureSteering::IsSeekingGoal(world, entityId) ||
-                    FeatureECS::IsInRange(world, entityId, projectileComp.TargetEntity, range))
+                if (projectileComp.State.ActiveState != EProjectileState::None)
                 {
-                    FeatureECS::ReleaseEntity(world, entityId);
+                    AbilityStateResult result = projectileComp.State.Update(world, ProjectileId(entityId), projectileComp);
+                    if (result.Result != EAbilityStateResult::Continue)
+                    {
+                        FeatureECS::ReleaseEntity(world, entityId);
+                    }
                 }
             }
         }

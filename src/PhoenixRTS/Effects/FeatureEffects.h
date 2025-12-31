@@ -24,6 +24,7 @@ namespace Phoenix::ECS
 
 namespace Phoenix::RTS
 {
+    class PeriodicEffectSystem;
     struct UnitId;
     struct Order;
 
@@ -235,6 +236,7 @@ namespace Phoenix::RTS
             const ResponseContext& responseContext,
             TArray<PriorityResponseHandler>& outResponseHandlers);
 
+        TSharedPtr<PeriodicEffectSystem> PeriodicEffectSystem;
         TMap<FName, TSharedPtr<IEffectHandler>> EffectIdToHandlerMap;
         TMap<FName, TSharedPtr<IResponseHandler>> ResponseIdToHandlerMap;
     };

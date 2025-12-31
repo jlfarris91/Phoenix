@@ -1,6 +1,9 @@
 ﻿#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
 
 #include "PhoenixRTS/Data/DataUnit.h"
+#include "PhoenixRTS/Effects/EffectComponent.h"
+#include "PhoenixRTS/Effects/FeatureEffects.h"
+#include "PhoenixRTS/Effects/PeriodicEffectComponent.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
@@ -8,7 +11,6 @@
 
 #include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 #include "PhoenixRTS/Projectiles/ProjectilesSystem.h"
-#include "PhoenixSteering/FeatureSteering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -16,18 +18,12 @@ using namespace Phoenix::ECS;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
 
-FeatureProjectiles::FeatureProjectiles()
-{
-}
-
 ProjectileId FeatureProjectiles::SpawnProjectile(
     WorldRef world,
     const FName& projectileData,
-    EntityId owner,
     const Vec2& launchPos,
     Angle launchFacing,
-    EntityId target,
-    const Vec2& targetPos)
+    const SpawnProjectileArgs& args)
 {
     ProjectileId projectileId = ProjectileId(FeatureECS::AcquireEntity(world, "Projectile"_n));
     if (projectileId == EntityId::Invalid)
@@ -54,22 +50,38 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
     }
 
     ProjectileComponent* projectileComp = FeatureECS::GetOrAddComponent<ProjectileComponent>(world, projectileId);
-    projectileComp->Owner = owner;
+    projectileComp->Owner = args.Owner;
     projectileComp->ProjectileDataId = projectileData;
     projectileComp->LaunchPos = launchPos;
-    projectileComp->TargetEntity = target;
-    projectileComp->TargetPos = targetPos;
+    projectileComp->TargetEntity = args.TargetEntity;
+    projectileComp->TargetPos = args.TargetPos;
+    projectileComp->ImpactEffectId = args.ImpactEffectId;
 
-    if (FeatureECS::IsEntityValid(world, target))
+    // Keep the parent effect alive as long as the projectile is alive
+    if (EffectComponent* effectParentComp = FeatureEffects::GetEffectComponent(world, args.EffectParent))
     {
-        FeatureSteering::FollowEntity(world, projectileId, target);
-    }
-    else
-    {
-        FeatureSteering::MoveToLocation(world, projectileId, targetPos);
+        projectileComp->EffectParent = args.EffectParent;
+
+        FeatureEffects::ReferenceEffectNode(world, args.EffectParent, *effectParentComp);
+
+        if (args.PeriodicEffectTime > 0 && !FName::IsNoneOrEmpty(args.PeriodicEffectId))
+        {
+            PeriodicEffectComponent* periodicEffectComponent = FeatureECS::GetOrAddComponent<PeriodicEffectComponent>(world, projectileId);
+            periodicEffectComponent->EffectNode = args.EffectParent;
+            periodicEffectComponent->PeriodicEffectTime = args.PeriodicEffectTime;
+            periodicEffectComponent->NextPeriodicEffectTime = world.GetSimTime() + args.PeriodicEffectTime;
+            periodicEffectComponent->PeriodicEffectId = args.PeriodicEffectId;
+        }
+
+        if (!FName::IsNoneOrEmpty(args.LaunchEffectId))
+        {
+            FeatureEffects::StaticExecuteEffect(world, args.EffectParent, args.LaunchEffectId);
+        }
     }
 
     // TODO (jfarris): spawn launch fx actor
+
+    projectileComp->State.Enter(world, projectileId, *projectileComp, args.ArrivalThreshold);
 
     return projectileId;
 }

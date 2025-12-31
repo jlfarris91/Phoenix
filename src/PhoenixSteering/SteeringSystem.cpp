@@ -196,6 +196,34 @@ namespace SteeringDetail
                 }
             }
 
+            Distance dist = stepDir.Length() / DeltaTime;
+            auto speed = Min(steerComp.MaxSpeed, dist);
+            return stepDir.Normalized() * speed;
+        }
+
+        Vec2 CalculateVelocity2(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
+        {
+            // Only step entities actively seeking a goal
+            if (!HasAnyFlags(steerComp.Flags, ESteeringFlags::SeekingGoal))
+            {
+                return Vec2::Zero;
+            }
+
+            const Vec2& currPos = transformComp.Transform.Position;
+            const Vec2& stepPos = steerComp.StepPos[0];
+            Vec2 stepDir = stepPos - currPos;
+
+            // Wait to start moving until the entity has rotated to face the step pos
+            if (0)
+            {
+                auto targetAngle = stepDir.AsRadians();
+                auto delta = AngleDelta(targetAngle, transformComp.Transform.Rotation);
+                if (Abs(delta) > RAD_45)
+                {
+                    return Vec2::Zero;
+                }
+            }
+
             Vec2 v = currPos - steerComp.PreviousPos;
             int64 vv = Vec2::SqrxQ(v);
 
@@ -232,7 +260,7 @@ namespace SteeringDetail
             if (dd <= accel2)
             {
                 v = d;
-                vv = Vec2::SqrxQ(v);
+                vv = dd;
             }
             else if (dd <= stopDist2)
             {
@@ -258,7 +286,7 @@ namespace SteeringDetail
                 }
             }
 
-            v = vv > dd ? d : d.Normalized() * Distance(Q64(vv));
+            v = vv >= dd ? d : d.Normalized() * Distance(Q64(vv));
             return v;
         }
 

@@ -147,7 +147,7 @@ uint8 FeatureUnit::GetOwningPlayer(WorldConstRef world, UnitId unit)
 
 uint8 FeatureUnit::GetOwningTeam(WorldConstRef world, UnitId unit)
 {
-    return 0;
+    return GetOwningPlayer(world, unit);
 }
 
 bool FeatureUnit::UnitCanMove(WorldConstRef world, UnitId unit)
@@ -352,8 +352,9 @@ bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& a
         Distance y = args.Action.Data[2].Distance;
         Angle facing = args.Action.Data[3].Degrees;
         uint32 num = args.Action.Data[4].UInt32;
+        uint8 owner = args.Action.Data[5].UInt32;
 
-        SpawnUnits(world, num, unitData, 0, { x, y }, facing);
+        SpawnUnits(world, num, unitData, owner, { x, y }, facing);
         return true;
     }
 

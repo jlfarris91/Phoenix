@@ -7,6 +7,7 @@
 #include "PhoenixRTS/Effects/EffectComponent.h"
 #include "PhoenixRTS/Effects/EffectSetHandler.h"
 #include "PhoenixRTS/Effects/Responses.h"
+#include "PhoenixRTS/Effects/PeriodicEffectSystem.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -560,6 +561,12 @@ void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
     {
         RegisterResponseHandler(responseHandler);
     }
+
+    PeriodicEffectSystem = MakeShared<RTS::PeriodicEffectSystem>();
+    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    {
+        featureECS->RegisterSystem(PeriodicEffectSystem);
+    }
 }
 
 void FeatureEffects::Shutdown()
@@ -575,6 +582,13 @@ void FeatureEffects::Shutdown()
     {
         UnregisterEffectHandler(EffectIdToHandlerMap.begin()->first);
     }
+
+    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    {
+        featureECS->UnregisterSystem(PeriodicEffectSystem);
+    }
+
+    PeriodicEffectSystem.reset();
 }
 
 void FeatureEffects::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)

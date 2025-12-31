@@ -8,6 +8,8 @@
 
 namespace Phoenix::RTS
 {
+    struct UnitId;
+
     namespace Data
     {
         struct WeaponPtr;

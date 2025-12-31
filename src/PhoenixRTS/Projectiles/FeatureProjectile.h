@@ -6,10 +6,24 @@
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Data/DataProjectile.h"
+#include "PhoenixRTS/Effects/EffectId.h"
 
 namespace Phoenix::RTS
 {
     class ProjectilesSystem;
+
+    struct PHOENIX_RTS_API SpawnProjectileArgs
+    {
+        ECS::EntityId Owner;
+        ECS::EntityId TargetEntity;
+        Vec2 TargetPos;
+        EffectNodeId EffectParent;
+        FName ImpactEffectId;
+        FName LaunchEffectId;
+        Time PeriodicEffectTime;
+        FName PeriodicEffectId;
+        Distance ArrivalThreshold = 0.1;
+    };
 
     class PHOENIX_RTS_API FeatureProjectiles : public IFeature
     {
@@ -17,16 +31,12 @@ namespace Phoenix::RTS
 
     public:
 
-        FeatureProjectiles();
-
         static ProjectileId SpawnProjectile(
             WorldRef world,
             const FName& projectileData,
-            ECS::EntityId owner,
             const Vec2& launchPos,
             Angle launchFacing,
-            ECS::EntityId target,
-            const Vec2& targetPos);
+            const SpawnProjectileArgs& args = {});
 
         static ECS::EntityId GetOwner(WorldConstRef world, ProjectileId projectileId);
 

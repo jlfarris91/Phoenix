@@ -53,6 +53,7 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
         action.Data[2].Distance = mouseWorldPos.Y;
         action.Data[3].Degrees = Vec2::RandUnitVector().AsRadians();
         action.Data[4].UInt32 = SpawnCount;
+        action.Data[5].UInt32 = Player;
         Session->EnqueueAction(action);
     }
 

@@ -36,7 +36,6 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
     Data::EffectLaunchProjectilePtr effectData(context.EffectId);
 
     EntityId source = nodeComp->SourceId;
-    const Vec2& sourcePos = nodeComp->SourcePos;
     EntityId target = nodeComp->TargetId;
     const Vec2& targetPos = nodeComp->TargetPos;
 
@@ -45,30 +44,25 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
     {
         Data::ProjectilePtr projectileData = effectData.Projectile().ResolveObject(lds);
 
+        const Vec2& launchPos = nodeComp->SourcePos;
         Angle launchFacing = FeatureECS::GetWorldFacing(world, source);
 
-        ProjectileId projectileId = FeatureProjectiles::SpawnProjectile(
+        SpawnProjectileArgs spawnArgs;
+        spawnArgs.Owner = source;
+        spawnArgs.TargetEntity = target;
+        spawnArgs.TargetPos = targetPos;
+        spawnArgs.EffectParent = nodeId;
+        spawnArgs.ImpactEffectId = effectData.ImpactEffect().GetReferenceId(lds);
+        spawnArgs.LaunchEffectId = effectData.LaunchEffect().GetReferenceId(lds);
+        spawnArgs.PeriodicEffectId = effectData.PeriodicEffect().GetReferenceId(lds);
+        spawnArgs.PeriodicEffectTime = effectData.PeriodicTime().GetValue(lds);
+
+        FeatureProjectiles::SpawnProjectile(
             world,
             projectileData.GetObjectId(),
-            source,
-            sourcePos,
+            launchPos,
             launchFacing,
-            target,
-            targetPos);
-
-        Time periodicTime = effectData.PeriodicTime().GetValue(lds);
-        FName periodicEffectId = effectData.PeriodicEffect().GetReferenceId(lds);
-
-        if (projectileId != ProjectileId::Invalid && periodicTime > 0 && !FName::IsNoneOrEmpty(periodicEffectId))
-        {
-            // Keep the effect alive as long as the projectile is alive
-            FeatureEffects::ReferenceEffectNode(world, nodeId, *nodeComp);
-
-            ProjectileComponent* comp = FeatureECS::GetComponent<ProjectileComponent>(world, nodeId);
-            comp->EffectOwner = nodeId;
-            comp->NextPeriodic = world.GetSimTime() + periodicTime;
-            comp->PeriodicEffectId = periodicEffectId;
-        }
+            spawnArgs);
     }
 
     return true;

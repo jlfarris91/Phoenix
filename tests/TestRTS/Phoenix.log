@@ -1,23 +1,165 @@
-[2025-12-31 00:33:59] [Warn]: Object type 'properties' is empty.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type 'properties' is empty.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type 'properties' is empty.
-[2025-12-31 00:33:59] [Error]: Object is missing required 'id' property.
-[2025-12-31 00:33:59] [Error]: Object is missing required 'base' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Error]: Object with id 'TestObject' has already been registered.
-[2025-12-31 00:33:59] [Error]: No base object or type registered with id 'TestBaseObject'.
-[2025-12-31 00:33:59] [Error]: Root objects must be of type Object.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object defines an array with 3 items but the max allowed is 2
-[2025-12-31 00:33:59] [Verbose]: Loading config at path C:\Users\jfarr\OneDrive\Documents\Unreal Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 00:33:59] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
-[2025-12-31 00:33:59] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
+[2025-12-31 06:26:10] [Warn]: Object type 'properties' is empty.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type 'properties' is empty.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type 'properties' is empty.
+[2025-12-31 06:26:10] [Error]: Object is missing required 'id' property.
+[2025-12-31 06:26:10] [Error]: Object is missing required 'base' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Error]: Object with id 'TestObject' has already been registered.
+[2025-12-31 06:26:10] [Error]: No base object or type registered with id 'TestBaseObject'.
+[2025-12-31 06:26:10] [Error]: Root objects must be of type Object.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object defines an array with 3 items but the max allowed is 2
+[2025-12-31 06:26:10] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 06:26:10] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
+[2025-12-31 06:26:10] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
+[2025-12-31 06:26:13] [Verbose]: Setting 1 scan level to 2
+[2025-12-31 06:26:17] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:26:17] [Verbose]: Setting 3 scan level to 2
+[2025-12-31 06:26:20] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2025-12-31 06:26:20] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:20] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:26:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2025-12-31 06:26:21] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2025-12-31 06:26:21] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2025-12-31 06:26:21] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:22] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2025-12-31 06:26:22] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:22] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:26:28] [Verbose]: Setting 5 scan level to 2
+[2025-12-31 06:26:28] [Verbose]: Unit 2 acquired order 2868060121 with target 5
+[2025-12-31 06:26:28] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:28] [Verbose]: Unit 3 acquired order 2868060121 with target 5
+[2025-12-31 06:26:28] [Verbose]: Setting 3 scan level to 0
+[2025-12-31 06:26:28] [Verbose]: Unit 5 acquired order 2868060121 with target 3
+[2025-12-31 06:26:28] [Verbose]: Setting 5 scan level to 0
+[2025-12-31 06:26:28] [Verbose]: Unit 1 acquired order 2868060121 with target 5
+[2025-12-31 06:26:28] [Verbose]: Setting 1 scan level to 0
+[2025-12-31 06:26:29] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 90
+[2025-12-31 06:26:29] [Verbose]: Unit 5 dealt 10 damage to unit 3. New health is 90
+[2025-12-31 06:26:29] [Verbose]: Unit 2 dealt 10 damage to unit 5. New health is 80
+[2025-12-31 06:26:30] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 70
+[2025-12-31 06:26:30] [Verbose]: Unit 1 dealt 10 damage to unit 5. New health is 60
+[2025-12-31 06:26:30] [Verbose]: Unit 5 dealt 10 damage to unit 3. New health is 80
+[2025-12-31 06:26:33] [Verbose]: Unit 2 dealt 10 damage to unit 5. New health is 50
+[2025-12-31 06:26:34] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 40
+[2025-12-31 06:26:34] [Verbose]: Unit 1 dealt 10 damage to unit 5. New health is 30
+[2025-12-31 06:26:34] [Verbose]: Unit 5 dealt 10 damage to unit 3. New health is 70
+[2025-12-31 06:26:36] [Verbose]: Unit 2 dealt 10 damage to unit 5. New health is 20
+[2025-12-31 06:26:37] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 10
+[2025-12-31 06:26:37] [Info]: Unit 5 was killed by 1
+[2025-12-31 06:26:37] [Verbose]: Unit 1 dealt 10 damage to unit 5. New health is 0
+[2025-12-31 06:26:37] [Verbose]: Setting 1 scan level to 2
+[2025-12-31 06:26:37] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:26:37] [Verbose]: Setting 3 scan level to 2
+[2025-12-31 06:26:40] [Verbose]: Setting 6 scan level to 2
+[2025-12-31 06:26:40] [Verbose]: Setting 7 scan level to 2
+[2025-12-31 06:26:40] [Verbose]: Unit 7 acquired order 2868060121 with target 2
+[2025-12-31 06:26:40] [Verbose]: Setting 7 scan level to 0
+[2025-12-31 06:26:41] [Verbose]: Unit 3 acquired order 2868060121 with target 7
+[2025-12-31 06:26:41] [Verbose]: Setting 3 scan level to 0
+[2025-12-31 06:26:41] [Verbose]: Setting 8 scan level to 2
+[2025-12-31 06:26:41] [Verbose]: Unit 1 acquired order 2868060121 with target 8
+[2025-12-31 06:26:41] [Verbose]: Setting 1 scan level to 0
+[2025-12-31 06:26:41] [Verbose]: Unit 8 acquired order 2868060121 with target 2
+[2025-12-31 06:26:41] [Verbose]: Setting 8 scan level to 0
+[2025-12-31 06:26:41] [Verbose]: Unit 6 acquired order 2868060121 with target 3
+[2025-12-31 06:26:41] [Verbose]: Setting 6 scan level to 0
+[2025-12-31 06:26:41] [Verbose]: Unit 2 acquired order 2868060121 with target 7
+[2025-12-31 06:26:41] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:41] [Verbose]: Setting 9 scan level to 2
+[2025-12-31 06:26:41] [Verbose]: Unit 9 acquired order 2868060121 with target 3
+[2025-12-31 06:26:41] [Verbose]: Setting 9 scan level to 0
+[2025-12-31 06:26:42] [Verbose]: Unit 3 dealt 10 damage to unit 7. New health is 50
+[2025-12-31 06:26:43] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 50
+[2025-12-31 06:26:43] [Verbose]: Unit 2 dealt 10 damage to unit 7. New health is 40
+[2025-12-31 06:26:44] [Verbose]: Unit 7 dealt 10 damage to unit 2. New health is 90
+[2025-12-31 06:26:45] [Verbose]: Unit 6 dealt 10 damage to unit 3. New health is 60
+[2025-12-31 06:26:45] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 50
+[2025-12-31 06:26:45] [Verbose]: Unit 8 dealt 10 damage to unit 2. New health is 80
+[2025-12-31 06:26:46] [Verbose]: Unit 3 dealt 10 damage to unit 7. New health is 30
+[2025-12-31 06:26:47] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 40
+[2025-12-31 06:26:47] [Verbose]: Unit 2 dealt 10 damage to unit 7. New health is 20
+[2025-12-31 06:26:47] [Verbose]: Unit 7 dealt 10 damage to unit 2. New health is 70
+[2025-12-31 06:26:48] [Verbose]: Unit 6 dealt 10 damage to unit 3. New health is 40
+[2025-12-31 06:26:48] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 30
+[2025-12-31 06:26:49] [Verbose]: Unit 8 dealt 10 damage to unit 2. New health is 60
+[2025-12-31 06:26:49] [Verbose]: Unit 3 dealt 10 damage to unit 7. New health is 10
+[2025-12-31 06:26:50] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 30
+[2025-12-31 06:26:50] [Info]: Unit 7 was killed by 2
+[2025-12-31 06:26:50] [Verbose]: Unit 2 dealt 10 damage to unit 7. New health is 0
+[2025-12-31 06:26:50] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:26:50] [Verbose]: Setting 3 scan level to 2
+[2025-12-31 06:26:50] [Verbose]: Unit 2 acquired order 2868060121 with target 8
+[2025-12-31 06:26:50] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:50] [Verbose]: Unit 3 acquired order 2868060121 with target 8
+[2025-12-31 06:26:50] [Verbose]: Setting 3 scan level to 0
+[2025-12-31 06:26:50] [Verbose]: Unit 7 dealt 10 damage to unit 2. New health is 50
+[2025-12-31 06:26:51] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 20
+[2025-12-31 06:26:51] [Verbose]: Unit 3 dealt 10 damage to unit 8. New health is 20
+[2025-12-31 06:26:52] [Verbose]: Unit 8 dealt 10 damage to unit 2. New health is 40
+[2025-12-31 06:26:52] [Verbose]: Unit 3 dealt 10 damage to unit 8. New health is 10
+[2025-12-31 06:26:52] [Info]: Unit 8 was killed by 1
+[2025-12-31 06:26:52] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 0
+[2025-12-31 06:26:52] [Verbose]: Setting 1 scan level to 2
+[2025-12-31 06:26:52] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:26:52] [Verbose]: Setting 3 scan level to 2
+[2025-12-31 06:26:52] [Verbose]: Unit 1 acquired order 2868060121 with target 9
+[2025-12-31 06:26:52] [Verbose]: Setting 1 scan level to 0
+[2025-12-31 06:26:52] [Verbose]: Unit 2 acquired order 2868060121 with target 9
+[2025-12-31 06:26:52] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:26:52] [Verbose]: Unit 3 acquired order 2868060121 with target 9
+[2025-12-31 06:26:52] [Verbose]: Setting 3 scan level to 0
+[2025-12-31 06:26:53] [Verbose]: Unit 1 dealt 10 damage to unit 9. New health is 50
+[2025-12-31 06:26:53] [Verbose]: Unit 2 dealt 10 damage to unit 9. New health is 40
+[2025-12-31 06:26:53] [Verbose]: Unit 3 dealt 10 damage to unit 9. New health is 30
+[2025-12-31 06:26:54] [Verbose]: Unit 6 dealt 10 damage to unit 3. New health is 10
+[2025-12-31 06:26:55] [Info]: Unit 3 was killed by 9
+[2025-12-31 06:26:55] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 0
+[2025-12-31 06:26:55] [Verbose]: Setting 6 scan level to 2
+[2025-12-31 06:26:55] [Verbose]: Setting 9 scan level to 2
+[2025-12-31 06:26:55] [Verbose]: Unit 6 acquired order 2868060121 with target 2
+[2025-12-31 06:26:55] [Verbose]: Setting 6 scan level to 0
+[2025-12-31 06:26:55] [Verbose]: Unit 9 acquired order 2868060121 with target 2
+[2025-12-31 06:26:55] [Verbose]: Setting 9 scan level to 0
+[2025-12-31 06:26:57] [Verbose]: Unit 1 dealt 10 damage to unit 9. New health is 20
+[2025-12-31 06:26:57] [Verbose]: Unit 2 dealt 10 damage to unit 9. New health is 10
+[2025-12-31 06:26:58] [Verbose]: Unit 9 dealt 10 damage to unit 2. New health is 30
+[2025-12-31 06:26:58] [Verbose]: Unit 6 dealt 10 damage to unit 2. New health is 20
+[2025-12-31 06:27:00] [Info]: Unit 9 was killed by 1
+[2025-12-31 06:27:00] [Verbose]: Unit 1 dealt 10 damage to unit 9. New health is 0
+[2025-12-31 06:27:00] [Verbose]: Setting 1 scan level to 2
+[2025-12-31 06:27:00] [Verbose]: Setting 2 scan level to 2
+[2025-12-31 06:27:00] [Verbose]: Unit 2 acquired order 2868060121 with target 6
+[2025-12-31 06:27:00] [Verbose]: Setting 2 scan level to 0
+[2025-12-31 06:27:01] [Verbose]: Unit 6 dealt 10 damage to unit 2. New health is 10
+[2025-12-31 06:27:02] [Verbose]: Unit 2 dealt 10 damage to unit 6. New health is 50
+[2025-12-31 06:27:04] [Info]: Unit 2 was killed by 6
+[2025-12-31 06:27:04] [Verbose]: Unit 6 dealt 10 damage to unit 2. New health is 0
+[2025-12-31 06:27:05] [Verbose]: Setting 6 scan level to 2
+[2025-12-31 06:27:05] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2025-12-31 06:27:05] [Verbose]: Setting 6 scan level to 0
+[2025-12-31 06:27:05] [Verbose]: Unit 1 acquired order 2868060121 with target 6
+[2025-12-31 06:27:05] [Verbose]: Setting 1 scan level to 0
+[2025-12-31 06:27:07] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 40
+[2025-12-31 06:27:07] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 90
+[2025-12-31 06:27:11] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 30
+[2025-12-31 06:27:11] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 80
+[2025-12-31 06:27:14] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 70
+[2025-12-31 06:27:14] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 20
+[2025-12-31 06:27:17] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 60
+[2025-12-31 06:27:18] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 10
+[2025-12-31 06:27:21] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 50
+[2025-12-31 06:27:21] [Info]: Unit 6 was killed by 1
+[2025-12-31 06:27:21] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 0
+[2025-12-31 06:27:21] [Verbose]: Setting 1 scan level to 2
