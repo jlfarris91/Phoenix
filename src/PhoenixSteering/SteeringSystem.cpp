@@ -186,6 +186,7 @@ namespace SteeringDetail
             Vec2 stepDir = stepPos - currPos;
 
             // Wait to start moving until the entity has rotated to face the step pos
+            if (0)
             {
                 auto targetAngle = stepDir.AsRadians();
                 auto delta = AngleDelta(targetAngle, transformComp.Transform.Rotation);

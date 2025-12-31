@@ -7,7 +7,7 @@
     "icon": {
         "display_name": "Archer Weapon"
     },
-    "period": 1.5,
+    "period": 1.0,
     "range_acquire": 10.0,
     "range_max": 6.0,
     "range_slop": 2.0,

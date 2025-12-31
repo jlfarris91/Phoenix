@@ -11,6 +11,7 @@ namespace Phoenix::RTS::Data
     struct PHOENIX_RTS_API Actor
     {
         FName Asset;
+        Value Scale = 1.0;
         Color Tint;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Actor& outItem);
@@ -21,6 +22,7 @@ namespace Phoenix::RTS::Data
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(Actor)
 
         LDS::NamePtr Asset() const;
+        LDS::ValuePtr Scale() const;
         LDS::ColorPtr Tint() const;
     };
 

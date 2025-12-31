@@ -1,35 +1,23 @@
-[2025-12-30 08:03:53] [Warn]: Object type 'properties' is empty.
-[2025-12-30 08:03:53] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:53] [Warn]: Object type 'properties' is empty.
-[2025-12-30 08:03:53] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:53] [Warn]: Object type 'properties' is empty.
-[2025-12-30 08:03:53] [Error]: Object is missing required 'id' property.
-[2025-12-30 08:03:53] [Error]: Object is missing required 'base' property.
-[2025-12-30 08:03:53] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:53] [Error]: Object with id 'TestObject' has already been registered.
-[2025-12-30 08:03:53] [Error]: No base object or type registered with id 'TestBaseObject'.
-[2025-12-30 08:03:53] [Error]: Root objects must be of type Object.
-[2025-12-30 08:03:53] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:53] [Warn]: Object defines an array with 3 items but the max allowed is 2
-[2025-12-30 08:03:53] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-30 08:03:54] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
-[2025-12-30 08:03:54] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
-[2025-12-30 08:03:58] [Verbose]: Setting 1 scan level to 2
-[2025-12-30 08:03:58] [Verbose]: Setting 2 scan level to 2
-[2025-12-30 08:03:58] [Verbose]: Unit 1 acquired order 2868060121 with target 2
-[2025-12-30 08:03:58] [Verbose]: Setting 1 scan level to 0
-[2025-12-30 08:03:58] [Verbose]: Unit 2 acquired order 2868060121 with target 1
-[2025-12-30 08:03:58] [Verbose]: Setting 2 scan level to 0
-[2025-12-30 08:04:04] [Verbose]: Setting 9 scan level to 2
-[2025-12-30 08:04:04] [Verbose]: Unit 9 acquired order 2868060121 with target 2
-[2025-12-30 08:04:04] [Verbose]: Setting 9 scan level to 0
-[2025-12-30 08:04:05] [Verbose]: Setting 16 scan level to 2
-[2025-12-30 08:04:05] [Verbose]: Unit 16 acquired order 2868060121 with target 9
-[2025-12-30 08:04:05] [Verbose]: Setting 16 scan level to 0
+[2025-12-31 00:33:59] [Warn]: Object type 'properties' is empty.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type 'properties' is empty.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type 'properties' is empty.
+[2025-12-31 00:33:59] [Error]: Object is missing required 'id' property.
+[2025-12-31 00:33:59] [Error]: Object is missing required 'base' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Error]: Object with id 'TestObject' has already been registered.
+[2025-12-31 00:33:59] [Error]: No base object or type registered with id 'TestBaseObject'.
+[2025-12-31 00:33:59] [Error]: Root objects must be of type Object.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object defines an array with 3 items but the max allowed is 2
+[2025-12-31 00:33:59] [Verbose]: Loading config at path C:\Users\jfarr\OneDrive\Documents\Unreal Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Warn]: Object type is missing expected 'properties' property.
+[2025-12-31 00:33:59] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
+[2025-12-31 00:33:59] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'

@@ -56,6 +56,9 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
     ProjectileComponent* projectileComp = FeatureECS::GetOrAddComponent<ProjectileComponent>(world, projectileId);
     projectileComp->Owner = owner;
     projectileComp->ProjectileDataId = projectileData;
+    projectileComp->LaunchPos = launchPos;
+    projectileComp->TargetEntity = target;
+    projectileComp->TargetPos = targetPos;
 
     if (FeatureECS::IsEntityValid(world, target))
     {

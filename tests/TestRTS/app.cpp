@@ -62,6 +62,7 @@
 #include "Console.h"
 #include "Logger.h"
 #include "PhoenixRTS/Data/DataProjectile.h"
+#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
 #include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
@@ -119,6 +120,7 @@ struct ProjectileEntity
     EntityId EntityId;
     Transform2D Transform;
     FName Asset;
+    Value Scale;
     Color Tint;
 };
 
@@ -154,6 +156,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
 
     // Register ability handlers
     serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
@@ -444,6 +447,7 @@ void OnAppRenderWorld()
                 projectileEntity.EntityId = entity;
                 projectileEntity.Transform = transformComp.Transform;
                 projectileEntity.Asset = projectileActorData.Asset().GetValue(lds);
+                projectileEntity.Scale = projectileActorData.Scale().GetValue(lds);
                 projectileEntity.Tint = projectileActorData.Tint().GetValue(lds);
 
                 GProjectileEntities.push_back(projectileEntity);
@@ -510,6 +514,8 @@ void OnAppRenderWorld()
             {
                 for (auto& line : lines)
                 {
+                    line.Start *= projectileEntity.Scale;
+                    line.End *= projectileEntity.Scale;
                     line.Start = projectileEntity.Transform.TransformPoint(line.Start);
                     line.End = projectileEntity.Transform.TransformPoint(line.End);
                 }

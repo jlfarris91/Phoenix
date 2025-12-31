@@ -8,6 +8,10 @@
     "minimap_icon": {
       "type": "Object#MinimapIcon"
     },
+    "scale": {
+      "type": "Value",
+      "default": 1.0
+    },
     "tint": {
       "type": "Object#Color"
     }

@@ -7,66 +7,16 @@
 #include "PhoenixRTS/Effects/EffectComponent.h"
 #include "PhoenixRTS/Effects/FeatureEffects.h"
 #include "PhoenixRTS/Projectiles/FeatureProjectile.h"
+#include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 #include "PhoenixSim/ECS/System.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-namespace EffectLaunchProjectileSystemDetail
-{
-    struct Job : IBufferJob<EffectLaunchProjectileComponent&>
-    {
-        void Execute(const EntityComponentSpan<EffectLaunchProjectileComponent&>& span) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("EffectLaunchProjectileJob");
-
-            WorldRef world = *World;
-            auto lds = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
-
-            for (auto && [entityId, index, launchProjComp] : span)
-            {
-                
-            }
-        }
-    };
-}
-
-void EffectLaunchProjectileSystem::OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args)
-{
-    ISystem::OnWorldUpdate(world, args);
-
-    PHX_PROFILE_ZONE_SCOPED;
-
-    EffectLaunchProjectileSystemDetail::Job job;
-    FeatureECS::ScheduleParallel(world, job);
-}
-
 FName EffectLaunchProjectileHandler::GetEffectTypeId() const
 {
     return "EffectLaunchProjectile"_n;
-}
-
-void EffectLaunchProjectileHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
-{
-    IEffectHandler::Initialize(session);
-
-    System = MakeShared<EffectLaunchProjectileSystem>();
-
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
-    featureECS->RegisterSystem(System);
-}
-
-void EffectLaunchProjectileHandler::Shutdown()
-{
-    IEffectHandler::Shutdown();
-
-    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
-    {
-        featureECS->UnregisterSystem(System);
-    }
-
-    System.reset();
 }
 
 bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteContext& context) const
@@ -95,7 +45,6 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
     {
         Data::ProjectilePtr projectileData = effectData.Projectile().ResolveObject(lds);
 
-        Vec2 launchPos = sourcePos;
         Angle launchFacing = FeatureECS::GetWorldFacing(world, source);
 
         ProjectileId projectileId = FeatureProjectiles::SpawnProjectile(
@@ -107,15 +56,18 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
             target,
             targetPos);
 
-        if (projectileId != ProjectileId::Invalid)
+        Time periodicTime = effectData.PeriodicTime().GetValue(lds);
+        FName periodicEffectId = effectData.PeriodicEffect().GetReferenceId(lds);
+
+        if (projectileId != ProjectileId::Invalid && periodicTime > 0 && !FName::IsNoneOrEmpty(periodicEffectId))
         {
             // Keep the effect alive as long as the projectile is alive
             FeatureEffects::ReferenceEffectNode(world, nodeId, *nodeComp);
 
-            EffectLaunchProjectileComponent* comp = FeatureECS::GetOrAddComponent<EffectLaunchProjectileComponent>(world, nodeId);
-            comp->LaunchPos = launchPos;
-            comp->NextPeriodic = world.GetSimTime() + effectData.PeriodicTime().GetValue(lds);
-            comp->PeriodicEffectId = effectData.PeriodicEffect().ResolveObject(lds).GetObjectId();
+            ProjectileComponent* comp = FeatureECS::GetComponent<ProjectileComponent>(world, nodeId);
+            comp->EffectOwner = nodeId;
+            comp->NextPeriodic = world.GetSimTime() + periodicTime;
+            comp->PeriodicEffectId = periodicEffectId;
         }
     }
 
