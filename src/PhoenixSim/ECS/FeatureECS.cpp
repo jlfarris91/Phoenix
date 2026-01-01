@@ -286,7 +286,7 @@ bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& ac
 
         for (const EntityTransform& entity : outEntities)
         {
-            ReleaseEntity(world, entity.EntityId);
+            StaticReleaseEntity(world, entity.EntityId);
         }
 
         return true;
@@ -332,6 +332,21 @@ void FeatureECS::OnDebugRender(WorldConstRef world, const IDebugState& state, ID
     {
         system->OnDebugRender(world, state, renderer);
     }
+}
+
+FOnEntityAcquired& FeatureECS::OnEntityAcquired()
+{
+    return EntityAcquiredEvent;
+}
+
+FOnEntityReleasing& FeatureECS::OnEntityReleasing()
+{
+    return EntityReleasingEvent;
+}
+
+FOnEntityReleased& FeatureECS::OnEntityReleased()
+{
+    return EntityReleasedEvent;
 }
 
 void FeatureECS::RegisterSystem(const TSharedPtr<ISystem>& system)
@@ -396,7 +411,13 @@ const Entity& FeatureECS::GetEntityRef(WorldConstRef world, EntityId entityId)
     return block.Entities.GetEntityRef(entityId);
 }
 
-EntityId FeatureECS::AcquireEntity(WorldRef world, const FName& kind)
+EntityId FeatureECS::StaticAcquireEntity(WorldRef world, const FName& kind)
+{
+    TSharedPtr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    return feature ? feature->AcquireEntity(world, kind) : EntityId::Invalid;
+}
+
+EntityId FeatureECS::AcquireEntity(WorldRef world, const FName& kind) const
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -416,10 +437,18 @@ EntityId FeatureECS::AcquireEntity(WorldRef world, const FName& kind)
         entity.Handle = block.ArchetypeManager.Acquire(entityId, kind);
     }
 
+    EntityAcquiredEvent.Broadcast(world, entityId);
+
     return entityId;
 }
 
-bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId)
+bool FeatureECS::StaticReleaseEntity(WorldRef world, EntityId entityId)
+{
+    TSharedPtr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    return feature && feature->ReleaseEntity(world, entityId);
+}
+
+bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId) const
 {
     FeatureECSDynamicBlock& block = world.GetBlockRef<FeatureECSDynamicBlock>();
 
@@ -429,6 +458,8 @@ bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId)
     }
 
     Entity& entity = block.Entities.GetEntityRef(entityId);
+
+    EntityReleasingEvent.Broadcast(world, entityId);
 
     // If the entity has an archetype then release it now
     block.ArchetypeManager.Release(entity.Handle);
@@ -447,6 +478,8 @@ bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId)
     FeatureBlackboard::GetBlackboard(world).RemoveAll(query);
 
     block.Entities.Release(entityId);
+
+    EntityReleasedEvent.Broadcast(world, entityId);
 
     return true;
 }

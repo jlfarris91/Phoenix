@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "PhoenixSim/Delegates.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Parallel.h"
 #include "PhoenixSim/Blackboard/FeatureBlackboard.h"
@@ -54,6 +55,10 @@ namespace Phoenix::ECS
         TOptional<TSet<FName>> Kinds;
     };
 
+    PHX_DECLARE_MULTICAST_DELEGATE(FOnEntityAcquired, WorldRef world, EntityId entityId);
+    PHX_DECLARE_MULTICAST_DELEGATE(FOnEntityReleasing, WorldRef world, EntityId entityId);
+    PHX_DECLARE_MULTICAST_DELEGATE(FOnEntityReleased, WorldRef world, EntityId entityId);
+
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE_BEGIN(FeatureECS)
@@ -88,6 +93,14 @@ namespace Phoenix::ECS
         void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer) override;
 
         //
+        // Events
+        //
+
+        FOnEntityAcquired& OnEntityAcquired();
+        FOnEntityReleasing& OnEntityReleasing();
+        FOnEntityReleased& OnEntityReleased();
+
+        //
         // System Management
         //
 
@@ -114,8 +127,11 @@ namespace Phoenix::ECS
         static Entity& GetEntityRef(WorldRef world, EntityId entityId);
         static const Entity& GetEntityRef(WorldConstRef world, EntityId entityId);
 
-        static EntityId AcquireEntity(WorldRef world, const FName& kind);
-        static bool ReleaseEntity(WorldRef world, EntityId entityId);
+        static EntityId StaticAcquireEntity(WorldRef world, const FName& kind);
+        EntityId AcquireEntity(WorldRef world, const FName& kind) const;
+
+        static bool StaticReleaseEntity(WorldRef world, EntityId entityId);
+        bool ReleaseEntity(WorldRef world, EntityId entityId) const;
 
         static bool SetEntityKind(WorldRef world, EntityId entityId, const FName& kind);
 
@@ -624,5 +640,9 @@ namespace Phoenix::ECS
 
         TArray<TSharedPtr<ISystem>> Systems;
         TSharedPtr<ThreadPool> JobThreadPool;
+
+        FOnEntityAcquired EntityAcquiredEvent;
+        FOnEntityReleasing EntityReleasingEvent;
+        FOnEntityReleased EntityReleasedEvent;
     };
 }

@@ -79,7 +79,7 @@ void FeatureLua::Initialize(const TSharedPtr<Phoenix::Session>& session)
     {
         if (auto world = Session->GetWorldManager()->GetWorld(worldName))
         {
-            return ECS::FeatureECS::AcquireEntity(*world, kind);
+            return ECS::FeatureECS::StaticAcquireEntity(*world, kind);
         }
         return ECS::EntityId::Invalid;
     };
@@ -88,7 +88,7 @@ void FeatureLua::Initialize(const TSharedPtr<Phoenix::Session>& session)
     {
         if (auto world = Session->GetWorldManager()->GetWorld(worldName))
         {
-            return ECS::FeatureECS::ReleaseEntity(*world, entityId);
+            return ECS::FeatureECS::StaticReleaseEntity(*world, entityId);
         }
         return false;
     };
@@ -106,7 +106,7 @@ void FeatureLua::Initialize(const TSharedPtr<Phoenix::Session>& session)
         size_t i = 0;
         for (; i < count; ++i)
         {
-            ECS::EntityId entityId = ECS::FeatureECS::AcquireEntity(*world, kind);
+            ECS::EntityId entityId = ECS::FeatureECS::StaticAcquireEntity(*world, kind);
             if (entityId == ECS::EntityId::Invalid)
                 break;
 

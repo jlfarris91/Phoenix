@@ -135,7 +135,7 @@ EffectScopeId FeatureEffects::AcquireEffectScope(WorldRef world, const ExecuteEf
     PHX_ASSERT(args.TargetId.IsSet());
     PHX_ASSERT(!FName::IsNoneOrEmpty(args.EffectId));
 
-    EffectScopeId effectScopeId = EffectScopeId(FeatureECS::AcquireEntity(world, "EffectScope"_n));
+    EffectScopeId effectScopeId = EffectScopeId(FeatureECS::StaticAcquireEntity(world, "EffectScope"_n));
     if (effectScopeId == EntityId::Invalid)
     {
         return effectScopeId;
@@ -144,7 +144,7 @@ EffectScopeId FeatureEffects::AcquireEffectScope(WorldRef world, const ExecuteEf
     EffectComponent* effectComp = FeatureECS::GetOrAddComponent<EffectComponent>(world, effectScopeId);
     if (!effectComp)
     {
-        FeatureECS::ReleaseEntity(world, effectScopeId);
+        FeatureECS::StaticReleaseEntity(world, effectScopeId);
         return EffectScopeId{};
     }
 
@@ -158,7 +158,7 @@ EffectScopeId FeatureEffects::AcquireEffectScope(WorldRef world, const ExecuteEf
 
     if (!FeatureECS::SetBlackboardValue<FName>(world, effectScopeId, "effect_node_object_id"_n, args.EffectId))
     {
-        FeatureECS::ReleaseEntity(world, effectScopeId);
+        FeatureECS::StaticReleaseEntity(world, effectScopeId);
         return EffectScopeId{};
     }
 
@@ -180,7 +180,7 @@ uint16 FeatureEffects::ReleaseEffectScope(WorldRef world, EffectScopeId id)
             
         });
 
-        FeatureECS::ReleaseEntity(world, id);
+        FeatureECS::StaticReleaseEntity(world, id);
     }
 
     return effectScope->RefCount;
@@ -282,7 +282,7 @@ EffectNodeId FeatureEffects::AcquireEffectNode(
     EffectComponent& parent,
     const ExecuteEffectArgs& args)
 {
-    EffectNodeId effectNodeId = EffectNodeId(FeatureECS::AcquireEntity(world, "EffectNode"_n));
+    EffectNodeId effectNodeId = EffectNodeId(FeatureECS::StaticAcquireEntity(world, "EffectNode"_n));
     if (effectNodeId == EntityId::Invalid)
     {
         return EffectNodeId{};
@@ -291,7 +291,7 @@ EffectNodeId FeatureEffects::AcquireEffectNode(
     EffectComponent* nodeComp = FeatureECS::GetOrAddComponent<EffectComponent>(world, effectNodeId);
     if (!nodeComp)
     {
-        FeatureECS::ReleaseEntity(world, effectNodeId);
+        FeatureECS::StaticReleaseEntity(world, effectNodeId);
         return EffectNodeId{};
     }
 
@@ -305,19 +305,19 @@ EffectNodeId FeatureEffects::AcquireEffectNode(
 
     if (!FeatureECS::SetBlackboardValue<FName>(world, effectNodeId, "effect_node_object_id"_n, args.EffectId))
     {
-        FeatureECS::ReleaseEntity(world, effectNodeId);
+        FeatureECS::StaticReleaseEntity(world, effectNodeId);
         return EffectNodeId{};
     }
 
     if (!FeatureECS::SetBlackboardValue<EntityId>(world, effectNodeId, "effect_node_parent"_n, parentId))
     {
-        FeatureECS::ReleaseEntity(world, effectNodeId);
+        FeatureECS::StaticReleaseEntity(world, effectNodeId);
         return EffectNodeId{};
     }
 
     if (!FeatureECS::AddEntityToGroup(world, parentId, effectNodeId))
     {
-        FeatureECS::ReleaseEntity(world, effectNodeId);
+        FeatureECS::StaticReleaseEntity(world, effectNodeId);
         return EffectNodeId{};
     }
 
@@ -372,7 +372,7 @@ uint32 FeatureEffects::DereferenceEffectNode(WorldRef world, EffectNodeId id, Ef
 
     if (effectComp.RefCount == 0)
     {
-        FeatureECS::ReleaseEntity(world, id);
+        FeatureECS::StaticReleaseEntity(world, id);
     }
     
     return effectComp.RefCount;

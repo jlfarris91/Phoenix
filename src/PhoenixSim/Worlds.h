@@ -90,7 +90,7 @@ namespace Phoenix
 
     typedef TSharedPtr<World> WorldSharedPtr;
     
-    using PostWorldUpdateDelegate = TDelegate<void(WorldConstRef world)>;
+    using PostWorldUpdateDelegate = TFunction<void(WorldConstRef world)>;
 
     struct PHOENIX_SIM_API WorldManagerCtorArgs
     {

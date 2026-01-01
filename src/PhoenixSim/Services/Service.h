@@ -8,7 +8,7 @@ namespace Phoenix
 {
     class Session;
 
-    class PHOENIX_SIM_API IService : TSharedAsThis<IService>
+    class PHOENIX_SIM_API IService : public TSharedAsThis<IService>
     {
         PHX_DECLARE_INTERFACE(IService)
 

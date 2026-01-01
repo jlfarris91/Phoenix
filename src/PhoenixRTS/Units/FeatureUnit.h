@@ -86,6 +86,8 @@ namespace Phoenix::RTS
             Angle facing,
             const SpawnUnitArgs& args = {});
 
+        static bool IsUnitEntity(WorldConstRef world, ECS::EntityId entity);
+
         static FName GetUnitDataId(WorldConstRef world, UnitId unit);
 
         static Data::UnitPtr GetUnitData(WorldConstRef world, UnitId unit);

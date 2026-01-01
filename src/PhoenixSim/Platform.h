@@ -106,15 +106,12 @@ namespace Phoenix
     template <class ...TArgs> using TTuple = std::tuple<TArgs...>;
     template <class TKey, class TValue> using TPair = std::pair<TKey, TValue>;
     template <class TKey, class TValue> using TMap = std::map<TKey, TValue>;
-    template <class T> using TDelegate = std::function<T>;
+    template <class T> using TFunction = std::function<T>;
 
     template <class T> using TSharedPtr = std::shared_ptr<T>;
     template <class T> using TSharedAsThis = std::enable_shared_from_this<T>;
     template <class T> using TWeakPtr = std::weak_ptr<T>;
     template <class T> using TUniquePtr = std::unique_ptr<T>;
-
-    template <class T>
-    using TFunction = std::function<T>;
 
     template <class T> using TAtomic = std::atomic<T>;
 

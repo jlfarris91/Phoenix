@@ -33,7 +33,7 @@ namespace ProjectilesSystemDetail
                     AbilityStateResult result = projectileComp.State.Update(world, ProjectileId(entityId), projectileComp);
                     if (result.Result != EAbilityStateResult::Continue)
                     {
-                        FeatureECS::ReleaseEntity(world, entityId);
+                        FeatureECS::StaticReleaseEntity(world, entityId);
                     }
                 }
             }

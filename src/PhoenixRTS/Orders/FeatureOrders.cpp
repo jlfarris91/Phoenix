@@ -313,6 +313,11 @@ void FeatureOrders::Initialize(const TSharedPtr<Phoenix::Session>& session)
     {
         RegisterCommandHandler(handler);
     }
+
+    TSharedPtr<FeatureECS> featureECS = session->GetFeature<FeatureECS>();
+    PHX_ASSERT(featureECS);
+
+    featureECS->OnEntityReleasing().AddStatic(&FeatureOrders::OnEntityReleasing);
 }
 
 void FeatureOrders::Shutdown()
@@ -323,6 +328,9 @@ void FeatureOrders::Shutdown()
     {
         UnregisterCommandHandler(CommandIdToHandlerMap.begin()->first);
     }
+
+    TSharedPtr<FeatureECS> featureECS = Session->GetFeature<FeatureECS>();
+    featureECS->OnEntityReleasing().RemoveAll(this);
 }
 
 void FeatureOrders::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
@@ -344,6 +352,14 @@ bool FeatureOrders::OnHandleWorldAction(WorldRef world, const FeatureActionArgs&
     }
 
     return false;
+}
+
+void FeatureOrders::OnEntityReleasing(WorldRef world, EntityId entity)
+{
+    if (FeatureUnit::IsUnitEntity(world, entity))
+    {
+        ClearOrderQueue(world, UnitId(entity));
+    }
 }
 
 void FeatureOrders::SortOrderQueue(WorldRef world)

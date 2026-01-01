@@ -1,165 +1,2470 @@
-[2025-12-31 06:26:10] [Warn]: Object type 'properties' is empty.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type 'properties' is empty.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type 'properties' is empty.
-[2025-12-31 06:26:10] [Error]: Object is missing required 'id' property.
-[2025-12-31 06:26:10] [Error]: Object is missing required 'base' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Error]: Object with id 'TestObject' has already been registered.
-[2025-12-31 06:26:10] [Error]: No base object or type registered with id 'TestBaseObject'.
-[2025-12-31 06:26:10] [Error]: Root objects must be of type Object.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object defines an array with 3 items but the max allowed is 2
-[2025-12-31 06:26:10] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Warn]: Object type is missing expected 'properties' property.
-[2025-12-31 06:26:10] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
-[2025-12-31 06:26:10] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
-[2025-12-31 06:26:13] [Verbose]: Setting 1 scan level to 2
-[2025-12-31 06:26:17] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:26:17] [Verbose]: Setting 3 scan level to 2
-[2025-12-31 06:26:20] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
-[2025-12-31 06:26:20] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:20] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:26:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
-[2025-12-31 06:26:21] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
-[2025-12-31 06:26:21] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
-[2025-12-31 06:26:21] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:22] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
-[2025-12-31 06:26:22] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:22] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:26:28] [Verbose]: Setting 5 scan level to 2
-[2025-12-31 06:26:28] [Verbose]: Unit 2 acquired order 2868060121 with target 5
-[2025-12-31 06:26:28] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:28] [Verbose]: Unit 3 acquired order 2868060121 with target 5
-[2025-12-31 06:26:28] [Verbose]: Setting 3 scan level to 0
-[2025-12-31 06:26:28] [Verbose]: Unit 5 acquired order 2868060121 with target 3
-[2025-12-31 06:26:28] [Verbose]: Setting 5 scan level to 0
-[2025-12-31 06:26:28] [Verbose]: Unit 1 acquired order 2868060121 with target 5
-[2025-12-31 06:26:28] [Verbose]: Setting 1 scan level to 0
-[2025-12-31 06:26:29] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 90
-[2025-12-31 06:26:29] [Verbose]: Unit 5 dealt 10 damage to unit 3. New health is 90
-[2025-12-31 06:26:29] [Verbose]: Unit 2 dealt 10 damage to unit 5. New health is 80
-[2025-12-31 06:26:30] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 70
-[2025-12-31 06:26:30] [Verbose]: Unit 1 dealt 10 damage to unit 5. New health is 60
-[2025-12-31 06:26:30] [Verbose]: Unit 5 dealt 10 damage to unit 3. New health is 80
-[2025-12-31 06:26:33] [Verbose]: Unit 2 dealt 10 damage to unit 5. New health is 50
-[2025-12-31 06:26:34] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 40
-[2025-12-31 06:26:34] [Verbose]: Unit 1 dealt 10 damage to unit 5. New health is 30
-[2025-12-31 06:26:34] [Verbose]: Unit 5 dealt 10 damage to unit 3. New health is 70
-[2025-12-31 06:26:36] [Verbose]: Unit 2 dealt 10 damage to unit 5. New health is 20
-[2025-12-31 06:26:37] [Verbose]: Unit 3 dealt 10 damage to unit 5. New health is 10
-[2025-12-31 06:26:37] [Info]: Unit 5 was killed by 1
-[2025-12-31 06:26:37] [Verbose]: Unit 1 dealt 10 damage to unit 5. New health is 0
-[2025-12-31 06:26:37] [Verbose]: Setting 1 scan level to 2
-[2025-12-31 06:26:37] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:26:37] [Verbose]: Setting 3 scan level to 2
-[2025-12-31 06:26:40] [Verbose]: Setting 6 scan level to 2
-[2025-12-31 06:26:40] [Verbose]: Setting 7 scan level to 2
-[2025-12-31 06:26:40] [Verbose]: Unit 7 acquired order 2868060121 with target 2
-[2025-12-31 06:26:40] [Verbose]: Setting 7 scan level to 0
-[2025-12-31 06:26:41] [Verbose]: Unit 3 acquired order 2868060121 with target 7
-[2025-12-31 06:26:41] [Verbose]: Setting 3 scan level to 0
-[2025-12-31 06:26:41] [Verbose]: Setting 8 scan level to 2
-[2025-12-31 06:26:41] [Verbose]: Unit 1 acquired order 2868060121 with target 8
-[2025-12-31 06:26:41] [Verbose]: Setting 1 scan level to 0
-[2025-12-31 06:26:41] [Verbose]: Unit 8 acquired order 2868060121 with target 2
-[2025-12-31 06:26:41] [Verbose]: Setting 8 scan level to 0
-[2025-12-31 06:26:41] [Verbose]: Unit 6 acquired order 2868060121 with target 3
-[2025-12-31 06:26:41] [Verbose]: Setting 6 scan level to 0
-[2025-12-31 06:26:41] [Verbose]: Unit 2 acquired order 2868060121 with target 7
-[2025-12-31 06:26:41] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:41] [Verbose]: Setting 9 scan level to 2
-[2025-12-31 06:26:41] [Verbose]: Unit 9 acquired order 2868060121 with target 3
-[2025-12-31 06:26:41] [Verbose]: Setting 9 scan level to 0
-[2025-12-31 06:26:42] [Verbose]: Unit 3 dealt 10 damage to unit 7. New health is 50
-[2025-12-31 06:26:43] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 50
-[2025-12-31 06:26:43] [Verbose]: Unit 2 dealt 10 damage to unit 7. New health is 40
-[2025-12-31 06:26:44] [Verbose]: Unit 7 dealt 10 damage to unit 2. New health is 90
-[2025-12-31 06:26:45] [Verbose]: Unit 6 dealt 10 damage to unit 3. New health is 60
-[2025-12-31 06:26:45] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 50
-[2025-12-31 06:26:45] [Verbose]: Unit 8 dealt 10 damage to unit 2. New health is 80
-[2025-12-31 06:26:46] [Verbose]: Unit 3 dealt 10 damage to unit 7. New health is 30
-[2025-12-31 06:26:47] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 40
-[2025-12-31 06:26:47] [Verbose]: Unit 2 dealt 10 damage to unit 7. New health is 20
-[2025-12-31 06:26:47] [Verbose]: Unit 7 dealt 10 damage to unit 2. New health is 70
-[2025-12-31 06:26:48] [Verbose]: Unit 6 dealt 10 damage to unit 3. New health is 40
-[2025-12-31 06:26:48] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 30
-[2025-12-31 06:26:49] [Verbose]: Unit 8 dealt 10 damage to unit 2. New health is 60
-[2025-12-31 06:26:49] [Verbose]: Unit 3 dealt 10 damage to unit 7. New health is 10
-[2025-12-31 06:26:50] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 30
-[2025-12-31 06:26:50] [Info]: Unit 7 was killed by 2
-[2025-12-31 06:26:50] [Verbose]: Unit 2 dealt 10 damage to unit 7. New health is 0
-[2025-12-31 06:26:50] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:26:50] [Verbose]: Setting 3 scan level to 2
-[2025-12-31 06:26:50] [Verbose]: Unit 2 acquired order 2868060121 with target 8
-[2025-12-31 06:26:50] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:50] [Verbose]: Unit 3 acquired order 2868060121 with target 8
-[2025-12-31 06:26:50] [Verbose]: Setting 3 scan level to 0
-[2025-12-31 06:26:50] [Verbose]: Unit 7 dealt 10 damage to unit 2. New health is 50
-[2025-12-31 06:26:51] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 20
-[2025-12-31 06:26:51] [Verbose]: Unit 3 dealt 10 damage to unit 8. New health is 20
-[2025-12-31 06:26:52] [Verbose]: Unit 8 dealt 10 damage to unit 2. New health is 40
-[2025-12-31 06:26:52] [Verbose]: Unit 3 dealt 10 damage to unit 8. New health is 10
-[2025-12-31 06:26:52] [Info]: Unit 8 was killed by 1
-[2025-12-31 06:26:52] [Verbose]: Unit 1 dealt 10 damage to unit 8. New health is 0
-[2025-12-31 06:26:52] [Verbose]: Setting 1 scan level to 2
-[2025-12-31 06:26:52] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:26:52] [Verbose]: Setting 3 scan level to 2
-[2025-12-31 06:26:52] [Verbose]: Unit 1 acquired order 2868060121 with target 9
-[2025-12-31 06:26:52] [Verbose]: Setting 1 scan level to 0
-[2025-12-31 06:26:52] [Verbose]: Unit 2 acquired order 2868060121 with target 9
-[2025-12-31 06:26:52] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:26:52] [Verbose]: Unit 3 acquired order 2868060121 with target 9
-[2025-12-31 06:26:52] [Verbose]: Setting 3 scan level to 0
-[2025-12-31 06:26:53] [Verbose]: Unit 1 dealt 10 damage to unit 9. New health is 50
-[2025-12-31 06:26:53] [Verbose]: Unit 2 dealt 10 damage to unit 9. New health is 40
-[2025-12-31 06:26:53] [Verbose]: Unit 3 dealt 10 damage to unit 9. New health is 30
-[2025-12-31 06:26:54] [Verbose]: Unit 6 dealt 10 damage to unit 3. New health is 10
-[2025-12-31 06:26:55] [Info]: Unit 3 was killed by 9
-[2025-12-31 06:26:55] [Verbose]: Unit 9 dealt 10 damage to unit 3. New health is 0
-[2025-12-31 06:26:55] [Verbose]: Setting 6 scan level to 2
-[2025-12-31 06:26:55] [Verbose]: Setting 9 scan level to 2
-[2025-12-31 06:26:55] [Verbose]: Unit 6 acquired order 2868060121 with target 2
-[2025-12-31 06:26:55] [Verbose]: Setting 6 scan level to 0
-[2025-12-31 06:26:55] [Verbose]: Unit 9 acquired order 2868060121 with target 2
-[2025-12-31 06:26:55] [Verbose]: Setting 9 scan level to 0
-[2025-12-31 06:26:57] [Verbose]: Unit 1 dealt 10 damage to unit 9. New health is 20
-[2025-12-31 06:26:57] [Verbose]: Unit 2 dealt 10 damage to unit 9. New health is 10
-[2025-12-31 06:26:58] [Verbose]: Unit 9 dealt 10 damage to unit 2. New health is 30
-[2025-12-31 06:26:58] [Verbose]: Unit 6 dealt 10 damage to unit 2. New health is 20
-[2025-12-31 06:27:00] [Info]: Unit 9 was killed by 1
-[2025-12-31 06:27:00] [Verbose]: Unit 1 dealt 10 damage to unit 9. New health is 0
-[2025-12-31 06:27:00] [Verbose]: Setting 1 scan level to 2
-[2025-12-31 06:27:00] [Verbose]: Setting 2 scan level to 2
-[2025-12-31 06:27:00] [Verbose]: Unit 2 acquired order 2868060121 with target 6
-[2025-12-31 06:27:00] [Verbose]: Setting 2 scan level to 0
-[2025-12-31 06:27:01] [Verbose]: Unit 6 dealt 10 damage to unit 2. New health is 10
-[2025-12-31 06:27:02] [Verbose]: Unit 2 dealt 10 damage to unit 6. New health is 50
-[2025-12-31 06:27:04] [Info]: Unit 2 was killed by 6
-[2025-12-31 06:27:04] [Verbose]: Unit 6 dealt 10 damage to unit 2. New health is 0
-[2025-12-31 06:27:05] [Verbose]: Setting 6 scan level to 2
-[2025-12-31 06:27:05] [Verbose]: Unit 6 acquired order 2868060121 with target 1
-[2025-12-31 06:27:05] [Verbose]: Setting 6 scan level to 0
-[2025-12-31 06:27:05] [Verbose]: Unit 1 acquired order 2868060121 with target 6
-[2025-12-31 06:27:05] [Verbose]: Setting 1 scan level to 0
-[2025-12-31 06:27:07] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 40
-[2025-12-31 06:27:07] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 90
-[2025-12-31 06:27:11] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 30
-[2025-12-31 06:27:11] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 80
-[2025-12-31 06:27:14] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 70
-[2025-12-31 06:27:14] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 20
-[2025-12-31 06:27:17] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 60
-[2025-12-31 06:27:18] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 10
-[2025-12-31 06:27:21] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 50
-[2025-12-31 06:27:21] [Info]: Unit 6 was killed by 1
-[2025-12-31 06:27:21] [Verbose]: Unit 1 dealt 10 damage to unit 6. New health is 0
-[2025-12-31 06:27:21] [Verbose]: Setting 1 scan level to 2
+[2026-01-01 05:04:05] [Warn]: Object type 'properties' is empty.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type 'properties' is empty.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type 'properties' is empty.
+[2026-01-01 05:04:05] [Error]: Object is missing required 'id' property.
+[2026-01-01 05:04:05] [Error]: Object is missing required 'base' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Error]: Object with id 'TestObject' has already been registered.
+[2026-01-01 05:04:05] [Error]: No base object or type registered with id 'TestBaseObject'.
+[2026-01-01 05:04:05] [Error]: Root objects must be of type Object.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object defines an array with 3 items but the max allowed is 2
+[2026-01-01 05:04:05] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-01 05:04:05] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
+[2026-01-01 05:04:06] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
+[2026-01-01 05:04:09] [Verbose]: Setting 1 scan level to 2
+[2026-01-01 05:04:35] [Verbose]: Setting 1 scan level to 2
+[2026-01-01 05:04:41] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:04:41] [Verbose]: Unit 1 acquired order 2868060121 with target 2
+[2026-01-01 05:04:41] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:04:41] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:04:41] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:04:41] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:04:41] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:04:41] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:04:42] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:04:42] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:04:42] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:04:42] [Verbose]: Setting 5 scan level to 2
+[2026-01-01 05:04:42] [Verbose]: Unit 5 acquired order 2868060121 with target 1
+[2026-01-01 05:04:42] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:04:42] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:04:42] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:04:42] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:04:42] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 50
+[2026-01-01 05:04:43] [Verbose]: Setting 7 scan level to 2
+[2026-01-01 05:04:43] [Verbose]: Unit 7 acquired order 2868060121 with target 1
+[2026-01-01 05:04:43] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:04:43] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:04:43] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:04:43] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:04:43] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:04:43] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:04:43] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:04:44] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 90
+[2026-01-01 05:04:45] [Verbose]: Unit 3 dealt 10 damage to unit 1. New health is 80
+[2026-01-01 05:04:45] [Verbose]: Unit 4 dealt 10 damage to unit 1. New health is 70
+[2026-01-01 05:04:46] [Verbose]: Unit 5 dealt 10 damage to unit 1. New health is 60
+[2026-01-01 05:04:46] [Verbose]: Unit 8 dealt 10 damage to unit 1. New health is 50
+[2026-01-01 05:04:46] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 40
+[2026-01-01 05:04:46] [Verbose]: Unit 6 dealt 10 damage to unit 1. New health is 40
+[2026-01-01 05:04:46] [Verbose]: Unit 7 dealt 10 damage to unit 1. New health is 30
+[2026-01-01 05:04:47] [Verbose]: Unit 9 dealt 10 damage to unit 1. New health is 20
+[2026-01-01 05:04:48] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 10
+[2026-01-01 05:04:48] [Info]: Unit 1 was killed by 3
+[2026-01-01 05:04:48] [Verbose]: Unit 3 dealt 10 damage to unit 1. New health is 0
+[2026-01-01 05:04:55] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 5 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 7 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:04:55] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:05:04] [Verbose]: Setting 30 scan level to 2
+[2026-01-01 05:05:06] [Verbose]: Setting 33 scan level to 2
+[2026-01-01 05:05:11] [Verbose]: Setting 34 scan level to 2
+[2026-01-01 05:05:11] [Verbose]: Unit 2 acquired order 2868060121 with target 34
+[2026-01-01 05:05:11] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:05:11] [Verbose]: Unit 3 acquired order 2868060121 with target 34
+[2026-01-01 05:05:11] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:05:11] [Verbose]: Unit 9 acquired order 2868060121 with target 34
+[2026-01-01 05:05:11] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:05:11] [Verbose]: Unit 30 acquired order 2868060121 with target 34
+[2026-01-01 05:05:11] [Verbose]: Setting 30 scan level to 0
+[2026-01-01 05:05:12] [Verbose]: Unit 34 acquired order 2868060121 with target 30
+[2026-01-01 05:05:12] [Verbose]: Setting 34 scan level to 0
+[2026-01-01 05:05:13] [Verbose]: Unit 30 dealt 10 damage to unit 34. New health is 90
+[2026-01-01 05:05:13] [Verbose]: Unit 34 dealt 10 damage to unit 30. New health is 90
+[2026-01-01 05:05:15] [Verbose]: Unit 3 dealt 10 damage to unit 34. New health is 80
+[2026-01-01 05:05:15] [Verbose]: Unit 2 dealt 10 damage to unit 34. New health is 70
+[2026-01-01 05:05:16] [Verbose]: Unit 9 dealt 10 damage to unit 34. New health is 60
+[2026-01-01 05:05:16] [Verbose]: Unit 30 dealt 10 damage to unit 34. New health is 50
+[2026-01-01 05:05:16] [Verbose]: Unit 34 dealt 10 damage to unit 30. New health is 80
+[2026-01-01 05:05:19] [Verbose]: Unit 3 dealt 10 damage to unit 34. New health is 40
+[2026-01-01 05:05:19] [Verbose]: Unit 2 dealt 10 damage to unit 34. New health is 30
+[2026-01-01 05:05:19] [Verbose]: Unit 9 dealt 10 damage to unit 34. New health is 20
+[2026-01-01 05:05:20] [Verbose]: Unit 30 dealt 10 damage to unit 34. New health is 10
+[2026-01-01 05:05:20] [Verbose]: Unit 34 dealt 10 damage to unit 30. New health is 70
+[2026-01-01 05:05:22] [Info]: Unit 34 was killed by 3
+[2026-01-01 05:05:22] [Verbose]: Unit 3 dealt 10 damage to unit 34. New health is 0
+[2026-01-01 05:05:22] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:05:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:05:22] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:05:22] [Verbose]: Setting 30 scan level to 2
+[2026-01-01 05:05:26] [Verbose]: Setting 49 scan level to 2
+[2026-01-01 05:05:26] [Verbose]: Unit 2 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 3 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 49 acquired order 2868060121 with target 9
+[2026-01-01 05:05:26] [Verbose]: Setting 49 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 4 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 5 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 6 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 7 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 8 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 9 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:05:26] [Verbose]: Unit 33 acquired order 2868060121 with target 49
+[2026-01-01 05:05:26] [Verbose]: Setting 33 scan level to 0
+[2026-01-01 05:05:27] [Verbose]: Unit 49 dealt 10 damage to unit 9. New health is 50
+[2026-01-01 05:05:28] [Verbose]: Unit 33 dealt 10 damage to unit 49. New health is 90
+[2026-01-01 05:05:29] [Verbose]: Unit 9 dealt 10 damage to unit 49. New health is 80
+[2026-01-01 05:05:29] [Verbose]: Unit 2 dealt 10 damage to unit 49. New health is 70
+[2026-01-01 05:05:29] [Verbose]: Unit 3 dealt 10 damage to unit 49. New health is 60
+[2026-01-01 05:05:29] [Verbose]: Unit 8 dealt 10 damage to unit 49. New health is 50
+[2026-01-01 05:05:30] [Verbose]: Unit 7 dealt 10 damage to unit 49. New health is 40
+[2026-01-01 05:05:34] [Verbose]: Unit 6 dealt 10 damage to unit 49. New health is 30
+[2026-01-01 05:05:34] [Verbose]: Unit 4 dealt 10 damage to unit 49. New health is 20
+[2026-01-01 05:05:34] [Verbose]: Unit 5 dealt 10 damage to unit 49. New health is 10
+[2026-01-01 05:05:35] [Verbose]: Unit 49 dealt 10 damage to unit 9. New health is 40
+[2026-01-01 05:05:35] [Info]: Unit 49 was killed by 33
+[2026-01-01 05:05:35] [Verbose]: Unit 33 dealt 10 damage to unit 49. New health is 0
+[2026-01-01 05:05:35] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 5 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 7 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:05:35] [Verbose]: Setting 33 scan level to 2
+[2026-01-01 05:05:41] [Verbose]: Setting 1 scan level to 2
+[2026-01-01 05:05:45] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:45] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:45] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:46] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:46] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:46] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:47] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:05:47] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:05:47] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:47] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:47] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:48] [Verbose]: Unit 5 acquired order 2868060121 with target 1
+[2026-01-01 05:05:48] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:05:48] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:48] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:49] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:49] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:49] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:05:49] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:05:49] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:49] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:50] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:50] [Verbose]: Unit 7 acquired order 2868060121 with target 1
+[2026-01-01 05:05:50] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:05:50] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:51] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:51] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:51] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:52] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:52] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:52] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:52] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:05:52] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:05:52] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:53] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:53] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:53] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:53] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:54] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:05:54] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:05:54] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:54] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:05:54] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:05:54] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:05:54] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:05:54] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:55] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:55] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:55] [Verbose]: Unit 33 acquired order 2868060121 with target 1
+[2026-01-01 05:05:55] [Verbose]: Setting 33 scan level to 0
+[2026-01-01 05:05:55] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:55] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:56] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:56] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:56] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:57] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:57] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:57] [Verbose]: Unit 33 dealt 10 damage to unit 1. New health is 90
+[2026-01-01 05:05:57] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:58] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:58] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:58] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:59] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:59] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:05:59] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:05:59] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:00] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:00] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:00] [Verbose]: Unit 30 acquired order 2868060121 with target 1
+[2026-01-01 05:06:00] [Verbose]: Setting 30 scan level to 0
+[2026-01-01 05:06:01] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:01] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:03] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:04] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:06] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:07] [Verbose]: Unit 30 dealt 10 damage to unit 1. New health is 80
+[2026-01-01 05:06:08] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:10] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 5 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 7 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 9 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 4 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 3 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:13] [Verbose]: Unit 8 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:13] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:14] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:16] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:16] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:16] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:16] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:17] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:17] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 33 dealt 10 damage to unit 1. New health is 70
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:18] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:19] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 3 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:20] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:21] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 9 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:22] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:22] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 4 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:23] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:24] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2[2026-01-01 05:06:24] [Verbose]: Setting 1 scan level to 0
+
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:24] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:24] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 9 scan level to 2[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 33 dealt 10 damage to unit 1. New health is 60
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:25] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:26] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 8 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:27] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:27] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:27] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:28] [Verbose]: Unit 7 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:28] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:06:29] [Verbose]: Setting 5 scan level to 2
+[2026-01-01 05:06:30] [Verbose]: Unit 5 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:30] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:06:30] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:31] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:31] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:32] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:32] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:33] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:33] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:33] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:33] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:33] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:34] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:34] [Verbose]: Setting 7 scan level to 2
+[2026-01-01 05:06:34] [Verbose]: Unit 7 acquired order 2868060121 with target 1
+[2026-01-01 05:06:34] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:06:34] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:34] [Verbose]: Setting 5 scan level to 2
+[2026-01-01 05:06:34] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:35] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:35] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:35] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:35] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:36] [Verbose]: Unit 30 dealt 10 damage to unit 1. New health is 50
+[2026-01-01 05:06:36] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:37] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:37] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:37] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:37] [Verbose]: Unit 5 acquired order 2868060121 with target 1
+[2026-01-01 05:06:37] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:06:37] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:38] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:39] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:41] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:43] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:44] [Verbose]: Unit 33 dealt 10 damage to unit 1. New health is 40
+[2026-01-01 05:06:46] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:49] [Verbose]: Unit 3 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:49] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:49] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:50] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:50] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:51] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:52] [Verbose]: Unit 9 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:52] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:52] [Verbose]: Unit 9 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:52] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:53] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:06:53] [Verbose]: Unit 3 acquired order 2868060121 with target 1
+[2026-01-01 05:06:53] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:06:53] [Verbose]: Unit 9 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:53] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:54] [Verbose]: Unit 8 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:54] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:55] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:06:55] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-01 05:06:55] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:06:55] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:55] [Verbose]: Unit 4 issued order 2205231858 with target 4294967295
+[2026-01-01 05:06:55] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:06:56] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:57] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:57] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 9 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:58] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:06:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:06:59] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:06:59] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:00] [Verbose]: Unit 8 acquired order 2868060121 with target 1
+[2026-01-01 05:07:00] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:01] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:01] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:01] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:02] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:02] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:03] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:03] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:04] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:04] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:05] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:05] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:05] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:05] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:05] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:05] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:05] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:07] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:09] [Verbose]: Unit 30 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:09] [Verbose]: Setting 30 scan level to 0
+[2026-01-01 05:07:09] [Verbose]: Unit 30 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:09] [Verbose]: Setting 30 scan level to 0
+[2026-01-01 05:07:09] [Verbose]: Unit 30 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:09] [Verbose]: Setting 30 scan level to 0
+[2026-01-01 05:07:09] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:11] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:11] [Verbose]: Setting 30 scan level to 2
+[2026-01-01 05:07:13] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:13] [Verbose]: Unit 30 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:13] [Verbose]: Setting 30 scan level to 0
+[2026-01-01 05:07:13] [Verbose]: Unit 33 dealt 10 damage to unit 1. New health is 30
+[2026-01-01 05:07:14] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:14] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:15] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:15] [Verbose]: Unit 4 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:15] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:16] [Verbose]: Unit 4 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:16] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:17] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:17] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:18] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:18] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 30 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:19] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:19] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:20] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:20] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:21] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:21] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Unit 6 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:22] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:22] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:23] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:23] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:24] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:24] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:24] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:24] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:24] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:24] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:25] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:25] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:26] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:26] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 1 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 1 acquired order 2868060121 with target 7
+[2026-01-01 05:07:27] [Verbose]: Setting 1 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:27] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:27] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:28] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 33 dealt 10 damage to unit 1. New health is 20
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 1 dealt 10 damage to unit 7. New health is 50
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:29] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-01 05:07:30] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:30] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Unit 9 dealt 10 damage to unit 1. New health is 10
+[2026-01-01 05:07:30] [Info]: Unit 1 was killed by 7
+[2026-01-01 05:07:30] [Verbose]: Unit 7 dealt 10 damage to unit 1. New health is 0
+[2026-01-01 05:07:30] [Verbose]: Setting 2 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 3 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 5 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 7 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 8 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 9 scan level to 2
+[2026-01-01 05:07:30] [Verbose]: Setting 33 scan level to 2
+[2026-01-01 05:07:36] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:36] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:37] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:37] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:38] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:38] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:38] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:39] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:39] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:39] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:40] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:40] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:40] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:40] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:41] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:41] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:41] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:42] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:42] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:42] [Verbose]: Unit 6 issued order 2205231858 with target 4294967295
+[2026-01-01 05:07:44] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:46] [Verbose]: Setting 65 scan level to 2
+[2026-01-01 05:07:46] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Setting 6 scan level to 2
+[2026-01-01 05:07:52] [Verbose]: Unit 2 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 2 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 3 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 3 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 4 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 5 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 5 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 7 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 7 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 8 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 8 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 9 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 9 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 33 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 33 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Unit 6 acquired order 2868060121 with target 33
+[2026-01-01 05:07:52] [Verbose]: Setting 6 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Setting 4 scan level to 2
+[2026-01-01 05:07:52] [Verbose]: Unit 4 acquired order 2868060121 with target 6
+[2026-01-01 05:07:52] [Verbose]: Setting 4 scan level to 0
+[2026-01-01 05:07:52] [Verbose]: Setting 4 scan level to 2

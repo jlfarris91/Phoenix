@@ -25,7 +25,7 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
     Angle launchFacing,
     const SpawnProjectileArgs& args)
 {
-    ProjectileId projectileId = ProjectileId(FeatureECS::AcquireEntity(world, "Projectile"_n));
+    ProjectileId projectileId = ProjectileId(FeatureECS::StaticAcquireEntity(world, "Projectile"_n));
     if (projectileId == EntityId::Invalid)
         return {};
 

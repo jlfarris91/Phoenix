@@ -38,7 +38,7 @@ UnitId FeatureUnit::SpawnUnit(
     Angle facing,
     const SpawnUnitArgs& args)
 {
-    UnitId unitId = UnitId(FeatureECS::AcquireEntity(world, "Unit"_n));
+    UnitId unitId = UnitId(FeatureECS::StaticAcquireEntity(world, "Unit"_n));
     if (unitId == EntityId::Invalid)
         return {};
 
@@ -126,6 +126,12 @@ uint32 FeatureUnit::SpawnUnits(
         }
     }
     return count;
+}
+
+bool FeatureUnit::IsUnitEntity(WorldConstRef world, EntityId entity)
+{
+    const Entity* ptr = FeatureECS::GetEntityPtr(world, entity);
+    return ptr && ptr->Kind == "Unit"_n;
 }
 
 FName FeatureUnit::GetUnitDataId(WorldConstRef world, UnitId unit)

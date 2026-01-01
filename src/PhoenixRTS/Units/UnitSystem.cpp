@@ -32,7 +32,7 @@ namespace UnitSystemDetail
                 // The unit had an expiration timer set, should we release the entity?
                 if (FeatureUnit::HasExpired(world, unit))
                 {
-                    FeatureECS::ReleaseEntity(world, unit);
+                    FeatureECS::StaticReleaseEntity(world, unit);
                     continue;
                 }
 

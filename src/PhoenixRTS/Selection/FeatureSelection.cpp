@@ -84,7 +84,7 @@ EntityId FeatureSelection::GetOrCreatePlayerSelection(WorldRef world, uint32 pla
         return EntityId::Invalid;
     }
 
-    group = FeatureECS::AcquireEntity(world, "player_selection"_n);
+    group = FeatureECS::StaticAcquireEntity(world, "player_selection"_n);
 
     PlayerSelectionGroup& selectionGroup = block.PlayerSelectionGroups[freeIndex];
     selectionGroup.Player = player;

@@ -150,6 +150,8 @@ namespace Phoenix::RTS
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 
+        static void OnEntityReleasing(WorldRef world, ECS::EntityId entity);
+
         static void SortOrderQueue(WorldRef world);
 
         static bool HandleCommandForUnitInternal(
