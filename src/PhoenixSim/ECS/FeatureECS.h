@@ -53,6 +53,7 @@ namespace Phoenix::ECS
     struct EntityRangeQueryArgs
     {
         TOptional<TSet<FName>> Kinds;
+        TOptional<TSet<FName>> AnyComponents;
     };
 
     PHX_DECLARE_MULTICAST_DELEGATE(FOnEntityAcquired, WorldRef world, EntityId entityId);
@@ -424,6 +425,12 @@ namespace Phoenix::ECS
 
         // Returns the number of entities in a group.
         static uint32 GetGroupSize(WorldConstRef world, EntityId group);
+
+        static EntityId GetFirstEntityInGroup(WorldConstRef world, EntityId group);
+
+        static EntityId GetFirstEntityInGroup(WorldConstRef world, EntityId group, uint32& outIndex);
+        
+        static EntityId GetNextEntityInGroup(WorldConstRef world, EntityId group, uint32 currIndex, uint32& outIndex);
 
         template <class TCallback>
         static void ForEachEntityInGroup(WorldConstRef world, const EntityId group, const TCallback& callback)

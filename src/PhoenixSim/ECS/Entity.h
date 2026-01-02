@@ -10,7 +10,6 @@ namespace Phoenix::ECS
     {
         ArchetypeHandle Handle;
         FName Kind;
-        int32 TagHead = INDEX_NONE;
 
         constexpr EntityId GetId() const
         {

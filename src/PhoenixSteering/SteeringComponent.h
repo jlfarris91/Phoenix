@@ -15,33 +15,61 @@ namespace Phoenix::Steering
         Turn
     };
 
-    enum class PHOENIX_STEERING_API ESteeringFlags
+    enum class PHOENIX_STEERING_API ESteerFlags
     {
         None = 0,
         SeekingGoal = 1,
         ArrivedAtGoal = 2,
         Active = 4,
-        LockFacing = 8
+        LockFacing = 8,
+        FailedPathPlan = 16
     };
 
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
     {
-        PHX_ECS_DECLARE_COMPONENT(SteeringComponent)
+        PHX_ECS_DECLARE_COMPONENT_BEGIN(SteeringComponent)
+            PHX_REGISTER_FIELD(ESteerMode, Mode)
+            PHX_REGISTER_FIELD(ESteerFlags, Flags)
+            PHX_REGISTER_FIELD(uint32, CollisionMask)
+            PHX_REGISTER_FIELD(ECS::EntityId, GoalEntity)
+            PHX_REGISTER_FIELD(Vec2, GoalPos)
+            PHX_REGISTER_FIELD(Distance, Slack)
+            PHX_REGISTER_FIELD(Vec2, Velocity)
+            PHX_REGISTER_FIELD(Vec2, PreviousPos)
+            PHX_REGISTER_FIELD(Vec2, BestPos)
+            PHX_REGISTER_FIELD(Distance, InnerRadius)
+            PHX_REGISTER_FIELD(Distance, OuterRadius)
+            PHX_REGISTER_FIELD(Distance, ArrivalRange)
+            PHX_REGISTER_FIELD(Distance, ArrivalRange)
+            PHX_REGISTER_FIELD(Distance, MaxSpeed)
+            PHX_REGISTER_FIELD(Time, TurnRateIdle)
+            PHX_REGISTER_FIELD(Time, TurnRateMoving)
+            PHX_REGISTER_FIELD(Time, AccelerationTime)
+            PHX_REGISTER_FIELD(Time, DecelerationTime)
+            PHX_REGISTER_FIELD(Distance, AvoidanceRadius)
+            PHX_REGISTER_FIELD(Time, SeparationDelay)
+            PHX_REGISTER_FIELD(Distance, SeparationRadius)
+            PHX_REGISTER_FIELD(Value, SeparationStrength)
+        PHX_ECS_DECLARE_COMPONENT_END()
 
         ESteerMode Mode = ESteerMode::Idle;
-        ESteeringFlags Flags = ESteeringFlags::Active;
+        ESteerFlags Flags = ESteerFlags::Active;
+
+        uint32 CollisionMask = 0;
 
         ECS::EntityId GoalEntity;
         Vec2 GoalPos;
 
         Vec2 StepPos[2];
+        Distance Slack;
 
         Vec2 Velocity;
         Vec2 PreviousPos;
-        uint32 CollisionMask = 0;
+        Vec2 BestPos;
 
         Distance InnerRadius;
         Distance OuterRadius;
+        Distance ArrivalRange;
 
         // The max speed an entity can move not considering pushing forces.
         Distance MaxSpeed;

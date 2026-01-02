@@ -95,7 +95,6 @@ namespace Phoenix::ECS
             Entity& entity = Entities[entityIdx];
             entity.Kind = kind;
             entity.Handle = ArchetypeHandle(entityIdx);
-            entity.TagHead = INDEX_NONE;
 
             ++NumActiveEntities;
 

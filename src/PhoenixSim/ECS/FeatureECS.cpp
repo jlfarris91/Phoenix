@@ -773,6 +773,24 @@ uint32 FeatureECS::GetGroupSize(WorldConstRef world, EntityId group)
     return block ? block->Groups.GetNumEntities(group) : 0;
 }
 
+EntityId FeatureECS::GetFirstEntityInGroup(WorldConstRef world, EntityId group)
+{
+    uint32 index;
+    return GetFirstEntityInGroup(world, group, index);
+}
+
+EntityId FeatureECS::GetFirstEntityInGroup(WorldConstRef world, EntityId group, uint32& outIndex)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block ? block->Groups.GetFirstEntity(group, outIndex) : EntityId::Invalid;
+}
+
+EntityId FeatureECS::GetNextEntityInGroup(WorldConstRef world, EntityId group, uint32 currIndex, uint32& outIndex)
+{
+    const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+    return block ? block->Groups.GetNextEntity(group, currIndex, outIndex) : EntityId::Invalid;
+}
+
 blackboard_key_t FeatureECS::CreateBlackboardKey(
     const EntityId& id,
     const FName& key,

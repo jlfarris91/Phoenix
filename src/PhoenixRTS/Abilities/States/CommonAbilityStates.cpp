@@ -32,7 +32,7 @@ AbilityStateResult MoveToEntityState::Enter(
         return { EAbilityStateResult::Fail, AbilityStateReasons::CannotMove };
     }
 
-    if (!FeatureSteering::FollowEntity(world, entity, target))
+    if (!FeatureSteering::FollowEntity(world, entity, target, range))
     {
         return { EAbilityStateResult::Fail, AbilityStateReasons::FailedToMove };
     }
@@ -97,7 +97,7 @@ AbilityStateResult MoveToLocationState::Enter(WorldRef world, const EntityId& en
         return { EAbilityStateResult::Fail, AbilityStateReasons::CannotMove };
     }
 
-    if (!FeatureSteering::MoveToLocation(world, entity, target))
+    if (!FeatureSteering::MoveToLocation(world, entity, target, range))
     {
         return { EAbilityStateResult::Fail, AbilityStateReasons::FailedToMove };
     }
@@ -223,7 +223,7 @@ void FaceEntityState::Exit(WorldRef world, const EntityId& entity)
 
 AbilityStateResult FaceLocationState::Enter(
     WorldRef world,
-    const ECS::EntityId& entity,
+    const EntityId& entity,
     const Vec2& target,
     Distance range,
     Angle threshold)
@@ -250,7 +250,7 @@ AbilityStateResult FaceLocationState::Enter(
     return EAbilityStateResult::Continue;
 }
 
-AbilityStateResult FaceLocationState::Update(WorldRef world, const ECS::EntityId& entity)
+AbilityStateResult FaceLocationState::Update(WorldRef world, const EntityId& entity)
 {
     if (!FeatureECS::IsInRange(world, entity, Target, MaxRange))
     {
@@ -275,12 +275,12 @@ AbilityStateResult FaceLocationState::Update(WorldRef world, const ECS::EntityId
     return EAbilityStateResult::Continue;
 }
 
-void FaceLocationState::Interrupt(WorldRef world, const ECS::EntityId& entity)
+void FaceLocationState::Interrupt(WorldRef world, const EntityId& entity)
 {
     Exit(world, entity);
 }
 
-void FaceLocationState::Exit(WorldRef world, const ECS::EntityId& entity)
+void FaceLocationState::Exit(WorldRef world, const EntityId& entity)
 {
     FeatureSteering::Stop(world, entity);
 }
@@ -352,7 +352,7 @@ AbilityStateResult FollowEntityState::SetSubState(WorldRef world, const EntityId
 
     if (SubState == ESubState::Moving)
     {
-        if (!FeatureSteering::FollowEntity(world, entity, Target))
+        if (!FeatureSteering::FollowEntity(world, entity, Target, FollowRange))
         {
             return { EAbilityStateResult::Complete };
         }

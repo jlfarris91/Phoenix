@@ -3,3 +3,4 @@
 /.idea
 Phoenix.sln
 tests/TestRTS/Phoenix.log
+*.log

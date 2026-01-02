@@ -2,6 +2,7 @@
 #include "PhoenixSteering/FeatureSteering.h"
 
 #include "PhoenixSim/Flags.h"
+#include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSteering/SteeringComponent.h"
 
@@ -16,7 +17,7 @@ FeatureSteering::FeatureSteering()
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 
-bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, const Vec2& target)
+bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, const Vec2& target, Distance range)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -27,11 +28,13 @@ bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, con
     steerComp->Mode = ESteerMode::Move;
     steerComp->GoalPos = target;
     steerComp->GoalEntity = EntityId::Invalid;
-    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
+    steerComp->ArrivalRange = range;
+    steerComp->Slack = 0;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
-bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const EntityId& target)
+bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const EntityId& target, Distance range)
 {
     if (!FeatureECS::IsEntityValid(world, target))
     {
@@ -47,7 +50,9 @@ bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const
     steerComp->Mode = ESteerMode::Move;
     steerComp->GoalEntity = target;
     steerComp->GoalPos = Vec2::Zero;
-    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
+    steerComp->ArrivalRange = range;
+    steerComp->Slack = 0;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
@@ -59,7 +64,7 @@ bool FeatureSteering::IsMoving(WorldConstRef world, const EntityId& entity)
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteeringFlags::SeekingGoal);
+    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasFinishedMoving(WorldConstRef world, const EntityId& entity)
@@ -70,7 +75,7 @@ bool FeatureSteering::HasFinishedMoving(WorldConstRef world, const EntityId& ent
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteeringFlags::ArrivedAtGoal);
+    return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
 bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const EntityId& target)
@@ -84,7 +89,8 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const E
     steerComp->Mode = ESteerMode::Turn;
     steerComp->GoalPos = Vec2::Zero;
     steerComp->GoalEntity = target;
-    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
+    steerComp->Slack = 0;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
@@ -99,7 +105,8 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const V
     steerComp->Mode = ESteerMode::Turn;
     steerComp->GoalPos = target;
     steerComp->GoalEntity = EntityId::Invalid;
-    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, true);
+    steerComp->Slack = 0;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
@@ -111,7 +118,7 @@ bool FeatureSteering::IsTurning(WorldConstRef world, const EntityId& entity)
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteeringFlags::SeekingGoal);
+    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& entity)
@@ -122,7 +129,7 @@ bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& en
         return false;
     }
 
-    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteeringFlags::ArrivedAtGoal);
+    return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
 TOptional<ESteerMode> FeatureSteering::GetSteeringMode(WorldRef world, const EntityId& entity)
@@ -139,7 +146,7 @@ bool FeatureSteering::IsSeekingGoal(WorldRef world, const EntityId& entity)
         return false;
     }
 
-    return HasAnyFlags(steerComp->Flags, ESteeringFlags::SeekingGoal);
+    return HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
 bool FeatureSteering::HasArrivedAtGoal(WorldRef world, const EntityId& entity)
@@ -150,7 +157,7 @@ bool FeatureSteering::HasArrivedAtGoal(WorldRef world, const EntityId& entity)
         return false;
     }
 
-    return HasAnyFlags(steerComp->Flags, ESteeringFlags::ArrivedAtGoal);
+    return HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
 bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
@@ -164,8 +171,9 @@ bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
     steerComp->Mode = ESteerMode::Idle;
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->GoalPos = Vec2::Zero;
-    SetFlagRef(steerComp->Flags, ESteeringFlags::SeekingGoal, false);
-    SetFlagRef(steerComp->Flags, ESteeringFlags::ArrivedAtGoal, false);
+    steerComp->Slack = 0;
+    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, false);
+    SetFlagRef(steerComp->Flags, ESteerFlags::ArrivedAtGoal, false);
     return true;
 }
 
@@ -203,6 +211,44 @@ Distance FeatureSteering::GetEntityOuterRadius(WorldConstRef world, const Entity
     }
 
     return comp->OuterRadius;
+}
+
+uint32 FeatureSteering::QueryEntitiesInRange(
+    WorldConstRef world,
+    const Vec2& pos,
+    Distance range,
+    TArray2<const SortedEntity*>& outEntities,
+    const SteeringRangeQueryArgs& args)
+{
+    const FeatureSteeringScratchBlock& block = world.GetBlockRef<FeatureSteeringScratchBlock>();
+
+    TMortonCodeRangeArray ranges;
+    ranges.reserve(8);
+
+    MortonCodeAABB aabb = ToMortonCodeAABB(pos, range + block.MaxEntityRadius);
+    MortonCodeQuery(aabb, ranges);
+
+    uint32 num = 0;
+    ForEachInMortonCodeRanges<SortedEntity, &SortedEntity::ZCode>(
+        block.SortedEntities,
+        ranges,
+        [&](const SortedEntity& entity)
+        {
+            if (args.Exclude.Contains(entity.EntityId))
+            {
+                return false;
+            }
+
+            if ((entity.SteeringComponent->CollisionMask & args.CollisionMask) == 0)
+            {
+                return false;
+            }
+
+            outEntities.PushBack(&entity);
+            return ++num == args.MaxNum;
+        });
+
+    return num;
 }
 
 void FeatureSteering::Initialize(const TSharedPtr<Phoenix::Session>& session)

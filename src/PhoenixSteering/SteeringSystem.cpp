@@ -77,19 +77,17 @@ namespace SteeringDetail
             PHX_PROFILE_ZONE_SCOPED;
 
             // Only step entities actively seeking a goal
-            if (!HasAnyFlags(steerComp.Flags, ESteeringFlags::SeekingGoal))
+            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
             {
                 return;
             }
-
-            Vec2 targetPos = steerComp.GoalPos;
 
             bool clearSeekingGoal = true;
             if (steerComp.GoalEntity != EntityId::Invalid)
             {
                 if (const Transform2D* targetTransform = FeatureECS::GetWorldTransformPtr(*World, steerComp.GoalEntity))
                 {
-                    targetPos = targetTransform->Position;
+                    steerComp.GoalPos = targetTransform->Position;
 
                     // Only clear the seeking goal flag if within range of a static position.
                     // Moving towards an entity will continue until the target is cleared or becomes invalid.
@@ -99,11 +97,12 @@ namespace SteeringDetail
                 {
                     // Target entity is no longer a valid target
                     steerComp.GoalEntity = EntityId::Invalid;
-                    ClearFlagRef(steerComp.Flags, ESteeringFlags::SeekingGoal);
+                    ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
                     return;
                 }
             }
 
+            Vec2 targetPos = steerComp.GoalPos;
             const Transform2D& transform = transformComp.Transform;
             const Vec2& currPos = transform.Position;
 
@@ -123,13 +122,13 @@ namespace SteeringDetail
             Distance distance = targetOffset.Length();
 
             // The entity has reached its goal
-            if (distance < ArrivalThreshold)
+            if (distance < ArrivalThreshold || distance < steerComp.Slack)
             {
-                SetFlagRef(steerComp.Flags, ESteeringFlags::ArrivedAtGoal);
+                SetFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
 
                 if (clearSeekingGoal)
                 {
-                    ClearFlagRef(steerComp.Flags, ESteeringFlags::SeekingGoal);
+                    ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
                 }
             }
 
@@ -149,6 +148,12 @@ namespace SteeringDetail
         Distance AvoidanceScalar;
         Distance AvoidanceRadiusScalar;
 
+        Value SlackIncreaseRate;
+        Value SlackIncreaseRateFast;
+        Value SlackRateDivisor;
+        Value SlackRateDivisorSlow;
+        Value MaxSlack;
+
         void Execute(const EntityComponentSpan<TransformComponent&, SteeringComponent&>& span) override
         {
             PHX_PROFILE_ZONE_SCOPED_N("SteeringJob");
@@ -159,14 +164,94 @@ namespace SteeringDetail
                 transformComp,
                 steerComp] : span)
             {
-                // Calculate the velocity vector the moves the entity towards the goal.
-                Vec2 vel = CalculateVelocity(transformComp, steerComp);
+                const Vec2& currPos = transformComp.Transform.Position;
+                Vec2 vel = currPos - steerComp.PreviousPos;
+
+                auto vecToStep0 = steerComp.StepPos[0] - currPos;
+                auto distToStep0 = vecToStep0.Length();
+
+                if (steerComp.Mode == ESteerMode::Idle)
+                {
+                    while (vel.Length() > steerComp.MaxSpeed)
+                    {
+                        vel /= 2;
+                    }
+                    vel = vel / 8 * 7;
+                }
+                else
+                {
+                    auto slack = Sqrx(steerComp.Slack);
+
+                    auto vecToGoal = steerComp.GoalPos - currPos;
+                    auto distToGoal = vecToGoal.Length();
+                    bool goalInRange = distToGoal < steerComp.ArrivalRange;
+
+                    bool stalled = false;
+
+                    if (Vec2::Equals(steerComp.StepPos[0], steerComp.GoalPos) ||
+                        HasAnyFlags(steerComp.Flags, ESteerFlags::FailedPathPlan))
+                    {
+                        if (distToGoal < slack)
+                        {
+                            stalled = true;
+                        }
+                    }
+                    else if (Vec2::Equals(steerComp.StepPos[1], steerComp.GoalPos))
+                    {
+                        if (distToGoal < slack && distToStep0 < slack &&
+                            (currPos - steerComp.StepPos[0]).Length() + (steerComp.StepPos[0] + steerComp.StepPos[1]).Length() < slack)
+                        {
+                            stalled = true;
+                        }
+                    }
+
+                    bool arrived = false;
+                    if (stalled)
+                    {
+                        steerComp.Mode = ESteerMode::Idle;
+                        ClearFlagRef(steerComp.Flags, ESteerFlags::SeekingGoal);
+                        ClearFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
+                    }
+                    else
+                    {
+                        arrived = goalInRange;
+                    }
+
+                    if (arrived)
+                    {
+                        if (distToStep0 < steerComp.MaxSpeed)
+                        {
+                            vel = distToStep0;
+                            if (Vec2::Equals(currPos, steerComp.GoalPos))
+                            {
+                                steerComp.Mode = ESteerMode::Idle;
+                                SetFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
+                            }
+                        }
+                        else
+                        {
+                            vel /= 2;
+                            if (vel.Length() <= steerComp.MaxSpeed)
+                            {
+                                vel = Vec2::Zero;
+                                steerComp.Mode = ESteerMode::Idle;
+                                SetFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Calculate the velocity vector the moves the entity towards the goal.
+                        vel = CalculateVelocity(transformComp, steerComp);
+                    }
+                }
 
                 steerComp.Velocity = vel;
 
                 // Rotate to face goal direction
-                Vec2 stepDir = steerComp.StepPos[0] - transformComp.Transform.Position;
-                CalculateFacing(transformComp, steerComp, stepDir, transformComp.Transform.Rotation);
+                CalculateFacing(transformComp, steerComp, vecToStep0, transformComp.Transform.Rotation);
+
+                CalculateSlack(transformComp, steerComp);
 
                 // Integrate velocity
                 Integrate(transformComp, steerComp);
@@ -176,7 +261,7 @@ namespace SteeringDetail
         Vec2 CalculateVelocity(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
         {
             // Only step entities actively seeking a goal
-            if (!HasAnyFlags(steerComp.Flags, ESteeringFlags::SeekingGoal))
+            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
             {
                 return Vec2::Zero;
             }
@@ -204,7 +289,7 @@ namespace SteeringDetail
         Vec2 CalculateVelocity2(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
         {
             // Only step entities actively seeking a goal
-            if (!HasAnyFlags(steerComp.Flags, ESteeringFlags::SeekingGoal))
+            if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
             {
                 return Vec2::Zero;
             }
@@ -336,6 +421,60 @@ namespace SteeringDetail
             return true;
         }
 
+        void CalculateSlack(const TransformComponent& transformComp, SteeringComponent& steerComp) const
+        {
+            Vec2 dest = steerComp.StepPos[0];
+            Vec2 currToDest = dest - transformComp.Transform.Position;
+            Vec2 bestToDest = dest - steerComp.BestPos;
+
+            if (currToDest.Length() < bestToDest.Length())
+            {
+                steerComp.BestPos = transformComp.Transform.Position;
+                steerComp.Slack /= 2;
+                if (steerComp.Slack < steerComp.InnerRadius)
+                {
+                    steerComp.Slack = 0;
+                }
+                return;
+            }
+
+            TArray2<const SortedEntity*> entities;
+            SteeringRangeQueryArgs queryArgs = { steerComp.CollisionMask };
+            FeatureSteering::QueryEntitiesInRange(*World, steerComp.GoalPos, steerComp.Slack, entities);
+
+            uint64 crowdedness = 0;
+            for (const SortedEntity* entity : entities)
+            {
+                crowdedness += SqrxQ(entity->SteeringComponent->OuterRadius);
+            }
+
+            Value increaseRate = 1.0;
+            if (steerComp.Slack > 0)
+            {
+                uint64 slackArea = SqrxQ(steerComp.Slack);
+                if (crowdedness > slackArea)
+                {
+                    crowdedness = slackArea;
+                }
+
+                increaseRate = Lerp01<Value>(SlackIncreaseRate, SlackIncreaseRateFast, crowdedness / slackArea);
+            }
+
+            if (steerComp.Mode == ESteerMode::Move)
+            {
+                steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisor;
+            }
+            else
+            {
+                steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisorSlow;
+            }
+
+            if (steerComp.Slack > MaxSlack)
+            {
+                steerComp.Slack = MaxSlack; 
+            }
+        }
+
         void Integrate(TransformComponent& transformComp, SteeringComponent& steerComp)
         {
             Distance vel = steerComp.Velocity.Length();
@@ -348,7 +487,7 @@ namespace SteeringDetail
             CollideWithWorld(transformComp, steerComp);
 
             bool moved = !Vec2::Equals(steerComp.PreviousPos, transformComp.Transform.Position);
-            SetFlagRef(steerComp.Flags, ESteeringFlags::Active, moved);
+            SetFlagRef(steerComp.Flags, ESteerFlags::Active, moved);
         }
 
         void CollideWithWorld(
@@ -377,7 +516,7 @@ namespace SteeringDetail
                 transformCompA,
                 steerCompA] : span)
             {
-                if (HasNoneFlags(steerCompA.Flags, ESteeringFlags::Active))
+                if (HasNoneFlags(steerCompA.Flags, ESteerFlags::Active))
                 {
                     continue;
                 }
@@ -440,8 +579,8 @@ namespace SteeringDetail
                     transformCompA.Transform.Position -= separation;
                     transformCompB.Transform.Position += separation;
 
-                    SetFlagRef(steerCompA.Flags, ESteeringFlags::Active);
-                    SetFlagRef(steerCompB.Flags, ESteeringFlags::Active);
+                    SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
+                    SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
                 }
             }
         }
@@ -477,6 +616,11 @@ void SteeringSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
     steeringJob.DensityRadiusScalar = DensityRadiusScalar;
     steeringJob.AvoidanceScalar = AvoidanceScalar;
     steeringJob.AvoidanceRadiusScalar = AvoidanceRadiusScalar;
+    steeringJob.SlackIncreaseRate = SlackIncreaseRate;
+    steeringJob.SlackIncreaseRateFast = SlackIncreaseRateFast;
+    steeringJob.SlackRateDivisor = SlackRateDivisor;
+    steeringJob.SlackRateDivisorSlow = SlackRateDivisorSlow;
+    steeringJob.MaxSlack = MaxSlack;
     FeatureECS::ScheduleParallel(world, steeringJob);
 
     for (uint32 i = 0; i < 2; ++i)

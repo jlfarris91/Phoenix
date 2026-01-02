@@ -882,6 +882,61 @@ void OnAppRenderUI()
         ImGui::End();
     }
 
+    if (ImGui::Begin("Inspector"))
+    {
+        if (GCurrWorldView)
+        {
+            WorldConstRef world = *GCurrWorldView;
+
+            EntityId playerSelection = RTS::FeatureSelection::GetPlayerSelection(world, 0);
+            EntityId selectedEntityId = FeatureECS::GetFirstEntityInGroup(world, playerSelection);
+            const Entity* selectedEntity = FeatureECS::GetEntityPtr(world, selectedEntityId);
+
+            if (selectedEntity)
+            {
+                if (ImGui::BeginTable("Info", 2, ImGuiTableFlags_SizingFixedFit))
+                {
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Entity Id:");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", selectedEntity->Handle.GetEntityId());
+
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Kind:");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", selectedEntity->Kind.Debug);
+
+                    ImGui::TableNextColumn();
+                    ImGui::Text("Archetype:");
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", selectedEntity->Handle.GetOwnerId());
+
+                    ImGui::EndTable();
+                }
+
+                if (ImGui::TreeNode("Components:"))
+                {
+                    FeatureECS::ForEachComponent(world, selectedEntityId, [&](const ComponentDefinition& compDef, const void* comp)
+                    {
+                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                        {
+                            DrawPropertyGrid(comp, *compDef.TypeDescriptor);
+                            ImGui::TreePop();
+                        }
+                    });
+
+                    ImGui::TreePop();
+                }
+            }
+            else
+            {
+                ImGui::Text("Select an entity");
+            }
+        }
+
+        ImGui::End();
+    }
+
     ShowConsole(&GShowConsoleWindow);
 }
 

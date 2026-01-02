@@ -126,10 +126,16 @@ namespace Phoenix
         return a > b ? a : b;
     }
 
-    template <class A>
-    constexpr auto Clamp(const A& value, const A& min, const A& max)
+    template <class T>
+    constexpr auto Clamp(const T& value, const T& min, const T& max)
     {
         return value >= max ? max : value <= min ? min : value;
+    }
+
+    template <class T>
+    constexpr auto Clamp01(const T& value)
+    {
+        return Clamp(value, T(0), T(1));
     }
 
     template <class T>
@@ -140,6 +146,18 @@ namespace Phoenix
         while (value >= maxExclusive) value -= d;
         while (value < minInclusive) value += d;
         return value;
+    }
+
+    template <class T>
+    constexpr auto Lerp(const T& start, const T& end, const T& t)
+    {
+        return start + (end - start) * t;
+    }
+
+    template <class T>
+    constexpr auto Lerp01(const T& start, const T& end, const T& t)
+    {
+        return start + (end - start) * Clamp01(t);
     }
 
     template <class T>

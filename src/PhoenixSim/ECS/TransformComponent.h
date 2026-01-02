@@ -8,7 +8,11 @@ namespace Phoenix::ECS
 {
     struct PHOENIX_SIM_API TransformComponent : IComponent
     {
-        PHX_ECS_DECLARE_COMPONENT(TransformComponent)
+        PHX_ECS_DECLARE_COMPONENT_BEGIN(TransformComponent)
+            PHX_REGISTER_FIELD(EntityId, AttachParent)
+            PHX_REGISTER_FIELD(Transform2D, Transform)
+            PHX_REGISTER_FIELD(uint64, ZCode)
+        PHX_ECS_DECLARE_COMPONENT_END()
 
     public:
 

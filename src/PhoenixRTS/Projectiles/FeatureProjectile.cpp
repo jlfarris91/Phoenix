@@ -46,7 +46,7 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
     Data::EProjectileMovementFlags projMoveFlags = dataPtr.Movement().Flags().GetValue(lds);
     if (HasAnyFlags(projMoveFlags, Data::EProjectileMovementFlags::LockFacing))
     {
-        SetFlagRef(steeringComp->Flags, ESteeringFlags::LockFacing);
+        SetFlagRef(steeringComp->Flags, ESteerFlags::LockFacing);
     }
 
     ProjectileComponent* projectileComp = FeatureECS::GetOrAddComponent<ProjectileComponent>(world, projectileId);

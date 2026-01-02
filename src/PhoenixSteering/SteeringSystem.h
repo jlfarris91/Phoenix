@@ -16,6 +16,11 @@ namespace Phoenix::Steering
             PHX_REGISTER_FIELD(double, AvoidanceScalar)
             PHX_REGISTER_FIELD(double, AvoidanceRadiusScalar)
             PHX_REGISTER_FIELD(double, ArrivalThreshold)
+            PHX_REGISTER_FIELD(double, SlackIncreaseRate)
+            PHX_REGISTER_FIELD(double, SlackIncreaseRateFast)
+            PHX_REGISTER_FIELD(double, SlackRateDivisor)
+            PHX_REGISTER_FIELD(double, SlackRateDivisorSlow)
+            PHX_REGISTER_FIELD(double, MaxSlack)
         PHX_ECS_DECLARE_SYSTEM_END()
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -24,10 +29,17 @@ namespace Phoenix::Steering
         void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer) override;
 
         bool MoveTowardsGoal = true;
+
         double DensityScalar = 0.3;
         double DensityRadiusScalar = 2.2;
         double AvoidanceScalar = 1.3;
         double AvoidanceRadiusScalar = 2.2;
         double ArrivalThreshold = 0.1;
+
+        double SlackIncreaseRate = 1.0;
+        double SlackIncreaseRateFast = 4.0;
+        double SlackRateDivisor = 8.0;
+        double SlackRateDivisorSlow = 32.0;
+        double MaxSlack = 400.0;
     };
 }

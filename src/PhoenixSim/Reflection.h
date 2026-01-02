@@ -6,6 +6,7 @@
 
 #include "Flags.h"
 #include "Utils.h"
+#include "FixedPoint/FixedVector.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Platform.h"
 
@@ -28,6 +29,7 @@ namespace Phoenix
         String,
         Name,
         FixedPoint,
+        Vec2,
         COUNT
     };
 
@@ -35,6 +37,14 @@ namespace Phoenix
     {
         None = 0,
         Interface = 1,
+    };
+
+    struct PHOENIX_SIM_API DescriptorBase
+    {
+        virtual ~DescriptorBase() = default;
+
+        PHXString Name;
+        TMap<PHXString, PHXString> Metadata;
     };
 
     struct PHOENIX_SIM_API IMethodPointer
@@ -45,9 +55,8 @@ namespace Phoenix
         virtual bool CanExecute(void* obj) const = 0;
     };
 
-    struct PHOENIX_SIM_API MethodDescriptor
+    struct PHOENIX_SIM_API MethodDescriptor : DescriptorBase
     {
-        PHXString Name;
         TSharedPtr<IMethodPointer> MethodPointer;
     };
 
@@ -181,9 +190,8 @@ namespace Phoenix
         }
     };
 
-    struct PHOENIX_SIM_API PropertyDescriptor
+    struct PHOENIX_SIM_API PropertyDescriptor : DescriptorBase
     {
-        PHXString Name;
         EPropertyValueType ValueType = EPropertyValueType::Unknown;
         TSharedPtr<IPropertyAccessor> PropertyAccessor;
     };
@@ -405,32 +413,55 @@ namespace Phoenix
     };
 
     template <class T>
-    constexpr EPropertyValueType GetPropertyValueType()
+    struct PropertyDescriptorBuilder
     {
+        static EPropertyValueType GetPropertyValueType()
+        {
 #define TYPE_TO_ENUM_VALUE(type, enum_value) \
-        if constexpr (std::is_same_v<T, type>) \
-        { \
-            return EPropertyValueType::enum_value; \
-        }
+            if constexpr (std::is_same_v<T, type>) \
+            { \
+                return EPropertyValueType::enum_value; \
+            }
 
-        TYPE_TO_ENUM_VALUE(int8, Int8)
-        TYPE_TO_ENUM_VALUE(uint8, UInt8)
-        TYPE_TO_ENUM_VALUE(int16, Int16)
-        TYPE_TO_ENUM_VALUE(uint16, UInt16)
-        TYPE_TO_ENUM_VALUE(int32, Int32)
-        TYPE_TO_ENUM_VALUE(uint32, UInt32)
-        TYPE_TO_ENUM_VALUE(int64, Int64)
-        TYPE_TO_ENUM_VALUE(uint64, UInt64)
-        TYPE_TO_ENUM_VALUE(float, Float)
-        TYPE_TO_ENUM_VALUE(double, Double)
-        TYPE_TO_ENUM_VALUE(bool, Bool)
-        TYPE_TO_ENUM_VALUE(PHXString, String)
-        TYPE_TO_ENUM_VALUE(FName, Name)
+            TYPE_TO_ENUM_VALUE(int8, Int8)
+            TYPE_TO_ENUM_VALUE(uint8, UInt8)
+            TYPE_TO_ENUM_VALUE(int16, Int16)
+            TYPE_TO_ENUM_VALUE(uint16, UInt16)
+            TYPE_TO_ENUM_VALUE(int32, Int32)
+            TYPE_TO_ENUM_VALUE(uint32, UInt32)
+            TYPE_TO_ENUM_VALUE(int64, Int64)
+            TYPE_TO_ENUM_VALUE(uint64, UInt64)
+            TYPE_TO_ENUM_VALUE(float, Float)
+            TYPE_TO_ENUM_VALUE(double, Double)
+            TYPE_TO_ENUM_VALUE(bool, Bool)
+            TYPE_TO_ENUM_VALUE(PHXString, String)
+            TYPE_TO_ENUM_VALUE(FName, Name)
+            TYPE_TO_ENUM_VALUE(Phoenix::Vec2, Vec2)
 
 #undef TYPE_TO_ENUM_VALUE
 
-        return EPropertyValueType::Unknown;
-    }
+            return EPropertyValueType::Unknown;
+        }
+
+        static TMap<PHXString, PHXString> GetMetadata()
+        {
+            return {};
+        }
+    };
+
+    template <uint8 Tb, class T>
+    struct PropertyDescriptorBuilder<TFixed<Tb, T>>
+    {
+        static EPropertyValueType GetPropertyValueType()
+        {
+            return EPropertyValueType::FixedPoint;
+        }
+
+        static TMap<PHXString, PHXString> GetMetadata()
+        {
+            return { { "FractionalBits", std::format("{}", Tb) } };
+        }
+    };
 
     struct PHOENIX_SIM_API BaseDescriptor
     {
@@ -464,7 +495,8 @@ namespace Phoenix
         {
             PropertyDescriptor& descriptor = Properties[name];
             descriptor.Name = name;
-            descriptor.ValueType = GetPropertyValueType<TValue>();
+            descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
+            descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
             descriptor.PropertyAccessor = MakeShared<PropertyAccessor<T, TValue>>(getter, setter);
             return descriptor;
         }
@@ -477,7 +509,8 @@ namespace Phoenix
         {
             PropertyDescriptor& descriptor = Properties[name];
             descriptor.Name = name;
-            descriptor.ValueType = GetPropertyValueType<TValue>();
+            descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
+            descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
             descriptor.PropertyAccessor = MakeShared<StaticPropertyAccessor<TValue>>(getter, setter);
             return descriptor;
         }
@@ -489,7 +522,8 @@ namespace Phoenix
         {
             PropertyDescriptor& descriptor = Properties[name];
             descriptor.Name = name;
-            descriptor.ValueType = GetPropertyValueType<TValue>();
+            descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
+            descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
             descriptor.PropertyAccessor = MakeShared<FieldAccessor<T, TValue>>(fieldPtr);
             return descriptor;
         }
@@ -501,7 +535,8 @@ namespace Phoenix
         {
             PropertyDescriptor& descriptor = Properties[name];
             descriptor.Name = name;
-            descriptor.ValueType = GetPropertyValueType<TValue>();
+            descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
+            descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
             descriptor.PropertyAccessor = MakeShared<StaticFieldAccessor<TValue>>(fieldPtr);
             return descriptor;
         }

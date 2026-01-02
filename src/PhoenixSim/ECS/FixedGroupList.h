@@ -76,13 +76,13 @@ namespace Phoenix::ECS
 
         EntityId GetFirstEntity(EntityId group, uint32& outIndex) const
         {
-            GroupEntity* item = Items.GetFirstSubItem(group, outIndex);
+            const GroupEntity* item = Items.GetFirstSubItem(group, outIndex);
             return item ? item->Entity : EntityId::Invalid;
         }
 
         EntityId GetNextEntity(EntityId group, uint32 currIndex, uint32& outIndex) const
         {
-            GroupEntity* item = Items.GetNextSubItem(group, currIndex, outIndex);
+            const GroupEntity* item = Items.GetNextSubItem(group, currIndex, outIndex);
             return item ? item->Entity : EntityId::Invalid;
         }
 

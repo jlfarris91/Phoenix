@@ -36,6 +36,8 @@ namespace Phoenix::Steering
 
         TFixedArray<SortedEntity, PHX_ECS_MAX_ENTITIES> SortedEntities;
         TAtomic<uint32> SortedEntityCount = 0;
+
+        Distance MaxEntityRadius;
     };
 
     struct PHOENIX_STEERING_API SteeringSpeedArgs
@@ -43,6 +45,13 @@ namespace Phoenix::Steering
         TOptional<Speed> MaxSpeed;
         TOptional<Time> AccelerationTime;
         TOptional<Time> DecelerationTime;
+    };
+
+    struct SteeringRangeQueryArgs
+    {
+        uint32 CollisionMask = (uint32)-1;
+        TArray2<ECS::EntityId> Exclude;
+        uint32 MaxNum = 64;
     };
 
     class PHOENIX_STEERING_API FeatureSteering : public IFeature
@@ -54,10 +63,10 @@ namespace Phoenix::Steering
         FeatureSteering();
 
         // Starts moving an entity towards a location.
-        static bool MoveToLocation(WorldRef world, const ECS::EntityId& entity, const Vec2& target);
+        static bool MoveToLocation(WorldRef world, const ECS::EntityId& entity, const Vec2& target, Distance range);
 
         // Starts moving an entity towards another entity, following it as long as it is valid.
-        static bool FollowEntity(WorldRef world, const ECS::EntityId& entity, const ECS::EntityId& target);
+        static bool FollowEntity(WorldRef world, const ECS::EntityId& entity, const ECS::EntityId& target, Distance range);
 
         // Returns true if the entity is in the process of moving.
         static bool IsMoving(WorldConstRef world, const ECS::EntityId& entity);
@@ -95,6 +104,13 @@ namespace Phoenix::Steering
         static Distance GetEntityInnerRadius(WorldConstRef world, const ECS::EntityId& entity);
 
         static Distance GetEntityOuterRadius(WorldConstRef world, const ECS::EntityId& entity);
+
+        static uint32 QueryEntitiesInRange(
+            WorldConstRef world,
+            const Vec2& pos,
+            Distance range,
+            TArray2<const SortedEntity*>& outEntities,
+            const SteeringRangeQueryArgs& args = {});
 
     private:
 

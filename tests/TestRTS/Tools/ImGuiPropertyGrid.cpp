@@ -102,8 +102,35 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
                 ImGui::InputText("##Editor", buff, MAX_PATH);
                 break;
             }
-        case EPropertyValueType::Name:          break;
-        case EPropertyValueType::FixedPoint:    break;
+        case EPropertyValueType::Name:
+            {
+                FName v = propertyDesc.PropertyAccessor->Get<FName>(obj);
+#if DEBUG
+                ImGui::InputText("##Editor", v.Debug, _countof(v.Debug));
+#else
+                ImGui::DragScalar("##Editor", ImGuiDataType_U32, &v);
+#endif
+                break;
+            }
+        case EPropertyValueType::FixedPoint:
+            {
+                auto iter = propertyDesc.Metadata.find("FractionalBits");
+                if (iter != propertyDesc.Metadata.end())
+                {
+                    TFixed<1> fp = propertyDesc.PropertyAccessor->Get<TFixed<1>>(obj);
+                    uint8 b = (uint8)std::stoi(iter->second.c_str());
+                    double val = ConvertFromQ<int64, double>(fp.Value, b);
+                    ImGui::DragScalar("##Editor", ImGuiDataType_Double, &val);
+                }
+                break;
+            }
+        case EPropertyValueType::Vec2:
+            {
+                Vec2 val = propertyDesc.PropertyAccessor->Get<Vec2>(obj);
+                double components[2] = { (double)val.X, (double)val.Y };
+                ImGui::DragScalarN("##Editor", ImGuiDataType_Double, components, 2);
+                break;
+            }
         default: break;
     }
 
@@ -161,7 +188,7 @@ void DrawPropertyGrid(void* obj, const TypeDescriptor& descriptor)
 
 void DrawPropertyGrid(const void* obj, const TypeDescriptor& descriptor)
 {
-    if (ImGui::BeginTable("##properties", 2, ImGuiTableFlags_Resizable | ImGuiTableFlags_ScrollY))
+    if (ImGui::BeginTable("##properties", 2))
     {
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 2.0f); // Default twice larger
