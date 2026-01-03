@@ -187,7 +187,7 @@ namespace Phoenix
 }
 
 #define PHX_DECLARE_BLOCK_BEGIN(block, type) \
-    static constexpr EBufferBlockType StaticBlockType = type; \
+    static constexpr Phoenix::EBufferBlockType StaticBlockType = type; \
     PHX_DECLARE_TYPE_BEGIN(block)
 
 #define PHX_DECLARE_BLOCK_END() \
@@ -195,24 +195,24 @@ namespace Phoenix
 
 #define PHX_DECLARE_BLOCK(block, type) \
     static constexpr FName StaticTypeName = #block##_n; \
-    static constexpr EBufferBlockType StaticType = type;
+    static constexpr Phoenix::EBufferBlockType StaticType = type;
 
 #define PHX_DECLARE_BLOCK_STATIC_BEGIN(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block, EBufferBlockType::Static)
+    PHX_DECLARE_BLOCK_BEGIN(block, Phoenix::EBufferBlockType::Static)
 
 #define PHX_DECLARE_BLOCK_STATIC(block) \
     PHX_DECLARE_BLOCK_STATIC_BEGIN(block) \
     PHX_DECLARE_BLOCK_END()
 
 #define PHX_DECLARE_BLOCK_DYNAMIC_BEGIN(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block, EBufferBlockType::Dynamic)
+    PHX_DECLARE_BLOCK_BEGIN(block, Phoenix::EBufferBlockType::Dynamic)
 
 #define PHX_DECLARE_BLOCK_DYNAMIC(block) \
     PHX_DECLARE_BLOCK_DYNAMIC_BEGIN(block) \
     PHX_DECLARE_BLOCK_END()
 
 #define PHX_DECLARE_BLOCK_SCRATCH_BEGIN(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block, EBufferBlockType::Scratch)
+    PHX_DECLARE_BLOCK_BEGIN(block, Phoenix::EBufferBlockType::Scratch)
 
 #define PHX_DECLARE_BLOCK_SCRATCH(block) \
     PHX_DECLARE_BLOCK_SCRATCH_BEGIN(block) \

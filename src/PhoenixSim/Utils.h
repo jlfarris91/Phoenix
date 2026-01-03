@@ -118,4 +118,12 @@ namespace Phoenix
         callback(std::forward<TArgs>(args)...);
         return false;
     }
+
+    template <class T>
+    void Swap(T& a, T& b)
+    {
+        T temp = a;
+        a = b;
+        b = temp;
+    }
 }

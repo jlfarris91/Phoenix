@@ -2,6 +2,7 @@
 
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
+#include "PhoenixSim/Session.h"
 
 #include "PhoenixRTS/Effects/Effects.h"
 #include "PhoenixRTS/Effects/EffectComponent.h"

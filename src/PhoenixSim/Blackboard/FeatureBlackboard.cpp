@@ -2,6 +2,7 @@
 #include "FeatureBlackboard.h"
 
 #include "PhoenixSim/Session.h"
+#include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Blackboard;

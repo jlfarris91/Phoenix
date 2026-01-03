@@ -7,6 +7,7 @@
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
+#include "PhoenixSim/Session.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

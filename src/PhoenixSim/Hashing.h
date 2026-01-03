@@ -91,22 +91,44 @@ namespace Phoenix
             return hash;
         }
 
+        template <size_t N>
+        static constexpr hash64_t FNV1A64(const char (&data)[N], hash64_t basis = basis32)
+        {
+            return FNV1A64(data, N - 1, basis);
+        }
+
         template <class T>
-        static constexpr hash64_t FNV1A64(const T& obj, hash64_t basis = basis64)
+        static hash64_t FNV1A64(const T& obj, hash64_t basis = basis32)
         {
             return FNV1A64(reinterpret_cast<const char*>(&obj), sizeof(T), basis);
         }
 
-        static constexpr hash64_t FN1VA64Combine(hash64_t basis)
+        static constexpr hash64_t FNV1A64Append(hash64_t basis, char c)
+        {
+            return FNV1A64(&c, 1, basis);
+        }
+
+        static constexpr hash64_t FNV1A64Append(hash64_t basis, const char* data, size_t length)
+        {
+            return FNV1A64(data, length, basis);
+        }
+
+        template <size_t N>
+        static constexpr hash64_t FNV1A64Append(hash64_t basis, const char (&data)[N])
+        {
+            return FNV1A64(data, N - 1, basis);
+        }
+
+        static constexpr hash64_t FNV1A64Combine(hash64_t basis)
         {
             return basis;
         }
 
         template <class TArg0, class ...TArgs>
-        static constexpr hash64_t FN1VA64Combine(hash64_t basis, TArg0&& arg0, TArgs&&... args)
+        static constexpr hash64_t FNV1A64Combine(hash64_t basis, TArg0&& arg0, TArgs&&... args)
         {
             auto h = FNV1A64(arg0, basis);
-            h = FN1VA64Combine(h, args...);
+            h = FNV1A64Combine(h, args...);
             return h;
         }
     };

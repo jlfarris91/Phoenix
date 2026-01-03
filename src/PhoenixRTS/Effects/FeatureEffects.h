@@ -4,6 +4,7 @@
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Worlds.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Effects/Effects.h"

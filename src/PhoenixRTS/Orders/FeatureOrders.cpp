@@ -207,13 +207,13 @@ bool FeatureOrders::HandleCommand(WorldRef world, const Command& command)
     return handled;
 }
 
-bool FeatureOrders::StaticHandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command)
+bool FeatureOrders::StaticIssueCommand(WorldRef world, const UnitId& unit, const Command& command)
 {
     TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
-    return feature && feature->HandleCommandForUnit(world, unit, command);
+    return feature && feature->IssueCommand(world, unit, command);
 }
 
-bool FeatureOrders::HandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command)
+bool FeatureOrders::IssueCommand(WorldRef world, const UnitId& unit, const Command& command)
 {
     CommandContext context;
     context.SelectionGroupId = FName::None;
@@ -228,7 +228,7 @@ bool FeatureOrders::HandleCommandForUnit(WorldRef world, const UnitId& unit, con
     TSharedPtr<ICommandHandler> handler = std::get<2>(prioritizedHandler);
 
     Command unitAbilityCommand = command;
-    unitAbilityCommand.CommandId = std::get<1>(prioritizedHandler);
+    unitAbilityCommand.CommandId = handler->GetCommandId();
 
     return HandleCommandForUnitInternal(world, unit, unitAbilityCommand, handler);
 }
@@ -549,6 +549,11 @@ uint32 FeatureOrders::GetPrioritizedHandlers(
     uint32 numHandlers = 0;
     for (const FName& abilityId : abilityIds)
     {
+        if (command.CommandId != abilityId)
+        {
+            continue;
+        }
+
         TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, abilityId);
         if (!handler)
         {

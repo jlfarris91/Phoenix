@@ -4,6 +4,7 @@
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixRTS/Abilities/FeatureAbilities.h"
 #include "PhoenixRTS/Units/UnitId.h"
+#include "PhoenixSim/Session.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

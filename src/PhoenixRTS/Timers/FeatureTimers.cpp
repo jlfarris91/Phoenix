@@ -1,6 +1,7 @@
 #include "PhoenixRTS/Timers/FeatureTimers.h"
 
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/Session.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

@@ -1,0 +1,120 @@
+#include "FeatureSpawner.h"
+
+#include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
+#include "PhoenixRTS/Units/FeatureUnit.h"
+#include "PhoenixSim/Random.h"
+
+using namespace Phoenix;
+using namespace Phoenix::RTS;
+
+FeatureSpawner::FeatureSpawner()
+{
+    FEATURE_WORLD_BLOCK(FeatureSpawnerWorldBlock)
+    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+}
+
+bool FeatureSpawner::GetIsEnabled(WorldConstRef world)
+{
+    const FeatureSpawnerWorldBlock& block = world.GetBlockRef<FeatureSpawnerWorldBlock>();
+    return block.SpawningEnabled;
+}
+
+void FeatureSpawner::SetIsEnabled(WorldRef world, const bool& enabled)
+{
+    FeatureSpawnerWorldBlock& block = world.GetBlockRef<FeatureSpawnerWorldBlock>();
+
+    if (block.SpawningEnabled == enabled)
+    {
+        return;
+    }
+
+    block.SpawningEnabled = enabled;
+
+    if (enabled)
+    {
+        block.NextSpawnTime = world.GetSimTime() + block.Random.RandomRange(block.SpawnCooldownMin, block.SpawnCooldownMax);
+        block.NextWaveTime = world.GetSimTime() + block.WaveDuration;
+    }
+}
+
+void FeatureSpawner::OnWorldInitialize(WorldRef world)
+{
+    IFeature::OnWorldInitialize(world);
+
+    Reset(world);
+}
+
+void FeatureSpawner::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
+{
+    IFeature::OnWorldUpdate(world, args);
+
+    FeatureSpawnerWorldBlock& block = world.GetBlockRef<FeatureSpawnerWorldBlock>();
+
+    Random& random = block.Random;
+
+    while (world.GetSimTime() >= block.NextSpawnTime)
+    {
+        block.NextSpawnTime = world.GetSimTime() + random.RandomRange(block.SpawnCooldownMin, block.SpawnCooldownMax);
+
+        SpawnUnit(world, block);
+    }
+
+    if (world.GetSimTime() >= block.NextWaveTime)
+    {
+        block.NextWaveTime += block.WaveDuration;
+        ++block.WaveNum;
+    }
+}
+
+void FeatureSpawner::Reset(WorldRef world)
+{
+    FeatureSpawnerWorldBlock& block = world.GetBlockRef<FeatureSpawnerWorldBlock>();
+
+    while (!block.SpawnWaves.IsFull())
+    {
+        SpawnWave& spawnWave = block.SpawnWaves.AddDefaulted_GetRef();
+        spawnWave.UnitDataIds = { { "Lancer"_n, 1.0 }, { "Archer"_n, 1.0 } };
+    }
+
+    block.SpawnCooldownMin = 1.0;
+    block.SpawnCooldownMax = 3.0;
+    block.WaveDuration = 30.0;
+    block.WaveNum = 0;
+
+    // This could alternatively be seeded using a value provided by the world feature config system
+    block.Random = world.GetRandom();
+
+    block.SpawningEnabled = true;
+}
+
+bool FeatureSpawner::SpawnUnit(WorldRef world, FeatureSpawnerWorldBlock& block)
+{
+    SpawnWave& spawnWave = block.SpawnWaves[block.WaveNum % block.SpawnWaves.Num()];
+
+    Random& random = block.Random;
+
+    FName unitDataId;
+    if (!spawnWave.UnitDataIds.GetRandom(random, unitDataId))
+    {
+        return false;
+    }
+
+    Vec2 pos = random.RandomPointOnCircle<Distance>(10.0);
+    Angle facing = -pos.AsDegrees();
+
+    UnitId unit = FeatureUnit::SpawnUnit(world, unitDataId, 1, pos, facing);
+    if (unit == UnitId::Invalid)
+    {
+        return false;
+    }
+
+    Command command;
+    command.Sender = 1;
+    command.CommandId = AttackAbilityHandler::StaticGetCommandId();
+    command.CommandIndex = AttackAbilityHandler::Commands::Attack;
+    command.TargetLocation = Vec2::Zero;
+
+    return FeatureOrders::StaticIssueCommand(world, unit, command);
+}

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Session.h"
+#include "PhoenixSim/Services/Service.h"
 
 #include "PhoenixRTS/Orders/Commands.h"
 #include "PhoenixRTS/Orders/Orders.h"

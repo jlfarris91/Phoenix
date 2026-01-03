@@ -3,6 +3,8 @@
 
 #include "PhoenixSim/LDS/FeatureLDS.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
+#include "PhoenixSim/Logging.h"
+#include "PhoenixSim/Session.h"
 
 #include "PhoenixPhysics/FeaturePhysics.h"
 #include "PhoenixPhysics/BodyComponent.h"
@@ -16,7 +18,6 @@
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitSystem.h"
 #include "PhoenixRTS/Vitals/VitalComponents.h"
-#include "PhoenixSim/Logging.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

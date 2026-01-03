@@ -1,6 +1,7 @@
 #include "PhoenixRTS/Effects/Responses.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
+#include "PhoenixSim/Session.h"
 
 #include "PhoenixRTS/Cooldown/Cooldown.h"
 #include "PhoenixRTS/Data/DataResponse.h"

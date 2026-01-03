@@ -4,6 +4,7 @@
 #include <memory>
 #include <ranges>
 
+#include "Delegates.h"
 #include "Flags.h"
 #include "Utils.h"
 #include "FixedPoint/FixedVector.h"
@@ -12,6 +13,8 @@
 
 namespace Phoenix
 {
+    class World;
+
     enum class PHOENIX_SIM_API EPropertyValueType
     {
         Unknown,
@@ -49,10 +52,16 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API IMethodPointer
     {
-        virtual ~IMethodPointer() {}
+        virtual ~IMethodPointer() = default;
+
         virtual bool IsStatic() const = 0;
+        virtual bool RequiresWorld() const = 0;
+
         virtual void Execute(void* obj) const = 0;
         virtual bool CanExecute(void* obj) const = 0;
+
+        virtual void Execute(World& world, void* obj) const = 0;
+        virtual bool CanExecute(const World& world, void* obj) const = 0;
     };
 
     struct PHOENIX_SIM_API MethodDescriptor : DescriptorBase
@@ -77,6 +86,11 @@ namespace Phoenix
             return false;
         }
 
+        bool RequiresWorld() const override
+        {
+            return false;
+        }
+
         void Execute(void* obj) const override
         {
             PHX_ASSERT(CanExecute(obj));
@@ -90,6 +104,17 @@ namespace Phoenix
             if (!CanExecutePtr) return true;
             const T* typedObj = static_cast<const T*>(obj);
             return (typedObj->*CanExecutePtr)();
+        }
+
+        void Execute(World& world, void* obj) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        bool CanExecute(const World& world, void* obj) const override
+        {
+            PHX_ASSERT(false);
+            return false;
         }
 
         TExecutePtr ExecutePtr = nullptr;
@@ -113,6 +138,11 @@ namespace Phoenix
             return false;
         }
 
+        bool RequiresWorld() const override
+        {
+            return false;
+        }
+
         void Execute(void* obj) const override
         {
             PHX_ASSERT(CanExecute(obj));
@@ -126,6 +156,17 @@ namespace Phoenix
             if (!CanExecutePtr) return true;
             const T* typedObj = static_cast<const T*>(obj);
             return (typedObj->*CanExecutePtr)();
+        }
+
+        void Execute(World& world, void* obj) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        bool CanExecute(const World& world, void* obj) const override
+        {
+            PHX_ASSERT(false);
+            return false;
         }
 
         TExecutePtr ExecutePtr = nullptr;
@@ -148,6 +189,11 @@ namespace Phoenix
             return true;
         }
 
+        bool RequiresWorld() const override
+        {
+            return false;
+        }
+
         void Execute(void* obj) const override
         {
             PHX_ASSERT(obj == nullptr);
@@ -162,17 +208,85 @@ namespace Phoenix
             return !CanExecutePtr || CanExecutePtr();
         }
 
+        void Execute(World& world, void* obj) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        bool CanExecute(const World& world, void* obj) const override
+        {
+            PHX_ASSERT(false);
+            return false;
+        }
+
+        TExecutePtr ExecutePtr = nullptr;
+        TCanExecutePtr CanExecutePtr = nullptr;
+    };
+
+    struct PHOENIX_SIM_API StaticWorldFunctionPointer : IMethodPointer
+    {
+        using TExecutePtr = void(*)(World& world);
+        using TCanExecutePtr = bool(*)(const World& world);
+
+        StaticWorldFunctionPointer(TExecutePtr executePtr, TCanExecutePtr canExecutePtr = nullptr)
+            : ExecutePtr(executePtr)
+            , CanExecutePtr(canExecutePtr)
+        {
+        }
+
+        bool IsStatic() const override
+        {
+            return true;
+        }
+
+        bool RequiresWorld() const override
+        {
+            return true;
+        }
+
+        void Execute(void* obj) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        bool CanExecute(void* obj) const override
+        {
+            PHX_ASSERT(false);
+            return false;
+        }
+
+        void Execute(World& world, void* obj) const override
+        {
+            PHX_ASSERT(obj == nullptr);
+            PHX_ASSERT(CanExecute(obj));
+            ExecutePtr(world);
+        }
+
+        bool CanExecute(const World& world, void* obj) const override
+        {
+            PHX_ASSERT(obj == nullptr);
+            if (!ExecutePtr) return false;
+            return !CanExecutePtr || CanExecutePtr(world);
+        }
+
         TExecutePtr ExecutePtr = nullptr;
         TCanExecutePtr CanExecutePtr = nullptr;
     };
 
     struct PHOENIX_SIM_API IPropertyAccessor
     {
-        virtual ~IPropertyAccessor() {}
+        virtual ~IPropertyAccessor() = default;
+
         virtual bool IsReadOnly() const = 0;
         virtual bool IsStatic() const = 0;
+        virtual bool RequiresWorld() const = 0;
+        
         virtual void Get(const void* obj, void* value, size_t len) const = 0;
         virtual void Set(void* obj, const void* value, size_t len) const = 0;
+
+        virtual void Get(const World& world, const void* obj, void* value, size_t len) const = 0;
+        virtual void Set(World& world, void* obj, const void* value, size_t len) const = 0;
+
         virtual void Initialize(void* memory) const = 0;
 
         template <class T>
@@ -187,6 +301,20 @@ namespace Phoenix
         void Set(void* obj, const T& value) const
         {
             Set(obj, &value, sizeof(T));
+        }
+
+        template <class T>
+        T Get(const World& world, const void* obj) const
+        {
+            T value;
+            Get(world, obj, &value, sizeof(T));
+            return value;
+        }
+
+        template <class T>
+        void Set(World& world, void* obj, const T& value) const
+        {
+            Set(world, obj, &value, sizeof(T));
         }
     };
 
@@ -230,6 +358,11 @@ namespace Phoenix
             return false;
         }
 
+        bool RequiresWorld() const override
+        {
+            return false;
+        }
+
         void Get(const void* obj, void* value, size_t len) const override
         {
             TValue* typedValue = static_cast<TValue*>(value);
@@ -240,6 +373,16 @@ namespace Phoenix
         {
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(obj, *typedValue);
+        }
+
+        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Set(World& world, void* obj, const void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
         }
 
         void Initialize(void* memory) const override
@@ -282,6 +425,11 @@ namespace Phoenix
             return true;
         }
 
+        bool RequiresWorld() const override
+        {
+            return false;
+        }
+
         void Get(const void* obj, void* value, size_t len) const override
         {
             PHX_ASSERT(obj == nullptr);
@@ -294,6 +442,85 @@ namespace Phoenix
             PHX_ASSERT(obj == nullptr);
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(*typedValue);
+        }
+
+        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Set(World& world, void* obj, const void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Initialize(void* memory) const override
+        {
+            TValue* typedValue = static_cast<TValue*>(memory);
+            *typedValue = TValue{};
+        }
+
+        TGetter Getter = nullptr;
+        TSetter Setter = nullptr;
+    };
+
+    template <class TValue>
+    struct StaticWorldPropertyAccessor : IPropertyAccessor
+    {
+        using TGetter = TValue(*)(const class World&);
+        using TSetter = void(*)(World&, const TValue&);
+
+        StaticWorldPropertyAccessor(TGetter getter, TSetter setter = nullptr) : Getter(getter), Setter(setter) {}
+
+        TValue Get(const World& world) const
+        {
+            PHX_ASSERT(Getter);
+            return (*Getter)(world);
+        }
+
+        void Set(World& world, const TValue& val) const
+        {
+            PHX_ASSERT(Setter);
+            return (*Setter)(world, val);
+        }
+
+        bool IsReadOnly() const override
+        {
+            return Setter != nullptr;
+        }
+
+        bool IsStatic() const override
+        {
+            return true;
+        }
+
+        bool RequiresWorld() const override
+        {
+            return true;
+        }
+
+        void Get(const void* obj, void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Set(void* obj, const void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        {
+            PHX_ASSERT(obj == nullptr);
+            TValue* typedValue = static_cast<TValue*>(value);
+            *typedValue = Get(world);
+        }
+
+        void Set(World& world, void* obj, const void* value, size_t len) const override
+        {
+            PHX_ASSERT(obj == nullptr);
+            const TValue* typedValue = static_cast<const TValue*>(value);
+            Set(world, *typedValue);
         }
 
         void Initialize(void* memory) const override
@@ -317,7 +544,7 @@ namespace Phoenix
         {
             PHX_ASSERT(obj);
             PHX_ASSERT(FieldPtr);
-            const T* typedObj = reinterpret_cast<const T*>(obj);
+            const T* typedObj = static_cast<const T*>(obj);
             return typedObj->*FieldPtr;
         }
 
@@ -325,7 +552,7 @@ namespace Phoenix
         {
             PHX_ASSERT(obj);
             PHX_ASSERT(FieldPtr);
-            T* typedObj = reinterpret_cast<T*>(obj);
+            T* typedObj = static_cast<T*>(obj);
             typedObj->*FieldPtr = val;
         }
 
@@ -335,6 +562,11 @@ namespace Phoenix
         }
 
         bool IsStatic() const override
+        {
+            return false;
+        }
+
+        bool RequiresWorld() const override
         {
             return false;
         }
@@ -349,6 +581,16 @@ namespace Phoenix
         {
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(obj, *typedValue);
+        }
+
+        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Set(World& world, void* obj, const void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
         }
 
         void Initialize(void* memory) const override
@@ -389,6 +631,11 @@ namespace Phoenix
             return true;
         }
 
+        bool RequiresWorld() const override
+        {
+            return false;
+        }
+
         void Get(const void* obj, void* value, size_t len) const override
         {
             PHX_ASSERT(obj == nullptr);
@@ -401,6 +648,16 @@ namespace Phoenix
             PHX_ASSERT(obj == nullptr);
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(*typedValue);
+        }
+
+        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
+        }
+
+        void Set(World& world, void* obj, const void* value, size_t len) const override
+        {
+            PHX_ASSERT(false);
         }
 
         void Initialize(void* memory) const override
@@ -471,7 +728,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API TypeDescriptor
     {
-        virtual ~TypeDescriptor() {}
+        virtual ~TypeDescriptor() = default;
 
         const char* GetCName() const { return CName; }
         FName GetFName() const { return FName; }
@@ -512,6 +769,20 @@ namespace Phoenix
             descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
             descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
             descriptor.PropertyAccessor = MakeShared<StaticPropertyAccessor<TValue>>(getter, setter);
+            return descriptor;
+        }
+
+        template <class TValue>
+        const PropertyDescriptor& RegisterProperty(
+            const PHXString& name,
+            typename StaticWorldPropertyAccessor<TValue>::TGetter getter,
+            typename StaticWorldPropertyAccessor<TValue>::TSetter setter = nullptr)
+        {
+            PropertyDescriptor& descriptor = Properties[name];
+            descriptor.Name = name;
+            descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
+            descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
+            descriptor.PropertyAccessor = MakeShared<StaticWorldPropertyAccessor<TValue>>(getter, setter);
             return descriptor;
         }
 
@@ -573,6 +844,17 @@ namespace Phoenix
             MethodDescriptor& descriptor = Methods[name];
             descriptor.Name = name;
             descriptor.MethodPointer = MakeShared<StaticFunctionPointer>(executePtr, canExecutePtr);
+            return descriptor;
+        }
+
+        const MethodDescriptor& RegisterStaticMethod(
+            const PHXString& name,
+            StaticWorldFunctionPointer::TExecutePtr executePtr,
+            StaticWorldFunctionPointer::TCanExecutePtr canExecutePtr = nullptr)
+        {
+            MethodDescriptor& descriptor = Methods[name];
+            descriptor.Name = name;
+            descriptor.MethodPointer = MakeShared<StaticWorldFunctionPointer>(executePtr, canExecutePtr);
             return descriptor;
         }
 
@@ -732,19 +1014,19 @@ namespace Phoenix
         using BaseType = base; \
     private: \
         struct STypeDescriptor { \
-            static constexpr FName StaticFName = #type##_n; \
+            static constexpr Phoenix::FName StaticFName = #type##_n; \
             static constexpr const char* StaticCName = #type; \
             static auto Construct() \
             { \
-                TypeDescriptor descriptor; \
+                Phoenix::TypeDescriptor descriptor; \
                 descriptor.Flags = flags; \
                 descriptor.Size = sizeof(type); \
-                descriptor.DefaultConstructFunc = &TTypeHelper<type>::DefaultConstruct; \
-                descriptor.DestructFunc = &TTypeHelper<type>::Destruct; \
+                descriptor.DefaultConstructFunc = &Phoenix::TTypeHelper<type>::DefaultConstruct; \
+                descriptor.DestructFunc = &Phoenix::TTypeHelper<type>::Destruct; \
                 descriptor.FName = type::STypeDescriptor::StaticFName; \
                 descriptor.CName = type::STypeDescriptor::StaticCName; \
                 descriptor.DisplayName = type::STypeDescriptor::StaticCName; \
-                if constexpr ( IsValidBaseType<base> ) \
+                if constexpr ( Phoenix::IsValidBaseType<base> ) \
                 { \
                     descriptor.RegisterBase<base>(); \
                 }
@@ -754,22 +1036,22 @@ namespace Phoenix
             } \
             static const auto& StaticGet() \
             { \
-                static TypeDescriptor definition = Construct(); \
+                static Phoenix::TypeDescriptor definition = Construct(); \
                 return definition; \
             } \
         }; \
     public: \
-        static constexpr FName StaticTypeName = STypeDescriptor::StaticFName; \
-        static const TypeDescriptor& GetStaticTypeDescriptor() { return STypeDescriptor::StaticGet(); } \
+        static constexpr Phoenix::FName StaticTypeName = STypeDescriptor::StaticFName; \
+        static const Phoenix::TypeDescriptor& GetStaticTypeDescriptor() { return STypeDescriptor::StaticGet(); } \
 
 //
 // Declare type with base
 //
 
-#define PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, base) PHX_DECLARE_TYPE_BEGIN_(type, base, ETypeDescriptorFlags::None)
+#define PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, base) PHX_DECLARE_TYPE_BEGIN_(type, base, Phoenix::ETypeDescriptorFlags::None)
 #define PHX_DECLARE_TYPE_WITH_BASE_END() \
     PHX_DECLARE_TYPE_END_() \
-    const TypeDescriptor& GetTypeDescriptor() const override { return GetStaticTypeDescriptor(); } \
+    const Phoenix::TypeDescriptor& GetTypeDescriptor() const override { return GetStaticTypeDescriptor(); } \
 
 #define PHX_DECLARE_TYPE_WITH_BASE(type, base) \
     PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, base) \
@@ -779,10 +1061,10 @@ namespace Phoenix
 // Declare type
 //
 
-#define PHX_DECLARE_TYPE_BEGIN(type) PHX_DECLARE_TYPE_BEGIN_(type, void, ETypeDescriptorFlags::None)
+#define PHX_DECLARE_TYPE_BEGIN(type) PHX_DECLARE_TYPE_BEGIN_(type, void, Phoenix::ETypeDescriptorFlags::None)
 #define PHX_DECLARE_TYPE_END() \
     PHX_DECLARE_TYPE_END_() \
-    virtual const TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); } \
+    virtual const Phoenix::TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); } \
 
 #define PHX_DECLARE_TYPE(type) \
     PHX_DECLARE_TYPE_BEGIN(type) \

@@ -53,12 +53,12 @@ namespace Phoenix::RTS
         {
             static constexpr uint8 Attack = 0;
             static constexpr uint8 AttackGround = 1;
-            static constexpr uint8 AttackMove = 2;
-            static constexpr uint8 AttackHold = 3;
+            static constexpr uint8 AttackHold = 2;
         };
 
         AttackAbilityHandler();
 
+        static FName StaticGetCommandId();
         FName GetCommandId() const override;
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;

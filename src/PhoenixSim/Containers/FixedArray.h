@@ -216,11 +216,11 @@ namespace Phoenix
             return IndexOf(value) != INDEX_NONE;
         }
 
-        void RemoveAt(uint32 index)
+        bool RemoveAt(uint32 index)
         {
             if (!IsValidIndex(index))
             {
-                return;
+                return false;
             }
 
             for (uint32 i = index; i < Size - 1; ++i)
@@ -229,6 +229,24 @@ namespace Phoenix
             }
 
             --Size;
+            return true;
+        }
+
+        bool RemoveAtUnsorted(uint32 index)
+        {
+            if (!IsValidIndex(index))
+            {
+                return false;
+            }
+
+            if (Size > 0)
+            {
+                Data[index] = Data[Size - 1];
+            }
+
+            --Size;
+
+            return true;
         }
 
         struct Iter

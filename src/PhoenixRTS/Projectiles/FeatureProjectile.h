@@ -2,7 +2,6 @@
 
 #include "ProjectileId.h"
 #include "PhoenixSim/Features.h"
-#include "PhoenixSim/Session.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Data/DataProjectile.h"

@@ -4,7 +4,7 @@
 
 #include "imgui_impl_sdl3.h"
 
-#include <PhoenixSim/Worlds.h>
+#include <PhoenixSim/WorldsFwd.h>
 
 namespace Phoenix
 {

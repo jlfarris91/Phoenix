@@ -5,6 +5,7 @@
 
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/Session.h"
 #include "PhoenixSim/WorldTaskQueue.h"
 #include "PhoenixSim/ECS/System.h"
 #include "PhoenixSim/ECS/SystemJob.h"

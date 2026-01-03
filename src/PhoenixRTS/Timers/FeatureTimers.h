@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PhoenixSim/Features.h"
-#include "PhoenixSim/Session.h"
+#include "PhoenixSim/SessionFwd.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Timers/FixedTimerManager.h"

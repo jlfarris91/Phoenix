@@ -334,41 +334,22 @@ AbilityStateResult AttackMoveState::Enter(
     const Data::WeaponPtr& weapon,
     const Data::AttackAbilityPtr& attackAbility)
 {
-    return EAbilityStateResult::Complete;
+    AbilityId = attackAbility.GetObjectId();
+    Range = Weapons::GetMaxRange(world, unit, weapon.GetObjectId());
+    return States.MoveToLocation.Enter(world, unit, target, 0);
 }
 
 AbilityStateResult AttackMoveState::Update(WorldRef world, const UnitId& unit)
 {
-    return EAbilityStateResult::Complete;
+    return States.MoveToLocation.Update(world, unit);
 }
 
 void AttackMoveState::Interrupt(WorldRef world, const UnitId& unit)
 {
+    States.MoveToLocation.Interrupt(world, unit);
 }
 
 void AttackMoveState::Exit(WorldRef world, const UnitId& unit)
 {
-}
-
-AbilityStateResult AttackMoveState::SetState(WorldRef world, const UnitId& unit, EActiveState state)
-{
-    return EAbilityStateResult::Complete;
-}
-
-AbilityStateResult AttackMoveState::EnterActiveState(WorldRef world, const UnitId& unit)
-{
-    return EAbilityStateResult::Complete;
-}
-
-AbilityStateResult AttackMoveState::UpdateActiveState(WorldRef world, const UnitId& unit)
-{
-    return EAbilityStateResult::Complete;
-}
-
-void AttackMoveState::InterruptActiveState(WorldRef world, const UnitId& unit)
-{
-}
-
-void AttackMoveState::ExitActiveState(WorldRef world, const UnitId& unit)
-{
+    States.MoveToLocation.Exit(world, unit);
 }

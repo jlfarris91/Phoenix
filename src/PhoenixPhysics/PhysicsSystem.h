@@ -4,6 +4,12 @@
 #include "PhoenixPhysics/DLLExport.h"
 #include "PhoenixSim/ECS/System.h"
 
+namespace Phoenix
+{
+    class IDebugRenderer;
+    class IDebugState;
+}
+
 namespace Phoenix::Physics
 {
     class PHOENIX_PHYSICS_API PhysicsSystem : public ECS::ISystem

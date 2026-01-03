@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/SessionFwd.h"
+#include "PhoenixSim/WorldsFwd.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 
 #include "PhoenixRTS/Orders/CommandHandler.h"

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "PhoenixSim/Name.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/Services/Service.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Effects/EffectId.h"

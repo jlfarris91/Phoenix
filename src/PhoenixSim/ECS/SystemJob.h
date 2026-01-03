@@ -1,10 +1,10 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/ECS/ArchetypeList.h"
 #include "PhoenixSim/ECS/ArchetypeManager.h"
 #include "PhoenixSim/ECS/EntityId.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix::ECS
 {

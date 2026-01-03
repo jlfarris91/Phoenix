@@ -1,8 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 #include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
 

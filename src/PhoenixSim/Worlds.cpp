@@ -18,6 +18,7 @@ World::World(const WorldCtorArgs& args)
     , Type(args.WorldType)
     , Buffer(args.Blocks)
     , Config(args.Config)
+    , SimTime(0)
 {
 }
 
@@ -27,6 +28,8 @@ World::World(const World& other)
     , Type(other.Type)
     , Buffer(other.Buffer)
     , Config(other.Config)
+    , SimTime(other.SimTime)
+    , Random(other.Random)
 {
 }
 
@@ -36,6 +39,8 @@ World::World(World&& other) noexcept
     , Type(other.Type)
     , Buffer(std::move(other.Buffer))
     , Config(std::move(other.Config))
+    , SimTime(other.SimTime)
+    , Random(std::move(other.Random))
 {
 }
 
@@ -93,7 +98,12 @@ bool World::IsActive() const
 
 Time World::GetSimTime() const
 {
-    return GetBlockRef<WorldDynamicBlock>().SimTime;
+    return SimTime;
+}
+
+Random& World::GetRandom()
+{
+    return Random;
 }
 
 World& World::operator=(const World& other)
@@ -102,6 +112,8 @@ World& World::operator=(const World& other)
     Type = other.Type;
     Buffer = other.Buffer;
     Config = other.Config;
+    SimTime = other.SimTime;
+    Random = other.Random;
     return *this;
 }
 
@@ -111,6 +123,8 @@ World& World::operator=(World&& other) noexcept
     Type = other.Type;
     Buffer = std::move(other.Buffer);
     Config = std::move(other.Config);
+    SimTime = other.SimTime;
+    Random = std::move(other.Random);
     return *this;
 }
 
@@ -130,8 +144,6 @@ WorldManager::WorldManager(const WorldManagerCtorArgs& args)
     , OnPostWorldUpdate(args.OnPostWorldUpdate)
 {
     LoadConfig(args.Config);
-
-    WorldBufferBlockArgs.RegisterBlock<WorldDynamicBlock>();
 
     for (const FeatureSharedPtr& feature : FeatureSet.lock()->GetFeatures())
     {
@@ -217,7 +229,7 @@ void WorldManager::Step(const WorldStepArgs& args)
     {
         if (!world->IsInitialized())
         {
-            InitializeWorld(*world);
+            InitializeWorld(*world, args.SimTime);
         }
     }
 
@@ -314,8 +326,20 @@ FName WorldManager::GenerateNewWorldId(const FName& worldType)
     return worldType.Append(buffer, len);
 }
 
-void WorldManager::InitializeWorld(WorldRef world) const
+void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
 {
+    world.SimTime = Time::QT(time);
+
+    uint64 randomSeed = Hashing::FNV1A64Combine(time, world.Id);
+
+    auto seedIter = Config.find("seed");
+    if (seedIter != Config.end())
+    {
+        std::string seedStr = seedIter->get<std::string>();
+        randomSeed = Hashing::FNV1A64(seedStr.c_str(), seedStr.length());
+    }
+    world.Random.Seed(randomSeed);
+
     TArray2<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldInitialize);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
@@ -356,7 +380,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    world.GetBlockRef<WorldDynamicBlock>().SimTime = Time::QT(time);
+    world.SimTime = Time::QT(time);
 
     FeatureUpdateArgs updateArgs;
     updateArgs.SimTime = time;

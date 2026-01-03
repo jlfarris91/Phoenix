@@ -1,8 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Reflection.h"
-#include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
 {

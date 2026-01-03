@@ -39,6 +39,7 @@
 #include <PhoenixRTS/Effects/FeatureEffects.h>
 #include <PhoenixRTS/Orders/FeatureOrders.h>
 #include <PhoenixRTS/Selection/FeatureSelection.h>
+#include "FeatureSpawner.h"
 
 // RTS Abilities, Effects, Responses
 #include <PhoenixRTS/Abilities/Move/MoveAbilityHandler.h>
@@ -46,6 +47,10 @@
 #include <PhoenixRTS/Effects/EffectDamageHandler.h>
 #include "PhoenixRTS/Effects/EffectLaunchProjectileHandler.h"
 #include <PhoenixRTS/Effects/ResponseDamageHandler.h>
+
+#include "PhoenixRTS/Data/DataProjectile.h"
+#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
+#include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 
 // Remove Me
 #include <PhoenixSim/LDS/Json/LDSJsonTests.h>
@@ -61,9 +66,6 @@
 // Test App Tools
 #include "Console.h"
 #include "Logger.h"
-#include "PhoenixRTS/Data/DataProjectile.h"
-#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
-#include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -157,6 +159,9 @@ void InitSession()
     serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
+
+    // Register game-specific features
+    serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
 
     // Register ability handlers
     serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
@@ -573,10 +578,57 @@ void OnAppRenderUI()
         {
             for (const auto& feature : GSession->GetFeatureSet()->GetFeatures())
             {
-                const auto& typeDescriptor = feature->GetTypeDescriptor();
+                const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
+                const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
+
                 if (ImGui::CollapsingHeader(typeDescriptor.DisplayName))
                 {
-                    DrawPropertyGrid(feature.get(), typeDescriptor);
+                    if (ImGui::TreeNode("Properties:"))
+                    {
+                        DrawPropertyGrid(feature.get(), typeDescriptor);
+
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNode("Session Blocks:"))
+                    {
+                        for (const BlockBuffer::BlockDefinition& blockDef : featureDefinition.SessionBlocks.Definitions)
+                        {
+                            uint8* block = GSession->GetBlock(blockDef.Name);
+                            if (!block || !blockDef.Type)
+                            {
+                                continue;
+                            }
+
+                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            {
+                                DrawPropertyGrid(block, *blockDef.Type);
+                                ImGui::TreePop();
+                            }
+                        }
+                        
+                        ImGui::TreePop();
+                    }
+
+                    if (ImGui::TreeNode("World Blocks:"))
+                    {
+                        for (const BlockBuffer::BlockDefinition& blockDef : featureDefinition.WorldBlocks.Definitions)
+                        {
+                            uint8* block = GCurrWorldView->GetBlock(blockDef.Name);
+                            if (!block || !blockDef.Type)
+                            {
+                                continue;
+                            }
+
+                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            {
+                                DrawPropertyGrid(block, *blockDef.Type);
+                                ImGui::TreePop();
+                            }
+                        }
+                        
+                        ImGui::TreePop();
+                    }
                 }
             }
         }

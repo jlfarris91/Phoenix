@@ -17,6 +17,7 @@
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitId.h"
+#include "PhoenixSim/Session.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

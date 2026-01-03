@@ -1,10 +1,11 @@
 
 #include "PhoenixRTS/Effects/PeriodicEffectSystem.h"
 
-#include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
+#include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/Session.h"
 
 #include "PhoenixRTS/Effects/FeatureEffects.h"
 #include "PhoenixRTS/Effects/PeriodicEffectComponent.h"

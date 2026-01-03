@@ -1,8 +1,10 @@
 
 #pragma once
 
-#include "PhoenixSim/Session.h"
+#include "PhoenixSim/Features.h"
 #include "PhoenixSim/Blackboard/FixedBlackboard.h"
+#include "PhoenixSim/Containers/BlockBuffer.h"
+#include "PhoenixSim/SessionFwd.h"
 
 #ifndef PHX_BLACKBOARD_MAX_GLOBAL_SIZE
 #define PHX_BLACKBOARD_MAX_GLOBAL_SIZE 8192

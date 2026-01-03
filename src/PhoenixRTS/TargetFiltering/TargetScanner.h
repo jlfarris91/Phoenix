@@ -1,10 +1,11 @@
 #pragma once
 
-#include "TargetScanLevel.h"
-#include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Name.h"
+#include "PhoenixSim/WorldsFwd.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "PhoenixRTS/TargetFiltering/TargetScanLevel.h"
 #include "PhoenixRTS/Units/UnitId.h"
 
 namespace Phoenix::LDS

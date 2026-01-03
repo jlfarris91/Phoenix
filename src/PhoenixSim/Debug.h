@@ -9,8 +9,9 @@ namespace Phoenix
 {
     struct Color;
 
-    struct PHOENIX_SIM_API IDebugState
+    class PHOENIX_SIM_API IDebugState
     {
+    public:
         virtual ~IDebugState();
 
         virtual bool KeyDown(uint32 keycode) const = 0;
@@ -26,8 +27,9 @@ namespace Phoenix
         virtual Vec2 GetWorldMousePos() const = 0;
     };
 
-    struct PHOENIX_SIM_API IDebugRenderer
+    class PHOENIX_SIM_API IDebugRenderer
     {
+    public:
         virtual ~IDebugRenderer();
 
         virtual void DrawCircle(const Vec2& pt, Distance radius, const Color& color, int32 segments = 32) = 0;

@@ -1,6 +1,9 @@
 
 #include "LDSFeatureQueryContext.h"
 
+#include "PhoenixSim/Session.h"
+#include "PhoenixSim/Worlds.h"
+
 using namespace Phoenix::LDS;
 
 LDSFeatureQueryContext LDSFeatureQueryContext::Create(SessionConstRef session, WorldConstPtr world)

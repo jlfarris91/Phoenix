@@ -4,6 +4,7 @@
 #include "PhoenixSim/Delegates.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Parallel.h"
+#include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/Blackboard/FeatureBlackboard.h"
 #include "PhoenixSim/Blackboard/FixedBlackboard.h"
 #include "PhoenixSim/ECS/ArchetypeManager.h"

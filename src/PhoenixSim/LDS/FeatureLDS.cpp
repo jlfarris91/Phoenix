@@ -6,6 +6,8 @@
 #include "Json/JsonCatalogObjectBuilder.h"
 #include "Json/JsonCatalogTypeBuilder.h"
 #include "Json/JsonDataSource.h"
+#include "PhoenixSim/Session.h"
+#include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

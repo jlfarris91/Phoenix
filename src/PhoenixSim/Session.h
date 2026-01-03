@@ -3,10 +3,11 @@
 #include <shared_mutex>
 #include <nlohmann/json.hpp>
 
+#include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/FPSCalc.h"
-#include "PhoenixSim/Containers/Optional.h"
-#include "Services/ServiceLocator.h"
+#include "PhoenixSim/Services/ServiceLocator.h"
+#include "PhoenixSim/Worlds.h"
 
 namespace Phoenix
 {
@@ -123,11 +124,6 @@ namespace Phoenix
 
         BlockBuffer SessionBuffer;
     };
-
-    using SessionPtr = Session*;
-    using SessionConstPtr = const Session*;
-    using SessionRef = Session&;
-    using SessionConstRef = const Session&;
 
     template <class T>
     TSharedPtr<T> GetFeature(WorldConstRef world)

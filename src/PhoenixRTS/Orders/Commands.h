@@ -4,7 +4,6 @@
 #include "PhoenixSim/Actions.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/Session.h"
 
 #include "PhoenixRTS/DLLExport.h"
 

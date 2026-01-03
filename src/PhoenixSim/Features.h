@@ -1,18 +1,20 @@
 ﻿#pragma once
 
 #include <map>
+#include <nlohmann/json.hpp>
 
+#include "PhoenixSim/Actions.h"
 #include "PhoenixSim/Containers/Array.h"
+#include "PhoenixSim/Containers/BlockBuffer.h"
 #include "PhoenixSim/Reflection.h"
 #include "PhoenixSim/Services/Service.h"
-#include "PhoenixSim/Worlds.h"
 
 namespace Phoenix
 {
     struct Action;
     struct FeatureDefinition;
-    struct IDebugState;
-    struct IDebugRenderer;
+    class IDebugState;
+    class IDebugRenderer;
     class Session;
 
     struct FeatureChannels

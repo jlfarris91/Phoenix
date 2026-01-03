@@ -1,14 +1,15 @@
 ﻿#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
 
+#include "PhoenixSim/ECS/FeatureECS.h"
+#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "PhoenixSim/Session.h"
+
+#include "PhoenixSteering/SteeringComponent.h"
+
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Effects/EffectComponent.h"
 #include "PhoenixRTS/Effects/FeatureEffects.h"
 #include "PhoenixRTS/Effects/PeriodicEffectComponent.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
-
-#include "PhoenixSteering/SteeringComponent.h"
-
 #include "PhoenixRTS/Projectiles/ProjectileComponent.h"
 #include "PhoenixRTS/Projectiles/ProjectilesSystem.h"
 

@@ -1,9 +1,11 @@
 #pragma once
 
+#include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Name.h"
+#include "PhoenixSim/Services/Service.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Effects/EffectId.h"

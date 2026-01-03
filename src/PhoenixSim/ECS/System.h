@@ -1,12 +1,15 @@
 ﻿
 #pragma once
 
+#include "PhoenixSim/Actions.h"
 #include "PhoenixSim/Reflection.h"
-#include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
 {
     class Session;
+    class IDebugState;
+    class IDebugRenderer;
 }
 
 namespace Phoenix::ECS

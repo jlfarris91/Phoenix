@@ -5,22 +5,15 @@
 #include "PhoenixSim/Actions.h"
 #include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/Containers/BlockBuffer.h"
+#include "PhoenixSim/Random.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
 {
     class Session;
-    struct IDebugRenderer;
-}
-
-namespace Phoenix
-{
-    struct IDebugState;
-}
-
-namespace Phoenix
-{
     class FeatureSet;
-    class FeatureSet;
+    class IDebugRenderer;
+    class IDebugState;
 }
 
 namespace Phoenix
@@ -64,6 +57,8 @@ namespace Phoenix
 
         Time GetSimTime() const;
 
+        Random& GetRandom();
+
         World& operator=(const World& other);
         World& operator=(World&& other) noexcept;
 
@@ -80,17 +75,10 @@ namespace Phoenix
         BlockBuffer Buffer;
         EWorldFlags Flags = EWorldFlags::None;
         nlohmann::json Config;
+
+        Time SimTime;
+        Random Random;
     };
-
-    typedef World* WorldPtr;
-    typedef const World* WorldConstPtr;
-
-    typedef World& WorldRef;
-    typedef const World& WorldConstRef;
-
-    typedef TSharedPtr<World> WorldSharedPtr;
-    
-    using PostWorldUpdateDelegate = TFunction<void(WorldConstRef world)>;
 
     struct PHOENIX_SIM_API WorldManagerCtorArgs
     {
@@ -118,12 +106,6 @@ namespace Phoenix
     {
         Action Action;
         FName WorldName = FName::None;
-    };
-
-    struct PHOENIX_SIM_API WorldDynamicBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK_DYNAMIC(WorldDynamicBlock)
-        Time SimTime = 0;
     };
 
     class PHOENIX_SIM_API WorldManager
@@ -154,7 +136,7 @@ namespace Phoenix
 
         FName GenerateNewWorldId(const FName& worldType);
 
-        void InitializeWorld(WorldRef world) const;
+        void InitializeWorld(WorldRef world, simtime_t time) const;
         void ShutdownWorld(WorldRef world) const;
         void UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const;
         void SendActionToWorld(WorldRef world, const Action& action) const;

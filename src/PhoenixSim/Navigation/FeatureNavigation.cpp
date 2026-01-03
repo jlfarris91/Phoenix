@@ -7,6 +7,7 @@
 #include "PhoenixSim/Debug.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;

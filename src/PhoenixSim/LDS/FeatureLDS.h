@@ -2,7 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/Features.h"
-#include "PhoenixSim/Session.h"
+#include "PhoenixSim/SessionFwd.h"
 #include "PhoenixSim/LDS/LDSCatalog.h"
 #include "PhoenixSim/LDS/LDSRecordQueryFlags.h"
 #include "PhoenixSim/LDS/LDSRecordStore.h"

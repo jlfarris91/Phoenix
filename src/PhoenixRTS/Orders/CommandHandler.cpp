@@ -1,5 +1,7 @@
 #include "PhoenixRTS/Orders/CommandHandler.h"
 
+#include "PhoenixSim/Session.h"
+
 #include "PhoenixRTS/Orders/FeatureOrders.h"
 
 Phoenix::FName Phoenix::RTS::ICommandHandler::GetCommandId() const
@@ -24,7 +26,7 @@ bool Phoenix::RTS::ICommandHandler::IgnoreCommand(
     const CommandContext& context,
     const Command& command) const
 {
-    return true;
+    return false;
 }
 
 Phoenix::uint32 Phoenix::RTS::ICommandHandler::GetCommandPriority(

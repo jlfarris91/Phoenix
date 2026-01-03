@@ -15,6 +15,7 @@
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitId.h"
 #include "PhoenixRTS/Weapons/Weapons.h"
+#include "PhoenixSim/Session.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -108,9 +109,14 @@ AttackAbilityHandler::AttackAbilityHandler()
     System = MakeShared<AttackAbilitySystem>();
 }
 
-FName AttackAbilityHandler::GetCommandId() const
+FName AttackAbilityHandler::StaticGetCommandId()
 {
     return "AttackAbility"_n;
+}
+
+FName AttackAbilityHandler::GetCommandId() const
+{
+    return StaticGetCommandId();
 }
 
 void AttackAbilityHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
@@ -247,7 +253,6 @@ bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, cons
     Data::AttackAbilityPtr attackAbility(order.OrderId);
     UnitId targetUnit = UnitId(order.TargetEntity);
     Vec2 targetLocation = order.TargetLocation;
-    
 
     if (order.OrderIndex == Commands::Attack)
     {
@@ -340,15 +345,14 @@ bool AttackAbilityHandler::ExecuteAttackMoveOrder(
     }
 
     Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, true);
-    if (weapon.IsValid())
+    if (!weapon.IsValid())
     {
-        attackComp.ActiveState = EAttackAbilityState::AttackEntity;
-        attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
-        return true;
+        return false;
     }
 
     attackComp.ActiveState = EAttackAbilityState::AttackMove;
     attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
+    FeatureUnit::SetTargetScanLevel(world, unit, ETargetScanLevel::Offensive);
     return true;
 }
 

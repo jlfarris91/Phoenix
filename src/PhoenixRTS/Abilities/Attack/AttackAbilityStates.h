@@ -138,6 +138,7 @@ namespace Phoenix::RTS
     struct PHOENIX_RTS_API AttackMoveState : TargetLocationState
     {
         FName AbilityId;
+        Distance Range;
 
         enum class EActiveState
         {
@@ -160,14 +161,5 @@ namespace Phoenix::RTS
         AbilityStateResult Update(WorldRef world, const UnitId& unit);
         void Interrupt(WorldRef world, const UnitId& unit);
         void Exit(WorldRef world, const UnitId& unit);
-
-    private:
-
-        AbilityStateResult SetState(WorldRef world, const UnitId& unit, EActiveState state);
-
-        AbilityStateResult EnterActiveState(WorldRef world, const UnitId& unit);
-        AbilityStateResult UpdateActiveState(WorldRef world, const UnitId& unit);
-        void InterruptActiveState(WorldRef world, const UnitId& unit);
-        void ExitActiveState(WorldRef world, const UnitId& unit);
     };
 }

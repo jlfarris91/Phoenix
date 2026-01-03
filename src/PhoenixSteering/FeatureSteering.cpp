@@ -3,6 +3,7 @@
 
 #include "PhoenixSim/Flags.h"
 #include "PhoenixSim/MortonCode.h"
+#include "PhoenixSim/Session.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSteering/SteeringComponent.h"
 

@@ -2,19 +2,16 @@
 #pragma once
 
 #include "PhoenixSim/Features.h"
+#include "PhoenixSim/Containers/Array.h"
+#include "PhoenixSim/Containers/Optional.h"
+#include "PhoenixSim/Worlds.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Orders/FixedOrderQueue.h"
-#include "PhoenixSim/Containers/Array.h"
 
 #ifndef PHX_RTS_ORDER_QUEUE_MAX_ORDERS
 #define PHX_RTS_ORDER_QUEUE_MAX_ORDERS 4096
 #endif
-
-namespace Phoenix::RTS
-{
-    struct AcquireRequest;
-}
 
 namespace Phoenix::ECS
 {
@@ -23,6 +20,7 @@ namespace Phoenix::ECS
 
 namespace Phoenix::RTS
 {
+    struct AcquireRequest;
     struct UnitId;
     struct Command;
     struct Order;
@@ -126,9 +124,9 @@ namespace Phoenix::RTS
 
         bool HandleCommand(WorldRef world, const Command& command);
 
-        static bool StaticHandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command);
+        static bool StaticIssueCommand(WorldRef world, const UnitId& unit, const Command& command);
 
-        bool HandleCommandForUnit(WorldRef world, const UnitId& unit, const Command& command);
+        bool IssueCommand(WorldRef world, const UnitId& unit, const Command& command);
 
         //
         // Order Handling

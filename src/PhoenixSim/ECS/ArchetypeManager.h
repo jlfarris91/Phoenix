@@ -4,7 +4,6 @@
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Session.h"
 #include "PhoenixSim/Containers/FixedMap.h"
 #include "PhoenixSim/Containers/FixedBlockAllocator.h"
 #include "PhoenixSim/Utils.h"
