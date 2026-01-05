@@ -27,7 +27,6 @@ workspace "Phoenix"
         project "PhoenixRTS"
 
     group "Tests"
-        project "TestApp"
         project "TestRTS"
 
     group ""
@@ -332,7 +331,6 @@ project "PhoenixRTS"
         "4251", "4275"
     }
 
-project "TestApp"
     kind "ConsoleApp"
     location (projects)
 
