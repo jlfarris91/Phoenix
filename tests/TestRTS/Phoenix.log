@@ -1,53 +1,168 @@
-[2026-01-03 08:06:47] [Warn]: Object type 'properties' is empty.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type 'properties' is empty.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type 'properties' is empty.
-[2026-01-03 08:06:47] [Error]: Object is missing required 'id' property.
-[2026-01-03 08:06:47] [Error]: Object is missing required 'base' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Error]: Object with id 'TestObject' has already been registered.
-[2026-01-03 08:06:47] [Error]: No base object or type registered with id 'TestBaseObject'.
-[2026-01-03 08:06:47] [Error]: Root objects must be of type Object.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object defines an array with 3 items but the max allowed is 2
-[2026-01-03 08:06:47] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Warn]: Object type is missing expected 'properties' property.
-[2026-01-03 08:06:47] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
-[2026-01-03 08:06:47] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
-[2026-01-03 08:06:47] [Verbose]: Setting 1 scan level to 2
-[2026-01-03 08:06:47] [Verbose]: Unit 1 issued order 2868060121 with target 4294967295
-[2026-01-03 08:06:47] [Verbose]: Setting 1 scan level to 0
-[2026-01-03 08:06:47] [Verbose]: Setting 1 scan level to 2
-[2026-01-03 08:06:49] [Verbose]: Setting 1 scan level to 2
-[2026-01-03 08:06:54] [Verbose]: Setting 3 scan level to 2
-[2026-01-03 08:06:54] [Verbose]: Unit 3 issued order 2868060121 with target 4294967295
-[2026-01-03 08:06:54] [Verbose]: Setting 3 scan level to 0
-[2026-01-03 08:06:54] [Verbose]: Setting 3 scan level to 2
-[2026-01-03 08:06:56] [Verbose]: Setting 3 scan level to 2
-[2026-01-03 08:06:58] [Verbose]: Setting 4 scan level to 2
-[2026-01-03 08:06:58] [Verbose]: Unit 4 issued order 2868060121 with target 4294967295
-[2026-01-03 08:06:58] [Verbose]: Setting 4 scan level to 0
-[2026-01-03 08:06:58] [Verbose]: Setting 4 scan level to 2
-[2026-01-03 08:07:00] [Verbose]: Setting 4 scan level to 2
-[2026-01-03 08:07:04] [Verbose]: Setting 5 scan level to 2
-[2026-01-03 08:07:04] [Verbose]: Unit 5 issued order 2868060121 with target 4294967295
-[2026-01-03 08:07:04] [Verbose]: Setting 5 scan level to 0
-[2026-01-03 08:07:04] [Verbose]: Setting 5 scan level to 2
-[2026-01-03 08:07:06] [Verbose]: Setting 5 scan level to 2
-[2026-01-03 08:07:10] [Verbose]: Setting 6 scan level to 2
-[2026-01-03 08:07:10] [Verbose]: Unit 6 issued order 2868060121 with target 4294967295
-[2026-01-03 08:07:10] [Verbose]: Setting 6 scan level to 0
-[2026-01-03 08:07:10] [Verbose]: Setting 6 scan level to 2
-[2026-01-03 08:07:12] [Verbose]: Setting 6 scan level to 2
-[2026-01-03 08:07:17] [Verbose]: Setting 7 scan level to 2
-[2026-01-03 08:07:17] [Verbose]: Unit 7 issued order 2868060121 with target 4294967295
-[2026-01-03 08:07:17] [Verbose]: Setting 7 scan level to 0
-[2026-01-03 08:07:17] [Verbose]: Setting 7 scan level to 2
-[2026-01-03 08:07:19] [Verbose]: Setting 7 scan level to 2
+[2026-01-05 20:20:18] [Warn]: Object type 'properties' is empty.
+[2026-01-05 20:20:18] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:18] [Warn]: Object type 'properties' is empty.
+[2026-01-05 20:20:18] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:18] [Warn]: Object type 'properties' is empty.
+[2026-01-05 20:20:18] [Error]: Object is missing required 'id' property.
+[2026-01-05 20:20:18] [Error]: Object is missing required 'base' property.
+[2026-01-05 20:20:18] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:18] [Error]: Object with id 'TestObject' has already been registered.
+[2026-01-05 20:20:18] [Error]: No base object or type registered with id 'TestBaseObject'.
+[2026-01-05 20:20:18] [Error]: Root objects must be of type Object.
+[2026-01-05 20:20:18] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:18] [Warn]: Object defines an array with 3 items but the max allowed is 2
+[2026-01-05 20:20:18] [Verbose]: Loading config at path C:\Users\jlfar\OneDrive\Documents\Projects\PhoenixSim\tests\TestRTS\Data\DefaultSession.json
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Warn]: Object type is missing expected 'properties' property.
+[2026-01-05 20:20:19] [Error]: Object with id 'BaseRangedWeapon' has already been registered.
+[2026-01-05 20:20:19] [Error]: Failed to open Catalog file './DefaultWorld/Catalog/Catalog.json'
+[2026-01-05 20:20:19] [Verbose]: Setting 1 scan level to 2
+[2026-01-05 20:20:19] [Verbose]: Unit 1 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:19] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:20:19] [Verbose]: Setting 1 scan level to 2
+[2026-01-05 20:20:21] [Verbose]: Setting 1 scan level to 2
+[2026-01-05 20:20:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:20:26] [Verbose]: Unit 2 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:26] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:26] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:20:28] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:20:30] [Verbose]: Setting 3 scan level to 2
+[2026-01-05 20:20:30] [Verbose]: Unit 3 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:30] [Verbose]: Setting 3 scan level to 0
+[2026-01-05 20:20:30] [Verbose]: Setting 3 scan level to 2
+[2026-01-05 20:20:32] [Verbose]: Setting 3 scan level to 2
+[2026-01-05 20:20:35] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:20:35] [Verbose]: Unit 4 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:35] [Verbose]: Setting 4 scan level to 0
+[2026-01-05 20:20:35] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:20:37] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:20:42] [Verbose]: Setting 6 scan level to 2
+[2026-01-05 20:20:42] [Verbose]: Unit 6 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:42] [Verbose]: Setting 6 scan level to 0
+[2026-01-05 20:20:42] [Verbose]: Setting 6 scan level to 2
+[2026-01-05 20:20:44] [Verbose]: Setting 6 scan level to 2
+[2026-01-05 20:20:48] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:48] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:49] [Verbose]: Setting 7 scan level to 2
+[2026-01-05 20:20:49] [Verbose]: Unit 7 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:49] [Verbose]: Setting 7 scan level to 0
+[2026-01-05 20:20:49] [Verbose]: Setting 7 scan level to 2
+[2026-01-05 20:20:50] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:50] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:51] [Verbose]: Setting 7 scan level to 2
+[2026-01-05 20:20:52] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:20:54] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:54] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:54] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:54] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:55] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:55] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:55] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:55] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:55] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:55] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:56] [Verbose]: Setting 8 scan level to 2
+[2026-01-05 20:20:56] [Verbose]: Unit 8 issued order 2868060121 with target 4294967295
+[2026-01-05 20:20:56] [Verbose]: Setting 8 scan level to 0
+[2026-01-05 20:20:56] [Verbose]: Setting 8 scan level to 2
+[2026-01-05 20:20:57] [Verbose]: Unit 2 issued order 2205231858 with target 4294967295
+[2026-01-05 20:20:57] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:20:58] [Verbose]: Setting 8 scan level to 2
+[2026-01-05 20:20:59] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:21:01] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-05 20:21:01] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:02] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-05 20:21:02] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:02] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-05 20:21:02] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:03] [Verbose]: Setting 1 scan level to 2
+[2026-01-05 20:21:04] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-05 20:21:04] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:04] [Verbose]: Unit 1 issued order 2205231858 with target 4294967295
+[2026-01-05 20:21:04] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:05] [Verbose]: Setting 9 scan level to 2
+[2026-01-05 20:21:05] [Verbose]: Unit 9 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:05] [Verbose]: Setting 9 scan level to 0
+[2026-01-05 20:21:05] [Verbose]: Setting 9 scan level to 2
+[2026-01-05 20:21:06] [Verbose]: Setting 1 scan level to 2
+[2026-01-05 20:21:06] [Verbose]: Setting 9 scan level to 2
+[2026-01-05 20:21:09] [Verbose]: Setting 10 scan level to 2
+[2026-01-05 20:21:09] [Verbose]: Unit 10 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:09] [Verbose]: Setting 10 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Setting 10 scan level to 2
+[2026-01-05 20:21:09] [Verbose]: Setting 11 scan level to 2
+[2026-01-05 20:21:09] [Verbose]: Unit 1 acquired order 2868060121 with target 11
+[2026-01-05 20:21:09] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Unit 3 acquired order 2868060121 with target 11
+[2026-01-05 20:21:09] [Verbose]: Setting 3 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Unit 4 acquired order 2868060121 with target 11
+[2026-01-05 20:21:09] [Verbose]: Setting 4 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Unit 7 acquired order 2868060121 with target 11
+[2026-01-05 20:21:09] [Verbose]: Setting 7 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Unit 8 acquired order 2868060121 with target 11
+[2026-01-05 20:21:09] [Verbose]: Setting 8 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Unit 11 acquired order 2868060121 with target 8
+[2026-01-05 20:21:09] [Verbose]: Setting 11 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Unit 10 acquired order 2868060121 with target 11
+[2026-01-05 20:21:09] [Verbose]: Setting 10 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Setting 10 scan level to 0
+[2026-01-05 20:21:09] [Verbose]: Setting 10 scan level to 2
+[2026-01-05 20:21:11] [Verbose]: Setting 1 scan level to 2
+[2026-01-05 20:21:15] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:21:15] [Verbose]: Unit 2 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:15] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:21:15] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:21:15] [Verbose]: Unit 1 acquired order 2868060121 with target 2
+[2026-01-05 20:21:15] [Verbose]: Setting 1 scan level to 0
+[2026-01-05 20:21:15] [Verbose]: Unit 2 acquired order 2868060121 with target 1
+[2026-01-05 20:21:15] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:21:16] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 90
+[2026-01-05 20:21:16] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 90
+[2026-01-05 20:21:20] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 80
+[2026-01-05 20:21:20] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 80
+[2026-01-05 20:21:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-05 20:21:23] [Verbose]: Unit 3 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:23] [Verbose]: Setting 3 scan level to 0
+[2026-01-05 20:21:23] [Verbose]: Setting 3 scan level to 2
+[2026-01-05 20:21:23] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 70
+[2026-01-05 20:21:23] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 70
+[2026-01-05 20:21:25] [Verbose]: Setting 3 scan level to 2
+[2026-01-05 20:21:27] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 60
+[2026-01-05 20:21:27] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 60
+[2026-01-05 20:21:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:21:28] [Verbose]: Unit 4 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:28] [Verbose]: Setting 4 scan level to 0
+[2026-01-05 20:21:28] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:21:29] [Verbose]: Unit 4 acquired order 2868060121 with target 1
+[2026-01-05 20:21:29] [Verbose]: Setting 4 scan level to 0
+[2026-01-05 20:21:30] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 50
+[2026-01-05 20:21:30] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 50
+[2026-01-05 20:21:33] [Verbose]: Unit 4 dealt 10 damage to unit 1. New health is 40
+[2026-01-05 20:21:34] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 40
+[2026-01-05 20:21:34] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 30
+[2026-01-05 20:21:35] [Verbose]: Setting 8 scan level to 2
+[2026-01-05 20:21:35] [Verbose]: Unit 8 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:35] [Verbose]: Setting 8 scan level to 0
+[2026-01-05 20:21:35] [Verbose]: Setting 8 scan level to 2
+[2026-01-05 20:21:36] [Verbose]: Unit 4 dealt 10 damage to unit 1. New health is 20
+[2026-01-05 20:21:37] [Verbose]: Setting 8 scan level to 2
+[2026-01-05 20:21:37] [Verbose]: Unit 1 dealt 10 damage to unit 2. New health is 30
+[2026-01-05 20:21:37] [Verbose]: Unit 2 dealt 10 damage to unit 1. New health is 10
+[2026-01-05 20:21:39] [Info]: Unit 1 was killed by 4
+[2026-01-05 20:21:39] [Verbose]: Unit 4 dealt 10 damage to unit 1. New health is 0
+[2026-01-05 20:21:39] [Verbose]: Setting 2 scan level to 0
+[2026-01-05 20:21:39] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:21:39] [Verbose]: Setting 4 scan level to 0
+[2026-01-05 20:21:39] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:21:40] [Verbose]: Setting 4 scan level to 2
+[2026-01-05 20:21:41] [Verbose]: Setting 2 scan level to 2
+[2026-01-05 20:21:44] [Verbose]: Setting 13 scan level to 2
+[2026-01-05 20:21:44] [Verbose]: Unit 13 issued order 2868060121 with target 4294967295
+[2026-01-05 20:21:44] [Verbose]: Setting 13 scan level to 0
+[2026-01-05 20:21:44] [Verbose]: Setting 13 scan level to 2
+[2026-01-05 20:21:45] [Verbose]: Setting 13 scan level to 2
