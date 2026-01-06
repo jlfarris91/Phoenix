@@ -9,6 +9,7 @@
 #include "imgui.h"
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_sdlrenderer3.h"
+#include "imgui_internal.h"
 
 #ifdef __EMSCRIPTEN__
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
@@ -56,6 +57,7 @@ int main(int, char**)
     ImGuiIO& io = ImGui::GetIO(); (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -153,6 +155,31 @@ int main(int, char**)
         ImGui_ImplSDLRenderer3_NewFrame();
         ImGui_ImplSDL3_NewFrame();
         ImGui::NewFrame();
+
+        // Docking
+        {
+            ImGuiID dockspaceId = ImGui::GetID("My Dockspace");
+            ImGuiViewport* imguiViewport = ImGui::GetMainViewport();
+
+            // Create settings
+            if (ImGui::DockBuilderGetNode(dockspaceId) == nullptr)
+            {
+                ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
+                ImGui::DockBuilderSetNodeSize(dockspaceId, imguiViewport->Size);
+                ImGuiID dock_id_left = 0;
+                ImGuiID dock_id_main = dockspaceId;
+                ImGui::DockBuilderSplitNode(dock_id_main, ImGuiDir_Left, 0.20f, &dock_id_left, &dock_id_main);
+                ImGuiID dock_id_left_top = 0;
+                ImGuiID dock_id_left_bottom = 0;
+                ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Up, 0.50f, &dock_id_left_top, &dock_id_left_bottom);
+                ImGui::DockBuilderDockWindow("Game", dock_id_main);
+                ImGui::DockBuilderDockWindow("Properties", dock_id_left_top);
+                ImGui::DockBuilderDockWindow("Scene", dock_id_left_bottom);
+                ImGui::DockBuilderFinish(dockspaceId);
+            }
+
+            ImGui::DockSpaceOverViewport(dockspaceId, imguiViewport, ImGuiDockNodeFlags_PassthruCentralNode);
+        }
 
         OnAppRenderUI();
 

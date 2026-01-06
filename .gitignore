@@ -4,3 +4,4 @@
 Phoenix.sln
 tests/TestRTS/Phoenix.log
 *.log
+tests/TestRTS/Phoenix.log

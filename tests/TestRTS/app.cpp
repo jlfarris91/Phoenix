@@ -288,7 +288,7 @@ bool LoadLineModel(const std::filesystem::path& rootAssetPath, const std::filesy
 
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 {
-    // SetProfiler(&GTracyProfiler);
+    SetProfiler(&GTracyProfiler);
 
     unsigned int numThreads = std::min(std::thread::hardware_concurrency(), 8u);
     if (numThreads > 1)
@@ -547,7 +547,7 @@ void OnAppRenderUI()
 {
     ImGuiIO& io = ImGui::GetIO();
 
-    if (ImGui::Begin("Debug"))
+    ImGui::Begin("Debug");
     {
         if (ImGui::BeginTable("FPS", 2, ImGuiTableFlags_SizingFixedFit))
         {
@@ -632,11 +632,10 @@ void OnAppRenderUI()
                 }
             }
         }
-
-        ImGui::End();
     }
+    ImGui::End();
 
-    if (ImGui::Begin("Tools"))
+    ImGui::Begin("Tools");
     {
         GActiveTools.clear();
 
@@ -656,11 +655,10 @@ void OnAppRenderUI()
         {
             GActiveTools.push_back(GPlayerController);
         }
-
-        ImGui::End();
     }
-    
-    if (ImGui::Begin("ECS"))
+    ImGui::End();
+
+    ImGui::Begin("ECS");
     {
         if (GCurrWorldView)
         {
@@ -905,11 +903,10 @@ void OnAppRenderUI()
                 ImGui::TreePop();
             }
         }
-    
-        ImGui::End();
     }
+    ImGui::End();
 
-    if (ImGui::Begin("Blackboard"))
+    ImGui::Begin("Blackboard");
     {
         if (GCurrWorldView)
         {
@@ -930,11 +927,10 @@ void OnAppRenderUI()
                 ImGui::EndTable();
             }
         }
-
-        ImGui::End();
     }
+    ImGui::End();
 
-    if (ImGui::Begin("Inspector"))
+    ImGui::Begin("Inspector");
     {
         if (GCurrWorldView)
         {
@@ -956,7 +952,7 @@ void OnAppRenderUI()
                     ImGui::TableNextColumn();
                     ImGui::Text("Kind:");
                     ImGui::TableNextColumn();
-                    ImGui::Text("%s", selectedEntity->Kind.Debug);
+                    // ImGui::Text("%s", selectedEntity->Kind.Debug);
 
                     ImGui::TableNextColumn();
                     ImGui::Text("Archetype:");
@@ -985,9 +981,8 @@ void OnAppRenderUI()
                 ImGui::Text("Select an entity");
             }
         }
-
-        ImGui::End();
     }
+    ImGui::End();
 
     ShowConsole(&GShowConsoleWindow);
 }
