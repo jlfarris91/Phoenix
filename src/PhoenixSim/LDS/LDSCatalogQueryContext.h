@@ -57,6 +57,16 @@ namespace Phoenix::LDS
             return false;
         }
 
+        const PHXString& GetAssetString(uint32 handle) const override
+        {
+            if (!Catalog)
+            {
+                static const PHXString EmptyString;
+                return EmptyString;
+            }
+            return Catalog->GetAssetString(handle);
+        }
+
     private:
         const TCatalog* Catalog;
         ELDSCatalogRecordStore Mode = ELDSCatalogRecordStore::Object;

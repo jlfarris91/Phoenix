@@ -32,6 +32,12 @@ namespace Phoenix::LDS
 
         virtual bool Exists(const FName& objectId) const = 0;
 
+        virtual const PHXString& GetAssetString(uint32 handle) const
+        {
+            static const PHXString EmptyString;
+            return EmptyString;
+        }
+
         virtual bool RecordExists(
             const LDSRecordPath& path,
             ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const;

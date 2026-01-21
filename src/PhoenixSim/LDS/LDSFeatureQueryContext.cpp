@@ -5,6 +5,7 @@
 #include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix::LDS;
+using Phoenix::PHXString;
 
 LDSFeatureQueryContext LDSFeatureQueryContext::Create(SessionConstRef session, WorldConstPtr world)
 {
@@ -258,5 +259,48 @@ bool LDSFeatureQueryContext::TypeExists(const FName& typeId) const
     }
 
     return false;
+}
+
+const PHXString& LDSFeatureQueryContext::GetAssetString(uint32 handle) const
+{
+    static const PHXString EmptyString;
+
+    if (WorldDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
+    {
+        const PHXString& str = WorldDynamicCatalog->GetAssetString(handle);
+        if (!str.empty())
+        {
+            return str;
+        }
+    }
+
+    if (WorldStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::SessionOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
+    {
+        const PHXString& str = WorldStaticCatalog->GetAssetString(handle);
+        if (!str.empty())
+        {
+            return str;
+        }
+    }
+
+    if (SessionDynamicCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::StaticOnly))
+    {
+        const PHXString& str = SessionDynamicCatalog->GetAssetString(handle);
+        if (!str.empty())
+        {
+            return str;
+        }
+    }
+
+    if (SessionStaticCatalog && HasNoneFlags(FeatureQueryFlags, ELDSFeatureRecordQueryFlags::WorldOnly, ELDSFeatureRecordQueryFlags::DynamicOnly))
+    {
+        const PHXString& str = SessionStaticCatalog->GetAssetString(handle);
+        if (!str.empty())
+        {
+            return str;
+        }
+    }
+
+    return EmptyString;
 }
 

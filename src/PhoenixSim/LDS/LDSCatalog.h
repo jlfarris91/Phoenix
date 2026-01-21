@@ -289,8 +289,26 @@ namespace Phoenix::LDS
             return {};
         }
 
+        uint32 AddAssetString(const PHXString& assetPath)
+        {
+            uint32 handle = static_cast<uint32>(AssetStrings.size());
+            AssetStrings.push_back(assetPath);
+            return handle;
+        }
+
+        const PHXString& GetAssetString(uint32 handle) const
+        {
+            static const PHXString EmptyString;
+            if (handle >= AssetStrings.size())
+            {
+                return EmptyString;
+            }
+            return AssetStrings[handle];
+        }
+
         TObjectStore Objects;
         TTypeStore Types;
+        TArray<PHXString> AssetStrings;
     };
 
     template <size_t NObjects, size_t NTypes>

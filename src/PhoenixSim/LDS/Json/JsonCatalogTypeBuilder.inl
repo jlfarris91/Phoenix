@@ -129,7 +129,10 @@ namespace Phoenix::LDS::Json
 
         if (typeStr.starts_with("Asset"))
         {
-            // TODO (jfarris): implement assets?
+            // Record the type
+            PHXString typePropertyPath = propertyPath + "/type";
+            this->Catalog->EmplaceTypeRecord(rootTypeId, typePropertyPath, LDSTypedValue(ELDSValueType::Asset));
+
             return ProcessValueProperty(rootTypeId, jsonObject, ELDSValueType::Asset, propertyPath);
         }
 

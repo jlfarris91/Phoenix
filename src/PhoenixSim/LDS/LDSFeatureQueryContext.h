@@ -31,6 +31,8 @@ namespace Phoenix::LDS
 
         bool TypeExists(const FName& typeId) const;
 
+        const PHXString& GetAssetString(uint32 handle) const override;
+
     private:
         
         TSharedPtr<const Catalog> SessionStaticCatalog = nullptr;

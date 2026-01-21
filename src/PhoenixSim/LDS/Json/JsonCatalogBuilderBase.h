@@ -41,7 +41,7 @@ namespace Phoenix::LDS::Json
 
     protected:
 
-        static bool GetValueFromJson(
+        bool GetValueFromJson(
             const json& json,
             ELDSValueType type,
             LDSValue& outValue)
@@ -129,12 +129,21 @@ namespace Phoenix::LDS::Json
                 }
                 break;
             case ELDSValueType::Text:
-            case ELDSValueType::Asset:
             case ELDSValueType::Enum:
             case ELDSValueType::EnumFlags:
                 if (json.is_string())
                 {
                     outValue.Name = json.get<PHXString>();
+                    return true;
+                }
+                break;
+            case ELDSValueType::Asset:
+                if (json.is_string())
+                {
+                    // Store the full asset path string in the catalog's asset table
+                    // The handle (index into AssetStrings) is stored in UInt32
+                    const PHXString& assetPath = json.get<PHXString>();
+                    outValue.UInt32 = Catalog->AddAssetString(assetPath);
                     return true;
                 }
                 break;
