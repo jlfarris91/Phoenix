@@ -14,8 +14,8 @@ namespace Phoenix::Blackboard
     using blackboard_value_t = int64;
     using blackboard_type_t = uint8;
 
-    static constexpr uint32 IgnoreKey = -1;
-    static constexpr blackboard_type_t IgnoreType = -1;
+    static constexpr uint32 IgnoreKey = 0;
+    static constexpr blackboard_type_t IgnoreType = 0;
     static constexpr blackboard_type_t UnknownType = 0;
 
     namespace BlackboardKey
