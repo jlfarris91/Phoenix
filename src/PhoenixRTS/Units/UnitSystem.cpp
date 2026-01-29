@@ -30,6 +30,7 @@ namespace UnitSystemDetail
 
         void Execute(WorldRef world, const EntityComponentSpan<UnitComponent&>& span) const
         {
+            Time simTime = world.GetSimTime();
             for (auto && [entityId, index, unitComp] : span)
             {
                 UnitId unitId = UnitId(entityId);
@@ -44,7 +45,7 @@ namespace UnitSystemDetail
                 if (!FeatureUnit::UnitIsDead(world, unitId) && !FeatureUnit::UnitIsDormant(world, unitId))
                 {
                     Time nextScanTime = FeatureECS::GetBlackboardValue<Time>(world, unitId, "NextTargetScanTime"_n);
-                    if (world.GetSimTime() > nextScanTime)
+                    if (simTime > nextScanTime)
                     {
                         TargetScanArgs args;
                         args.Level = FeatureUnit::GetTargetScanLevel(world, unitId);
@@ -53,8 +54,8 @@ namespace UnitSystemDetail
                         TargetScanner::ScanForTarget(world, unitId, args);
 
                         Time cooldown = world.GetRandom().RandomRange<Time>(ScanTimeCooldownMin, ScanTimeCooldownMax);
-                        nextScanTime = world.GetSimTime() + cooldown;
-                        FeatureECS::SetBlackboardValue(world, unitId, "NextTargetScanTime"_n, world.GetSimTime());
+                        nextScanTime = simTime + cooldown;
+                        FeatureECS::SetBlackboardValue(world, unitId, "NextTargetScanTime"_n, nextScanTime);
                     }
                 }
             }
