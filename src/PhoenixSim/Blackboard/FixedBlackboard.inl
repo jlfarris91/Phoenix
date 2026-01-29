@@ -107,7 +107,7 @@ namespace Phoenix::Blackboard
         static constexpr char AName[] = "A";
         static constexpr blackboard_type_t ColorType = static_cast<blackboard_type_t>(EBlackboardValueTypes::Color);
 
-        static bool HasValue(const TBlackboard& set, const BlackboardKeyQuery& query)
+        static bool HasValue(const TBlackboard& set, const BlackboardQuery& query)
         {
             auto colorQuery = query.WithType(ColorType);
             auto rQuery = colorQuery.AppendKeyLo(RName);
@@ -123,7 +123,7 @@ namespace Phoenix::Blackboard
             return true;
         }
 
-        static bool GetValue(const TBlackboard& set, const BlackboardKeyQuery& query, Color& outValue)
+        static bool GetValue(const TBlackboard& set, const BlackboardQuery& query, Color& outValue)
         {
             auto colorQuery = query.WithType(ColorType);
             auto rQuery = colorQuery.AppendKeyLo(RName);
@@ -161,7 +161,7 @@ namespace Phoenix::Blackboard
             return true;
         }
 
-        static bool RemoveValue(TBlackboard& set, const BlackboardKeyQuery& query)
+        static bool RemoveValue(TBlackboard& set, const BlackboardQuery& query)
         {
             auto colorQuery = query.WithType(ColorType);
             auto rQuery = colorQuery.AppendKeyLo(RName);

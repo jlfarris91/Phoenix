@@ -16,16 +16,16 @@
 
 namespace Phoenix::RTS
 {
-    struct PHOENIX_RTS_API FeatureTimersDynamicSessionBlock : BufferBlockBase
+    struct PHOENIX_RTS_API FeatureTimersDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureTimersDynamicSessionBlock)
-        FixedTimerManager<PHX_MAX_SESSION_TIMERS> TimerManager;
-    };
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureTimersDynamicBlock)
 
-    struct PHOENIX_RTS_API FeatureTimersDynamicWorldBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureTimersDynamicWorldBlock)
-        FixedTimerManager<PHX_MAX_WORLD_TIMERS> TimerManager;
+        struct Config
+        {
+            uint32 MaxTimers;
+        };
+
+        FixedTimerManager TimerManager;
     };
 
     class PHOENIX_RTS_API FeatureTimers : IFeature
@@ -36,19 +36,17 @@ namespace Phoenix::RTS
 
         FeatureTimers();
 
-        using SessionTimerManager = decltype(FeatureTimersDynamicSessionBlock::TimerManager);
-        using WorldTimerManager = decltype(FeatureTimersDynamicWorldBlock::TimerManager);
+        static FixedTimerManager* GetSessionTimerManager(SessionRef session);
+        static const FixedTimerManager* GetSessionTimerManager(SessionConstRef session);
 
-        static SessionTimerManager* GetSessionTimerManager(SessionRef session);
-        static const SessionTimerManager* GetSessionTimerManager(SessionConstRef session);
+        static FixedTimerManager* GetSessionTimerManager(WorldRef world);
 
-        static SessionTimerManager* GetSessionTimerManager(WorldRef world);
-
-        static WorldTimerManager* GetWorldTimerManager(WorldRef world);
-        static const WorldTimerManager* GetWorldTimerManager(WorldConstRef world);
+        static FixedTimerManager* GetWorldTimerManager(WorldRef world);
+        static const FixedTimerManager* GetWorldTimerManager(WorldConstRef world);
 
     protected:
 
+        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
         void OnPreUpdate(const FeatureUpdateArgs& args) override;
         void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 

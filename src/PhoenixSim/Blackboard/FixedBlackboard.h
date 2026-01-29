@@ -2,20 +2,17 @@
 #pragma once
 
 #include <algorithm>
-#include <execution>
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
-#include "PhoenixSim/Containers/FixedArray.h"
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/Containers/FixedSortedList.h"
 
 namespace Phoenix::Blackboard
 {
     using blackboard_key_t = uint64;
     using blackboard_value_t = int64;
     using blackboard_type_t = uint8;
-
-    using BlackboardKVP = TPair<blackboard_key_t, blackboard_value_t>;
 
     static constexpr uint32 IgnoreKey = -1;
     static constexpr blackboard_type_t IgnoreType = -1;
@@ -32,32 +29,32 @@ namespace Phoenix::Blackboard
         static constexpr uint64 KeyNoTypeMask   = KeyLoMask | KeyHiMask;
         static constexpr uint64 KeyTypeMask     = 0xFFULL << KeyTypeShift;
 
-        PHX_FORCE_INLINE constexpr uint32 GetKeyLo(blackboard_key_t key)
+        PHX_FORCEINLINE constexpr uint32 GetKeyLo(blackboard_key_t key)
         {
             return static_cast<uint32>(key & KeyLoMask);
         }
 
-        PHX_FORCE_INLINE constexpr uint32 GetKeyHi(blackboard_key_t key)
+        PHX_FORCEINLINE constexpr uint32 GetKeyHi(blackboard_key_t key)
         {
             return static_cast<uint32>((key & KeyHiMask) >> KeyHiShift);
         }
 
-        PHX_FORCE_INLINE constexpr blackboard_key_t GetKeyNoType(blackboard_key_t key)
+        PHX_FORCEINLINE constexpr blackboard_key_t GetKeyNoType(blackboard_key_t key)
         {
             return key & KeyNoTypeMask;
         }
 
-        PHX_FORCE_INLINE constexpr blackboard_type_t GetKeyType(blackboard_key_t key)
+        PHX_FORCEINLINE constexpr blackboard_type_t GetKeyType(blackboard_key_t key)
         {
             return static_cast<blackboard_type_t>((key & KeyTypeMask) >> KeyTypeShift);
         }
 
-        PHX_FORCE_INLINE constexpr bool IsType(blackboard_key_t key, blackboard_type_t type)
+        PHX_FORCEINLINE constexpr bool IsType(blackboard_key_t key, blackboard_type_t type)
         {
             return GetKeyType(key) == type;
         }
 
-        PHX_FORCE_INLINE constexpr blackboard_key_t Create(uint32 lo, uint32 hi, blackboard_type_t type)
+        PHX_FORCEINLINE constexpr blackboard_key_t Create(uint32 lo, uint32 hi, blackboard_type_t type)
         {
             blackboard_key_t key = lo & KeyLoMask;
             key |= (static_cast<uint64>(hi) << KeyHiShift) & KeyHiMask;
@@ -65,20 +62,20 @@ namespace Phoenix::Blackboard
             return key;
         }
 
-        PHX_FORCE_INLINE constexpr blackboard_key_t Create(blackboard_key_t keyNoType, blackboard_type_t type)
+        PHX_FORCEINLINE constexpr blackboard_key_t Create(blackboard_key_t keyNoType, blackboard_type_t type)
         {
             blackboard_key_t keyWithType = keyNoType & KeyNoTypeMask;
             return keyWithType | ((static_cast<uint64>(type) << KeyTypeShift) & KeyTypeMask);
         }
 
         template <size_t N>
-        PHX_FORCE_INLINE constexpr blackboard_key_t AppendKeyLo(blackboard_key_t key, const char (&chars)[N])
+        PHX_FORCEINLINE constexpr blackboard_key_t AppendKeyLo(blackboard_key_t key, const char (&chars)[N])
         {
             hash32_t newLo = Hashing::FNV1A32Append(GetKeyLo(key), chars);
             return Create(newLo, GetKeyHi(key), GetKeyType(key));
         }
 
-        PHX_FORCE_INLINE constexpr blackboard_key_t ClearKeyLo(blackboard_key_t key)
+        PHX_FORCEINLINE constexpr blackboard_key_t ClearKeyLo(blackboard_key_t key)
         {
             return Create(0, GetKeyHi(key), GetKeyType(key));
         }
@@ -89,12 +86,10 @@ namespace Phoenix::Blackboard
     static_assert(BlackboardKey::GetKeyType(BlackboardKey::Create(123, 456, 16)) == 16);
     static_assert(BlackboardKey::Create(123, 456, 16) == 0x1C8100000007B);
 
-    template <uint32 N>
-    class TFixedBlackboard;
-
-    enum class EBlackboardValueTypes : blackboard_type_t
+    enum class PHOENIX_SIM_API EBlackboardValueTypes : blackboard_type_t
     {
         Unknown = UnknownType,
+        Invalid,
 
         // Standard PHX types
         Bool,
@@ -143,63 +138,45 @@ namespace Phoenix::Blackboard
         }
     };
 
-    template <class TBlackboardSet>
-    struct BlackboardValues;
-
-    struct BlackboardKeyQuery
+    struct PHOENIX_SIM_API BlackboardItem
     {
-        BlackboardKeyQuery(blackboard_key_t key)
-            : Filter(key)
-        {
-        }
+        BlackboardItem() = default;
+        BlackboardItem(blackboard_key_t key, blackboard_value_t value);
 
-        BlackboardKeyQuery(blackboard_key_t key, blackboard_type_t type)
-            : Filter(BlackboardKey::Create(key, type))
-        {
-        }
+        bool operator==(const BlackboardItem& other) const;
 
-        BlackboardKeyQuery(uint32 keyLo, uint32 keyHi, blackboard_type_t type)
-            : Filter(BlackboardKey::Create(keyLo, keyHi, type))
+        bool IsValid() const;
+
+        void Invalidate();
+
+        struct GetItemKey
         {
-        }
+            blackboard_key_t operator()(const BlackboardItem& item) const;
+        };
+
+        blackboard_key_t Key;
+        blackboard_value_t Value;
+    };
+
+    struct PHOENIX_SIM_API BlackboardQuery
+    {
+        BlackboardQuery() = default;
+        BlackboardQuery(blackboard_key_t key);
+        BlackboardQuery(blackboard_key_t key, blackboard_type_t type);
+        BlackboardQuery(uint32 keyLo, uint32 keyHi, blackboard_type_t type);
 
         template <size_t N>
-        PHX_FORCE_INLINE BlackboardKeyQuery AppendKeyLo(const char (&chars)[N]) const
+        PHX_FORCEINLINE BlackboardQuery AppendKeyLo(const char (&chars)[N]) const
         {
             return BlackboardKey::AppendKeyLo(Filter, chars);
         }
 
-        PHX_FORCE_INLINE BlackboardKeyQuery WithType(blackboard_type_t type) const
-        {
-            return BlackboardKeyQuery(Filter, type);
-        }
+        BlackboardQuery WithType(blackboard_type_t type) const;
 
-        bool operator()(const BlackboardKVP& item) const noexcept
-        {
-            if (BlackboardKey::GetKeyLo(item.first) == 0)
-            {
-                return false;
-            }
-            uint32 filterLo = BlackboardKey::GetKeyLo(Filter);
-            uint32 itemLo = BlackboardKey::GetKeyLo(item.first);
-            if (filterLo != IgnoreKey && filterLo != itemLo)
-            {
-                return false;
-            }
-            uint32 filterHi = BlackboardKey::GetKeyHi(Filter);
-            uint32 itemHi = BlackboardKey::GetKeyHi(item.first);
-            if (filterHi != IgnoreKey && filterHi != itemHi)
-            {
-                return false;
-            }
-            uint8 filterType = BlackboardKey::GetKeyType(Filter);
-            uint8 itemType = BlackboardKey::GetKeyType(item.first);
-            if (filterType != IgnoreType && filterType != itemType)
-            {
-                return false;
-            }
-            return true;
-        }
+        bool operator()(const BlackboardItem& item) const noexcept;
+
+        bool operator==(const BlackboardQuery& other) const = default;
+        bool operator!=(const BlackboardQuery& other) const = default;
 
         blackboard_key_t Filter;
     };
@@ -208,7 +185,7 @@ namespace Phoenix::Blackboard
     struct BlackboardComplexValueAccessor{};
 
     template <class TBlackboard, class TValue>
-    concept BlackboardComplexValueAccessor_HasValue = requires(const TBlackboard& set, const BlackboardKeyQuery& query)
+    concept BlackboardComplexValueAccessor_HasValue = requires(const TBlackboard& set, const BlackboardQuery& query)
     {
         { BlackboardComplexValueAccessor<TBlackboard, TValue>::HasValue(set, query) } -> std::same_as<bool>;
     };
@@ -220,64 +197,68 @@ namespace Phoenix::Blackboard
     };
 
     template <class TBlackboard, class TValue>
-    concept BlackboardComplexValueAccessor_GetValue = requires(const TBlackboard& set, const BlackboardKeyQuery& query, TValue& outValue)
+    concept BlackboardComplexValueAccessor_GetValue = requires(const TBlackboard& set, const BlackboardQuery& query, TValue& outValue)
     {
         { BlackboardComplexValueAccessor<TBlackboard, TValue>::GetValue(set, query, outValue) } -> std::same_as<bool>;
     };
 
     template <class TBlackboard, class TValue>
-    concept BlackboardComplexValueAccessor_RemoveValue = requires(TBlackboard& set, const BlackboardKeyQuery& query)
+    concept BlackboardComplexValueAccessor_RemoveValue = requires(TBlackboard& set, const BlackboardQuery& query)
     {
         { BlackboardComplexValueAccessor<TBlackboard, TValue>::RemoveValue(set, query) } -> std::same_as<bool>;
     };
 
-    template <uint32 N>
-    class TFixedBlackboard
+    class PHOENIX_SIM_API FixedBlackboard
     {
     public:
 
-        uint32 GetSize() const
+        friend struct BlackboardValues;
+
+        using TItem = BlackboardItem;
+        using TStorage = TFixedSortedList<BlackboardItem, BlackboardItem::GetItemKey>;
+
+        FixedBlackboard() = default;
+
+        template <class TAllocator>
+        FixedBlackboard(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            return static_cast<uint32>(Items.Num());
         }
 
-        uint32 GetNumActive() const
+        template <class TAllocator>
+        FixedBlackboard(TAllocator& allocator, uint32 capacity, const FixedBlackboard& other)
+            : Storage(allocator, capacity, other.Storage)
         {
-            return NumActive;
         }
+
+        uint32 GetCapacity() const;
+        TItem* GetData();
+        const TItem* GetData() const;
+        static uint32 GetAllocSizeBytes(uint32 capacity);
+        uint32 GetAllocSizeBytes() const;
+        void Sort();
+
+        uint32 GetNum() const;
+        uint32 GetNumValidItems() const;
 
         // Returns true if the blackboard has a value for the given key query.
-        bool HasValue(const BlackboardKeyQuery& query) const
-        {
-            uint32 index = IndexOfKey(query);
-            return Items.IsValidIndex(index);
-        }
+        bool HasValue(const BlackboardQuery& query) const;
 
         // Returns true if the blackboard has a value for the given key query.
         template <class T>
-        bool HasValue(const BlackboardKeyQuery& query) const requires(BlackboardComplexValueAccessor_HasValue<TFixedBlackboard, T>)
+        bool HasValue(const BlackboardQuery& query) const requires(BlackboardComplexValueAccessor_HasValue<FixedBlackboard, T>)
         {
-            return BlackboardComplexValueAccessor<TFixedBlackboard, T>::HasValue(*this, query);
+            return BlackboardComplexValueAccessor<FixedBlackboard, T>::HasValue(*this, query);
         }
 
         // Returns true if the blackboard has a value for the given key that is the expected type.
         template <class T>
         bool HasValue(blackboard_key_t key, blackboard_type_t expectedType = BlackboardValueType<T>::Type) const
         {
-            return HasValue<T>(BlackboardKeyQuery(key, expectedType));
+            return HasValue<T>(BlackboardQuery(key, expectedType));
         }
 
-        bool SetValue(blackboard_key_t key, blackboard_value_t value)
-        {
-            uint32 index = IndexOfKey(key);
-            if (Items.IsValidIndex(index))
-            {
-                Items[index].second = value;
-                return true;
-            }
-            
-            return InsertKVP(key, value);
-        }
+        bool SetValue(blackboard_key_t key, blackboard_value_t value);
 
         template <class T>
         bool SetValue(blackboard_key_t key, const T& value, blackboard_type_t type)
@@ -285,9 +266,9 @@ namespace Phoenix::Blackboard
             PHX_PROFILE_ZONE_SCOPED;
 
             blackboard_key_t keyWithType = BlackboardKey::Create(key, type);
-            if constexpr (BlackboardComplexValueAccessor_SetValue<TFixedBlackboard, T>)
+            if constexpr (BlackboardComplexValueAccessor_SetValue<FixedBlackboard, T>)
             {
-                return BlackboardComplexValueAccessor<TFixedBlackboard, T>::SetValue(*this, keyWithType, value);
+                return BlackboardComplexValueAccessor<FixedBlackboard, T>::SetValue(*this, keyWithType, value);
             }
             else
             {
@@ -301,9 +282,9 @@ namespace Phoenix::Blackboard
             PHX_PROFILE_ZONE_SCOPED;
 
             blackboard_key_t keyWithType = BlackboardKey::Create(key, BlackboardValueType<T>::Type);
-            if constexpr (BlackboardComplexValueAccessor_SetValue<TFixedBlackboard, T>)
+            if constexpr (BlackboardComplexValueAccessor_SetValue<FixedBlackboard, T>)
             {
-                return BlackboardComplexValueAccessor<TFixedBlackboard, T>::SetValue(*this, keyWithType, value);
+                return BlackboardComplexValueAccessor<FixedBlackboard, T>::SetValue(*this, keyWithType, value);
             }
             else
             {
@@ -311,32 +292,18 @@ namespace Phoenix::Blackboard
             }
         }
 
-        bool GetValue(const BlackboardKeyQuery& query, blackboard_value_t& outValue) const
-        {
-            PHX_PROFILE_ZONE_SCOPED;
+        bool GetValue(const BlackboardQuery& query, blackboard_value_t& outValue) const;
 
-            uint32 index = IndexOfKey(query);
-            if (!Items.IsValidIndex(index))
-            {
-                return false;
-            }
-            outValue = Items[index].second;
-            return true;
-        }
-
-        bool GetValue(blackboard_key_t key, blackboard_value_t& outValue) const
-        {
-            return GetValue(BlackboardKeyQuery(key), outValue);
-        }
+        bool GetValue(blackboard_key_t key, blackboard_value_t& outValue) const;
 
         template <class T>
-        bool GetValue(const BlackboardKeyQuery& query, T& outValue) const
+        bool GetValue(const BlackboardQuery& query, T& outValue) const
         {
             PHX_PROFILE_ZONE_SCOPED;
 
-            if constexpr (BlackboardComplexValueAccessor_GetValue<TFixedBlackboard, T>)
+            if constexpr (BlackboardComplexValueAccessor_GetValue<FixedBlackboard, T>)
             {
-                return BlackboardComplexValueAccessor<TFixedBlackboard, T>::GetValue(*this, query, outValue);
+                return BlackboardComplexValueAccessor<FixedBlackboard, T>::GetValue(*this, query, outValue);
             }
             else
             {
@@ -353,242 +320,82 @@ namespace Phoenix::Blackboard
         template <class T>
         bool GetValue(blackboard_key_t key, T& outValue) const
         {
-            BlackboardKeyQuery query(key, BlackboardValueType<T>::Type);
+            BlackboardQuery query(key, BlackboardValueType<T>::Type);
             return GetValue<T>(query, outValue);
         }
 
         template <class T = blackboard_value_t>
-        bool RemoveValue(const BlackboardKeyQuery& query)
+        bool RemoveValue(const BlackboardQuery& query)
         {
             PHX_PROFILE_ZONE_SCOPED;
 
-            if constexpr (BlackboardComplexValueAccessor_RemoveValue<TFixedBlackboard, T>)
+            if constexpr (BlackboardComplexValueAccessor_RemoveValue<FixedBlackboard, T>)
             {
-                return BlackboardComplexValueAccessor<TFixedBlackboard, T>::RemoveValue(*this, query);
+                return BlackboardComplexValueAccessor<FixedBlackboard, T>::RemoveValue(*this, query);
             }
             else
             {
-                uint32 index = IndexOfKey(query);
-                if (!Items.IsValidIndex(index))
-                {
-                    return false;
-                }
-                Items[index].first = BlackboardKey::ClearKeyLo(Items[index].first);
-                --NumActive;
-                return true;
+                return RemoveValuesMatchingQueryInternal(query);
             }
         }
 
         template <class T = blackboard_value_t>
         bool RemoveValue(blackboard_key_t key, blackboard_type_t expectedType = BlackboardValueType<T>::Type)
         {
-            return RemoveValue<T>(BlackboardKeyQuery(key, expectedType));
+            return RemoveValue<T>(BlackboardQuery(key, expectedType));
         }
 
-        uint32 RemoveAll(const BlackboardKeyQuery& query)
-        {
-            PHX_PROFILE_ZONE_SCOPED;
+        uint32 RemoveAll(const BlackboardQuery& query);
 
-            uint32 numRemoved = 0;
-
-            uint32 index = IndexOfKey(query);
-            while (Items.IsValidIndex(index))
-            {
-                Items[index].first = BlackboardKey::ClearKeyLo(Items[index].first);
-                ++numRemoved;
-                --NumActive;
-
-                index = IndexOfKey(query, index + 1);
-            }
-
-            return numRemoved;
-        }
-
-        void SortAndCompact()
-        {
-            PHX_PROFILE_ZONE_SCOPED;
-
-            struct KVPSort
-            {
-                bool operator()(const BlackboardKVP& a, const BlackboardKVP& b) const
-                {
-                    if (BlackboardKey::GetKeyLo(a.first) == 0)
-                        return false;
-                    if (BlackboardKey::GetKeyLo(b.first) == 0)
-                        return true;
-                    return a.first < b.first;
-                }
-            } static sort;
-        
-            std::sort(
-                std::execution::par,
-                Items.begin(),
-                Items.end(),
-                sort);
-
-            uint32 i = 0;
-            for (; i < Items.Num(); ++i)
-            {
-                if (BlackboardKey::GetKeyLo(Items[i].first) == 0)
-                {
-                    break;
-                }
-            }
-
-            SortedCount = i;
-            NumActive = i;
-            Items.SetSize(SortedCount);
-        }
-
-        BlackboardValues<TFixedBlackboard> Enumerate(uint32 keyHi) const
-        {
-            return BlackboardValues<TFixedBlackboard>(this, keyHi);
-        }
+        BlackboardValues Enumerate(uint32 keyHi) const;
 
     private:
 
-        struct CompareKeyHi
-        {
-            bool operator()(const BlackboardKVP& item, uint32 keyHi) const noexcept
-            {
-                return BlackboardKey::GetKeyHi(item.first) < keyHi;
-            }
-        };
+        BlackboardItem* FindItemWithQuery(const BlackboardQuery& query);
+        const BlackboardItem* FindItemWithQuery(const BlackboardQuery& query) const;
 
-        uint32 IndexOfKey(const BlackboardKeyQuery& query, uint32 startIndex = 0) const
-        {
-            PHX_PROFILE_ZONE_SCOPED;
-            
-            static CompareKeyHi compare;
+        BlackboardItem* FindFirstItemWithQuery(const BlackboardQuery& query, uint32& outIndex);
+        const BlackboardItem* FindFirstItemWithQuery(const BlackboardQuery& query, uint32& outIndex) const;
 
-            // Search the sorted section first
-            if (startIndex < SortedCount)
-            {
-                uint32 queryKeyHi = BlackboardKey::GetKeyHi(query.Filter);
-                
-                // The range is a subset of Items that has already been sorted.
-                auto begin = Items.begin() + startIndex;
-                auto end = Items.begin() + SortedCount;
+        BlackboardItem* FindNextItemWithQuery(const BlackboardQuery& query, uint32 currIndex, uint32& outIndex);
+        const BlackboardItem* FindNextItemWithQuery(const BlackboardQuery& query, uint32 currIndex, uint32& outIndex) const;
 
-                // Find the range of contiguous sorted keys that have the same hi value
-                auto lower = std::lower_bound(begin, end, queryKeyHi, compare);
+        uint32 RemoveValuesMatchingQueryInternal(const BlackboardQuery& query);
 
-                // We found at least one key in that range
-                for (; lower != end; ++lower)
-                {
-                    if (query(*lower))
-                    {
-                        return static_cast<uint32>(lower - Items.begin());
-                    }
+        bool InsertKVP(blackboard_key_t key, blackboard_value_t value);
 
-                    // We've reached the end of the range
-                    uint32 lo = BlackboardKey::GetKeyLo(lower->first);
-                    uint32 hi = BlackboardKey::GetKeyHi(lower->first);
-                    if (lo != 0 && hi != queryKeyHi)
-                        break;
-                }
-            }
-
-            // Then search the unsorted section
-            uint32 i = SortedCount;
-            while (i < Items.Num())
-            {
-                if (query(Items[i]))
-                {
-                    return i;
-                }
-                ++i;
-            }
-
-            return Index<uint32>::None;
-        }
-
-        bool InsertKVP(blackboard_key_t key, blackboard_value_t value)
-        {
-            PHX_PROFILE_ZONE_SCOPED;
-
-            if (Items.IsFull())
-            {
-                return false;
-            }
-
-            Items.EmplaceBack(key, value);
-            ++NumActive;
-            return true;
-        }
-
-        template <class TBlackboardSet>
-        friend struct BlackboardValues;
-
-        TFixedArray<BlackboardKVP, N> Items;
-        uint32 SortedCount = 0;
-        uint32 NumActive = 0;
+        TStorage Storage;
     };
 
-    template <class TBlackboardSet>
     struct BlackboardValues
     {
-        using TKeyQuery = typename TBlackboardSet::BlackboardKeyQuery;
-
         BlackboardValues() = default;
-
-        BlackboardValues(const TBlackboardSet* set, const TKeyQuery& query)
-            : Owner(set)
-            , Query(query)
-        {
-        }
+        BlackboardValues(const FixedBlackboard* set, const BlackboardQuery& query);
 
         struct KeyHiIter
         {
-            KeyHiIter(const TBlackboardSet* owner, const TKeyQuery& query, uint32 index)
-                : Owner(owner)
-                , Query(query)
-                , Index(index)
-            {
-                if (Owner)
-                {
-                    Index = Owner->IndexOfKey(Query, Index);
-                }
-            }
+            KeyHiIter(const FixedBlackboard* owner, const BlackboardQuery& query);
+            KeyHiIter(const FixedBlackboard* owner, const BlackboardQuery& query, const BlackboardItem* item, uint32 index);
 
-            const typename TBlackboardSet::TItem& operator*() const
-            {
-                static typename TBlackboardSet::TItem null;
-                return Owner ? Owner->Items[Index] : null;
-            }
+            const BlackboardItem& operator*() const;
 
-            KeyHiIter& operator++()
-            {
-                if (Owner)
-                {
-                    Index = Owner->IndexOfKey(Query, Index + 1);
-                }
-                return *this;
-            }
+            KeyHiIter& operator++();
 
             bool operator==(const KeyHiIter& other) const = default;
 
-            const TBlackboardSet* Owner;
-            TKeyQuery Query;
-            uint32 Index;
+            const FixedBlackboard* Owner;
+            BlackboardQuery Query;
+            const BlackboardItem* Item = nullptr;
+            uint32 Index = Phoenix::Index<uint32>::None;
         };
 
-        KeyHiIter begin() const
-        {
-            uint32 index = Owner ? Owner->IndexOfKey(Query) : 0;
-            return KeyHiIter(Owner, Query, index);
-        }
-
-        KeyHiIter end() const
-        {
-            uint32 index = Owner ? Owner->Items.Num() : 0;
-            return KeyHiIter(Owner, Query, index);
-        }
+        KeyHiIter begin() const;
+        KeyHiIter end() const;
 
     private:
 
-        const TBlackboardSet* Owner;
-        TKeyQuery Query;
+        const FixedBlackboard* Owner;
+        BlackboardQuery Query;
     };
 }
 

@@ -4,8 +4,8 @@
 #include "PhoenixSim/Flags.h"
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Containers/FixedBVH.h"
 #include "PhoenixSim/Containers/Optional.h"
+#include "PhoenixSim/FixedPoint/FixedBox.h"
 #include "PhoenixSim/FixedPoint/FixedMath.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 
@@ -348,9 +348,9 @@ namespace Phoenix
 
     private:
 
-        TFixedArray<TVec, NFaces*3> Vertices;
-        TFixedArray<THalfEdge, NFaces*3> HalfEdges;
-        TFixedArray<TFace, NFaces> Faces;
+        TInlineArray<TVec, NFaces*3> Vertices;
+        TInlineArray<THalfEdge, NFaces*3> HalfEdges;
+        TInlineArray<TFace, NFaces> Faces;
         TFixedBox<TVec> Bounds;
     };
 

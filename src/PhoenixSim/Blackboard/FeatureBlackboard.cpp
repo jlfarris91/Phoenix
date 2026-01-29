@@ -7,49 +7,93 @@
 using namespace Phoenix;
 using namespace Phoenix::Blackboard;
 
+FeatureBlackboardBlock::FeatureBlackboardBlock(BlockBufferAllocator& allocator, const Config& config)
+    : Blackboard(allocator, config.MaxBlackboardItems)
+{
+}
+
+FeatureBlackboardBlock::FeatureBlackboardBlock(
+    BlockBufferAllocator& allocator,
+    const Config& config,
+    const FeatureBlackboardBlock& other)
+    : Blackboard(allocator, config.MaxBlackboardItems, other.Blackboard)
+{
+}
+
+BufferBlockLayout FeatureBlackboardBlock::Layout(Config config)
+{
+    BufferBlockLayout layout;
+    layout.BlockSize = sizeof(FeatureBlackboardBlock);
+    layout.AllocSize = FixedBlackboard::GetAllocSizeBytes(config.MaxBlackboardItems);
+    return layout;
+}
+
+void FeatureBlackboardBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
+{
+    new (dest) FeatureBlackboardBlock(allocator, config);
+}
+
 FeatureBlackboard::FeatureBlackboard()
 {
-    FEATURE_SESSION_BLOCK(FeatureBlackboardDynamicSessionBlock)
-    FEATURE_WORLD_BLOCK(FeatureBlackboardDynamicWorldBlock)
     FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+}
+
+void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
+    IFeature::OnWorldLayout(context, builder);
+
+    FeatureBlackboardBlock::Config blockConfig;
+    blockConfig.MaxBlackboardItems = PHX_BLACKBOARD_MAX_WORLD_SIZE;
+
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    {
+        const nlohmann::json& featureConfigData = featureConfig->GetData();
+        blockConfig.MaxBlackboardItems = featureConfigData.value("max_blackboard_items", blockConfig.MaxBlackboardItems);
+    }
+
+    builder.RegisterBlockWithAlloc<FeatureBlackboardBlock>(EBufferBlockType::Dynamic, blockConfig);
 }
 
 void FeatureBlackboard::OnPostUpdate(const FeatureUpdateArgs& args)
 {
     IFeature::OnPostUpdate(args);
-    
-    FeatureBlackboardDynamicSessionBlock& block = Session->GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
-    block.Blackboard.SortAndCompact();
+
+    FeatureBlackboardBlock& block = Session->GetBlockRef<FeatureBlackboardBlock>();
+
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("SortBlackboard");
+        block.Blackboard.Sort();
+    }
 }
 
 void FeatureBlackboard::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     IFeature::OnPostWorldUpdate(world, args);
 
-    FeatureBlackboardDynamicWorldBlock& block = world.GetBlockRef<FeatureBlackboardDynamicWorldBlock>();
-    block.Blackboard.SortAndCompact();
+    FeatureBlackboardBlock& block = world.GetBlockRef<FeatureBlackboardBlock>();
+    block.Blackboard.Sort();
 }
 
-SessionBlackboard& FeatureBlackboard::GetGlobalBlackboard(SessionRef session)
+FixedBlackboard& FeatureBlackboard::GetGlobalBlackboard(SessionRef session)
 {
-    FeatureBlackboardDynamicSessionBlock& block = session.GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
+    FeatureBlackboardBlock& block = session.GetBlockRef<FeatureBlackboardBlock>();
     return block.Blackboard;
 }
 
-const SessionBlackboard& FeatureBlackboard::GetGlobalBlackboard(SessionConstRef session)
+const FixedBlackboard& FeatureBlackboard::GetGlobalBlackboard(SessionConstRef session)
 {
-    const FeatureBlackboardDynamicSessionBlock& block = session.GetBlockRef<FeatureBlackboardDynamicSessionBlock>();
+    const FeatureBlackboardBlock& block = session.GetBlockRef<FeatureBlackboardBlock>();
     return block.Blackboard;
 }
 
-WorldBlackboard& FeatureBlackboard::GetBlackboard(WorldRef world)
+FixedBlackboard& FeatureBlackboard::GetBlackboard(WorldRef world)
 {
-    FeatureBlackboardDynamicWorldBlock& block = world.GetBlockRef<FeatureBlackboardDynamicWorldBlock>();
+    FeatureBlackboardBlock& block = world.GetBlockRef<FeatureBlackboardBlock>();
     return block.Blackboard;
 }
 
-const WorldBlackboard& FeatureBlackboard::GetBlackboard(WorldConstRef world)
+const FixedBlackboard& FeatureBlackboard::GetBlackboard(WorldConstRef world)
 {
-    const FeatureBlackboardDynamicWorldBlock& block = world.GetBlockRef<FeatureBlackboardDynamicWorldBlock>();
+    const FeatureBlackboardBlock& block = world.GetBlockRef<FeatureBlackboardBlock>();
     return block.Blackboard;
 }

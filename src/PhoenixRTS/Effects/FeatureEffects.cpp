@@ -15,10 +15,34 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
+FeatureEffectsDynamicBlock::FeatureEffectsDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
+{
+}
+
+FeatureEffectsDynamicBlock::FeatureEffectsDynamicBlock(
+    BlockBufferAllocator& allocator,
+    const Config& config,
+    const FeatureEffectsDynamicBlock& other)
+    : Responses(allocator, config.MaxEffectResponses, other.Responses)
+{
+}
+
+BufferBlockLayout FeatureEffectsDynamicBlock::Layout(Config config)
+{
+    BufferBlockLayout result;
+    result.BlockSize = sizeof(FeatureEffectsDynamicBlock);
+    result.AllocSize += FixedResponseList::GetAllocSizeBytes(config.MaxEffectResponses);
+    return result;
+}
+
+void FeatureEffectsDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
+{
+    new (dest) FeatureEffectsDynamicBlock(allocator, config);
+}
+
 FeatureEffects::FeatureEffects()
 {
-    FEATURE_WORLD_BLOCK(FeatureEffectsDynamicBlock)
-    FEATURE_WORLD_BLOCK(FeatureEffectsScratchBlock)
+    FEATURE_WORLD_BLOCK(FeatureEffectsScratchBlock, EBufferBlockType::Scratch)
     FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
 
@@ -348,7 +372,11 @@ uint32 FeatureEffects::ReferenceEffectNode(WorldRef world, EffectNodeId id, Effe
     ++effectComp.RefCount;
 
     // Recursively reference parent nodes too
-    ReferenceEffectNode(world, GetEffectNodeParent(world, id));
+    EffectNodeId parentNodeId = GetEffectNodeParent(world, id);
+    if (parentNodeId != EntityId::Invalid)
+    {
+        ReferenceEffectNode(world, parentNodeId);
+    }
 
     return effectComp.RefCount;
 }
@@ -547,7 +575,7 @@ void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
     // Register default handlers
     RegisterEffectHandler<EffectSetHandler>();
 
-    TArray2<TSharedPtr<IEffectHandler>> effectHandlers;
+    TVector<TSharedPtr<IEffectHandler>> effectHandlers;
     Session->GetServices2<IEffectHandler>(effectHandlers);
 
     for (const auto& effectHandler : effectHandlers)
@@ -555,7 +583,7 @@ void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
         RegisterEffectHandler(effectHandler);
     }
 
-    TArray2<TSharedPtr<IResponseHandler>> responseHandlers;
+    TVector<TSharedPtr<IResponseHandler>> responseHandlers;
     Session->GetServices2<IResponseHandler>(responseHandlers);
 
     for (const auto& responseHandler : responseHandlers)
@@ -592,6 +620,22 @@ void FeatureEffects::Shutdown()
     PeriodicEffectSystem.reset();
 }
 
+void FeatureEffects::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
+    IFeature::OnWorldLayout(context, builder);
+
+    FeatureEffectsDynamicBlock::Config dynamicBlockConfig;
+    dynamicBlockConfig.MaxEffectResponses = PHX_RTS_MAX_RESPONSES;
+
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    {
+        const nlohmann::json& featureConfigData = featureConfig->GetData();
+        dynamicBlockConfig.MaxEffectResponses = featureConfigData.value("max_effect_responses", dynamicBlockConfig.MaxEffectResponses);
+    }
+
+    builder.RegisterBlockWithAlloc<FeatureEffectsDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
+}
+
 void FeatureEffects::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     IFeature::OnPostWorldUpdate(world, args);
@@ -623,14 +667,17 @@ void FeatureEffects::RespondToEffect(WorldRef world, EffectNodeId effectNodeId)
     }
 
     EffectComponent* effectComponent = GetEffectComponent(world, effectNodeId);
-    PHX_ASSERT(effectComponent);
+    if (!effectComponent)
+    {
+        return;
+    }
 
     ResponseContext responseContext;
     responseContext.EffectNodeId = effectNodeId;
     responseContext.EffectComponent = effectComponent;
     responseContext.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
 
-    TArray<PriorityResponseHandler> prioritizedHandlers;
+    TVector<PriorityResponseHandler> prioritizedHandlers;
     prioritizedHandlers.reserve(8);
 
     if (effectComponent->SourceId != EntityId::Invalid)
@@ -689,7 +736,7 @@ void FeatureEffects::GetPrioritizedResponseHandlers(
     WorldConstRef world,
     EntityId entityId,
     const ResponseContext& responseContext,
-    TArray<PriorityResponseHandler>& outResponseHandlers)
+    TVector<PriorityResponseHandler>& outResponseHandlers)
 {
     const FeatureEffectsDynamicBlock* dynamicBlock = world.GetBlock<FeatureEffectsDynamicBlock>();
     dynamicBlock->Responses.ForEachResponse(entityId, [&](const FName& responseId)

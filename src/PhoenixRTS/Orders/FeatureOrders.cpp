@@ -19,9 +19,34 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
+FeatureOrdersDynamicBlock::FeatureOrdersDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
+    : OrderQueue(allocator, config.MaxOrders)
+{
+}
+
+FeatureOrdersDynamicBlock::FeatureOrdersDynamicBlock(
+    BlockBufferAllocator& allocator,
+    const Config& config,
+    const FeatureOrdersDynamicBlock& other)
+    : OrderQueue(allocator, config.MaxOrders, other.OrderQueue)
+{
+}
+
+BufferBlockLayout FeatureOrdersDynamicBlock::Layout(Config config)
+{
+    BufferBlockLayout result;
+    result.BlockSize = sizeof(FeatureOrdersDynamicBlock);
+    result.AllocSize += FixedOrderQueue::GetAllocSizeBytes(config.MaxOrders);
+    return result;
+}
+
+void FeatureOrdersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
+{
+    new (dest) FeatureOrdersDynamicBlock(allocator, config);
+}
+
 FeatureOrders::FeatureOrders()
 {
-    FEATURE_WORLD_BLOCK(FeatureOrdersDynamicBlock)
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
     FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
@@ -186,7 +211,7 @@ bool FeatureOrders::StaticHandleCommand(WorldRef world, const Command& command)
 
 bool FeatureOrders::HandleCommand(WorldRef world, const Command& command)
 {
-    TArray2<PrioritizedCommandHandler> handlers;
+    TVector<PrioritizedCommandHandler> handlers;
     if (GetHighestPriorityHandlersForSelection(world, command, handlers) == 0)
     {
         return false;
@@ -241,8 +266,8 @@ bool FeatureOrders::StaticRequestAcquireOrder(WorldRef world, const UnitId& unit
 
 bool FeatureOrders::RequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request)
 {
-    TArray2<FName> abilityIds;
-    abilityIds.Reserve(8);
+    TVector<FName> abilityIds;
+    abilityIds.reserve(8);
 
     // TODO (jfarris): there
     FeatureAbilities::GetAbilities(world, unit, abilityIds);
@@ -306,7 +331,7 @@ void FeatureOrders::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    TArray2<TSharedPtr<ICommandHandler>> handlers;
+    TVector<TSharedPtr<ICommandHandler>> handlers;
     Session->GetServices2<ICommandHandler>(handlers);
 
     for (const TSharedPtr<ICommandHandler>& handler : handlers)
@@ -331,6 +356,22 @@ void FeatureOrders::Shutdown()
 
     TSharedPtr<FeatureECS> featureECS = Session->GetFeature<FeatureECS>();
     featureECS->OnEntityReleasing().RemoveAll(this);
+}
+
+void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
+    IFeature::OnWorldLayout(context, builder);
+
+    FeatureOrdersDynamicBlock::Config dynamicBlockConfig;
+    dynamicBlockConfig.MaxOrders = PHX_RTS_ORDER_QUEUE_MAX_ORDERS;
+
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    {
+        const nlohmann::json& featureConfigData = featureConfig->GetData();
+        dynamicBlockConfig.MaxOrders = featureConfigData.value("max_orders", dynamicBlockConfig.MaxOrders);
+    }
+
+    builder.RegisterBlockWithAlloc<FeatureOrdersDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
 }
 
 void FeatureOrders::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
@@ -531,15 +572,15 @@ uint32 FeatureOrders::GetPrioritizedHandlers(
     const UnitId& unit,
     const CommandContext& context,
     const Command& command,
-    TArray2<PrioritizedCommandHandler>& outHandlers)
+    TVector<PrioritizedCommandHandler>& outHandlers)
 {
     if (!FeatureUnit::UnitCanReceiveCommands(world, unit))
     {
         return 0;
     }
 
-    TArray2<FName> abilityIds;
-    abilityIds.Reserve(8);
+    TVector<FName> abilityIds;
+    abilityIds.reserve(8);
 
     // TODO (jfarris): there
     FeatureAbilities::GetAbilities(world, unit, abilityIds);
@@ -573,12 +614,12 @@ uint32 FeatureOrders::GetPrioritizedHandlers(
         uint32 priority = handler->GetCommandPriority(world, unitAbilityContext, unitCommand);
         if (priority != 0)
         {
-            outHandlers.EmplaceBack(unit, priority, handler);
+            outHandlers.emplace_back(unit, priority, handler);
             ++numHandlers;
         }
     }
 
-    if (outHandlers.Num() > 1)
+    if (outHandlers.size() > 1)
     {
         std::ranges::stable_sort(outHandlers, SortHandlersByPriority());
     }
@@ -593,20 +634,20 @@ bool FeatureOrders::GetHighestPriorityHandler(
     const Command& command,
     PrioritizedCommandHandler& outHandler)
 {
-    TArray2<PrioritizedCommandHandler> handlers;
+    TVector<PrioritizedCommandHandler> handlers;
     if (GetPrioritizedHandlers(world, unit, context, command, handlers) == 0)
     {
         return false;
     }
 
-    outHandler = handlers.Front();
+    outHandler = handlers.front();
     return true;
 }
 
 uint32 FeatureOrders::GetHighestPriorityHandlersForSelection(
     WorldConstRef world,
     const Command& command,
-    TArray2<PrioritizedCommandHandler>& outHandlers)
+    TVector<PrioritizedCommandHandler>& outHandlers)
 {
     EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
     if (selection == EntityId::Invalid)
@@ -624,7 +665,7 @@ uint32 FeatureOrders::GetHighestPriorityHandlersForSelection(
         PrioritizedCommandHandler handler;
         if (GetHighestPriorityHandler(world, UnitId(entity), context, command, handler))
         {
-            outHandlers.PushBack(handler);
+            outHandlers.push_back(handler);
             ++numHandlers;
         }
     });

@@ -260,7 +260,7 @@ void ThreadPool::Worker(uint32 workerId)
     }
 }
 
-TMap<uint32, TSharedPtr<TaskQueue>> gTaskQueues;
+std::unordered_map<uint32, TSharedPtr<TaskQueue>> gTaskQueues;
 std::mutex gTaskQueueMutex;
 
 TaskQueue::TaskQueue(uint32 id, Phoenix::ThreadPool* threadPool)

@@ -1,44 +1,88 @@
-
 #pragma once
 
-#include <cstring>      // For memset
-#include <functional>
-
-#include "PhoenixSim/CTZ.h"
+#include "FixedMemory.h"
 
 namespace Phoenix
 {
-    template <class TKey, size_t N, class THasher = std::hash<TKey>>
-    class TFixedSet
+    template <class TKey, class TStoragePolicy>
+    class TSetBase
+    {
+    protected:
+        using TStorage = TContiguousStorage<TKey, TStoragePolicy>;
+        TStorage Storage;
+        uint32 Size = 0;
+    };
+
+    template <class TKey>
+    class TSetBase<TKey, FixedStoragePolicy>
     {
     public:
 
-        static constexpr size_t Capacity = RoundUpPowerOf2(N);
+        TSetBase() = default;
 
-        TFixedSet()
+        template <class TAllocator>
+        TSetBase(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            Reset();
-        }
-        
-        bool IsFull() const
-        {
-            return Size == Capacity;
         }
 
-        bool IsEmpty() const
+        template <class TAllocator, class TOtherStoragePolicy>
+        TSetBase(TAllocator& allocator, uint32 capacity, const TSetBase<TKey, TOtherStoragePolicy>& other)
+            : Storage(allocator, capacity, other.Storage)
+            , Size(other.Size)
+        {
+        }
+
+        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
+        {
+            return TStorage::GetAllocSizeBytes(capacity);
+        }
+
+        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
+        {
+            return Storage.GetAllocSizeBytes();
+        }
+
+    protected:
+        using TStorage = TFixedStorage<TKey>;
+        TStorage Storage;
+        uint32 Size = 0;
+    };
+
+    template <class TKey, class TStoragePolicy, class THasher = std::hash<TKey>>
+    class TSet : TSetBase<TKey, TStoragePolicy>
+    {
+        using Super = TSetBase<TKey, TStoragePolicy>;
+        using Super::Super;
+        using Super::Storage;
+        using Super::Size;
+
+    public:
+
+        PHX_FORCEINLINE uint32 GetCapacity() const
+        {
+            return Storage.GetCapacity();
+        }
+
+        PHX_FORCEINLINE bool IsFull() const
+        {
+            return Size == Storage.GetCapacity();
+        }
+
+        PHX_FORCEINLINE bool IsEmpty() const
         {
             return Size == 0;
         }
 
-        size_t Num() const
+        PHX_FORCEINLINE size_t GetNum() const
         {
             return Size;
         }
 
         void Reset()
         {
+            Storage.SetZero();
             Size = 0;
-            memset(&Items[0], 0, sizeof(TKey) * Capacity);
         }
 
         bool Insert(const TKey& key)
@@ -46,17 +90,17 @@ namespace Phoenix
             PHX_ASSERT(key != 0);
 
             size_t index = FindSlot(key);
-            if (Items[index] != 0)
+            if (Storage[index] != 0)
             {
                 // Already in set
-                if (Items[index] == key)
+                if (Storage[index] == key)
                     return true;
 
                 // Set is full
                 return false;
             }
 
-            Items[index] = key;
+            Storage[index] = key;
             ++Size;
 
             return true;
@@ -65,17 +109,17 @@ namespace Phoenix
         bool Contains(const TKey& key) const
         {
             size_t index = FindSlot(key);
-            return Items[index] == key; 
+            return Storage[index] == key; 
         }
 
         size_t FindSlot(const TKey& key) const
         {
             size_t hash = Hash(key);
-            size_t index = hash & (Capacity - 1);
+            size_t index = hash % GetCapacity();
             size_t startIndex = index;
-            while (Items[index] != 0 && Items[index] != key)
+            while (Storage[index] != 0 && Storage[index] != key)
             {
-                index = (index + 1) & (Capacity - 1);
+                index = (index + 1) % GetCapacity();
                 if (index == startIndex)
                     break;
             }
@@ -84,13 +128,19 @@ namespace Phoenix
 
     private:
 
-        static size_t Hash(const TKey& key)
+        PHX_FORCEINLINE static size_t Hash(const TKey& key)
         {
             static const THasher hasher;
             return hasher(key);
         }
-
-        TKey Items[Capacity];
-        size_t Size = 0;
     };
+
+    template <class TKey, uint32 N, class THasher = std::hash<TKey>>
+    using TInlineSet = TSet<TKey, InlineStoragePolicy<N>, THasher>;
+
+    template <class TKey, class THasher = std::hash<TKey>>
+    using TFixedSet = TSet<TKey, FixedStoragePolicy, THasher>;
+
+    template <class TKey, class THasher = std::hash<TKey>>
+    using THeapSet = TSet<TKey, HeapStoragePolicy, THasher>;
 }

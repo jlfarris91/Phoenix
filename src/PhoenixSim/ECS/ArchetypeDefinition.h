@@ -65,7 +65,7 @@ namespace Phoenix
                 const ComponentDefinition& componentDefinition,
                 TArchetypeDefinition& outArchDef)
             {
-                for (uint32 i = 0; i < baseArchDef.Components.Num(); ++i)
+                for (uint32 i = 0; i < baseArchDef.Components.GetNum(); ++i)
                 {
                     if (baseArchDef.Components[i].Id == componentDefinition.Id)
                         return false;
@@ -129,7 +129,7 @@ namespace Phoenix
 
             constexpr uint8 GetNumComponents() const
             {
-                return (uint8)Components.Num();
+                return (uint8)Components.GetNum();
             }
 
             constexpr uint16 GetTotalSize() const
@@ -150,7 +150,7 @@ namespace Phoenix
 
             constexpr uint16 IndexOfComponent(const FName& componentId) const
             {
-                for (uint32 i = 0; i < Components.Num(); ++i)
+                for (uint32 i = 0; i < Components.GetNum(); ++i)
                 {
                     if (Components[i].Id == componentId)
                         return (uint16)i;
@@ -213,7 +213,7 @@ namespace Phoenix
 
                 bool generateId = FName::IsNoneOrEmpty(Id);
 
-                for (uint8 i = 0; i < (uint8)Components.Num(); ++i)
+                for (uint8 i = 0; i < (uint8)Components.GetNum(); ++i)
                 {
                     Components[i].Offset = TotalSize;
                     TotalSize += Components[i].Size;
@@ -227,7 +227,7 @@ namespace Phoenix
 
             FName Id;
             hash32_t Hash = 0;
-            TFixedArray<ComponentDefinition, MaxComponents> Components;
+            TInlineArray<ComponentDefinition, MaxComponents> Components;
             uint16 TotalSize = 0;
         };
 

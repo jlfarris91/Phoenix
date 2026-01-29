@@ -27,118 +27,6 @@ namespace Phoenix::RTS
 
         ECS::EntityId Entity;
         Order Order;
-    };
-
-    template <size_t N>
-    class FixedOrderQueue
-    {
-    public:
-
-        static constexpr uint32 Capacity = N;
-
-        uint32 GetSize() const
-        {
-            return Items.GetSize();
-        }
-
-        uint32 GetNumValidOrders() const
-        {
-            return Items.GetNumValidItems();
-        }
-
-        bool ContainsOrder(ECS::EntityId entity, const Order& order) const
-        {
-            return Items.Contains({ entity, order });
-        }
-
-        bool EnqueueOrder(ECS::EntityId entity, const Order& order)
-        {
-            return Items.EmplaceBack(entity, order);
-        }
-
-        bool DequeueOrder(ECS::EntityId entity, Order& outOrder)
-        {
-            EntityOrder item;
-            if (!Items.RemoveSubItemAndReturn(entity, 0, item))
-            {
-                return false;
-            }
-
-            outOrder = item.Order;
-            return true;
-        }
-
-        bool InsertOrder(ECS::EntityId entity, const Order& order, uint32 orderIndex)
-        {
-            return Items.InsertSubItem({ entity, order }, orderIndex);
-        }
-
-        bool RemoveOrder(ECS::EntityId entity, const Order& order)
-        {
-            return Items.Remove({ entity, order });
-        }
-
-        bool RemoveOrder(ECS::EntityId entity, uint32 orderIndex)
-        {
-            return Items.RemoveSubItem(entity, orderIndex);
-        }
-
-        uint32 RemoveAllOrders(ECS::EntityId entity)
-        {
-            return Items.RemoveAll(entity);
-        }
-
-        const Order* GetFirstOrder(ECS::EntityId entity) const
-        {
-            uint32 outIndex;
-            const EntityOrder* item = Items.GetFirstSubItem(entity, outIndex);
-            return item ? &item->Order : nullptr;
-        }
-
-        const Order* GetFirstOrder(ECS::EntityId entity, uint32& outIndex) const
-        {
-            const EntityOrder* item = Items.GetFirstSubItem(entity, outIndex);
-            return item ? &item->Order : nullptr;
-        }
-
-        const Order* GetNextOrder(ECS::EntityId entity, uint32 currIndex, uint32& outIndex) const
-        {
-            const EntityOrder* item = Items.GetNextSubItem(entity, currIndex, outIndex);
-            return item ? &item->Order : nullptr;
-        }
-
-        const Order* GetOrder(ECS::EntityId entity, uint32 orderIndex) const
-        {
-            const EntityOrder* item = Items.GetSubItem(entity, orderIndex);
-            return item ? &item->Order : nullptr;
-        }
-
-        uint32 GetNumOrders(ECS::EntityId entity) const
-        {
-            return Items.GetNumSubItems(entity);
-        }
-
-        template <class TCallback>
-        void ForEach(const TCallback& callback) const
-        {
-            Items.ForEachItem(callback);
-        }
-
-        template <class TCallback>
-        void ForEachOrder(ECS::EntityId entity, const TCallback& callback) const
-        {
-            Items.ForEachSubItem(entity, [&](const EntityOrder& item) -> const Order&
-            {
-                return item.Order;
-            }, callback);
-        }
-
-        void Sort()
-        {
-            Items.Sort();
-        }
-
-    private:
 
         struct GetItemKey
         {
@@ -147,7 +35,81 @@ namespace Phoenix::RTS
                 return item.Entity;
             }
         };
+    };
 
-        TFixedSortedList<EntityOrder, Capacity, GetItemKey> Items;
+    class FixedOrderQueue
+    {
+        using TStorage = TFixedSortedList<EntityOrder, EntityOrder::GetItemKey>;
+
+    public:
+
+        FixedOrderQueue() = default;
+
+        template <class TAllocator>
+        FixedOrderQueue(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
+        {
+        }
+
+        template <class TAllocator>
+        FixedOrderQueue(TAllocator& allocator, uint32 capacity, const FixedOrderQueue& other)
+            : Storage(allocator, capacity, other.Storage)
+        {
+        }
+
+        uint32 GetCapacity() const;
+
+        static uint32 GetAllocSizeBytes(uint32 capacity);
+
+        uint32 GetAllocSizeBytes() const;
+
+        uint32 GetNum() const;
+
+        uint32 GetNumValidOrders() const;
+
+        bool ContainsOrder(ECS::EntityId entity, const Order& order) const;
+
+        bool EnqueueOrder(ECS::EntityId entity, const Order& order);
+
+        bool DequeueOrder(ECS::EntityId entity, Order& outOrder);
+
+        bool InsertOrder(ECS::EntityId entity, const Order& order, uint32 orderIndex);
+
+        bool RemoveOrder(ECS::EntityId entity, const Order& order);
+
+        bool RemoveOrder(ECS::EntityId entity, uint32 orderIndex);
+
+        uint32 RemoveAllOrders(ECS::EntityId entity);
+
+        const Order* GetFirstOrder(ECS::EntityId entity) const;
+
+        const Order* GetFirstOrder(ECS::EntityId entity, uint32& outIndex) const;
+
+        const Order* GetNextOrder(ECS::EntityId entity, uint32 currIndex, uint32& outIndex) const;
+
+        const Order* GetOrder(ECS::EntityId entity, uint32 orderIndex) const;
+
+        uint32 GetNumOrders(ECS::EntityId entity) const;
+
+        template <class TCallback>
+        void ForEach(const TCallback& callback) const
+        {
+            Storage.ForEachItem(callback);
+        }
+
+        template <class TCallback>
+        void ForEachOrder(ECS::EntityId entity, const TCallback& callback) const
+        {
+            Storage.ForEachItemProjected(entity, [&](const EntityOrder& item) -> const Order&
+            {
+                return item.Order;
+            }, callback);
+        }
+
+        void Sort();
+
+    private:
+
+        TStorage Storage;
     };
 }

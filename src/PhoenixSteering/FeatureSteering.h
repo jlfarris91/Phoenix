@@ -4,23 +4,14 @@
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+
 #include "PhoenixSteering/DLLExport.h"
 #include "PhoenixSteering/SteeringComponent.h"
 #include "PhoenixSteering/SteeringSystem.h"
 
-namespace Phoenix::ECS
-{
-    struct EntityId;
-}
-
 namespace Phoenix::Steering
 {
     struct SteeringComponent;
-
-    struct PHOENIX_STEERING_API FeatureSteeringDynamicBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureSteeringDynamicBlock)
-    };
 
     struct PHOENIX_STEERING_API SortedEntity
     {
@@ -32,9 +23,9 @@ namespace Phoenix::Steering
 
     struct PHOENIX_STEERING_API FeatureSteeringScratchBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_SCRATCH(FeatureSteeringScratchBlock)
+        PHX_DECLARE_BLOCK(FeatureSteeringScratchBlock)
 
-        TFixedArray<SortedEntity, PHX_ECS_MAX_ENTITIES> SortedEntities;
+        TInlineArray<SortedEntity, PHX_ECS_MAX_ENTITIES> SortedEntities;
         TAtomic<uint32> SortedEntityCount = 0;
 
         Distance MaxEntityRadius;
@@ -50,7 +41,7 @@ namespace Phoenix::Steering
     struct SteeringRangeQueryArgs
     {
         uint32 CollisionMask = (uint32)-1;
-        TArray2<ECS::EntityId> Exclude;
+        std::unordered_set<ECS::EntityId> Exclude;
         uint32 MaxNum = 64;
     };
 
@@ -109,7 +100,7 @@ namespace Phoenix::Steering
             WorldConstRef world,
             const Vec2& pos,
             Distance range,
-            TArray2<const SortedEntity*>& outEntities,
+            TVector<const SortedEntity*>& outEntities,
             const SteeringRangeQueryArgs& args = {});
 
     private:

@@ -1,126 +1,84 @@
 ﻿
 #pragma once
 
+#include "PhoenixSim/Utils.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 #include "PhoenixSim/ECS/Entity.h"
 
 namespace Phoenix::ECS
 {
-    template <size_t N>
-    class FixedEntityList
+    class PHOENIX_SIM_API FixedEntityList
     {
     public:
 
-        static constexpr size_t Capacity = N;
+        using TItem = Entity;
+        using TStorage = TFixedArray<Entity>;
 
-        constexpr size_t GetSize() const
-        {
-            return Entities.Num();
-        }
+        FixedEntityList() = default;
 
-        constexpr size_t GetNumActive() const
+        template <class TAllocator>
+        FixedEntityList(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            return NumActiveEntities;
-        }
-        
-        constexpr bool IsValid(EntityId entityId) const
-        {
-            return GetEntityPtr(entityId) != nullptr;
         }
 
-        static constexpr int32 GetEntityIndex(EntityId entityId)
+        template <class TAllocator>
+        FixedEntityList(TAllocator& allocator, uint32 capacity, const FixedEntityList& other)
+            : Storage(allocator, capacity, other.Storage)
         {
-            return entityId % Capacity;
-        }
-        
-        constexpr Entity* GetEntityPtr(EntityId entityId)
-        {
-            uint32 index = GetEntityIndex(entityId);
-            if (!Entities.IsValidIndex(index))
-                return nullptr;
-            Entity& entity = Entities[index];
-            return entity.GetId() == entityId ? &entity : nullptr;                
         }
 
-        constexpr const Entity* GetEntityPtr(EntityId entityId) const
-        {
-            uint32 index = GetEntityIndex(entityId);
-            if (!Entities.IsValidIndex(index))
-                return nullptr;
-            const Entity& entity = Entities[index];
-            return entity.GetId() == entityId ? &entity : nullptr;
-        }
+        uint32 GetCapacity() const;
 
-        constexpr Entity& GetEntityRef(EntityId entityId)
-        {
-            uint32 index = GetEntityIndex(entityId);
-            Entity& entity = Entities[index];
-            return entity.GetId() == entityId ? entity : Entities[0];
-        }
+        static uint32 GetAllocSizeBytes(uint32 capacity);
 
-        constexpr const Entity& GetEntityRef(EntityId entityId) const
-        {
-            uint32 index = GetEntityIndex(entityId);
-            const Entity& entity = Entities[index];
-            return entity.GetId() == entityId ? entity : Entities[0];
-        }
+        uint32 GetAllocSizeBytes() const;
 
-        constexpr EntityId Acquire(const FName& kind)
+        const Entity* GetData() const;
+
+        uint32 GetNumActive() const;
+
+        uint32 GetNumHighWaterMark() const;
+
+        bool IsValid(EntityId entityId) const;
+
+        uint32 GetEntityIndex(EntityId entityId) const;
+
+        Entity* GetEntityPtr(EntityId entityId);
+
+        const Entity* GetEntityPtr(EntityId entityId) const;
+
+        Entity& GetEntityRef(EntityId entityId);
+
+        const Entity& GetEntityRef(EntityId entityId) const;
+
+        EntityId Acquire(const FName& kind);
+
+        bool Release(EntityId entityId);
+
+        using FOnEntityReclaimed = TFunction<void(const EntityId& entityId)>;
+        uint32 ReclaimEntities(const FOnEntityReclaimed& callback);
+
+        template <class TCallback>
+        void ForEach(const TCallback& callback) const
         {
-            if (NumActiveEntities + 1 == Capacity)
+            for (uint32 i = 0; i < Storage.GetNum(); ++i)
             {
-                return EntityId::Invalid;
-            }
-
-            // Find the first invalid entity index
-            uint32 entityIdx = 1;
-            for (; entityIdx < Capacity; ++entityIdx)
-            {
-                if (Entities[entityIdx].GetId() == EntityId::Invalid)
+                const Entity& entity = Storage[i];
+                if (IsValid(entity.Id))
                 {
-                    break;
+                    InvokeForEachCallbackWithIndex(callback, i, entity);
                 }
             }
-
-            if (entityIdx == Capacity)
-            {
-                return EntityId::Invalid;
-            }
-
-            if (!Entities.IsValidIndex(entityIdx))
-            {
-                Entities.SetNum(entityIdx + 1);
-            }
-
-            Entity& entity = Entities[entityIdx];
-            entity.Kind = kind;
-            entity.Handle = ArchetypeHandle(entityIdx);
-
-            ++NumActiveEntities;
-
-            return entityIdx;
-        }
-
-        constexpr bool Release(EntityId entityId)
-        {
-            if (!IsValid(entityId))
-            {
-                return false;
-            }
-
-            int32 index = GetEntityIndex(entityId);
-            Entity& entity = Entities[index];
-            entity.Kind = FName::None;
-            entity.Handle = ArchetypeHandle();
-
-            --NumActiveEntities;
-
-            return true;
         }
 
     private:
 
-        TFixedArray<Entity, Capacity> Entities;
-        size_t NumActiveEntities = 0;
+        bool IsMarkedForDeath(EntityId entityId, uint32 index) const;
+        void ReclaimEntity(Entity& entity);
+
+        TStorage Storage;
+        uint32 NumActiveEntities = 0;
+        uint32 NumHighWaterMark = 0;
     };
 }

@@ -2,7 +2,6 @@
 #pragma once
 
 #include "PhoenixSim/Features.h"
-#include "PhoenixSim/Containers/Array.h"
 #include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/Worlds.h"
 
@@ -29,9 +28,14 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API FeatureOrdersDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureOrdersDynamicBlock)
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureOrdersDynamicBlock)
 
-        FixedOrderQueue<PHX_RTS_ORDER_QUEUE_MAX_ORDERS> OrderQueue;
+        struct Config
+        {
+            uint32 MaxOrders = PHX_RTS_ORDER_QUEUE_MAX_ORDERS;
+        };
+
+        FixedOrderQueue OrderQueue;
     };
 
     using PrioritizedCommandHandler = TTuple<UnitId, uint32, TSharedPtr<ICommandHandler>>;
@@ -145,6 +149,7 @@ namespace Phoenix::RTS
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
+        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 
@@ -180,7 +185,7 @@ namespace Phoenix::RTS
             const UnitId& unit,
             const CommandContext& context,
             const Command& command,
-            TArray2<PrioritizedCommandHandler>& outHandlers);
+            TVector<PrioritizedCommandHandler>& outHandlers);
 
         bool GetHighestPriorityHandler(
             WorldConstRef world,
@@ -192,8 +197,8 @@ namespace Phoenix::RTS
         uint32 GetHighestPriorityHandlersForSelection(
             WorldConstRef world,
             const Command& command,
-            TArray2<PrioritizedCommandHandler>& outHandlers);
+            TVector<PrioritizedCommandHandler>& outHandlers);
 
-        TMap<FName, TSharedPtr<ICommandHandler>> CommandIdToHandlerMap;
+        std::unordered_map<FName, TSharedPtr<ICommandHandler>> CommandIdToHandlerMap;
     };
 }

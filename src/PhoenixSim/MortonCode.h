@@ -11,7 +11,7 @@
 namespace Phoenix
 {
     constexpr uint32 MortonCodeGridBits = Distance::B >> 3;
-    using TMortonCodeRangeArray = TArray<TTuple<uint64, uint64>>;
+    using TMortonCodeRangeArray = TVector<TTuple<uint64, uint64>>;
 
     // Expand a 32-bit integer into 64 bits by inserting 0s between the bits
     PHOENIX_SIM_API constexpr uint64 ExpandBits(uint32 v)

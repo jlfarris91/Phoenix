@@ -2,11 +2,19 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Config.h"
+#include "SessionFwd.h"
 #include "PhoenixSim/Actions.h"
 #include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/Containers/BlockBuffer.h"
 #include "PhoenixSim/Random.h"
 #include "PhoenixSim/WorldsFwd.h"
+
+namespace Phoenix
+{
+    class IConfigService;
+    struct WorldLayoutContext;
+}
 
 namespace Phoenix
 {
@@ -24,21 +32,21 @@ namespace Phoenix
         Initialized = 1,
         ShutDown = 2
     };
-    
-    struct PHOENIX_SIM_API WorldCtorArgs
+
+    struct PHOENIX_SIM_API WorldConfig
     {
-        TWeakPtr<Session> Session;
-        FName WorldId;
+        TSharedPtr<Session> Session;
         FName WorldType;
-        BlockBuffer::CtorArgs Blocks;
-        nlohmann::json Config;
+        FName WorldId;
+        WorldJsonConfig Config;
+        BlockBufferConfig BufferConfig;
     };
 
     class PHOENIX_SIM_API World : public BlockBufferOwner<World>
     {
     public:
 
-        World(const WorldCtorArgs& args);
+        World(const WorldConfig& config);
         World(const World& other);
         World(World&& other) noexcept;
         ~World() = default;
@@ -48,8 +56,8 @@ namespace Phoenix
         FName GetId() const;
         FName GetType() const;
 
-        const nlohmann::json& GetConfig() const;
-        const nlohmann::json* GetFeatureConfig(const PHXString& featureId) const;
+        const WorldJsonConfig& GetWorldConfig() const;
+        const FeatureJsonConfig* GetFeatureConfig(const FName& featureId) const;
 
         bool IsInitialized() const;
         bool IsShutDown() const;
@@ -74,7 +82,7 @@ namespace Phoenix
         FName Type;
         BlockBuffer Buffer;
         EWorldFlags Flags = EWorldFlags::None;
-        nlohmann::json Config;
+        WorldJsonConfig Config;
 
         Time SimTime;
         Random Random;
@@ -84,8 +92,8 @@ namespace Phoenix
     {
         TWeakPtr<Session> Session;
         TWeakPtr<FeatureSet> FeatureSet;
+        TWeakPtr<IConfigService> ConfigService;
         PostWorldUpdateDelegate OnPostWorldUpdate;
-        nlohmann::json Config;
     };
 
     struct PHOENIX_SIM_API NewWorldArgs
@@ -106,6 +114,53 @@ namespace Phoenix
     {
         Action Action;
         FName WorldName = FName::None;
+    };
+
+    struct PHOENIX_SIM_API ViewContext
+    {
+        EBufferBlockTypeFlags BlockTypeFlags = EBufferBlockTypeFlags::None;
+        TVector<BufferBlockDefinition> BlockDefinitions;
+    };
+
+    struct PHOENIX_SIM_API WorldLayout
+    {
+        BlockBufferConfig BufferConfig;
+    };
+
+    struct PHOENIX_SIM_API WorldLayoutBuilder
+    {
+        BufferBlockDefinition& RegisterBlock(const BufferBlockDefinition& definition)
+        {
+            return Layout.BufferConfig.RegisterBlock(definition);
+        }
+
+        template <class TBlock>
+        BufferBlockDefinition& RegisterBlock(EBufferBlockType type)
+        {
+            return Layout.BufferConfig.RegisterBlock<TBlock>(type);
+        }
+
+        template <class TBlock, class ...TVars>
+        BufferBlockDefinition& RegisterBlockWithAlloc(EBufferBlockType type, TVars&&... vars)
+        {
+            return Layout.BufferConfig.RegisterBlockWithAlloc<TBlock>(type, std::forward<TVars>(vars)...);
+        }
+
+        const WorldLayout& GetLayout() const
+        {
+            return Layout;
+        }
+
+    private:
+        WorldLayout Layout;
+    };
+
+    struct PHOENIX_SIM_API WorldLayoutContext
+    {
+        TSharedPtr<Session> Session;
+        FName WorldType;
+        FName WorldId;
+        WorldJsonConfig Config;
     };
 
     class PHOENIX_SIM_API WorldManager
@@ -131,8 +186,7 @@ namespace Phoenix
 
         friend class Session;
 
-        bool LoadConfig(const nlohmann::json& config);
-        bool LoadWorldConfig(const PHXString& worldType, const PHXString& configPath);
+        void ApplyConfig() const;
 
         FName GenerateNewWorldId(const FName& worldType);
 
@@ -141,15 +195,12 @@ namespace Phoenix
         void UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const;
         void SendActionToWorld(WorldRef world, const Action& action) const;
 
-        TWeakPtr<Session> Session;
-        TWeakPtr<FeatureSet> FeatureSet;
-        TArray<WorldSharedPtr> Worlds;
-        BlockBuffer::CtorArgs WorldBufferBlockArgs;
+        TSharedPtr<Session> Session;
+        TSharedPtr<FeatureSet> FeatureSet;
+        TSharedPtr<IConfigService> ConfigService;
+        TVector<WorldSharedPtr> Worlds;
 
         uint32 WorldIdGen = 0;
-
-        nlohmann::json Config;
-        TMap<FName, nlohmann::json> WorldConfigs;
 
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };

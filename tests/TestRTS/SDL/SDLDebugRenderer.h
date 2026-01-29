@@ -45,6 +45,6 @@ namespace Phoenix
         SDL_Renderer* Renderer;
         SDLViewport* Viewport;
         Color Colors[1024];
-        TArray<float> ScaleStack;
+        TVector<float> ScaleStack;
     };
 }

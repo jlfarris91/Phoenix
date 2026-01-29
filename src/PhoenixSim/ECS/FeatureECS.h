@@ -9,6 +9,7 @@
 #include "PhoenixSim/Blackboard/FixedBlackboard.h"
 #include "PhoenixSim/ECS/ArchetypeManager.h"
 #include "PhoenixSim/ECS/Entity.h"
+#include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/ECS/FixedEntityList.h"
 #include "PhoenixSim/ECS/FixedGroupList.h"
 #include "PhoenixSim/ECS/FixedTagList.h"
@@ -16,11 +17,31 @@
 #include "PhoenixSim/ECS/TransformComponent.h"
 
 #ifndef PHX_ECS_MAX_ENTITIES
-#define PHX_ECS_MAX_ENTITIES INT16_MAX
+#define PHX_ECS_MAX_ENTITIES 32768
 #endif
 
 #ifndef PHX_ECS_MAX_TAGS
-#define PHX_ECS_MAX_TAGS (INT16_MAX << 1)
+#define PHX_ECS_MAX_TAGS (PHX_ECS_MAX_ENTITIES << 1)
+#endif
+
+#ifndef PHX_ECS_MAX_GROUPS
+#define PHX_ECS_MAX_GROUPS (PHX_ECS_MAX_ENTITIES << 1)
+#endif
+
+#ifndef PHX_ECS_MAX_COMPONENT_DEFS
+#define PHX_ECS_MAX_COMPONENT_DEFS 256
+#endif
+
+#ifndef PHX_ECS_MAX_ARCHETYPE_DEFS
+#define PHX_ECS_MAX_ARCHETYPE_DEFS 256
+#endif
+
+#ifndef PHX_ECS_MAX_ARCHETYPE_LISTS
+#define PHX_ECS_MAX_ARCHETYPE_LISTS 1024
+#endif
+
+#ifndef PHX_ECS_ARCHETYPE_LIST_SIZE
+#define PHX_ECS_ARCHETYPE_LIST_SIZE 16000
 #endif
 
 namespace Phoenix::ECS
@@ -30,31 +51,44 @@ namespace Phoenix::ECS
 
     struct PHOENIX_SIM_API FeatureECSDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureECSDynamicBlock)
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureECSDynamicBlock)
 
+        struct Config
+        {
+            uint32 MaxEntities = 0;
+            uint32 MaxTags = 0;
+            uint32 MaxGroups = 0;
+            ArchetypeManager::Config ArchetypeManager;
+        };
+
+        FixedEntityList Entities;
+        FixedTagList Tags;
+        FixedGroupList Groups;
         ArchetypeManager ArchetypeManager;
-        FixedEntityList<PHX_ECS_MAX_ENTITIES> Entities;
-        FixedTagList<PHX_ECS_MAX_TAGS> Tags;
-        FixedGroupList<PHX_ECS_MAX_ENTITIES> Groups;
     };
 
     struct PHOENIX_SIM_API FeatureECSScratchBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_SCRATCH(FeatureECSScratchBlock)
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureECSScratchBlock)
 
-        TFixedArray<EntityTransform, PHX_ECS_MAX_ENTITIES> SortedEntities;
+        struct Config
+        {
+            uint32 MaxEntities = 0;
+        };
+
+        TFixedArray<EntityTransform> SortedEntities;
         TAtomic<uint32> SortedEntityCount = 0;
     };
 
     struct PHOENIX_SIM_API FeatureECSCtorArgs
     {
-        TArray<TSharedPtr<ISystem>> Systems;
+        TVector<TSharedPtr<ISystem>> Systems;
     };
 
     struct EntityRangeQueryArgs
     {
-        TOptional<TSet<FName>> Kinds;
-        TOptional<TSet<FName>> AnyComponents;
+        TOptional<std::unordered_set<FName>> Kinds;
+        TOptional<std::unordered_set<FName>> AnyComponents;
     };
 
     PHX_DECLARE_MULTICAST_DELEGATE(FOnEntityAcquired, WorldRef world, EntityId entityId);
@@ -81,8 +115,12 @@ namespace Phoenix::ECS
         bool OnHandleAction(const FeatureActionArgs& action) override;
         bool OnPostHandleAction(const FeatureActionArgs& action) override;
 
+        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
+
+        bool InitView(WorldConstRef world, ViewContext& context) override;
+        void FillView(WorldConstRef world, const ViewContext& context) override;
 
         void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
@@ -112,7 +150,7 @@ namespace Phoenix::ECS
         // Unregisters an existing ECS system. Returns true if the system was removed.
         bool UnregisterSystem(const TSharedPtr<ISystem>& system);
 
-        const TArray<TSharedPtr<ISystem>>& GetSystems() const;
+        const TVector<TSharedPtr<ISystem>>& GetSystems() const;
 
         //
         // Entity Management
@@ -150,6 +188,14 @@ namespace Phoenix::ECS
         }
 
         template <class ...TComponents>
+        static void ForEachEntity(WorldRef world, const TEntityQueryFunc<TComponents...>& func)
+        {
+            EntityQueryBuilder builder;
+            builder.RequireAllComponents<TComponents...>();
+            ForEachEntity(world, builder.GetQuery(), func);
+        }
+
+        template <class ...TComponents>
         static void ForEachEntity(WorldRef world, const EntityQuery& query, const TEntityQueryBufferFunc<TComponents...>& func)
         {
             FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
@@ -159,6 +205,14 @@ namespace Phoenix::ECS
             }
 
             return block->ArchetypeManager.ForEachEntity<TComponents...>(query, func);
+        }
+
+        template <class ...TComponents>
+        static void ForEachEntity(WorldRef world, const TEntityQueryBufferFunc<TComponents...>& func)
+        {
+            EntityQueryBuilder builder;
+            builder.RequireAllComponents<TComponents...>();
+            ForEachEntity(world, builder.GetQuery(), func);
         }
 
         template <class ...TComponents>
@@ -174,6 +228,14 @@ namespace Phoenix::ECS
         }
 
         template <class ...TComponents>
+        static void ForEachEntity(WorldConstRef world, const TEntityQueryFunc<TComponents...>& func)
+        {
+            EntityQueryBuilder builder;
+            builder.RequireAllComponents<TComponents...>();
+            ForEachEntity(world, builder.GetQuery(), func);
+        }
+
+        template <class ...TComponents>
         static void ForEachEntity(WorldConstRef world, const EntityQuery& query, const TEntityQueryBufferFunc<TComponents...>& func)
         {
             const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
@@ -183,6 +245,50 @@ namespace Phoenix::ECS
             }
 
             return block->ArchetypeManager.ForEachEntity<TComponents...>(query, func);
+        }
+
+        template <class ...TComponents>
+        static void ForEachEntity(WorldConstRef world, const TEntityQueryBufferFunc<TComponents...>& func)
+        {
+            EntityQueryBuilder builder;
+            builder.RequireAllComponents<TComponents...>();
+            ForEachEntity(world, builder.GetQuery(), func);
+        }
+
+        template <class TJob>
+        static void ForEachEntity(WorldRef world, const EntityQuery& query, TJob& job)
+        {
+            FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+            if (!block)
+            {
+                return;
+            }
+
+            return block->ArchetypeManager.ForEachEntity(world, query, job);
+        }
+
+        template <class TJob>
+        static void ForEachEntity(WorldRef world, TJob& job)
+        {
+            ForEachEntity(world, EntityJobHelper<TJob>::BuildQuery(), job);
+        }
+
+        template <class TJob>
+        static void ForEachEntity(WorldConstRef world, const EntityQuery& query, TJob& job)
+        {
+            const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
+            if (!block)
+            {
+                return;
+            }
+
+            return block->ArchetypeManager.ForEachEntity(world, query, job);
+        }
+
+        template <class TJob>
+        static void ForEachEntity(WorldConstRef world, TJob& job)
+        {
+            ForEachEntity(world, EntityJobHelper<TJob>::BuildQuery(), job);
         }
 
         //
@@ -295,13 +401,7 @@ namespace Phoenix::ECS
                 return nullptr;
             }
 
-            Entity* entity = GetEntityPtr(world, entityId);
-            if (!entity)
-            {
-                return nullptr;
-            }
-
-            return block->ArchetypeManager.AddComponent<T>(entity->Handle, defaultValue);
+            return block->ArchetypeManager.AddComponent<T>(entityId, defaultValue);
         }
 
         // Adds a new component to an entity.
@@ -314,13 +414,7 @@ namespace Phoenix::ECS
                 return nullptr;
             }
 
-            Entity* entity = GetEntityPtr(world, entityId);
-            if (!entity)
-            {
-                return nullptr;
-            }
-
-            return block->ArchetypeManager.EmplaceComponent<T, TArgs...>(entity->Handle, args...);
+            return block->ArchetypeManager.EmplaceComponent<T, TArgs...>(entityId, args...);
         }
 
         // Removes a component from an entity.
@@ -345,13 +439,7 @@ namespace Phoenix::ECS
                 return;
             }
 
-            Entity* entity = GetEntityPtr(world, entityId);
-            if (!entity)
-            {
-                return;
-            }
-
-            return block->ArchetypeManager.ForEachComponent<T>(entity->Handle, callback);
+            return block->ArchetypeManager.ForEachComponent<T>(entityId, callback);
         }
 
         // Enumerates all components on a given entity.
@@ -364,13 +452,7 @@ namespace Phoenix::ECS
                 return;
             }
 
-            const Entity* entity = GetEntityPtr(world, entityId);
-            if (!entity)
-            {
-                return;
-            }
-
-            return block->ArchetypeManager.ForEachComponent<T>(entity->Handle, callback);
+            return block->ArchetypeManager.ForEachComponent<T>(entityId, callback);
         }
 
         //
@@ -477,7 +559,7 @@ namespace Phoenix::ECS
             const FName& key,
             const T& value)
         {
-            Blackboard::WorldBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
+            Blackboard::FixedBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
             Blackboard::blackboard_key_t fullKey = CreateBlackboardKey(id, key);
             return blackboard.SetValue<T>(fullKey, value);
         }
@@ -496,7 +578,7 @@ namespace Phoenix::ECS
             const FName& key,
             T& outValue)
         {
-            const Blackboard::WorldBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
+            const Blackboard::FixedBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
             Blackboard::blackboard_key_t fullKey = CreateBlackboardKey(id, key);
             return blackboard.GetValue<T>(fullKey, outValue);
         }
@@ -514,7 +596,7 @@ namespace Phoenix::ECS
             const FName& key,
             const T& defaultValue = {})
         {
-            const Blackboard::WorldBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
+            const Blackboard::FixedBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
             Blackboard::blackboard_key_t fullKey = CreateBlackboardKey(id, key);
             T result;
             if (!blackboard.GetValue<T>(fullKey, result))
@@ -531,7 +613,7 @@ namespace Phoenix::ECS
             const FName& key,
             bool checkType = true)
         {
-            Blackboard::WorldBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
+            Blackboard::FixedBlackboard& blackboard = Blackboard::FeatureBlackboard::GetBlackboard(world);
             Blackboard::blackboard_key_t fullKey = CreateBlackboardKey(id, key);
             return blackboard.RemoveValue<T>(fullKey, checkType);
         }
@@ -549,7 +631,7 @@ namespace Phoenix::ECS
             WorldPtr worldPtr = &world;
 
             uint32 startIndex = 0;
-            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](ArchetypeList& list)
+            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](FixedArchetypeList& list)
             {
                 if (job.GetQuery().PassesFilter(list.GetDefinition()))
                 {
@@ -581,7 +663,7 @@ namespace Phoenix::ECS
             std::vector<Task>& taskGroup = taskQueue->BeginGroup(numArchetypeLists);
 
             uint32 startIndex = 0;
-            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](ArchetypeList& list)
+            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](FixedArchetypeList& list)
             {
                 if (job.GetQuery().PassesFilter(list.GetDefinition()))
                 {
@@ -627,14 +709,14 @@ namespace Phoenix::ECS
             WorldConstRef world,
             const Vec2& pos,
             Distance range,
-            TArray<EntityTransform>& outEntities,
+            TVector<EntityTransform>& outEntities,
             const EntityRangeQueryArgs& args = {});
 
         static void QueryEntitiesInRect(
             WorldConstRef world,
             const Vec2& min,
             const Vec2& max,
-            TArray<EntityTransform>& outEntities,
+            TVector<EntityTransform>& outEntities,
             const EntityRangeQueryArgs& args = {});
 
         bool bDebugDrawMortonCodeBoundaries = false;
@@ -646,11 +728,13 @@ namespace Phoenix::ECS
 
         static void SortAndCompact(WorldRef world);
 
-        TArray<TSharedPtr<ISystem>> Systems;
+        void OnReclaimEntity(WorldRef world, const EntityId& entityId) const;
+
+        TVector<TSharedPtr<ISystem>> Systems;
         TSharedPtr<ThreadPool> JobThreadPool;
 
         FOnEntityAcquired EntityAcquiredEvent;
-        FOnEntityReleasing EntityReleasingEvent;
-        FOnEntityReleased EntityReleasedEvent;
+        FOnEntityReleasing EntityReleasedEvent;
+        FOnEntityReleased EntityDestroyedEvent;
     };
 }

@@ -1,6 +1,7 @@
 ﻿
 #pragma once
 
+#include "PhoenixSim/Name.h"
 #include "PhoenixSim/Containers/FixedSortedList.h"
 #include "PhoenixSim/ECS/EntityId.h"
 
@@ -9,103 +10,84 @@ namespace Phoenix::ECS
     struct PHOENIX_SIM_API EntityTag
     {
         EntityTag() = default;
-        EntityTag(EntityId entity, FName tag = FName::None)
-            : Entity(entity)
-            , Tag(tag)
-        {
-        }
+        EntityTag(EntityId entity, FName tag = FName::None);
 
-        bool operator==(const EntityTag& other) const
-        {
-            return Entity == other.Entity && Tag == other.Tag;
-        }
+        bool operator==(const EntityTag& other) const;
 
-        bool IsValid() const { return Tag != FName::None; }
-        void Invalidate() { Tag = FName::None; }
+        bool IsValid() const;
+        void Invalidate();
 
         EntityId Entity;
         FName Tag;
+
+        struct GetItemKey
+        {
+            EntityId operator()(const EntityTag& item) const;
+        };
     };
 
-    template <size_t N>
-    class FixedTagList
+    class PHOENIX_SIM_API FixedTagList
     {
     public:
 
-        static constexpr uint32 Capacity = N;
+        using TItem = EntityTag;
+        using TStorage = TFixedSortedList<EntityTag, EntityTag::GetItemKey>;
 
-        uint32 GetSize() const
+        FixedTagList() = default;
+
+        template <class TAllocator>
+        FixedTagList(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            return Items.GetSize();
         }
 
-        uint32 GetNumValidTags() const
+        template <class TAllocator>
+        FixedTagList(TAllocator& allocator, uint32 capacity, const FixedTagList& other)
+            : Storage(allocator, capacity, other.Storage)
         {
-            return Items.GetNumValidItems();
         }
 
-        bool HasTag(EntityId entity, const FName& tag) const
-        {
-            return Items.Contains({ entity, tag });
-        }
+        uint32 GetCapacity() const;
 
-        bool AddTag(EntityId entity, const FName& tag)
-        {
-            return Items.PushBackUnique({ entity, tag });
-        }
+        static uint32 GetAllocSizeBytes(uint32 capacity);
 
-        bool RemoveTag(EntityId entity, const FName& tag)
-        {
-            return Items.Remove({ entity, tag });
-        }
+        uint32 GetAllocSizeBytes() const;
 
-        uint32 RemoveAllTags(EntityId entity)
-        {
-            return Items.RemoveAll(entity);
-        }
+        const EntityTag* GetData() const;
 
-        FName GetFirstTag(EntityId entity, uint32& outIndex) const
-        {
-            EntityTag* item = Items.GetFirstSubItem(entity, outIndex);
-            return item ? item->Tag : FName::None;
-        }
+        void Sort();
 
-        FName GetNextTag(EntityId entity, uint32 currIndex, uint32& outIndex) const
-        {
-            EntityTag* item = Items.GetNextSubItem(entity, currIndex, outIndex);
-            return item ? item->Tag : FName::None;
-        }
+        uint32 GetNumValidTags() const;
+
+        bool HasTag(EntityId entity, const FName& tag) const;
+
+        bool AddTag(EntityId entity, const FName& tag);
+
+        bool RemoveTag(EntityId entity, const FName& tag);
+
+        uint32 RemoveAllTags(EntityId entity);
+
+        FName GetFirstTag(EntityId entity, uint32& outIndex) const;
+
+        FName GetNextTag(EntityId entity, uint32 currIndex, uint32& outIndex) const;
 
         template <class TCallback>
         void ForEach(const TCallback& callback) const
         {
-            Items.ForEachItem(callback);
+            Storage.ForEachItem(callback);
         }
 
         template <class TCallback>
         void ForEachTag(EntityId entity, const TCallback& callback) const
         {
-            Items.ForEachSubItem(entity, [&](const EntityTag& item) -> const FName&
-            {
-                return item.Tag;
-            }, callback);
-        }
-
-        void Sort()
-        {
-            Items.Sort();
+            Storage.ForEachItemProjected(
+                entity,
+                [&](const EntityTag& item) -> const FName& { return item.Tag; },
+                callback);
         }
 
     private:
 
-        struct GetItemKey
-        {
-            EntityId operator()(const EntityTag& item) const
-            {
-                return item.Entity;
-            }
-        };
-
-        TFixedSortedList<EntityTag, Capacity, GetItemKey> Items;
+        TStorage Storage;
     };
 }

@@ -3,13 +3,18 @@
 
 #include <algorithm>
 
+#include "FixedMemory.h"
 #include "PhoenixSim/Platform.h"
 
 namespace Phoenix
 {
-    template <uint32 N>
-    struct TFixedBuffer
+    class PHOENIX_SIM_API TFixedBuffer
     {
+    public:
+
+        using TStorage = TSelfOffsetStorage<uint8>;
+        using TElement = TStorage::TElement;
+
         enum class ESeekOffset
         {
             Begin,
@@ -17,29 +22,55 @@ namespace Phoenix
             Relative
         };
 
-        constexpr void Reset()
+        TFixedBuffer() = default;
+
+        TFixedBuffer(uint32 offset, uint32 capacity)
+            : Storage(offset, capacity)
         {
-            WritePos = 0;
-            ReadPos = 0;
-            Size = 0;
         }
 
-        constexpr bool IsEmpty() const
+        TFixedBuffer(TStorage::TElement* ptr, uint32 capacity)
+            : Storage(ptr, capacity)
+        {
+        }
+
+        template <class TAllocator>
+        TFixedBuffer(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
+        {
+        }
+
+        PHX_FORCEINLINE uint32 GetCapacity() const
+        {
+            return Storage.GetCapacity();
+        }
+
+        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
+        {
+            return TStorage::GetAllocSizeBytes(capacity);
+        }
+
+        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
+        {
+            return Storage.GetAllocSizeBytes();
+        }
+
+        bool IsEmpty() const
         {
             return WritePos == 0;
         }
 
-        constexpr bool IsFull() const
+        bool IsFull() const
         {
-            return WritePos == N;
+            return WritePos == GetCapacity();
         }
 
-        constexpr bool CanWrite(uint32 size = 0) const
+        bool CanWrite(uint32 size = 0) const
         {
-            return WritePos + size <= N;
+            return WritePos + size <= GetCapacity();
         }
 
-        constexpr bool CanRead(uint32 size = 0) const
+        bool CanRead(uint32 size = 0) const
         {
             return ReadPos + size <= Size;
         }
@@ -50,16 +81,18 @@ namespace Phoenix
             {
             case ESeekOffset::End:
                 {
-                    pos = Size - pos;
+                    pos = static_cast<int32>(Size) - pos;
                 }
                 break;
             case ESeekOffset::Relative:
                 {
-                    pos = WritePos + pos;
+                    pos += static_cast<int32>(WritePos);
                 }
                 break;
+            case ESeekOffset::Begin:
+                break;
             }
-            WritePos = std::clamp(pos, 0, static_cast<int32>(N));
+            WritePos = std::clamp(pos, 0, static_cast<int32>(GetCapacity()));
         }
 
         void SeekRead(int32 pos, ESeekOffset offset = ESeekOffset::Begin)
@@ -68,22 +101,24 @@ namespace Phoenix
             {
             case ESeekOffset::End:
                 {
-                    pos = Size - pos;
+                    pos = static_cast<int32>(Size) - pos;
                 }
                 break;
             case ESeekOffset::Relative:
                 {
-                    pos = ReadPos + pos;
+                    pos += static_cast<int32>(ReadPos);
                 }
                 break;
+            case ESeekOffset::Begin:
+                break;
             }
-            ReadPos = std::clamp(pos, 0, static_cast<int32>(N));
+            ReadPos = std::clamp(pos, 0, static_cast<int32>(GetCapacity()));
         }
 
         uint32 Write(const void* source, uint32 len)
         {
-            len = std::max(N - WritePos, len);
-            memcpy(Data + WritePos, source, len);
+            len = std::max(GetCapacity() - WritePos, len);
+            memcpy(Storage.GetData() + WritePos, source, len);
             WritePos += len;
             Size = std::max(Size, WritePos);
             return len;
@@ -92,11 +127,11 @@ namespace Phoenix
         template <class T>
         uint32 Write(const T& value)
         {
-            if (WritePos + sizeof(T) > N)
+            if (WritePos + sizeof(T) > GetCapacity())
             {
                 return 0;
             }
-            new (Data + WritePos) T(value);
+            new (Storage.GetData() + WritePos) T(value);
             WritePos += sizeof(T);
             Size = std::max(Size, WritePos);
             return sizeof(T);
@@ -105,11 +140,11 @@ namespace Phoenix
         template <class T, class ...TArgs>
         uint32 Emplace(TArgs&& ...args)
         {
-            if (WritePos + sizeof(T) > N)
+            if (WritePos + sizeof(T) > GetCapacity())
             {
                 return 0;
             }
-            new (Data + WritePos) T(std::move(args)...);
+            new (Storage.GetData() + WritePos) T(std::move(args)...);
             WritePos += sizeof(T);
             Size = std::max(Size, WritePos);
             return sizeof(T);
@@ -117,8 +152,8 @@ namespace Phoenix
 
         uint32 Read(void* dest, uint32 len)
         {
-            len = std::max(N - ReadPos, len);
-            memcpy(dest, Data + ReadPos, len);
+            len = std::max(GetCapacity() - ReadPos, len);
+            memcpy(dest, Storage.GetData() + ReadPos, len);
             ReadPos += len;
             return len;
         }
@@ -126,11 +161,11 @@ namespace Phoenix
         template <class T>
         uint32 Read(T& outValue)
         {
-            if (ReadPos + sizeof(T) > N)
+            if (ReadPos + sizeof(T) > GetCapacity())
             {
                 return 0;
             }
-            outValue = *reinterpret_cast<T*>(Data + ReadPos);
+            outValue = *reinterpret_cast<T*>(Storage.GetData() + ReadPos);
             ReadPos += sizeof(T);
             return sizeof(T);
         }
@@ -138,16 +173,26 @@ namespace Phoenix
         template <class T>
         T* ReadPtr()
         {
-            if (ReadPos + sizeof(T) > N)
+            if (ReadPos + sizeof(T) > GetCapacity())
             {
                 return nullptr;
             }
-            T* ptr = reinterpret_cast<T*>(Data + ReadPos);
+            T* ptr = reinterpret_cast<T*>(Storage.GetData() + ReadPos);
             ReadPos += sizeof(T);
             return ptr;
         }
 
-        uint8 Data[N] = {};
+        void Reset()
+        {
+            Storage.SetZero();
+            WritePos = 0;
+            ReadPos = 0;
+            Size = 0;
+        }
+
+    private:
+
+        TStorage Storage;
         uint32 WritePos = 0;
         uint32 ReadPos = 0;
         uint32 Size = 0;

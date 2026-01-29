@@ -3,6 +3,7 @@
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/FixedPoint/FixedTypes.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
+#include "PhoenixSim/Containers/Optional.h"
 
 #include "PhoenixRTS/DLLExport.h"
 
@@ -57,7 +58,7 @@ namespace Phoenix::RTS
     struct PHOENIX_RTS_API TargetEntityState
     {
         ECS::EntityId Target;
-        Vec2 LastKnownPosition;
+        Vec2 LastKnownPosition = Vec2::Max;
     };
 
     struct PHOENIX_RTS_API TargetLocationState

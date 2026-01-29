@@ -14,25 +14,54 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::LDS::Json;
 namespace fs = std::filesystem;
 
+FeatureLDSDynamicBlock::FeatureLDSDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
+    : Catalog(allocator, { config.MaxObjectRecords, config.MaxTypeRecords })
+{
+}
+
+FeatureLDSDynamicBlock::FeatureLDSDynamicBlock(
+    BlockBufferAllocator& allocator,
+    const Config& config,
+    const FeatureLDSDynamicBlock& other)
+    : Catalog(allocator, { config.MaxObjectRecords, config.MaxTypeRecords }, other.Catalog)
+{
+}
+
+BufferBlockLayout FeatureLDSDynamicBlock::Layout(Config config)
+{
+    BufferBlockLayout layout;
+    layout.BlockSize = sizeof(FeatureLDSDynamicBlock);
+
+    struct FixedLDSCatalog::Config catalogConfig;
+    catalogConfig.MaxObjectRecords = config.MaxObjectRecords;
+    catalogConfig.MaxTypeRecords = config.MaxTypeRecords;
+    layout.AllocSize = FixedLDSCatalog::GetAllocSizeBytes(catalogConfig);
+
+    return layout;
+}
+
+void FeatureLDSDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
+{
+    new (dest) FeatureLDSDynamicBlock(allocator, config);
+}
+
 FeatureLDS::FeatureLDS()
 {
-    FEATURE_SESSION_BLOCK(FeatureLDSSessionDynamicBlock)
-    FEATURE_WORLD_BLOCK(FeatureLDSWorldDynamicBlock)
     FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
     FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
 }
 
-TSharedPtr<Catalog> FeatureLDS::GetStaticSessionCatalog()
+TSharedPtr<HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog()
 {
     return StaticSessionCatalog;
 }
 
-TSharedPtr<const Catalog> FeatureLDS::GetStaticSessionCatalog() const
+TSharedPtr<const HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog() const
 {
     return StaticSessionCatalog;
 }
 
-TSharedPtr<const Catalog> FeatureLDS::GetStaticWorldCatalog(WorldConstRef world) const
+TSharedPtr<const HeapLDSCatalog> FeatureLDS::GetStaticWorldCatalog(WorldConstRef world) const
 {
     auto worldCatalog = StaticWorldCatalogs.find(world.GetId());
     if (worldCatalog != StaticWorldCatalogs.end())
@@ -106,7 +135,7 @@ void FeatureLDS::Initialize(const TSharedPtr<Phoenix::Session>& session)
     IFeature::Initialize(session);
 
     // TODO (jfarris): load session-level catalogs from disk
-    StaticSessionCatalog = MakeShared<Catalog>();
+    StaticSessionCatalog = MakeShared<HeapLDSCatalog>();
 
     SessionQueryContext = MakeShared<LDSFeatureQueryContext>(LDSFeatureQueryContext::Create(*Session, nullptr));
 
@@ -135,21 +164,44 @@ void FeatureLDS::Shutdown()
     StaticSessionCatalog.reset();
 }
 
+void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
+    IFeature::OnWorldLayout(context, builder);
+
+    FeatureLDSDynamicBlock::Config dynamicBlockConfig;
+    dynamicBlockConfig.MaxObjectRecords = 8192;
+    dynamicBlockConfig.MaxTypeRecords = 1024;
+
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    {
+        const nlohmann::json& featureConfigData = featureConfig->GetData();
+        dynamicBlockConfig.MaxObjectRecords = featureConfigData.value("max_dynamic_object_records", dynamicBlockConfig.MaxObjectRecords);
+        dynamicBlockConfig.MaxTypeRecords = featureConfigData.value("max_dynamic_type_records", dynamicBlockConfig.MaxTypeRecords);
+    }
+
+    builder.RegisterBlockWithAlloc<FeatureLDSDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
+}
+
 void FeatureLDS::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
 
-    auto worldCatalog = MakeShared<Catalog>();
-    StaticWorldCatalogs.emplace(world.GetId(), worldCatalog);
-
-    if (const nlohmann::json* config = world.GetFeatureConfig("FeatureLDS"))
+    TSharedPtr<HeapLDSCatalog> staticWorldCatalog = StaticWorldCatalogs[world.GetId()];
+    if (!staticWorldCatalog)
     {
-        auto catalogPathIter = config->find("catalog");
-        if (catalogPathIter != config->end())
+        staticWorldCatalog = MakeShared<HeapLDSCatalog>();
+        StaticWorldCatalogs.emplace(world.GetId(), staticWorldCatalog);
+    }
+
+    if (const FeatureJsonConfig* config = world.GetFeatureConfig(StaticTypeName))
+    {
+        const nlohmann::json& featureConfigData = config->GetData();
+        auto catalogPathIter = featureConfigData.find("catalog");
+        if (catalogPathIter != featureConfigData.end())
         {
             fs::path worldsDir = Session->GetWorldsDirectory();
             fs::path catalogPath = absolute(worldsDir / catalogPathIter->get<PHXString>());
-            LoadCatalog(catalogPathIter->get<PHXString>(), *worldCatalog);
+            LoadCatalog(catalogPathIter->get<PHXString>(), *staticWorldCatalog);
         }
     }
 
@@ -176,7 +228,7 @@ void FeatureLDS::OnWorldShutdown(WorldRef world)
     }
 }
 
-bool FeatureLDS::LoadCatalog(const PHXString& catalogAbsolutePath, Catalog& catalog)
+bool FeatureLDS::LoadCatalog(const PHXString& catalogAbsolutePath, HeapLDSCatalog& catalog)
 {
     TSharedPtr<JsonDataSource> dataSource = JsonDataSource::LoadFromCatalog(catalogAbsolutePath);
     if (!dataSource)

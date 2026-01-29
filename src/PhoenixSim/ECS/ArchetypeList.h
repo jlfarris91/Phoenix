@@ -7,10 +7,6 @@
 #include "PhoenixSim/ECS/ArchetypeDefinition.h"
 #include "PhoenixSim/ECS/EntityId.h"
 
-#ifndef PHX_ECS_ARCHETYPE_LIST_SIZE
-#define PHX_ECS_ARCHETYPE_LIST_SIZE 16000
-#endif
-
 namespace Phoenix
 {
     namespace ECS
@@ -43,239 +39,101 @@ namespace Phoenix
         struct ArchetypeInstance
         {
             EntityId EntityId;
-            uint32 NextFree = Index<uint32>::None;
         };
 
         // Archetype data is tightly packed into the Data buffer.
         // Data: [Entity0][Comp0][Comp1][Entity1][Comp0][Comp1]...
-        template <class TArchetypeDefinition = ArchetypeDefinition, uint32 N = PHX_ECS_ARCHETYPE_LIST_SIZE>
-        class TArchetypeList
+        class PHOENIX_SIM_API FixedArchetypeList
         {
         public:
 
-            static constexpr size_t Capacity = N;
-
             using Handle = ArchetypeHandle;
 
-            TArchetypeList(const TArchetypeDefinition& definition, uint32 id = 0)
-                : Id(id)
+            FixedArchetypeList() = default;
+
+            template <class TAllocator>
+            FixedArchetypeList(TAllocator& allocator, uint32 capacity, const ArchetypeDefinition& definition, uint32 id = 0)
+                : Capacity(capacity)
+                , Id(id)
                 , Definition(definition)
+                , Data(allocator, capacity)
             {
             }
 
-            uint32 GetId() const
+            template <class TAllocator>
+            FixedArchetypeList(TAllocator& allocator, uint32 capacity, const FixedArchetypeList& other)
+                : Capacity(capacity)
+                , Id(other.Id)
+                , Definition(other.Definition)
+                , Data(allocator, capacity, other.Data)
             {
-                return Id;
             }
 
-            void SetId(uint32 id)
-            {
-                Id = id;
-            }
+            static uint32 GetAllocSizeBytes(uint32 capacity);
 
-            const TArchetypeDefinition& GetDefinition() const
-            {
-                return Definition;
-            }
+            uint32 GetAllocSizeBytes() const;
 
-            bool HasArchetypeDefinition(const FName& archetypeIdOrHash) const
-            {
-                return Definition.HasIdOrHash(archetypeIdOrHash);
-            }
+            uint32 GetCapacity() const;
 
-            constexpr uint8* GetData()
-            {
-                return Data;
-            }
+            uint32 GetId() const;
 
-            constexpr const uint8* GetData() const
-            {
-                return Data;
-            }
+            void SetId(uint32 id);
 
-            constexpr uint32 GetSize() const
-            {
-                return NumInstances * GetEntityTotalSize();
-            }
+            const ArchetypeDefinition& GetDefinition() const;
 
-            constexpr bool IsFull() const
-            {
-                return NumActiveInstances == GetInstanceCapacity();
-            }
+            bool HasArchetypeDefinition(const FName& archetypeIdOrHash) const;
 
-            constexpr uint32 GetNumInstances() const
-            {
-                return NumInstances;
-            }
+            void* GetData();
 
-            constexpr uint32 GetNumActiveInstances() const
-            {
-                return NumActiveInstances;
-            }
+            const void* GetData() const;
 
-            constexpr uint32 GetInstanceCapacity() const
-            {
-                return Capacity / GetEntityTotalSize();
-            }
+            uint32 GetSize() const;
 
-            constexpr bool IsValid(const Handle& handle) const
-            {
-                if (!OwnsHandle(handle) || handle.Id >= NumInstances)
-                {
-                    return false;
-                }
+            bool IsFull() const;
 
-                const ArchetypeInstance* instance = GetEntityPtr(handle.Id);
-                return instance && instance->EntityId == handle.EntityId;
-            }
+            uint32 GetNumInstances() const;
 
-            constexpr bool OwnsHandle(const Handle& handle) const
-            {
-                return handle.OwnerId == Id;
-            }
+            uint32 GetNumActiveInstances() const;
 
-            Handle Acquire(EntityId entityId)
-            {
-                if (IsFull())
-                {
-                    return Handle();
-                }
+            uint32 GetInstanceCapacity() const;
 
-                uint32 slotIndex = FindFreeSlot();
-                if (slotIndex == Index<uint32>::None)
-                {
-                    slotIndex = NumInstances++;
-                }
-                
-                Handle handle = { Id, slotIndex, entityId };
-                ArchetypeInstance* instance = GetEntityPtr(handle.Id);
-                instance->EntityId = entityId;
+            bool IsValid(const Handle& handle) const;
 
-                void* entityComponentDataPtr = GetEntityComponentHeadPtr(handle.Id);
-                PHX_ASSERT(entityComponentDataPtr);
+            bool OwnsHandle(const Handle& handle) const;
 
-                Definition.Construct(entityComponentDataPtr);
+            Handle Acquire(EntityId entityId);
 
-                ++NumActiveInstances;
+            bool Release(const Handle& handle);
 
-                return handle;
-            }
+            void* GetComponent(const Handle& handle, const FName& componentId);
 
-            bool Release(const Handle& handle)
-            {
-                if (!OwnsHandle(handle))
-                {
-                    return false;
-                }
-
-                ArchetypeInstance* instance = GetEntityPtr(handle.Id);
-                if (!instance || instance->EntityId != handle.EntityId)
-                {
-                    return false;
-                }
-
-                instance->EntityId = EntityId::Invalid;
-
-                if (FreeHead == Index<uint32>::None)
-                {
-                    FreeHead = FreeTail = handle.Id;
-                }
-                else if (ArchetypeInstance* freeTail = GetEntityPtr(FreeTail))
-                {
-                    freeTail->NextFree = handle.Id;
-                    FreeTail = handle.Id;
-                }
-
-                void* entityComponentDataPtr = GetEntityComponentHeadPtr(handle.Id);
-                PHX_ASSERT(entityComponentDataPtr);
-
-                Definition.Deconstruct(entityComponentDataPtr);
-
-                --NumActiveInstances;
-
-                return true;
-            }
-
-            constexpr void* GetComponent(const Handle& handle, const FName& componentId)
-            {
-                if (!IsValid(handle))
-                {
-                    return nullptr;
-                }
-                uint32 entityCompOffset = GetOffsetToEntityComponent(handle.Id, componentId);
-                if (entityCompOffset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return Data + entityCompOffset;
-            }
-
-            constexpr const void* GetComponent(const Handle& handle, const FName& componentId) const
-            {
-                if (!IsValid(handle))
-                {
-                    return nullptr;
-                }
-                uint32 entityCompOffset = GetOffsetToEntityComponent(handle.Id, componentId);
-                if (entityCompOffset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return Data + entityCompOffset;
-            }
+            const void* GetComponent(const Handle& handle, const FName& componentId) const;
 
             template <class T>
-            constexpr T* GetComponent(const Handle& handle)
+            T* GetComponent(const Handle& handle)
             {
                 void* dataPtr = GetComponent(handle, T::StaticTypeName);
                 return static_cast<T*>(dataPtr);
             }
 
             template <class T>
-            constexpr const T* GetComponent(const Handle& handle) const
+            const T* GetComponent(const Handle& handle) const
             {
                 const void* dataPtr = GetComponent(handle, T::StaticTypeName);
                 return static_cast<const T*>(dataPtr);
             }
 
             // Gets the total size of an entity in the Data buffer.
-            constexpr uint32 GetEntityTotalSize() const
-            {
-                return sizeof(ArchetypeInstance) + Definition.GetTotalSize();
-            }
+            uint32 GetEntityTotalSize() const;
 
             // Gets the local offset of a component within an entity in the list.
             // Returns -1 if a component with the given id could not be found.
-            constexpr uint32 GetComponentLocalOffset(const FName& componentId) const
-            {
-                uint32 index = Definition.IndexOfComponent(componentId);
-                if (!Definition.IsValidIndex(index))
-                {
-                    return Index<uint32>::None;
-                }
-                return Definition[index].Offset;
-            }
+            uint32 GetComponentLocalOffset(const FName& componentId) const;
 
-            void ForEachInstance(TFunction<void(const Handle&)>&& func) const
-            {
-                for (uint32 i = 0; i < NumInstances; ++i)
-                {
-                    const ArchetypeInstance* instance = GetEntityPtr(i);
-
-                    if (instance->EntityId == EntityId::Invalid)
-                    {
-                        continue;
-                    }
-
-                    if (InvokeForEachCallbackWithIndex(func, i, Handle(Id, i, instance->EntityId)))
-                    {
-                        break;
-                    }
-                }
-            }
+            void ForEachInstance(const TFunction<void(const Handle&)>& func) const;
 
             template <class ...TComponents>
-            void ForEachEntity(TFunction<void(EntityId, TComponents...)>&& func)
+            void ForEachEntity(const TFunction<void(EntityId, TComponents...)>& func)
             {
                 for (uint32 i = 0; i < NumInstances; ++i)
                 {
@@ -294,11 +152,11 @@ namespace Phoenix
             }
 
             template <class ...TComponents>
-            void ForEachEntity(TFunction<void(EntityId, TComponents...)>&& func) const
+            void ForEachEntity(const TFunction<void(EntityId, TComponents...)>& func) const
             {
                 for (uint32 i = 0; i < NumInstances; ++i)
                 {
-                    ArchetypeInstance* instance = GetEntityPtr(i);
+                    const ArchetypeInstance* instance = GetEntityPtr(i);
 
                     if (instance->EntityId == EntityId::Invalid)
                     {
@@ -313,9 +171,9 @@ namespace Phoenix
             }
 
             template <class TCallback>
-            void ForEachComponent(const Handle& handle, TCallback&& func)
+            void ForEachComponent(const Handle& handle, const TCallback& func)
             {
-                for (uint8 i = 0; i < (uint8)Definition.GetNumComponents(); ++i)
+                for (uint8 i = 0; i < Definition.GetNumComponents(); ++i)
                 {
                     const ComponentDefinition& componentDefinition = Definition[i];
                     void* compPtr = GetComponent(handle, componentDefinition.Id);
@@ -327,7 +185,7 @@ namespace Phoenix
             }
 
             template <class TCallback>
-            void ForEachComponent(const Handle& handle, TCallback&& func) const
+            void ForEachComponent(const Handle& handle, const TCallback& func) const
             {
                 for (uint8 i = 0; i < Definition.GetNumComponents(); ++i)
                 {
@@ -340,64 +198,23 @@ namespace Phoenix
                 }
             }
 
-            Handle GetFirstActiveEntity() const
-            {
-                return GetNextActiveEntity({ Id, 0, 0 });
-            }
+            Handle GetFirstActiveEntity() const;
 
-            Handle GetNextActiveEntity(const Handle& handle) const
-            {
-                if (!OwnsHandle(handle))
-                {
-                    return Handle();
-                }
-
-                Handle result;
-                for (uint32 i = handle.Id; i < NumInstances; ++i)
-                {
-                    ArchetypeInstance* instance = GetEntityPtr(i);
-
-                    if (instance->EntityId == EntityId::Invalid)
-                    {
-                        continue;
-                    }
-
-                    result = { Id, i, instance->EntityId };
-                    break;
-                }
-
-                return result;
-            }
+            Handle GetNextActiveEntity(const Handle& handle) const;
 
             template <class ...TComponents>
             struct EntityComponentIter
             {
-                EntityComponentIter(TArchetypeList* list, const Handle& handle)
-                    : Curr(handle)
-                    , List(list)
-                {
-                    if (!List->IsValid(Curr))
-                        Curr = List->GetNextActiveEntity(Curr);
-                }
+                EntityComponentIter(FixedArchetypeList* list, const Handle& handle);
 
-                TTuple<EntityId, TComponents...> operator*() const
-                {
-                    return std::make_tuple(Curr.EntityId, ComponentAccessor<TComponents>::template GetComponentRef(*this, Curr.Id)...);
-                }
+                TTuple<EntityId, TComponents...> operator*() const;
 
-                EntityComponentIter& operator++()
-                {
-                    Curr = List->GetNextActiveEntity(Curr);
-                    return *this;
-                }
+                EntityComponentIter& operator++();
 
-                bool operator==(const EntityComponentIter& other) const
-                {
-                    return List == other.List && Curr == other.Curr;
-                }
+                bool operator==(const EntityComponentIter& other) const;
 
                 Handle Curr;
-                TArchetypeList* List;
+                FixedArchetypeList* List;
             };
 
             template <class ...TComponents>
@@ -415,102 +232,40 @@ namespace Phoenix
         private:
 
             // Gets the total offset to the entity at the given index in the raw Data buffer.
-            constexpr uint32 GetOffsetToEntity(uint32 index) const
-            {
-                return uint32(index * GetEntityTotalSize());
-            }
+            uint32 GetOffsetToEntity(uint32 index) const;
 
             // Gets the total offset to the head of the components of an entity in the Data buffer.
-            constexpr uint32 GetOffsetToEntityComponentHead(uint32 index) const
-            {
-                return GetOffsetToEntity(index) + sizeof(ArchetypeInstance);
-            }
+            uint32 GetOffsetToEntityComponentHead(uint32 index) const;
 
             // Gets the total offset to the component of a given entity.
-            constexpr uint32 GetOffsetToEntityComponent(uint32 index, const FName& componentId) const
-            {
-                uint32 componentOffset = GetComponentLocalOffset(componentId);
-                if (componentOffset == Index<uint32>::None)
-                {
-                    return Index<uint32>::None;
-                }
-                return GetOffsetToEntityComponentHead(index) + componentOffset;
-            }
+            uint32 GetOffsetToEntityComponent(uint32 index, const FName& componentId) const;
 
             // Gets a pointer to the Entity object at a given index.
             // Returns nullptr if there is no entity at that index.
-            constexpr ArchetypeInstance* GetEntityPtr(uint32 index)
-            {
-                uint32 offset = GetOffsetToEntity(index);
-                if (offset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return reinterpret_cast<ArchetypeInstance*>(Data + offset);
-            }
+            ArchetypeInstance* GetEntityPtr(uint32 index);
 
             // Gets a pointer to the Entity object at a given index.
             // Returns nullptr if there is no entity at that index.
-            constexpr const ArchetypeInstance* GetEntityPtr(uint32 index) const
-            {
-                uint32 offset = GetOffsetToEntity(index);
-                if (offset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return reinterpret_cast<const ArchetypeInstance*>(Data + offset);
-            }
+            const ArchetypeInstance* GetEntityPtr(uint32 index) const;
 
             // Gets the address of the first component of an entity at a given index.
-            constexpr void* GetEntityComponentHeadPtr(uint32 index)
-            {
-                uint32 offset = GetOffsetToEntityComponentHead(index);
-                if (offset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return Data + offset;
-            }
+            void* GetEntityComponentHeadPtr(uint32 index);
 
             // Gets the address of the first component of an entity at a given index.
-            constexpr const void* GetEntityComponentHeadPtr(uint32 index) const
-            {
-                uint32 offset = GetOffsetToEntityComponentHead(index);
-                if (offset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return Data + offset;
-            }
+            const void* GetEntityComponentHeadPtr(uint32 index) const;
 
             // Gets the address of a component of an entity at a given index.
             // Returns nullptr if the entity or component is not valid.
-            constexpr void* GetEntityComponentPtr(uint32 index, const FName& componentId)
-            {
-                uint32 offset = GetOffsetToEntityComponent(index, componentId);
-                if (offset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return Data + offset;
-            }
+            void* GetEntityComponentPtr(uint32 index, const FName& componentId);
 
             // Gets the address of a component of an entity at a given index.
             // Returns nullptr if the entity or component is not valid.
-            constexpr const void* GetEntityComponentPtr(uint32 index, const FName& componentId) const
-            {
-                uint32 offset = GetOffsetToEntityComponent(index, componentId);
-                if (offset == Index<uint32>::None)
-                {
-                    return nullptr;
-                }
-                return Data + offset;
-            }
+            const void* GetEntityComponentPtr(uint32 index, const FName& componentId) const;
 
             // Gets the address of a component of an entity at a given index.
             // Returns nullptr if the entity or component is not valid.
             template <class T>
-            constexpr T* GetEntityComponentPtr(uint32 index)
+            T* GetEntityComponentPtr(uint32 index)
             {
                 void* dataPtr = GetEntityComponentPtr(index, T::StaticTypeName);
                 return static_cast<T*>(dataPtr);
@@ -519,68 +274,44 @@ namespace Phoenix
             // Gets the address of a component of an entity at a given index.
             // Returns nullptr if the entity or component is not valid.
             template <class T>
-            constexpr const T* GetEntityComponentPtr(uint32 index) const
+            const T* GetEntityComponentPtr(uint32 index) const
             {
                 const void* dataPtr = GetEntityComponentPtr(index, T::StaticTypeName);
                 return static_cast<const T*>(dataPtr);
             }
 
             template <class T>
-            constexpr T GetComponentRef(uint32 index)
+            T GetComponentRef(uint32 index)
             {
                 auto ptr = GetEntityComponentPtr<Underlying_T<T>>(index);
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 
             template <class T>
-            constexpr T GetComponentRef(uint32 index) const
+            T GetComponentRef(uint32 index) const
             {
                 auto ptr = const_cast<Underlying_T<T>*>(GetEntityComponentPtr<Underlying_T<T>>(index));
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 
-            uint32 FindFreeSlot()
-            {
-                // Shortcut using free list
-                if (FreeHead != Index<uint32>::None)
-                {
-                    if (ArchetypeInstance* freeHead = GetEntityPtr(FreeHead))
-                    {
-                        PHX_ASSERT(freeHead->EntityId == EntityId::Invalid);
+            uint32 FindFreeSlot();
 
-                        uint32 slotIndex = FreeHead;
-                        if (FreeHead == FreeTail)
-                        {
-                            FreeHead = FreeTail = Index<uint32>::None;
-                        }
-                        else
-                        {
-                            FreeHead = freeHead->NextFree;
-                        }
-                        
-                        return slotIndex;
-                    }                    
-                }
-                return Index<uint32>::None;
-            }
-
+            uint32 Capacity = 0;
             uint32 Id = 0;
-            TArchetypeDefinition Definition;
+            ArchetypeDefinition Definition;
             uint32 NumInstances = 0;
             uint32 NumActiveInstances = 0;
-            uint32 FreeHead = Index<uint32>::None;
-            uint32 FreeTail = Index<uint32>::None;
-            uint8 Data[Capacity] = {};
+            uint32 FreeSlotIndexHint = 0;
+            TFixedStorage<uint8> Data;
         };
 
         template <class ...TComponents>
         struct EntityComponentSpan
         {
-            template <class TArchetypeList>
-            static EntityComponentSpan FromList(TArchetypeList& list, uint32 startingIndex)
+            static EntityComponentSpan FromList(FixedArchetypeList& list, uint32 startingIndex)
             {
                 EntityComponentSpan span;
-                span.RawData = const_cast<uint8*>(list.GetData());
+                span.RawData = static_cast<uint8*>(list.GetData());
                 span.StartingIndex = startingIndex;
                 span.InstanceCount = list.GetNumInstances();
                 span.Step = list.GetEntityTotalSize();
@@ -722,7 +453,5 @@ namespace Phoenix
             uint32 Offsets[sizeof...(TComponents)] = {};
             void* RawData = nullptr;
         };
-
-        using ArchetypeList = TArchetypeList<>;
     }
 }

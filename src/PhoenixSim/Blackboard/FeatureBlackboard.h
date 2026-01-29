@@ -16,21 +16,18 @@
 
 namespace Phoenix::Blackboard
 {
-    using SessionBlackboard = TFixedBlackboard<PHX_BLACKBOARD_MAX_GLOBAL_SIZE>;
-    using WorldBlackboard = TFixedBlackboard<PHX_BLACKBOARD_MAX_WORLD_SIZE>;
-    
-    struct PHOENIX_SIM_API FeatureBlackboardDynamicSessionBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureBlackboardBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureBlackboardDynamicSessionBlock)
-        SessionBlackboard Blackboard;
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureBlackboardBlock)
+
+        struct Config
+        {
+            uint32 MaxBlackboardItems;
+        };
+
+        FixedBlackboard Blackboard;
     };
 
-    struct PHOENIX_SIM_API FeatureBlackboardDynamicWorldBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureBlackboardDynamicWorldBlock)
-        WorldBlackboard Blackboard;
-    };
-    
     class PHOENIX_SIM_API FeatureBlackboard final : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureBlackboard)
@@ -39,6 +36,8 @@ namespace Phoenix::Blackboard
 
         FeatureBlackboard();
 
+        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
+
         void OnPostUpdate(const FeatureUpdateArgs& args) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 
@@ -46,14 +45,14 @@ namespace Phoenix::Blackboard
         // Session-level blackboard
         //
 
-        static SessionBlackboard& GetGlobalBlackboard(SessionRef session);
-        static const SessionBlackboard& GetGlobalBlackboard(SessionConstRef session);
+        static FixedBlackboard& GetGlobalBlackboard(SessionRef session);
+        static const FixedBlackboard& GetGlobalBlackboard(SessionConstRef session);
 
         //
         // World-level blackboard
         //
 
-        static WorldBlackboard& GetBlackboard(WorldRef world);
-        static const WorldBlackboard& GetBlackboard(WorldConstRef world);
+        static FixedBlackboard& GetBlackboard(WorldRef world);
+        static const FixedBlackboard& GetBlackboard(WorldConstRef world);
     };
 }

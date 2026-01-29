@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/Flags.h"
+#include "PhoenixSim/Containers/FixedMemory.h"
 #include "PhoenixSim/LDS/LDSObjectModel.h"
 #include "PhoenixSim/LDS/LDSRecordStore.h"
 
@@ -13,23 +14,104 @@ namespace Phoenix::LDS
         Type
     };
 
-    template <class TObjectStore, class TTypeStore>
-    struct TLDSCatalog
+    template <class TStoragePolicy>
+    class TLDSCatalogBase
     {
-        TObjectStore& GetObjectStore()
+    public:
+        using TStorage = TLDSRecordStore<TStoragePolicy>;
+    protected:
+        TStorage Objects;
+        TStorage Types;
+    };
+
+    template <>
+    class TLDSCatalogBase<FixedStoragePolicy>
+    {
+    public:
+        using TStorage = TLDSRecordStore<FixedStoragePolicy>;
+
+        struct Config
+        {
+            uint32 MaxObjectRecords;
+            uint32 MaxTypeRecords;
+        };
+
+        TLDSCatalogBase() = default;
+
+        template <class TAllocator>
+        TLDSCatalogBase(TAllocator& allocator, const Config& config)
+            : Configuration(config)
+            , Objects(allocator, config.MaxObjectRecords)
+            , Types(allocator, config.MaxTypeRecords)
+        {
+        }
+
+        template <class TAllocator>
+        TLDSCatalogBase(TAllocator& allocator, const Config& config, const TLDSCatalogBase& other)
+            : Configuration(config)
+            , Objects(allocator, config.MaxObjectRecords, other.Objects)
+            , Types(allocator, config.MaxTypeRecords, other.Types)
+        {
+        }
+
+        template <class TAllocator, class TOtherStoragePolicy>
+        TLDSCatalogBase(TAllocator& allocator, const Config& config, const TLDSCatalogBase<TOtherStoragePolicy>& other)
+            : Configuration(config)
+            , Objects(allocator, config.MaxObjectRecords, other.Objects)
+            , Types(allocator, config.MaxTypeRecords, other.Types)
+        {
+        }
+
+        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(const Config& config)
+        {
+            uint32 allocSize = 0;
+            allocSize += TStorage::GetAllocSizeBytes(config.MaxObjectRecords);
+            allocSize += TStorage::GetAllocSizeBytes(config.MaxTypeRecords);
+            return allocSize;
+        }
+
+        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
+        {
+            return GetAllocSizeBytes(Configuration);
+        }
+
+    protected:
+        Config Configuration;
+        TStorage Objects;
+        TStorage Types;
+    };
+
+    template <class TStoragePolicy>
+    class PHOENIX_SIM_API TLDSCatalog : public TLDSCatalogBase<TStoragePolicy>
+    {
+        using Super = TLDSCatalogBase<TStoragePolicy>;
+        using Super::Super;
+        using Super::Objects;
+        using Super::Types;
+
+    public:
+
+        using TStorage = typename Super::TStorage;
+
+        TStorage& GetObjectStore()
         {
             return Objects;
         }
 
-        const TObjectStore& GetObjectStore() const
+        const TStorage& GetObjectStore() const
         {
             return Objects;
         }
 
-        LDSRecord* FindObjectRecord(
+        uint32 GetObjectCapacity() const
+        {
+            return Objects.GetCapacity();
+        }
+
+        const LDSRecord* FindObjectRecord(
             const FName& objectId,
             const FName& propertyId,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const
         {
             FName currObjectId = objectId;
             while (currObjectId != FName::None)
@@ -56,14 +138,6 @@ namespace Phoenix::LDS
             return nullptr;
         }
 
-        const LDSRecord* FindObjectRecord(
-            const FName& objectId,
-            const FName& propertyId,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const
-        {
-            return const_cast<TLDSCatalog*>(this)->FindObjectRecord(objectId, propertyId, flags);
-        }
-
         bool HasObject(const FName& typeId) const
         {
             return Objects.HasObject(typeId);
@@ -76,9 +150,9 @@ namespace Phoenix::LDS
         }
 
         template <class ...TArgs>
-        LDSRecord& EmplaceObjectRecord(TArgs&&... args)
+        bool EmplaceObjectRecord(TArgs&&... args)
         {
-            return Objects.EmplaceRecord_GetRef(std::forward<TArgs>(args)...);
+            return Objects.SetRecord(std::forward<TArgs>(args)...);
         }
 
         ELDSValueType GetObjectRecordValueType(const FName& typeId, const FName& propertyId) const
@@ -92,20 +166,25 @@ namespace Phoenix::LDS
             return Objects.template GetRecordValueAs<T>(objectId, propertyId, defaultValue);
         }
 
-        TTypeStore& GetTypeStore()
+        TStorage& GetTypeStore()
         {
             return Types;
         }
 
-        const TTypeStore& GetTypeStore() const
+        const TStorage& GetTypeStore() const
         {
             return Types;
         }
 
-        LDSRecord* FindTypeRecord(
+        uint32 GetTypeCapacity() const
+        {
+            return Types.GetCapacity();
+        }
+
+        const LDSRecord* FindTypeRecord(
             const FName& typeId,
             const FName& propertyId,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None)
+            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const
         {
             FName currTypeId = typeId;
             while (currTypeId != FName::None)
@@ -121,20 +200,6 @@ namespace Phoenix::LDS
                 currTypeId = GetBaseTypeId(currTypeId);
             }
             return nullptr;
-        }
-
-        const LDSRecord* FindTypeRecord(
-            const FName& typeId,
-            const FName& propertyId,
-            ELDSRecordQueryFlags flags = ELDSRecordQueryFlags::None) const
-        {
-            return const_cast<TLDSCatalog*>(this)->FindTypeRecord(typeId, propertyId, flags);
-        }
-
-        // Returns the first matching type record found of a base type of a given object.
-        LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId)
-        {
-            return FindTypeRecord(GetBaseTypeId(objectId), propertyId, ELDSRecordQueryFlags::None);
         }
 
         // Returns the first matching type record found of a base type of a given object.
@@ -155,9 +220,9 @@ namespace Phoenix::LDS
         }
 
         template <class ...TArgs>
-        LDSRecord& EmplaceTypeRecord(TArgs&&... args)
+        bool EmplaceTypeRecord(TArgs&&... args)
         {
-            return Types.EmplaceRecord_GetRef(std::forward<TArgs>(args)...);
+            return Types.SetRecord(std::forward<TArgs>(args)...);
         }
 
         ELDSValueType GetTypeRecordValueType(const FName& typeId, const FName& propertyId) const
@@ -278,23 +343,8 @@ namespace Phoenix::LDS
             }
             return false;
         }
-        
-        LDSObjectRun FindSortedRecordRun(const FName& objectId, ELDSCatalogRecordStore store) const
-        {
-            switch (store)
-            {
-                case ELDSCatalogRecordStore::Object: return Objects.FindSortedRecordRun(objectId);
-                case ELDSCatalogRecordStore::Type:   return Types.FindSortedRecordRun(objectId);
-            }
-            return {};
-        }
-
-        TObjectStore Objects;
-        TTypeStore Types;
     };
 
-    template <size_t NObjects, size_t NTypes>
-    using TFixedCatalog = TLDSCatalog<TFixedRecordStore<NObjects>, TFixedRecordStore<NTypes>>;
-
-    using Catalog = TLDSCatalog<RecordStore, RecordStore>;
+    using FixedLDSCatalog = TLDSCatalog<FixedStoragePolicy>;
+    using HeapLDSCatalog = TLDSCatalog<HeapStoragePolicy>;
 }

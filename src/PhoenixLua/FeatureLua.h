@@ -12,7 +12,7 @@ namespace Phoenix
 {
     struct PHOENIX_LUA_API FeatureLuaDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureLuaDynamicBlock)
+        PHX_DECLARE_BLOCK(FeatureLuaDynamicBlock)
 
         sol::state State;
     };

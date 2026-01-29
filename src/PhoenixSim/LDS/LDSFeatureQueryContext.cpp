@@ -12,22 +12,22 @@ LDSFeatureQueryContext LDSFeatureQueryContext::Create(SessionConstRef session, W
 
     if (TSharedPtr<FeatureLDS> featureLDS = session.GetFeature<FeatureLDS>())
     {
-        context.SessionStaticCatalog = featureLDS->GetStaticSessionCatalog();
+        context.SessionStaticCatalog = featureLDS->GetStaticSessionCatalog().get();
 
         if (world)
         {
-            context.WorldStaticCatalog = featureLDS->GetStaticWorldCatalog(*world);
+            context.WorldStaticCatalog = featureLDS->GetStaticWorldCatalog(*world).get();
         }
     }
 
-    if (const FeatureLDSSessionDynamicBlock* block = session.GetBlock<FeatureLDSSessionDynamicBlock>())
+    if (const FeatureLDSDynamicBlock* block = session.GetBlock<FeatureLDSDynamicBlock>())
     {
         context.SessionDynamicCatalog = &block->Catalog;
     }
 
     if (world)
     {
-        if (const FeatureLDSWorldDynamicBlock* block = world->GetBlock<FeatureLDSWorldDynamicBlock>())
+        if (const FeatureLDSDynamicBlock* block = world->GetBlock<FeatureLDSDynamicBlock>())
         {
             context.WorldDynamicCatalog = &block->Catalog;
         }

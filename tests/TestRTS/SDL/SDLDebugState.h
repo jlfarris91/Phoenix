@@ -30,9 +30,9 @@ namespace Phoenix
         void ProcessAppEvent(SDL_Event* event);
 
         SDLViewport* Viewport;
-        TMap<uint8, bool> MouseButtonStates;
-        TMap<uint8, bool> PrevMouseButtonStates;
-        TMap<SDL_Keycode, bool> KeyStates;
-        TMap<SDL_Keycode, bool> PrevKeyStates;
+        std::map<uint8, bool> MouseButtonStates;
+        std::map<uint8, bool> PrevMouseButtonStates;
+        std::map<SDL_Keycode, bool> KeyStates;
+        std::map<SDL_Keycode, bool> PrevKeyStates;
     };
 }

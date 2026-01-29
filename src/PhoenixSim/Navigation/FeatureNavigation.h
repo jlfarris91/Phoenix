@@ -13,19 +13,19 @@ namespace Phoenix::Pathfinding
 
     struct PHOENIX_SIM_API FeatureNavMeshStaticBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureNavMeshStaticBlock)
+        PHX_DECLARE_BLOCK(FeatureNavMeshStaticBlock)
 
         NavMesh StaticNavMesh;
     };
 
     struct PHOENIX_SIM_API FeatureNavMeshDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureNavMeshDynamicBlock)
+        PHX_DECLARE_BLOCK(FeatureNavMeshDynamicBlock)
 
         Vec2 MapSize = Vec2(192, 192);
         NavMesh DynamicNavMesh;
-        TFixedArray<Line2, NavMesh::Capacity> DynamicEdges;
-        TFixedArray<Vec2, NavMesh::Capacity> DynamicPoints;
+        TInlineArray<Line2, NavMesh::Capacity> DynamicEdges;
+        TInlineArray<Vec2, NavMesh::Capacity> DynamicPoints;
         bool bDirty = true;
         bool bStepping = false;
         bool bFixDelaunayTriangulation = true;
@@ -33,7 +33,7 @@ namespace Phoenix::Pathfinding
 
     struct PHOENIX_SIM_API FeatureNavMeshScratchBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureNavMeshScratchBlock)
+        PHX_DECLARE_BLOCK(FeatureNavMeshScratchBlock)
 
         mutable TMeshPath<NavMesh> MeshPath;
     };

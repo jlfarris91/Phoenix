@@ -153,7 +153,7 @@ namespace PhysicsSystemDetail
                     uint64 key = hiId; key = key << 32 | loId;
 
                     uint32 contactIndex = scratchBlock.ContactPairsCount.fetch_add(1);
-                    if (contactIndex >= scratchBlock.ContactPairs.Capacity)
+                    if (contactIndex >= scratchBlock.ContactPairs.GetCapacity())
                         break;
 
                     ContactPair& pair = scratchBlock.ContactPairs[contactIndex];
@@ -239,8 +239,8 @@ namespace PhysicsSystemDetail
             scratchBlock.Contacts.Reset();
 
             uint64 currContactPairKey = 0;
-            uint32 contacts = 0;
-            for (uint32 i = 0; i < scratchBlock.ContactPairs.Num(); ++i)
+            uint32 numContacts = 0;
+            for (uint32 i = 0; i < scratchBlock.ContactPairs.GetNum(); ++i)
             {
                 const ContactPair& contactPair = scratchBlock.ContactPairs[i];
 
@@ -249,16 +249,16 @@ namespace PhysicsSystemDetail
 
                 currContactPairKey = contactPair.Key;
 
-                Contact& contact = scratchBlock.Contacts[contacts++];
+                Contact& contact = scratchBlock.Contacts[numContacts++];
                 contact.ContactPair = i;
 
-                if (contacts == scratchBlock.Contacts.Capacity)
+                if (numContacts == scratchBlock.Contacts.GetCapacity())
                 {
                     break;
                 }
             }
 
-            scratchBlock.Contacts.SetSize(contacts);
+            scratchBlock.Contacts.SetSize(numContacts);
         }
     }
 
@@ -470,13 +470,13 @@ void PhysicsSystem::OnPostWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
             // TODO (jfarris): can we have tasks depend on the result of other tasks?
             WorldTaskQueue::Flush(world);
 
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.Num(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
+            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
         }
 
         // Multi-pass solver
         for (uint32 i = 0; i < NumSolverSteps; ++i)
         {
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.Num(), 128, &PhysicsSystemDetail::PGSTask, i);
+            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::PGSTask, i);
         }
 
         // Integrate velocities
@@ -488,8 +488,8 @@ void PhysicsSystem::OnPostWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
         // Multi-pass overlap separation
         for (uint32 i = 0; i < NumSeparationSteps; ++i)
         {
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.Num(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.Num(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
+            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
+            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
         }
     }
 }

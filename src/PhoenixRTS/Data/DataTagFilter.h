@@ -9,8 +9,8 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API TagFilter
     {
-        TArray2<TagPtr> Required;
-        TArray2<TagPtr> Excluded;
+        TVector<TagPtr> Required;
+        TVector<TagPtr> Excluded;
         static bool Read(const LDS::LDSReadObjectArgs& args, TagFilter& outItem);
     };
 

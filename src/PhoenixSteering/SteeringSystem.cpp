@@ -438,7 +438,7 @@ namespace SteeringDetail
                 return;
             }
 
-            TArray2<const SortedEntity*> entities;
+            TVector<const SortedEntity*> entities;
             SteeringRangeQueryArgs queryArgs = { steerComp.CollisionMask };
             FeatureSteering::QueryEntitiesInRange(*World, steerComp.GoalPos, steerComp.Slack, entities);
 

@@ -195,7 +195,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
     }
 
     // Redraw the edges of the face the mouse is within so that they draw on top
-    for (uint32 i = 0; i < mesh.GetFaces().Num(); ++i)
+    for (uint32 i = 0; i < mesh.GetFaces().GetNum(); ++i)
     {
         auto result = mesh.IsPointInFace(int16(i), CursorPos);
         if (result.Result != EPointInFaceResult::Outside)
@@ -229,7 +229,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawVertIds)
     {
-        for (uint32 i = 0; i < mesh.GetVertices().Num(); ++i)
+        for (uint32 i = 0; i < mesh.GetVertices().GetNum(); ++i)
         {
             const Vec2& pt = mesh.GetVertices()[i];
 
@@ -241,7 +241,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawFaceIds)
     {
-        for (uint16 i = 0; i < mesh.GetFaces().Num(); ++i)
+        for (uint16 i = 0; i < mesh.GetFaces().GetNum(); ++i)
         {
             if (!mesh.IsValidFace(i))
                 continue;
@@ -263,7 +263,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 
     if (bDrawFaceCircumcircles)
     {
-        for (uint32 i = 0; i < mesh.GetFaces().Num(); ++i)
+        for (uint32 i = 0; i < mesh.GetFaces().GetNum(); ++i)
         {
             if (!mesh.IsValidFace(i))
                 continue;
@@ -357,7 +357,7 @@ void NavMeshTool::RenderPath(
 
     if (bDrawPathPortals)
     {
-        for (int32 i = 0; i < (int32)meshPath.PathEdges.Num(); ++i)
+        for (int32 i = 0; i < (int32)meshPath.PathEdges.GetNum(); ++i)
         {
             const auto& halfEdge = mesh.GetHalfEdges()[meshPath.PathEdges[i]];
 
@@ -377,7 +377,7 @@ void NavMeshTool::RenderPath(
     }
 
     {
-        for (int32 i = 0; i < (int32)meshPath.Path.Num() - 1; ++i)
+        for (int32 i = 0; i < (int32)meshPath.Path.GetNum() - 1; ++i)
         {
             const Vec2& v0 = meshPath.Path[i + 0];
             const Vec2& v1 = meshPath.Path[i + 1];

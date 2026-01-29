@@ -27,7 +27,7 @@ namespace Phoenix::LDS::Json
         bool RegisterType(const nlohmann::json& typeJson);
 
         // Gets a map of all types registered with this data source.
-        const TMap<PHXString, nlohmann::json>& GetRegisteredTypes() const;
+        const std::unordered_map<PHXString, nlohmann::json>& GetRegisteredTypes() const;
 
         // Finds a type in this data source by its ID.
         // If the type is not found in this data source, the parent data source will be queried.
@@ -35,8 +35,8 @@ namespace Phoenix::LDS::Json
 
         void RegisterInterface(const PHXString& interfaceId, const PHXString& typeId);
 
-        const TArray<PHXString>& GetInterfacesOfType(const PHXString& typeId) const;
-        const TArray<PHXString>& GetTypesImplementingInterface(const PHXString& interfaceId) const;
+        const TVector<PHXString>& GetInterfacesOfType(const PHXString& typeId) const;
+        const TVector<PHXString>& GetTypesImplementingInterface(const PHXString& interfaceId) const;
 
         // Returns true if the data source contains a given type or interface id.
         bool HasTypeOrInterface(const PHXString& typeOrInterfaceId) const;
@@ -45,7 +45,7 @@ namespace Phoenix::LDS::Json
         bool RegisterObject(const nlohmann::json& objectJson);
 
         // Gets a map of all objects registered with this data source.
-        const TMap<PHXString, nlohmann::json>& GetRegisteredObjects() const;
+        const std::unordered_map<PHXString, nlohmann::json>& GetRegisteredObjects() const;
 
         // Finds an object in this data source by its ID.
         // If the object is not found in this data source, the parent data source will be queried.
@@ -53,9 +53,9 @@ namespace Phoenix::LDS::Json
 
     private:
         TSharedPtr<JsonDataSource> Parent;
-        TMap<PHXString, nlohmann::json> Types;
-        TMap<PHXString, nlohmann::json> Objects;
-        TMap<PHXString, TArray<PHXString>> TypeIdToInterfaceIds;
-        TMap<PHXString, TArray<PHXString>> InterfaceToTypeIds;
+        std::unordered_map<PHXString, nlohmann::json> Types;
+        std::unordered_map<PHXString, nlohmann::json> Objects;
+        std::unordered_map<PHXString, TVector<PHXString>> TypeIdToInterfaceIds;
+        std::unordered_map<PHXString, TVector<PHXString>> InterfaceToTypeIds;
     };
 }

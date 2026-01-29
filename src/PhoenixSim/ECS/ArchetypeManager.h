@@ -4,24 +4,12 @@
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/WorldsFwd.h"
 #include "PhoenixSim/Containers/FixedMap.h"
 #include "PhoenixSim/Containers/FixedBlockAllocator.h"
-#include "PhoenixSim/Utils.h"
 #include "PhoenixSim/ECS/ArchetypeDefinition.h"
 #include "PhoenixSim/ECS/ArchetypeList.h"
 #include "PhoenixSim/ECS/EntityQuery.h"
-
-#ifndef PHX_ECS_ARCHETYPE_MGR_MAX_COMPONENT_DEFS
-#define PHX_ECS_ARCHETYPE_MGR_MAX_COMPONENT_DEFS 256
-#endif
-
-#ifndef PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_DEFS
-#define PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_DEFS 512
-#endif
-
-#ifndef PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_LISTS
-#define PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_LISTS 8192
-#endif
 
 namespace Phoenix
 {
@@ -33,265 +21,157 @@ namespace Phoenix
         template <class ...TComponents>
         using TEntityQueryBufferFunc = TFunction<void(const EntityComponentSpan<TComponents...>&)>;
 
-        template <
-            class TArchetypeDefinition = ArchetypeDefinition,
-            uint16 MaxNumComponents = PHX_ECS_ARCHETYPE_MGR_MAX_COMPONENT_DEFS,
-            uint16 MaxNumArchetypes = PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_DEFS,
-            uint16 MaxNumArchetypeLists = PHX_ECS_ARCHETYPE_MGR_MAX_ARCHETYPE_LISTS,
-            uint32 ArchetypeListSize = PHX_ECS_ARCHETYPE_LIST_SIZE
-        >
-        class TArchetypeManager
+        template <class TJob>
+        struct EntityJobHelper
+        {
+            template <class Fn>
+            struct ExecuteFnTraits;
+
+            template <class ...TComponents>
+            struct ExecuteFnTraits<void (TJob::*)(WorldRef, const EntityComponentSpan<TComponents...>&)>
+            {
+                using TEntityComponentSpan = EntityComponentSpan<TComponents...>;
+
+                static EntityQuery BuildQuery()
+                {
+                    EntityQueryBuilder builder;
+                    builder.RequireAllComponents<TComponents...>();
+                    return builder.GetQuery();
+                }
+            };
+
+            template <class ...TComponents>
+            struct ExecuteFnTraits<void (TJob::*)(WorldRef, const EntityComponentSpan<TComponents...>&) const>
+            {
+                using TEntityComponentSpan = EntityComponentSpan<TComponents...>;
+
+                static EntityQuery BuildQuery()
+                {
+                    EntityQueryBuilder builder;
+                    builder.RequireAllComponents<TComponents...>();
+                    return builder.GetQuery();
+                }
+            };
+
+            using THelper = ExecuteFnTraits<decltype(&TJob::Execute)>;
+            using TEntityComponentSpan = typename THelper::TEntityComponentSpan;
+
+            static EntityQuery BuildQuery()
+            {
+                return THelper::BuildQuery();
+            }
+        };
+
+        class PHOENIX_SIM_API ArchetypeManager
         {
         public:
 
-            using TArchetypeList = TArchetypeList<TArchetypeDefinition, ArchetypeListSize>;
-            using TArchetypeLists = TFixedBlockAllocator<MaxNumArchetypeLists, sizeof(TArchetypeList)>;
-            using TBlockHandle = typename TArchetypeLists::Handle;
-            using TEntityHandle = typename TArchetypeList::Handle;
-            using TComponentDefMap = TFixedMap<FName, ComponentDefinition, MaxNumComponents>;
-            using TArchetypeDefMap = TFixedMap<FName, TArchetypeDefinition, MaxNumArchetypes>;
+            using TArchetypeList = FixedArchetypeList;
+            using TArchetypeListAllocator = FixedBlockAllocator;
+            using TBlockHandle = TArchetypeListAllocator::Handle;
+            using TArchetypeHandle = TArchetypeList::Handle;
+            using TComponentDefMap = TFixedMap<FName, ComponentDefinition>;
+            using TArchetypeDefMap = TFixedMap<FName, ArchetypeDefinition>;
+            using TEntityHandleMap = TFixedMap<EntityId, TArchetypeHandle>;
 
-            bool IsValid(TEntityHandle handle) const
+            struct Config
             {
-                const TArchetypeList* list = FindOwningArchetypeList(handle);
-                return list && list->IsValid(handle);
+                uint32 MaxComponentDefs = 0;
+                uint32 MaxArchetypeDefs = 0;
+                uint32 MaxArchetypeLists = 0;
+                uint32 ArchetypeListSize = 0;
+                uint32 MaxEntities = 0;
+            };
+
+            ArchetypeManager() = default;
+
+            template <class TAllocator>
+            ArchetypeManager(TAllocator& allocator, const Config& config)
+                : ComponentDefinitions(allocator, config.MaxComponentDefs)
+                , ArchetypeDefinitions(allocator, config.MaxArchetypeDefs)
+                , ArchetypeLists(allocator, { config.ArchetypeListSize + sizeof(TArchetypeList), config.MaxArchetypeLists })
+                , EntityHandles(allocator, config.MaxEntities)
+                , Configuration(config)
+            {
             }
 
-            uint32 GetNumActiveArchetypes() const
+            template <class TAllocator>
+            ArchetypeManager(TAllocator& allocator, const Config& config, const ArchetypeManager& other)
+                : ComponentDefinitions(allocator, config.MaxComponentDefs, other.ComponentDefinitions)
+                , ArchetypeDefinitions(allocator, config.MaxArchetypeDefs, other.ArchetypeDefinitions)
+                , ArchetypeLists(allocator, config.MaxArchetypeLists, other.ArchetypeLists)
+                , EntityHandles(allocator, config.MaxEntities, other.EntityHandles)
+                , Configuration(config)
             {
-                uint32 total = 0;
-                for (const TBlockHandle& handle : ArchetypeLists)
-                {
-                    if (const TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle))
-                    {
-                        total += list->GetNumActiveInstances();
-                    }
-                }
-                return total;
             }
 
-            uint32 GetNumArchetypeLists() const
-            {
-                return ArchetypeLists.GetNumOccupiedBlocks();
-            }
+            static uint32 GetAllocSizeBytes(const Config& config);
+
+            uint32 GetAllocSizeBytes() const;
+
+            bool IsValid(TArchetypeHandle handle) const;
+
+            uint32 GetNumActiveArchetypes() const;
+
+            uint32 GetNumArchetypeLists() const;
 
             //
             // Archetype Definitions
             //
 
-            const TArchetypeDefMap& GetArchetypeDefinitions() const
-            {
-                return ArchetypeDefinitions;
-            }
+            const TArchetypeDefMap& GetArchetypeDefinitions() const;
 
-            bool RegisterArchetypeDefinition(const TArchetypeDefinition& definition)
-            {
-                if (ArchetypeDefinitions.Contains(definition.GetArchetypeHash()))
-                {
-                    return true;
-                }
+            bool RegisterArchetypeDefinition(const ArchetypeDefinition& definition);
 
-                if (FName::IsNoneOrEmpty(definition.GetArchetypeHash()))
-                {
-                    return false;
-                }
+            bool UnregisterArchetypeDefinition(const ArchetypeDefinition& definition);
 
-                if (ArchetypeDefinitions.IsFull())
-                {
-                    return false;
-                }
+            bool IsArchetypeRegistered(const FName& archetypeIdOrHash) const;
 
-                for (uint16 i = 0; i < definition.GetNumComponents(); ++i)
-                {
-                    if (!RegisterComponentDefinition(definition[i]))
-                    {
-                        return false;
-                    }
-                }
+            FName GetArchetypeHash(const FName& archetypeId) const;
 
-                return ArchetypeDefinitions.Insert(definition.GetArchetypeHash(), definition);
-            }
+            const ArchetypeDefinition* GetArchetypeDefinitionByHash(const FName& archetypeHash) const;
 
-            bool UnregisterArchetypeDefinition(const TArchetypeDefinition& definition)
-            {
-                // TODO (jfarris): what should we do with existing archetype lists?
-                return ArchetypeDefinitions.Remove(definition.GetArchetypeHash());
-            }
+            const ArchetypeDefinition* GetArchetypeDefinitionById(const FName& archetypeId) const;
 
-            bool IsArchetypeRegistered(const FName& archetypeIdOrHash) const
-            {
-                return GetArchetypeDefinition(archetypeIdOrHash) != nullptr;
-            }
-
-            FName GetArchetypeHash(const FName& archetypeId) const
-            {
-                const TArchetypeDefinition* archDefPtr = GetArchetypeDefinitionById(archetypeId);
-                return archDefPtr ? archDefPtr->GetArchetypeHash() : FName::None;
-            }
-
-            const TArchetypeDefinition* GetArchetypeDefinitionByHash(const FName& archetypeHash) const
-            {
-                return ArchetypeDefinitions.GetPtr(archetypeHash);
-            }
-
-            const TArchetypeDefinition* GetArchetypeDefinitionById(const FName& archetypeId) const
-            {
-                for (auto && [compHash, archDef] : ArchetypeDefinitions)
-                {
-                    if (archDef.GetId() == archetypeId)
-                        return &archDef;
-                }
-                return nullptr;
-            }
-
-            const TArchetypeDefinition* GetArchetypeDefinition(const FName& archetypeIdOrHash) const
-            {
-                if (const TArchetypeDefinition* archDefPtr = GetArchetypeDefinitionByHash(archetypeIdOrHash))
-                {
-                    return archDefPtr;
-                }
-                return GetArchetypeDefinitionById(archetypeIdOrHash);
-            }
+            const ArchetypeDefinition* GetArchetypeDefinition(const FName& archetypeIdOrHash) const;
 
             //
             // Component Definitions
             //
 
-            const TComponentDefMap& GetComponentDefinitions() const
-            {
-                return ComponentDefinitions;
-            }
+            const TComponentDefMap& GetComponentDefinitions() const;
 
-            bool RegisterComponentDefinition(const ComponentDefinition& definition)
-            {
-                if (IsComponentRegistered(definition.Id))
-                    return true;
+            bool RegisterComponentDefinition(const ComponentDefinition& definition);
 
-                if (ComponentDefinitions.IsFull())
-                    return false;
+            bool UnregisterComponentDefinition(const FName& componentId);
 
-                return ComponentDefinitions.Insert(definition.Id, definition);
-            }
-
-            bool UnregisterComponentDefinition(const FName& componentId)
-            {
-                // TODO (jfarris): what should we do with existing archetype definitions containing the component?
-                return ComponentDefinitions.Remove(componentId);
-            }
-
-            bool IsComponentRegistered(const FName& componentId) const
-            {
-                return ComponentDefinitions.Contains(componentId);
-            }
+            bool IsComponentRegistered(const FName& componentId) const;
 
             // Acquire an archetype for a given entity
-            TEntityHandle Acquire(EntityId entityId, const FName& archetypeIdOrHash)
-            {
-                TArchetypeList* list = FindOrAddArchetypeList(archetypeIdOrHash);
-                if (!list)
-                {
-                    return TEntityHandle();
-                }
-
-                return list->Acquire(entityId);
-            }
+            TArchetypeHandle Acquire(EntityId entityId, const FName& archetypeIdOrHash);
 
             // Release an archetype back to the pool
-            bool Release(TEntityHandle handle)
-            {
-                TArchetypeList* list = FindOwningArchetypeList(handle);
-                if (!list)
-                {
-                    return false;
-                }
+            bool Release(const TArchetypeHandle& handle);
 
-                // TODO (jfarris): release chunk when list becomes empty?
-                return list->Release(handle);
-            }
+            // Release an archetype back to the pool
+            bool Release(EntityId entityId);
 
             // Sets the archetype of a given entity to a new archetype.
             // Data for any components shared between the current archetype and the new archetype are preserved.
-            TEntityHandle SetArchetype(const TEntityHandle& handle, const FName& archetypeIdOrHash)
-            {
-                typename TArchetypeList::Handle newHandle(handle.GetEntityId());
+            TArchetypeHandle SetArchetype(TArchetypeHandle& inOutHandle, const FName& archetypeIdOrHash);
 
-                TArchetypeList* currList = FindOwningArchetypeList(handle);
+            // Sets the archetype of a given entity to a new archetype.
+            // Data for any components shared between the current archetype and the new archetype are preserved.
+            TArchetypeHandle SetArchetype(EntityId entityId, const FName& archetypeIdOrHash);
 
-                // The entity is already in a list with the given archetype id. Nothing changes.
-                if (currList && currList->HasArchetypeDefinition(archetypeIdOrHash))
-                {
-                    return handle;
-                }
+            void* AddComponent(TArchetypeHandle& inOutHandle, const ComponentDefinition& componentDef);
+            void* AddComponent(EntityId entityId, const ComponentDefinition& componentDef);
 
-                // Allocate a new archetype for the entity in a new list.
-                if (TArchetypeList* newList = FindOrAddArchetypeList(archetypeIdOrHash))
-                {
-                    newHandle = newList->Acquire(handle.GetEntityId());
-
-                    // Copy over any component data to the new archetype
-                    if (currList)
-                    {
-                        currList->ForEachComponent(handle, [&](const ComponentDefinition& compDef, const void* currComp)
-                        {
-                            if (void* newComp = newList->GetComponent(newHandle, compDef.Id))
-                            {
-                                memcpy(newComp, currComp, compDef.Size);
-                            }
-                        });
-                    }
-                }
-                
-                // Try to remove the entity from the list it currently belongs to.
-                if (currList)
-                {
-                    currList->Release(handle);
-                }
-
-                return newHandle;
-            }
-
-            void* AddComponent(TEntityHandle& inOutHandle, const ComponentDefinition& componentDef)
-            {
-                TArchetypeDefinition currArchDef;
-
-                if (const TArchetypeList* currList = FindOwningArchetypeList(inOutHandle))
-                {
-                    currArchDef = currList->GetDefinition();
-                }
-
-                TArchetypeDefinition newArchDef;
-                if (!TArchetypeDefinition::AddComponent(currArchDef, componentDef, newArchDef))
-                {
-                    // Failed to add the component to the archetype. Could be that the current archetype definition
-                    // already had that component or it can't add any more components.
-                    return nullptr;
-                }
-
-                TArchetypeDefinition* archDef = ArchetypeDefinitions.FindOrAdd(newArchDef.GetArchetypeHash(), newArchDef);
-                if (!archDef)
-                {
-                    // Failed to add the new archetype, probably out of space.
-                    return nullptr;
-                }
-
-                inOutHandle = SetArchetype(inOutHandle, archDef->GetArchetypeHash());
-
-                return GetComponent(inOutHandle, componentDef.Id);
-            }
-
-            void* AddComponent(TEntityHandle& inOutHandle, const FName& componentId)
-            {
-                const ComponentDefinition* compDef = ComponentDefinitions.GetPtr(componentId);
-                if (!compDef)
-                {
-                    return nullptr;
-                }
-
-                return AddComponent(inOutHandle, *compDef);
-            }
+            void* AddComponent(TArchetypeHandle& inOutHandle, const FName& componentId);
+            void* AddComponent(EntityId entityId, const FName& componentId);
 
             template <class T>
-            T* AddComponent(TEntityHandle& inOutHandle, const T& defaultValue = {})
+            T* AddComponent(TArchetypeHandle& inOutHandle, const T& defaultValue = {})
             {
                 ComponentDefinition compDef = ComponentDefinition::Create<T>();
                 T* compPtr = static_cast<T*>(AddComponent(inOutHandle, compDef));
@@ -302,9 +182,16 @@ namespace Phoenix
                 *compPtr = defaultValue;
                 return compPtr;
             }
+            
+            template <class T>
+            T* AddComponent(EntityId entityId, const T& defaultValue = {})
+            {
+                TArchetypeHandle handle = GetHandleForEntity(entityId);
+                return AddComponent<T>(handle, defaultValue);
+            }
 
             template <class T, class ...TArgs>
-            T* EmplaceComponent(TEntityHandle& inOutHandle, const TArgs&...args)
+            T* EmplaceComponent(TArchetypeHandle& inOutHandle, const TArgs&...args)
             {
                 ComponentDefinition compDef = ComponentDefinition::Create<T>();
                 T* compPtr = static_cast<T*>(AddComponent(inOutHandle, compDef));
@@ -316,49 +203,39 @@ namespace Phoenix
                 return compPtr;
             }
 
-            bool RemoveComponent(TEntityHandle& inOutHandle, const FName& componentId)
+            template <class T, class ...TArgs>
+            T* EmplaceComponent(EntityId entityId, const TArgs&...args)
             {
-                TArchetypeDefinition currArchDef;
+                TArchetypeHandle handle = GetHandleForEntity(entityId);
+                return EmplaceComponent<T, TArgs...>(handle, std::forward<TArgs>(args)...);
+            }
 
-                const TArchetypeList* currList = FindOwningArchetypeList(inOutHandle);
-                if (!currList)
-                {
-                    return false;
-                }
+            bool RemoveComponent(TArchetypeHandle& inOutHandle, const FName& componentId);
+            bool RemoveComponent(EntityId entityId, const FName& componentId);
 
-                TArchetypeDefinition newArchDef;
-                if (!TArchetypeDefinition::RemoveComponent(currArchDef, componentId, newArchDef))
-                {
-                    // Failed to remove the component from the archetype.
-                    // The current archetype definition must not have the component.
-                    return false;
-                }
-
-                TArchetypeDefinition* archDef = ArchetypeDefinitions.FindOrAdd(newArchDef.GetArchetypeHash(), newArchDef);
-                if (!archDef)
-                {
-                    // Failed to add the new archetype, probably out of space.
-                    return false;
-                }
-
-                inOutHandle = SetArchetype(inOutHandle, archDef->GetArchetypeHash());
-                
-                return true;
+            template <class T>
+            bool RemoveComponent(const TArchetypeHandle& handle)
+            {
+                return RemoveComponent(handle, T::StaticTypeName);
             }
 
             template <class T>
-            bool RemoveComponent(TEntityHandle& inOutHandle)
+            bool RemoveComponent(EntityId entityId)
             {
-                return RemoveComponent(inOutHandle, T::StaticTypeName);
+                return RemoveComponent(entityId, T::StaticTypeName);
             }
 
-            bool RemoveAllComponents(TEntityHandle& inOutHandle)
-            {
-                TArchetypeList* currList = FindOwningArchetypeList(inOutHandle);
-                return currList && currList->Release(inOutHandle);
-            }
+            bool RemoveAllComponents(const TArchetypeHandle& handle);
+            bool RemoveAllComponents(EntityId entityId);
 
-            void* GetComponent(const TEntityHandle& handle, const FName& componentId)
+            void* GetComponent(const TArchetypeHandle& handle, const FName& componentId);
+            const void* GetComponent(const TArchetypeHandle& handle, const FName& componentId) const;
+
+            void* GetComponent(EntityId entityId, const FName& componentId);
+            const void* GetComponent(EntityId entityId, const FName& componentId) const;
+
+            template <class T>
+            T* GetComponent(const TArchetypeHandle& handle)
             {
                 PHX_PROFILE_ZONE_SCOPED;
 
@@ -368,10 +245,11 @@ namespace Phoenix
                     return nullptr;
                 }
 
-                return list->GetComponent(handle, componentId);
+                return list->GetComponent<T>(handle);
             }
 
-            const void* GetComponent(const TEntityHandle& handle, const FName& componentId) const
+            template <class T>
+            const T* GetComponent(const TArchetypeHandle& handle) const
             {
                 PHX_PROFILE_ZONE_SCOPED;
 
@@ -381,110 +259,46 @@ namespace Phoenix
                     return nullptr;
                 }
 
-                return list->GetComponent(handle, componentId);
+                return list->GetComponent<T>(handle);
             }
 
             template <class T>
-            T* GetComponent(const TEntityHandle& handle)
+            T* GetComponent(EntityId entityId)
             {
-                PHX_PROFILE_ZONE_SCOPED;
-
-                TArchetypeList* list = FindOwningArchetypeList(handle);
-                if (!list || !list->IsValid(handle))
-                {
-                    return nullptr;
-                }
-
-                return list->template GetComponent<T>(handle);
+                TArchetypeHandle handle = GetHandleForEntity(entityId);
+                return GetComponent<T>(handle);
             }
 
             template <class T>
-            const T* GetComponent(const TEntityHandle& handle) const
+            const T* GetComponent(EntityId entityId) const
             {
-                PHX_PROFILE_ZONE_SCOPED;
-
-                const TArchetypeList* list = FindOwningArchetypeList(handle);
-                if (!list || !list->IsValid(handle))
-                {
-                    return nullptr;
-                }
-
-                return list->template GetComponent<T>(handle);
+                TArchetypeHandle handle = GetHandleForEntity(entityId);
+                return GetComponent<T>(handle);
             }
 
-            TArchetypeList* FindFirstArchetypeList(const FName& archetypeIdOrHash, bool includeFullLists = false)
-            {
-                for (const TBlockHandle& handle : ArchetypeLists)
-                {
-                    TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && (includeFullLists || !list->IsFull()))
-                    {
-                        return list;
-                    }
-                }
-                return nullptr;
-            }
+            TArchetypeList* FindFirstArchetypeList(const FName& archetypeIdOrHash, bool includeFullLists = false);
 
-            TArchetypeList* FindOwningArchetypeList(const TEntityHandle& handle)
-            {
-                TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(TBlockHandle { handle.GetOwnerId() });
-                return list && list->IsValid(handle) ? list : nullptr;
-            }
+            TArchetypeList* FindOwningArchetypeList(const TArchetypeHandle& handle);
+            const TArchetypeList* FindOwningArchetypeList(const TArchetypeHandle& handle) const;
 
-            const TArchetypeList* FindOwningArchetypeList(const TEntityHandle& handle) const
-            {
-                const TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(TBlockHandle { handle.GetOwnerId() });
-                return list && list->IsValid(handle) ? list : nullptr;
-            }
+            TArchetypeList* FindOwningArchetypeList(EntityId entityId);
+            const TArchetypeList* FindOwningArchetypeList(EntityId entityId) const;
 
-            void ForEachArchetypeList(const TFunction<void(TArchetypeList&)>& func)
-            {
-                PHX_PROFILE_ZONE_SCOPED;
-                for (const TBlockHandle& handle : ArchetypeLists)
-                {
-                    TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list && InvokeForEachCallbackNoIndex(func, *list))
-                    {
-                        break;
-                    }
-                }
-            }
+            void ForEachArchetypeList(const TFunction<void(TArchetypeList&)>& func);
 
-            void ForEachArchetypeList(const TFunction<void(const TArchetypeList&)>& func) const
-            {
-                PHX_PROFILE_ZONE_SCOPED;
-                for (const TBlockHandle& handle : ArchetypeLists)
-                {
-                    const TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list && InvokeForEachCallbackNoIndex(func, *list))
-                    {
-                        break;
-                    }
-                }
-            }
+            void ForEachArchetypeList(const TFunction<void(const TArchetypeList&)>& func) const;
 
-            void ForEachArchetypeList(const FName& archetypeIdOrHash, const TFunction<void(TArchetypeList&)>& func)
-            {
-                PHX_PROFILE_ZONE_SCOPED;
-                for (const TBlockHandle& handle : ArchetypeLists)
-                {
-                    TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && InvokeForEachCallbackNoIndex(func, *list))
-                    {
-                        break;
-                    }
-                }
-            }
+            void ForEachArchetypeList(const FName& archetypeIdOrHash, const TFunction<void(TArchetypeList&)>& func);
 
             template <class ...TComponents>
             void ForEachEntity(const EntityQuery& query, const TEntityQueryFunc<TComponents...>& func)
             {
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
-                    TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
+                    TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
                     {
-                        list->template ForEachEntity<TComponents...>([&](EntityId entityId, TComponents ...components)
+                        list->ForEachEntity<TComponents...>([&](EntityId entityId, TComponents ...components)
                         {
                             func(entityId, Forward<TComponents>(components)...);
                         });
@@ -497,10 +311,10 @@ namespace Phoenix
             {
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
-                    const TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
+                    const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
                     {
-                        list->template ForEachEntity<TComponents...>([&](EntityId entityId, TComponents ...components)
+                        list->ForEachEntity<TComponents...>([&](EntityId entityId, TComponents ...components)
                         {
                             func(entityId, Forward<TComponents>(components)...);
                         });
@@ -514,7 +328,7 @@ namespace Phoenix
                 uint32 startingIndex = 0;
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
-                    TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
+                    TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
                     {
                         func(EntityComponentSpan<TComponents...>::FromList(*list, startingIndex));
@@ -529,7 +343,7 @@ namespace Phoenix
                 uint32 startingIndex = 0;
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
-                    const TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
+                    const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
                     {
                         func(EntityComponentSpan<TComponents...>::FromList(*list, startingIndex));
@@ -538,71 +352,85 @@ namespace Phoenix
                 }
             }
 
-            template <class T>
-            void ForEachComponent(const TEntityHandle& handle, const T& callback)
+            template <class TJob>
+            void ForEachEntity(WorldRef world, const EntityQuery& query, TJob& job)
             {
-                TArchetypeList* list = FindOwningArchetypeList(handle);
-                if (!list)
+                if constexpr ( requires { job.Begin(world); })
                 {
-                    return;
+                    job.Begin(world);
                 }
-
-                list->ForEachComponent(handle, callback);
-            }
-
-            template <class T>
-            void ForEachComponent(const TEntityHandle& handle, const T& callback) const
-            {
-                const TArchetypeList* list = FindOwningArchetypeList(handle);
-                if (!list)
-                {
-                    return;
-                }
-
-                list->ForEachComponent(handle, callback);
-            }
-
-            void Compact()
-            {
-                // Free any archetype lists with no active instances.
+                uint32 startingIndex = 0;
                 for (const TBlockHandle& handle : ArchetypeLists)
                 {
-                    TArchetypeList* list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                    if (list && list->GetNumActiveInstances() == 0)
+                    TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
+                    if (list && query.PassesFilter(list->GetDefinition()))
                     {
-                        ArchetypeLists.Deallocate(handle);
+                        job.Execute(world, EntityJobHelper<TJob>::TEntityComponentSpan::FromList(*list, startingIndex));
+                        startingIndex += list->GetNumInstances();
                     }
                 }
-
-                ArchetypeLists.Compact();
+                if constexpr ( requires { job.End(world); })
+                {
+                    job.End(world);
+                }
             }
+
+            template <class TJob>
+            void ForEachEntity(WorldConstRef world, const EntityQuery& query, TJob& job)
+            {
+                if constexpr ( requires { job.Begin(world); })
+                {
+                    job.Begin(world);
+                }
+                uint32 startingIndex = 0;
+                for (const TBlockHandle& handle : ArchetypeLists)
+                {
+                    TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
+                    if (list && query.PassesFilter(list->GetDefinition()))
+                    {
+                        job.Execute(world, EntityJobHelper<TJob>::TEntityComponentSpan::FromList(*list, startingIndex));
+                        startingIndex += list->GetNumInstances();
+                    }
+                }
+                if constexpr ( requires { job.End(world); })
+                {
+                    job.End(world);
+                }
+            }
+
+            template <class T>
+            void ForEachComponent(EntityId entityId, const T& callback)
+            {
+                TArchetypeList* list = FindOwningArchetypeList(entityId);
+                if (!list)
+                {
+                    return;
+                }
+
+                ArchetypeHandle handle = GetHandleForEntity(entityId);
+                list->ForEachComponent(handle, callback);
+            }
+
+            template <class T>
+            void ForEachComponent(EntityId entityId, const T& callback) const
+            {
+                ArchetypeHandle handle = GetHandleForEntity(entityId);
+                const TArchetypeList* list = FindOwningArchetypeList(entityId);
+                if (!list)
+                {
+                    return;
+                }
+
+                list->ForEachComponent(handle, callback);
+            }
+
+            void Compact();
 
         private:
 
-            TArchetypeList* FindOrAddArchetypeList(const FName& archetypeIdOrHash)
-            {
-                TArchetypeList* list = FindFirstArchetypeList(archetypeIdOrHash, false);
-                if (list)
-                {
-                    return list;
-                }
-                
-                const TArchetypeDefinition* archetypeDef = GetArchetypeDefinition(archetypeIdOrHash);
-                if (!archetypeDef)
-                {
-                    return nullptr;
-                }
-                
-                TBlockHandle handle = ArchetypeLists.template Allocate<TArchetypeList>(archetypeDef->GetArchetypeHash(), *archetypeDef);
+            TArchetypeHandle GetHandleForEntity(EntityId entityId) const;
 
-                list = ArchetypeLists.template GetPtr<TArchetypeList>(handle);
-                if (list)
-                {
-                    list->SetId(handle.Id);
-                }
-
-                return list;
-            }
+            TArchetypeList* FindOrAddArchetypeList(const FName& archetypeIdOrHash);
 
             // A mapping of component id to component definition.
             TComponentDefMap ComponentDefinitions;
@@ -610,9 +438,11 @@ namespace Phoenix
             // A mapping of archetype hash to archetype definition.
             TArchetypeDefMap ArchetypeDefinitions;
 
-            TArchetypeLists ArchetypeLists;
-        };
+            TArchetypeListAllocator ArchetypeLists;
 
-        using ArchetypeManager = TArchetypeManager<>;
+            TEntityHandleMap EntityHandles;
+
+            Config Configuration;
+        };
     }
 }

@@ -27,9 +27,9 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API FeatureSelectionDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureSelectionDynamicBlock)
+        PHX_DECLARE_BLOCK(FeatureSelectionDynamicBlock)
 
-        TFixedArray<PlayerSelectionGroup, PHX_RTS_MAX_PLAYER_SELECTION_GROUPS> PlayerSelectionGroups;
+        TInlineArray<PlayerSelectionGroup, PHX_RTS_MAX_PLAYER_SELECTION_GROUPS> PlayerSelectionGroups;
     };
 
     class PHOENIX_RTS_API FeatureSelection : public IFeature

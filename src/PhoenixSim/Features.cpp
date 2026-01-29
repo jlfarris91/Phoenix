@@ -34,6 +34,15 @@ bool IFeature::OnPostHandleAction(const FeatureActionArgs& args)
     return false;
 }
 
+bool IFeature::InitView(WorldConstRef world, ViewContext& context)
+{
+    return false;
+}
+
+void IFeature::FillView(WorldConstRef world, const ViewContext& context)
+{
+}
+
 void IFeature::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
 }
@@ -73,13 +82,13 @@ FeatureSharedPtr FeatureSet::GetFeature(const FName& name) const
     return feature->second;
 }
 
-TArray2<FeatureSharedPtr> FeatureSet::GetFeatures() const
+TVector<FeatureSharedPtr> FeatureSet::GetFeatures() const
 {
-    TArray2<FeatureSharedPtr> features;
-    features.Reserve(static_cast<uint32>(Features.size()));
+    TVector<FeatureSharedPtr> features;
+    features.reserve(static_cast<uint32>(Features.size()));
     for (auto&& feature : Features)
     {
-        features.PushBack(feature.second);
+        features.push_back(feature.second);
     }
     return features;
 }
@@ -106,20 +115,20 @@ FeatureSet::FeatureSet(const FeatureSetCtorArgs& args)
     RegisterFeatureChannels(args.Features);
 }
 
-TArray2<FName> FeatureSet::GetChannelNames() const
+TVector<FName> FeatureSet::GetChannelNames() const
 {
-    TArray2<FName> channelNames;
-    channelNames.Reserve(static_cast<uint32>(Channels.size()));
+    TVector<FName> channelNames;
+    channelNames.reserve(static_cast<uint32>(Channels.size()));
     for (auto&& channels : Channels)
     {
-        channelNames.PushBack(channels.first);
+        channelNames.push_back(channels.first);
     }
     return channelNames;
 }
 
-TArray2<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
+TVector<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
 {
-    TArray2<FeatureSharedPtr> features;
+    TVector<FeatureSharedPtr> features;
     auto&& channelIter = Channels.find(channelName);
     if (channelIter != Channels.end())
     {
@@ -128,12 +137,12 @@ TArray2<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
     return features;
 }
 
-const TArray2<FeatureSharedPtr>& FeatureSet::GetChannelRef(const FName& channelName) const
+const TVector<FeatureSharedPtr>& FeatureSet::GetChannelRef(const FName& channelName) const
 {
     auto channelIter = Channels.find(channelName);
     if (channelIter == Channels.end())
     {
-        static TArray2<FeatureSharedPtr> staticEmpty;
+        static TVector<FeatureSharedPtr> staticEmpty;
         return staticEmpty;
     }
     return channelIter->second;
@@ -146,9 +155,9 @@ struct FeatureChannelInsert
     FeatureInsertPosition InsertPosition;
 };
 
-void FeatureSet::RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& features)
+void FeatureSet::RegisterFeatureChannels(const TVector<FeatureSharedPtr>& features)
 {
-    TArray<FeatureChannelInsert> remainingInserts;
+    TVector<FeatureChannelInsert> remainingInserts;
 
     for (const FeatureSharedPtr& feature : features)
     {
@@ -192,7 +201,7 @@ void FeatureSet::RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& featur
             }
 
             // The channel exists, try to insert the feature relative to another existing in the channel
-            TArray2<FeatureSharedPtr>& channel = Channels[featureInsert.Channel];
+            TVector<FeatureSharedPtr>& channel = Channels[featureInsert.Channel];
 
             int32 insertIndex = FindChannelInsertIndex(channel, featureInsert.InsertPosition);
 
@@ -202,7 +211,7 @@ void FeatureSet::RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& featur
                 continue;
             }
 
-            channel.Insert(insertIndex, featureIter->second);
+            channel.insert(channel.begin() + insertIndex, featureIter->second);
             remainingInserts.erase(remainingInserts.begin() + i--);
             insertedAnything = true;
         }
@@ -218,15 +227,15 @@ void FeatureSet::RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& featur
 }
 
 int32 FeatureSet::FindChannelInsertIndex(
-    const TArray2<FeatureSharedPtr>& channelFeatures,
+    const TVector<FeatureSharedPtr>& channelFeatures,
     const FeatureInsertPosition& insertPosition)
 {
     if (insertPosition.RelativePosition == EFeatureInsertPosition::Default)
     {
-        return static_cast<int32>(channelFeatures.Num());
+        return static_cast<int32>(channelFeatures.size());
     }
 
-    for (size_t i = 0; i < channelFeatures.Num(); ++i)
+    for (size_t i = 0; i < channelFeatures.size(); ++i)
     {
         const TypeDescriptor& typeDescriptor = channelFeatures[i]->GetTypeDescriptor();
         if (typeDescriptor.GetFName() != insertPosition.FeatureName)

@@ -13,8 +13,7 @@ using namespace Phoenix::Steering;
 
 FeatureSteering::FeatureSteering()
 {
-    FEATURE_WORLD_BLOCK(FeatureSteeringDynamicBlock)
-    FEATURE_WORLD_BLOCK(FeatureSteeringScratchBlock)
+    FEATURE_WORLD_BLOCK(FeatureSteeringScratchBlock, EBufferBlockType::Scratch)
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 
@@ -218,7 +217,7 @@ uint32 FeatureSteering::QueryEntitiesInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TArray2<const SortedEntity*>& outEntities,
+    TVector<const SortedEntity*>& outEntities,
     const SteeringRangeQueryArgs& args)
 {
     const FeatureSteeringScratchBlock& block = world.GetBlockRef<FeatureSteeringScratchBlock>();
@@ -235,7 +234,7 @@ uint32 FeatureSteering::QueryEntitiesInRange(
         ranges,
         [&](const SortedEntity& entity)
         {
-            if (args.Exclude.Contains(entity.EntityId))
+            if (args.Exclude.contains(entity.EntityId))
             {
                 return false;
             }
@@ -245,7 +244,7 @@ uint32 FeatureSteering::QueryEntitiesInRange(
                 return false;
             }
 
-            outEntities.PushBack(&entity);
+            outEntities.push_back(&entity);
             return ++num == args.MaxNum;
         });
 

@@ -26,6 +26,18 @@ namespace Phoenix::ECS
     };
 }
 
+namespace std
+{
+    template <>
+    struct hash<Phoenix::ECS::EntityId>
+    {
+        std::size_t operator()(const Phoenix::ECS::EntityId& entityId) const noexcept
+        {
+            return std::hash<Phoenix::ECS::entityid_t>{}(entityId);
+        }
+    };
+}
+
 #define PHX_ECS_DECLARE_ENTITY_ID_SPEC_WITH_BASE(name, base) \
     struct name##Id : base##Id \
     { \

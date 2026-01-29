@@ -32,11 +32,11 @@ namespace Phoenix::LDS
         bool TypeExists(const FName& typeId) const;
 
     private:
-        
-        TSharedPtr<const Catalog> SessionStaticCatalog = nullptr;
-        TSharedPtr<const Catalog> WorldStaticCatalog = nullptr;
-        const decltype(FeatureLDSSessionDynamicBlock::Catalog)* SessionDynamicCatalog = nullptr;
-        const decltype(FeatureLDSWorldDynamicBlock::Catalog)* WorldDynamicCatalog = nullptr;
+
+        const HeapLDSCatalog* SessionStaticCatalog = nullptr;
+        const HeapLDSCatalog* WorldStaticCatalog = nullptr;
+        const FixedLDSCatalog* SessionDynamicCatalog = nullptr;
+        const FixedLDSCatalog* WorldDynamicCatalog = nullptr;
 
         ELDSCatalogRecordStore Mode = ELDSCatalogRecordStore::Object;
         ELDSFeatureRecordQueryFlags FeatureQueryFlags = ELDSFeatureRecordQueryFlags::None;

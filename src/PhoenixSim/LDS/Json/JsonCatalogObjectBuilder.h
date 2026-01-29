@@ -6,12 +6,11 @@
 
 namespace Phoenix::LDS::Json
 {
-    template <class TCatalog = Catalog>
-    struct JsonCatalogObjectBuilder : JsonCatalogBuilderBase<TCatalog>
+    struct PHOENIX_SIM_API JsonCatalogObjectBuilder : JsonCatalogBuilderBase
     {
         using json = nlohmann::json;
 
-        JsonCatalogObjectBuilder(const JsonDataSource* dataSource, TCatalog* catalog);
+        JsonCatalogObjectBuilder(const JsonDataSource* dataSource, HeapLDSCatalog* catalog);
 
         bool RegisterAllObjects();
 
@@ -54,12 +53,26 @@ namespace Phoenix::LDS::Json
         const LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId);
 
         template <class ...TArgs>
-        void EmplaceObjectRecord(const PHXString& rootObjectId, const PHXString& path, TArgs&&... args);
+        void EmplaceObjectRecord(const PHXString& rootObjectId, const PHXString& path, TArgs&&... args)
+        {
+            PHXString finalPath = path;
+            if (PathPostFix.IsSet())
+            {
+                finalPath += PathPostFix.Get();
+            }
+
+            if (RecordStore == ELDSCatalogRecordStore::Type)
+            {
+                Catalog->EmplaceTypeRecord(rootObjectId, finalPath, std::forward<TArgs>(args)...);
+            }
+            else
+            {
+                Catalog->EmplaceObjectRecord(rootObjectId, finalPath, std::forward<TArgs>(args)...);
+            }
+        }
 
         TOptional<FName> TypeIdOverride;
         TOptional<PHXString> PathPostFix;
         ELDSCatalogRecordStore RecordStore = ELDSCatalogRecordStore::Object;
     };
 }
-
-#include "PhoenixSim/LDS/Json/JsonCatalogObjectBuilder.inl"

@@ -22,6 +22,7 @@ bool TargetScanResult::IsValid() const
 
 TargetScanResult TargetScanner::ScanForTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
 {
+    PHX_PROFILE_ZONE_SCOPED;
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
     return ScanForTargetInternal(world, unit, modifiedArgs);
@@ -87,7 +88,9 @@ TargetScanResult TargetScanner::ScanForTargetInternal(WorldRef world, UnitId uni
 
 TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
 {
-    TArray2<FName> abilityIds;
+    PHX_PROFILE_ZONE_SCOPED;
+
+    TVector<FName> abilityIds;
     if (!FeatureAbilities::GetAbilities(world, unit, abilityIds))
     {
         return {};
@@ -123,7 +126,9 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     {
         return {};
     }
-    
+
+    PHX_PROFILE_ZONE_SCOPED;
+
     const LDS::ILDSQueryContext& lds = *args.LdsQueryContext;
 
     const FName& unitDataId = args.UnitDataId.Get();
@@ -134,10 +139,10 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
 
     Data::UnitPtr unitData(unitDataId);
 
-    TArray2<Data::WeaponPtr> weapons;
+    TVector<Data::WeaponPtr> weapons;
     unitData.Weapons().GetResolvedObjects(lds, weapons);
 
-    if (weapons.IsEmpty())
+    if (weapons.empty())
     {
         return {};
     }
@@ -169,10 +174,10 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     rangeQueryArgs.Flags = EUnitQueryFlags::Alive;
     rangeQueryArgs.TeamMask = Teams::EnemiesOf(world, FeatureUnit::GetOwningTeam(world, unit));
 
-    TArray2<UnitId> unitsInRange;
+    TVector<UnitId> unitsInRange;
     FeatureUnit::QueryUnitsInRange(world, scanPos, minScanRange, unitsInRange, rangeQueryArgs);
 
-    if (unitsInRange.IsEmpty())
+    if (unitsInRange.empty())
     {
         return {};
     }

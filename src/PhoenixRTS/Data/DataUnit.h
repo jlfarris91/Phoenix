@@ -38,12 +38,12 @@ namespace Phoenix::RTS::Data
     {
         UnitActorPtr Actor;
         UnitArmor Armor;
-        TArray2<BuffPtr> Buffs;
+        TVector<BuffPtr> Buffs;
         UnitBuild BuildStats;
         UnitCargo CargoStats;
         ECollisionFlags CollisionFlags;
-        TArray2<Command> Commands;
-        TArray2<Component> Components;
+        TVector<Command> Commands;
+        TVector<Component> Components;
         UnitDeath DeathStats;
         UnitEffects Effects;
         FactionPtr Faction;
@@ -52,11 +52,11 @@ namespace Phoenix::RTS::Data
         UnitInfo Info;
         UnitMovement Movement;
         UnitPlacement Placement;
-        TArray2<TagPtr> Tags;
+        TVector<TagPtr> Tags;
         UnitSupply Supply;
         UnitVision Vision;
-        TArray2<VitalStatsPair> Vitals;
-        TArray2<WeaponPtr> Weapons;
+        TVector<VitalStatsPair> Vitals;
+        TVector<WeaponPtr> Weapons;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Unit& outItem);
     };

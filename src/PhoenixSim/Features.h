@@ -4,13 +4,13 @@
 #include <nlohmann/json.hpp>
 
 #include "PhoenixSim/Actions.h"
-#include "PhoenixSim/Containers/Array.h"
 #include "PhoenixSim/Containers/BlockBuffer.h"
 #include "PhoenixSim/Reflection.h"
 #include "PhoenixSim/Services/Service.h"
 
 namespace Phoenix
 {
+    struct ViewContext;
     struct Action;
     struct FeatureDefinition;
     class IDebugState;
@@ -84,21 +84,21 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API FeatureDefinition
     {
-        BlockBuffer::CtorArgs SessionBlocks;
-        BlockBuffer::CtorArgs WorldBlocks;
-        TArray<FeatureChannelInsertArgs> Channels;
-        TArray<FName> DependentFeatures;
+        BlockBufferConfig SessionBlocks;
+        BlockBufferConfig WorldBlocks;
+        TVector<FeatureChannelInsertArgs> Channels;
+        TVector<FName> DependentFeatures;
 
         template <class TBlock>
-        void RegisterSessionBlock()
+        BufferBlockDefinition& RegisterSessionBlock(EBufferBlockType type)
         {
-            SessionBlocks.RegisterBlock<TBlock>();
+            return SessionBlocks.RegisterBlock<TBlock>(type);
         }
 
         template <class TBlock>
-        void RegisterWorldBlock()
+        BufferBlockDefinition& RegisterWorldBlock(EBufferBlockType type)
         {
-            WorldBlocks.RegisterBlock<TBlock>();
+            return WorldBlocks.RegisterBlock<TBlock>(type);
         }
 
         void RegisterChannel(FName channel, const FeatureInsertPosition& insertPosition = FeatureInsertPosition::Default)
@@ -106,7 +106,7 @@ namespace Phoenix
             Channels.emplace_back(channel, insertPosition);
         }
     };
-    
+
     class PHOENIX_SIM_API IFeature : public IService
     {
         PHX_DECLARE_INTERFACE_WITH_BASE(IFeature, IService)
@@ -132,6 +132,10 @@ namespace Phoenix
 
         // Called once per action sent to the session, after OnHandleAction.
         virtual bool OnPostHandleAction(const FeatureActionArgs& args);
+
+        virtual bool InitView(WorldConstRef world, ViewContext& context);
+
+        virtual void FillView(WorldConstRef world, const ViewContext& context);
 
         // Called once per session step, per world, before OnWorldUpdate.
         virtual void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args);
@@ -169,7 +173,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API FeatureSetCtorArgs
     {
-        TArray2<FeatureSharedPtr> Features;
+        TVector<FeatureSharedPtr> Features;
     };
 
     class PHOENIX_SIM_API FeatureSet
@@ -192,13 +196,13 @@ namespace Phoenix
             return GetFeature<TFeature>(TFeature::StaticTypeName);
         }
 
-        TArray2<FeatureSharedPtr> GetFeatures() const;
+        TVector<FeatureSharedPtr> GetFeatures() const;
 
         // Gets an array containing all the names of the channels.
-        TArray2<FName> GetChannelNames() const;
+        TVector<FName> GetChannelNames() const;
         
-        TArray2<FeatureSharedPtr> GetChannel(const FName& channelName) const;
-        const TArray2<FeatureSharedPtr>& GetChannelRef(const FName& channelName) const;
+        TVector<FeatureSharedPtr> GetChannel(const FName& channelName) const;
+        const TVector<FeatureSharedPtr>& GetChannelRef(const FName& channelName) const;
 
         template <class TCallback>
         void ForEachFeatureInChannel(const FName& channelName, const TCallback& callback)
@@ -219,14 +223,14 @@ namespace Phoenix
 
     private:
         
-        void RegisterFeatureChannels(const TArray2<FeatureSharedPtr>& featureDefs);
+        void RegisterFeatureChannels(const TVector<FeatureSharedPtr>& featureDefs);
 
         static int32 FindChannelInsertIndex(
-            const TArray2<FeatureSharedPtr>& channelFeatures,
+            const TVector<FeatureSharedPtr>& channelFeatures,
             const FeatureInsertPosition& insertPosition);
 
-        TMap<FName, FeatureSharedPtr> Features;
-        TMap<FName, TArray2<FeatureSharedPtr>> Channels;
+        std::unordered_map<FName, FeatureSharedPtr> Features;
+        std::unordered_map<FName, TVector<FeatureSharedPtr>> Channels;
     };
 }
 
@@ -238,6 +242,6 @@ namespace Phoenix
     PHX_DECLARE_FEATURE_TYPE_BEGIN(feature) \
     PHX_DECLARE_FEATURE_TYPE_END()
 
-#define FEATURE_SESSION_BLOCK(block) Definition.RegisterSessionBlock<block>();
-#define FEATURE_WORLD_BLOCK(block) Definition.RegisterWorldBlock<block>();
+#define FEATURE_SESSION_BLOCK(block, type) Definition.RegisterSessionBlock<block>(type);
+#define FEATURE_WORLD_BLOCK(block, type) Definition.RegisterWorldBlock<block>(type);
 #define FEATURE_CHANNEL(...) Definition.RegisterChannel(__VA_ARGS__);

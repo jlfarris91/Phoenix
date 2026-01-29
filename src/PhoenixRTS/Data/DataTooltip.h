@@ -17,7 +17,7 @@ namespace Phoenix::RTS::Data
         FName Title;
         FName SubTitle;
         FName Body;
-        TArray2<TooltipItem> Items;
+        TVector<TooltipItem> Items;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Tooltip& outItem);
     };

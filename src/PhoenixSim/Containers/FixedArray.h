@@ -1,90 +1,138 @@
 #pragma once
 
 #include <cassert>
-#include <iterator>
 
 #include "PhoenixSim/Platform.h"
+#include "PhoenixSim/Containers/FixedMemory.h"
 
 namespace Phoenix
 {
-    template <class T, uint32 N>
-    class TFixedArray
+    template <class T, class TStoragePolicy>
+    class TArrayBase
     {
+    protected:
+        TContiguousStorage<T, TStoragePolicy> Storage;
+        uint32 Size = 0;
+    };
+
+    template <class T>
+    class TArrayBase<T, FixedStoragePolicy>
+    {
+        using TStorage = TFixedStorage<T>;
+
     public:
-        using ItemT = T;
-        static constexpr uint32 Capacity = N;
 
-        T& operator[](uint32 index)
+        TArrayBase() = default;
+
+        template <class TAllocator>
+        TArrayBase(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            PHX_ASSERT(index < Capacity);
-            return *(Data + index);
         }
 
-        const T& operator[](uint32 index) const
+        template <class TAllocator, class TOtherStoragePolicy>
+        TArrayBase(TAllocator& allocator, uint32 capacity, const TArrayBase<T, TOtherStoragePolicy>& other)
+            : Storage(allocator, capacity)
         {
-            PHX_ASSERT(index < Capacity);
-            return *(Data + index);
+            uint32 minSize = std::min(capacity, other.Size);
+            memcpy(Storage.GetData(), other.Storage.GetData(), minSize);
+            Size = std::min(capacity, other.Size);
         }
 
-        uint32 Num() const
+        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
+        {
+            return TStorage::GetAllocSizeBytes(capacity);
+        }
+
+        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
+        {
+            return Storage.GetAllocSizeBytes();
+        }
+
+    protected:
+        TStorage Storage;
+        uint32 Size = 0;
+    };
+
+    template <class T, class TStoragePolicy>
+    class TArray : public TArrayBase<T, TStoragePolicy>
+    {
+        using Super = TArrayBase<T, TStoragePolicy>;
+        using Super::Super;
+        using Super::Storage;
+        using Super::Size;
+
+    public:
+
+        using TItem = T;
+
+        PHX_FORCEINLINE T& operator[](uint32 index)
+        {
+            return Storage.operator[](index);
+        }
+
+        PHX_FORCEINLINE const T& operator[](uint32 index) const
+        {
+            return Storage.operator[](index);
+        }
+
+        PHX_FORCEINLINE T* GetData()
+        {
+            return Storage.GetData();
+        }
+
+        PHX_FORCEINLINE const T* GetData() const
+        {
+            return Storage.GetData();
+        }
+
+        PHX_FORCEINLINE uint32 GetCapacity() const
+        {
+            return Storage.GetCapacity();
+        }
+
+        PHX_FORCEINLINE uint32 GetNum() const
         {
             return Size;
         }
 
-        uint32 GetTotalSize() const
+        PHX_FORCEINLINE bool IsValidIndex(uint32 index) const
         {
-            return Size * sizeof(T);
+            return index < Size && Storage.IsValidIndex(index);
         }
 
-        bool IsValidIndex(uint32 index) const
-        {
-            return index < Size && index < Capacity;
-        }
-
-        bool IsEmpty() const
+        PHX_FORCEINLINE bool IsEmpty() const
         {
             return Size == 0;
         }
 
-        bool IsFull() const
+        PHX_FORCEINLINE bool IsFull() const
         {
-            return Size == Capacity;
+            return Size == Storage.GetCapacity();
         }
 
-        bool PushBack(const T& value)
+        bool PushBack(const T& value = {})
         {
             PHX_ASSERT(!IsFull());
             if (IsFull())
             {
                 return false;
             }
-            Data[Size++] = value;
+            Storage[Size++] = value;
             return true;
         }
 
-        bool Add(const T& value)
+        T& PushBack_GetRef(const T& value = {})
         {
-            return PushBack(value);
-        }
-
-        T& Add_GetRef(const T& value)
-        {
-            if (!PushBack(value))
+            PHX_ASSERT(!IsFull());
+            if (IsFull())
             {
+                // TODO (jfarris): this should probably result in a crash!
                 static T temp;
                 return temp;
             }
-            return Data[Size-1];
-        }
-
-        bool AddDefaulted()
-        {
-            return Add({});
-        }
-
-        T& AddDefaulted_GetRef()
-        {
-            return Add_GetRef({});
+            Storage[Size++] = value;
+            return Storage[Size - 1];
         }
 
         template <class ...TArgs>
@@ -95,41 +143,45 @@ namespace Phoenix
             {
                 return false;
             }
-            new (&Data[Size++]) T(std::forward<TArgs>(args)...);
+            new (&Storage[Size++]) T(std::forward<TArgs>(args)...);
             return true;
         }
 
         template <class ...TArgs>
         T& EmplaceBack_GetRef(TArgs&&... args)
         {
-            PHX_ASSERT(Size < Capacity);
+            PHX_ASSERT(!IsFull());
             if (!EmplaceBack(std::forward<TArgs>(args)...))
             {
+                // TODO (jfarris): this should probably result in a crash!
                 static T temp;
                 return temp;
             }
-            return Data[Size-1];
+            return Storage[Size-1];
         }
 
         void PopBack()
         {
-            PHX_ASSERT(Size > 0);
-            if (Size == 0)
+            PHX_ASSERT(!IsEmpty());
+            if (IsEmpty())
             {
+                // TODO (jfarris): this should probably result in a crash?
                 return;
             }
-            Data[Size--].~T();
+            Storage[Size--].~T();
         }
 
         T PopBackAndReturn()
         {
-            PHX_ASSERT(Size > 0);
-            if (Size == 0)
+            PHX_ASSERT(!IsEmpty());
+            if (IsEmpty())
             {
+                // TODO (jfarris): this should probably result in a crash?
                 return {};
             }
-            T temp = Data[Size - 1];
-            Data[Size--].~T();
+            T* data = Storage;
+            T temp = data[Size - 1];
+            data[Size--].~T();
             return temp;
         }
 
@@ -138,21 +190,11 @@ namespace Phoenix
             PHX_ASSERT(!IsEmpty());
             if (IsEmpty())
             {
+                // TODO (jfarris): this should probably result in a crash?
                 static T temp;
                 return temp;
             }
-            return Data[0];
-        }
-
-        const T& Front() const
-        {
-            PHX_ASSERT(!IsEmpty());
-            if (IsEmpty())
-            {
-                static T temp;
-                return temp;
-            }
-            return Data[0];
+            return Storage[0];
         }
 
         T& Back()
@@ -160,21 +202,11 @@ namespace Phoenix
             PHX_ASSERT(!IsEmpty());
             if (IsEmpty())
             {
+                // TODO (jfarris): this should probably result in a crash?
                 static T temp;
                 return temp;
             }
-            return Data[Size - 1];
-        }
-
-        const T& Back() const
-        {
-            PHX_ASSERT(!IsEmpty());
-            if (IsEmpty())
-            {
-                static T temp;
-                return temp;
-            }
-            return Data[Size - 1];
+            return Storage[Size - 1];
         }
 
         void Reset()
@@ -184,36 +216,39 @@ namespace Phoenix
 
         void SetNum(uint32 newSize, const T& value = {})
         {
-            newSize = std::min(newSize, Capacity);
+            newSize = std::min(newSize, Storage.GetCapacity());
             while (Size < newSize)
-                Add_GetRef(value);
+                PushBack(value);
             while (Size > newSize)
                 PopBack();
         }
 
         void SetSize(uint32 newSize)
         {
-            Size = std::min(newSize, Capacity);
+            Size = std::min(newSize, Storage.GetCapacity());
         }
 
         void Fill(const T& value = {})
         {
-            SetNum(Capacity, value);
+            SetNum(Storage.GetCapacity(), value);
         }
 
-        int32 IndexOf(const T& value)
+        template <class TEquals = std::equal_to<T>>
+        int32 IndexOf(const T& value, const TEquals& equals = {}) const
         {
+            const T* data = Storage.GetData();
             for (uint32 i = 0; i < Size; ++i)
             {
-                if (Data[i] == value)
+                if (equals(data[i], value))
                     return (int32)i;
             }
             return INDEX_NONE;
         }
 
-        bool Contains(const T& value)
+        template <class TEquals = std::equal_to<T>>
+        bool Contains(const T& value, const TEquals& equals = {}) const
         {
-            return IndexOf(value) != INDEX_NONE;
+            return IndexOf(value, equals) != INDEX_NONE;
         }
 
         bool RemoveAt(uint32 index)
@@ -225,7 +260,7 @@ namespace Phoenix
 
             for (uint32 i = index; i < Size - 1; ++i)
             {
-                Data[i] = Data[i + 1];
+                Storage[i] = Storage[i + 1];
             }
 
             --Size;
@@ -241,11 +276,10 @@ namespace Phoenix
 
             if (Size > 0)
             {
-                Data[index] = Data[Size - 1];
+                Storage[index] = Storage[Size - 1];
             }
 
             --Size;
-
             return true;
         }
 
@@ -339,12 +373,12 @@ namespace Phoenix
 
         Iter begin()
         {
-            return Iter(Data);
+            return Iter(Storage.GetData());
         }
 
         Iter end()
         {
-            return Iter(Data + Size);
+            return Iter(Storage.GetData() + Size);
         }
 
         struct ConstIter
@@ -437,19 +471,207 @@ namespace Phoenix
 
         ConstIter begin() const
         {
-            return ConstIter(Data);
+            return ConstIter(Storage.GetData());
         }
 
         ConstIter end() const
         {
-            return ConstIter(Data + Size);
+            return ConstIter(Storage.GetData() + Size);
         }
-
-    private:
-        T Data[N];
-        uint32 Size = 0;
     };
 
-    static_assert(std::contiguous_iterator<TFixedArray<int, 1>::Iter>);
-    static_assert(std::contiguous_iterator<TFixedArray<int, 1>::ConstIter>);
+    template <class T>
+    class TArray<T, HeapStoragePolicy> : THeapStorage<T>
+    {
+        using Super = THeapStorage<T>;
+        using Super::Data;
+
+    public:
+
+        using Super::Super;
+        using Super::CanGrow;
+        using Super::GetCapacity;
+        using Super::IsValidIndex;
+        using Super::GetData;
+        using Super::operator[];
+
+        using Iter = decltype(std::declval<Super>().begin());
+        using ConstIter = decltype(std::declval<const Super>().begin());
+
+        TArray() = default;
+        TArray(const TArray& other) = default;
+        TArray(TArray&& other) = default;
+
+        PHX_FORCEINLINE uint32 GetNum() const
+        {
+            return Data.size();
+        }
+
+        PHX_FORCEINLINE bool IsFull() const
+        {
+            return false;
+        }
+
+        PHX_FORCEINLINE bool IsEmpty() const
+        {
+            return Data.empty();
+        }
+
+        bool PushBack(const T& value) const
+        {
+            Data.push_back(value);
+            return true;
+        }
+
+        template <class TEquals = std::equal_to<T>>
+        bool PushBackUnique(const T& value, const TEquals& equals = {}) const
+        {
+            for (const T& existingItem : Data)
+            {
+                if (equals(existingItem, value))
+                {
+                    return false;
+                }
+            }
+            Data.push_back(value);
+            return true;
+        }
+
+        template <class ...TArgs>
+        bool EmplaceBack(TArgs&&... args)
+        {
+            Data.emplace_back(std::forward<TArgs>(args)...);
+            return true;
+        }
+
+        template <class ...TArgs>
+        T& EmplaceBack_GetRef(TArgs&&... args)
+        {
+            return Data.emplace_back(std::forward<TArgs>(args)...);
+        }
+
+        bool Insert(uint32 index, const T& item)
+        {
+            Data.insert(Data.begin() + index, item);
+            return true;
+        }
+
+        bool PopBack()
+        {
+            if (IsEmpty())
+            {
+                return false;
+            }
+            Data.pop_back();
+            return true;
+        }
+
+        T& Front()
+        {
+            return Data.front();
+        }
+
+        const T& Front() const
+        {
+            return Data.front();
+        }
+
+        T& Back()
+        {
+            return Data.back();
+        }
+
+        const T& Back() const
+        {
+            return Data.back();
+        }
+
+        void Reset()
+        {
+            Data.clear();
+        }
+
+        void Reserve(uint32 newCapacity)
+        {
+            Data.reserve(newCapacity);
+        }
+
+        void SetNum(size_t newSize, const T& value = {})
+        {
+            while (Data.size() < newSize)
+                Data.push_back(value);
+            while (Data.size() > newSize)
+                Data.pop_back();
+        }
+
+        void SetSize(uint32 newSize)
+        {
+            Data.resize(newSize);
+        }
+
+        int32 IndexOf(const T& value) const
+        {
+            auto iter = std::find(Data.begin(), Data.end(), value);
+            if (iter == Data.end())
+                return INDEX_NONE;
+            return iter - Data.begin();
+        }
+
+        bool Contains(const T& value) const
+        {
+            return IndexOf(value) != INDEX_NONE;
+        }
+
+        auto RemoveAt(size_t index)
+        {
+            return Data.erase(Data.begin() + index);
+        }
+
+        auto begin()
+        {
+            return Data.begin();
+        }
+
+        auto begin() const
+        {
+            return Data.begin();
+        }
+
+        auto end()
+        {
+            return Data.end();
+        }
+
+        auto end() const
+        {
+            return Data.end();
+        }
+
+        TArray& operator=(const TArray& other)
+        {
+            Data = other.Data;
+            return *this;
+        }
+
+        TArray& operator=(std::initializer_list<T> list)
+        {
+            Data = list;
+            return *this;
+        }
+
+        TArray& operator=(TArray&& other) noexcept
+        {
+            Data = std::move(other.Data);
+            return *this;
+        }
+    };
+
+    template <class T, uint32 N>
+    using TInlineArray = TArray<T, InlineStoragePolicy<N>>;
+
+    template <class T>
+    using TFixedArray = TArray<T, FixedStoragePolicy>;
+
+    template <class T>
+    using THeapArray = TArray<T, HeapStoragePolicy>;
 }

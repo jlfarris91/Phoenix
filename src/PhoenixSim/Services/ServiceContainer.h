@@ -12,20 +12,20 @@ namespace Phoenix
 
         TSharedPtr<IService> GetService(const FName& typeId) const override;
 
-        uint32 GetServices(const FName& typeId, TArray2<TSharedPtr<IService>>& outServices) const override;
+        uint32 GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const override;
 
-        const TArray2<TSharedPtr<IService>>& GetServices() const override;
+        const TVector<TSharedPtr<IService>>& GetServices() const override;
 
-        const TMap<FName, TSharedPtr<IService>>& GetServiceMap() const;
+        const std::unordered_map<FName, TSharedPtr<IService>>& GetServiceMap() const;
 
-        const TMap<FName, TArray2<TSharedPtr<IService>>>& GetServiceAsMap() const;
+        const std::unordered_map<FName, TVector<TSharedPtr<IService>>>& GetServiceAsMap() const;
 
     private:
 
         friend class ServiceContainerBuilder;
 
-        TArray2<TSharedPtr<IService>> Services;
-        TMap<FName, TSharedPtr<IService>> ServiceMap;
-        TMap<FName, TArray2<TSharedPtr<IService>>> ServiceAsMap;
+        TVector<TSharedPtr<IService>> Services;
+        std::unordered_map<FName, TSharedPtr<IService>> ServiceMap;
+        std::unordered_map<FName, TVector<TSharedPtr<IService>>> ServiceAsMap;
     };
 }

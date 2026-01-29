@@ -5,6 +5,8 @@
 #include <fstream>
 #include <memory>
 
+#include "Config.h"
+#include "Logging.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Flags.h"
 #include "PhoenixSim/Profiling.h"
@@ -12,12 +14,12 @@
 
 using namespace Phoenix;
 
-World::World(const WorldCtorArgs& args)
-    : Session(args.Session)
-    , Id(args.WorldId)
-    , Type(args.WorldType)
-    , Buffer(args.Blocks)
-    , Config(args.Config)
+World::World(const WorldConfig& config)
+    : Session(config.Session)
+    , Id(config.WorldId)
+    , Type(config.WorldType)
+    , Buffer(config.BufferConfig)
+    , Config(config.Config)
     , SimTime(0)
 {
 }
@@ -59,26 +61,14 @@ FName World::GetType() const
     return Type;
 }
 
-const nlohmann::json& World::GetConfig() const
+const WorldJsonConfig& World::GetWorldConfig() const
 {
     return Config;
 }
 
-const nlohmann::json* World::GetFeatureConfig(const PHXString& featureId) const
+const FeatureJsonConfig* World::GetFeatureConfig(const FName& featureId) const
 {
-    auto featuresIter = Config.find("features");
-    if (featuresIter == Config.end())
-    {
-        return nullptr;
-    }
-
-    auto featureIter = featuresIter->find(featureId);
-    if (featureIter == featuresIter->end())
-    {
-        return nullptr;
-    }
-
-    return &*featureIter;
+    return Config.GetFeatureConfig(featureId);
 }
 
 bool World::IsInitialized() const
@@ -143,16 +133,7 @@ WorldManager::WorldManager(const WorldManagerCtorArgs& args)
     , FeatureSet(args.FeatureSet)
     , OnPostWorldUpdate(args.OnPostWorldUpdate)
 {
-    LoadConfig(args.Config);
-
-    for (const FeatureSharedPtr& feature : FeatureSet.lock()->GetFeatures())
-    {
-        FeatureDefinition worldFeatureDef = feature->GetFeatureDefinition();
-        for (const BlockBuffer::BlockDefinition& blockArgs : worldFeatureDef.WorldBlocks.Definitions)
-        {
-            WorldBufferBlockArgs.Definitions.push_back(blockArgs);
-        }
-    }
+    ConfigService = Session->GetServiceAs<IConfigService>();
 }
 
 WorldManager::~WorldManager()
@@ -163,9 +144,9 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
 {
     if (args.Id.IsSet())
     {
-        // TODO (jfarris): report an error that a world with that id already exists
         if (WorldSharedPtr existingWorld = GetWorld(args.Id.Get()))
         {
+            LogError("A world with id '{}' already exists!", static_cast<hash32_t>(args.Id.Get()));
             return nullptr;
         }
     }
@@ -176,19 +157,40 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
         worldId = GenerateNewWorldId(args.WorldType);
     }
 
-    WorldCtorArgs worldCtorArgs;
-    worldCtorArgs.Session = Session;
-    worldCtorArgs.WorldId = worldId;
-    worldCtorArgs.WorldType = args.WorldType;
-    worldCtorArgs.Blocks = WorldBufferBlockArgs;
+    WorldLayoutContext layoutContext;
+    layoutContext.Session = Session;
+    layoutContext.WorldId = worldId;
+    layoutContext.WorldType = args.WorldType;
 
-    auto worldConfigIter = WorldConfigs.find(args.WorldType);
-    if (worldConfigIter != WorldConfigs.end())
+    if (const WorldJsonConfig* worldJsonConfig = ConfigService->GetWorldConfig(args.WorldType))
     {
-        worldCtorArgs.Config = worldConfigIter->second;
+        layoutContext.Config = *worldJsonConfig;
     }
 
-    WorldSharedPtr world = std::make_shared<World>(worldCtorArgs);
+    WorldLayoutBuilder layoutBuilder;
+
+    // TODO (jfarris): allow filter features for world
+    // TODO (jfarris): sort features by dependencies so ie ECS is laid-out before steering
+    for (const TSharedPtr<IFeature>& feature : FeatureSet->GetFeatures())
+    {
+        const FeatureDefinition& featureDef = feature->GetFeatureDefinition();
+
+        for (const BufferBlockDefinition& block : featureDef.WorldBlocks.Definitions)
+        {
+            layoutBuilder.RegisterBlock(block);
+        }
+
+        feature->OnWorldLayout(layoutContext, layoutBuilder);
+    }
+
+    WorldConfig worldConfig;
+    worldConfig.Session = Session;
+    worldConfig.WorldId = worldId;
+    worldConfig.WorldType = args.WorldType;
+    worldConfig.Config = layoutContext.Config;
+    worldConfig.BufferConfig = layoutBuilder.GetLayout().BufferConfig;
+
+    WorldSharedPtr world = std::make_shared<World>(worldConfig);
     Worlds.push_back(world);
 
     return world;
@@ -211,7 +213,7 @@ WorldSharedPtr WorldManager::GetPrimaryWorld() const
 
 void WorldManager::Step(const WorldStepArgs& args)
 {
-    TArray<WorldSharedPtr> worlds;
+    TVector<WorldSharedPtr> worlds;
 
     if (args.WorldName != FName::None)
     {
@@ -242,7 +244,7 @@ void WorldManager::Step(const WorldStepArgs& args)
 
 void WorldManager::SendAction(const WorldSendActionArgs& args)
 {
-    TArray<WorldSharedPtr> worlds;
+    TVector<WorldSharedPtr> worlds;
 
     if (args.WorldName != FName::None)
     {
@@ -263,59 +265,16 @@ void WorldManager::SendAction(const WorldSendActionArgs& args)
     }
 }
 
-bool WorldManager::LoadConfig(const nlohmann::json& config)
+void WorldManager::ApplyConfig() const
 {
-    Config = config;
-    WorldConfigs.clear();
-
-    bool anyFailed = false;
-    for (auto && [worldType, worldConfig] : Config.items())
+    for (WorldSharedPtr world : Worlds)
     {
-        auto configIter = worldConfig.find("config");
-        if (configIter == worldConfig.end())
+        world->Config = {};
+        if (const WorldJsonConfig* worldConfig = ConfigService->GetWorldConfig(world->GetType()))
         {
-            // TODO (jfarris): report warning
-            anyFailed = true;
-            continue;
-        }
-
-        PHXString configPath = configIter->get<PHXString>();
-
-        if (!LoadWorldConfig(worldType, configPath))
-        {
-            anyFailed = true;
+            world->Config = *worldConfig;
         }
     }
-
-    return anyFailed == false;
-}
-
-bool WorldManager::LoadWorldConfig(const PHXString& worldType, const PHXString& configPath)
-{
-    std::filesystem::path dataDir = Session.lock()->GetDataDirectory();
-    std::filesystem::path worldConfigPath = absolute(dataDir / configPath);
-    if (!exists(worldConfigPath))
-    {
-        // TODO (jfarris): report warning
-        return false;
-    }
-
-    std::ifstream worldConfigStream(worldConfigPath);
-    if (!worldConfigStream.is_open())
-    {
-        // TODO (jfarris): report warning
-        return false;
-    }
-
-    nlohmann::json worldConfigJson = nlohmann::json::parse(worldConfigStream);
-    if (worldConfigJson.is_discarded())
-    {
-        // TODO (jfarris): report error
-        return false;
-    }
-
-    WorldConfigs.emplace(FName(worldType), worldConfigJson);
-    return true;
 }
 
 FName WorldManager::GenerateNewWorldId(const FName& worldType)
@@ -328,25 +287,26 @@ FName WorldManager::GenerateNewWorldId(const FName& worldType)
 
 void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
 {
+    const nlohmann::json& worldConfigData = world.Config.GetData();
+
     world.SimTime = Time::QT(time);
 
     uint64 randomSeed = Hashing::FNV1A64Combine(time, world.Id);
-
-    auto seedIter = Config.find("seed");
-    if (seedIter != Config.end())
+    auto seedIter = worldConfigData.find("seed");
+    if (seedIter != worldConfigData.end())
     {
         std::string seedStr = seedIter->get<std::string>();
         randomSeed = Hashing::FNV1A64(seedStr.c_str(), seedStr.length());
     }
     world.Random.Seed(randomSeed);
 
-    TArray2<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldInitialize);
+    TVector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldInitialize);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldInitialize(world);
     }
 
-    for (const TSharedPtr<IService>& service : Session.lock()->GetServices())
+    for (const TSharedPtr<IService>& service : Session->GetServices())
     {
         if (!IsA<IFeature>(service))
         {
@@ -359,13 +319,13 @@ void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
 
 void WorldManager::ShutdownWorld(WorldRef world) const
 {
-    TArray2<FeatureSharedPtr> channelFeatures = FeatureSet.lock()->GetChannelRef(FeatureChannels::WorldShutdown);
+    TVector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldShutdown);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldShutdown(world);
     }
 
-    for (const TSharedPtr<IService>& service : Session.lock()->GetServices())
+    for (const TSharedPtr<IService>& service : Session->GetServices())
     {
         if (!IsA<IFeature>(service))
         {
@@ -386,17 +346,11 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     updateArgs.SimTime = time;
     updateArgs.StepHz = stepHz;
 
-    TSharedPtr<Phoenix::FeatureSet> featureSet = FeatureSet.lock();
-    if (!featureSet)
-    {
-        return;
-    }
-
     // Pre-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreWorldUpdate");
 
-        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PreWorldUpdate);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreWorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreWorldUpdate(world, updateArgs);
@@ -407,7 +361,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("WorldUpdate");
 
-        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::WorldUpdate);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnWorldUpdate(world, updateArgs);
@@ -418,7 +372,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostWorldUpdate");
 
-        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PostWorldUpdate);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostWorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostWorldUpdate(world, updateArgs);
@@ -435,17 +389,11 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     FeatureActionArgs actionArgs;
     actionArgs.Action = action;
 
-    TSharedPtr<Phoenix::FeatureSet> featureSet = FeatureSet.lock();
-    if (!featureSet)
-    {
-        return;
-    }
-
     // Pre handle action
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreHandleWorldAction");
 
-        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PreHandleWorldAction);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreHandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreHandleWorldAction(world, actionArgs);
@@ -456,7 +404,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("HandleWorldAction");
 
-        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::HandleWorldAction);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::HandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnHandleWorldAction(world, actionArgs);
@@ -467,7 +415,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostHandleWorldAction");
 
-        const TArray2<FeatureSharedPtr>& channelFeatures = featureSet->GetChannelRef(FeatureChannels::PostHandleWorldAction);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostHandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostHandleWorldAction(world, actionArgs);

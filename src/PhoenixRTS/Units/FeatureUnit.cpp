@@ -48,6 +48,10 @@ UnitId FeatureUnit::SpawnUnit(
     Data::UnitPtr dataPtr(unitData);
 
     UnitComponent* unitComponent = FeatureECS::GetOrAddComponent<UnitComponent>(world, unitId);
+    if (!unitComponent)
+    {
+        __debugbreak();
+    }
     unitComponent->OwningPlayer = owner;
     unitComponent->UnitData = unitData;
 
@@ -254,13 +258,15 @@ uint32 FeatureUnit::QueryUnitsInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TArray2<UnitId>& outUnits,
+    TVector<UnitId>& outUnits,
     const UnitRangeQueryArgs& args)
 {
+    PHX_PROFILE_ZONE_SCOPED;
+
     EntityRangeQueryArgs rangeQueryArgs;
     rangeQueryArgs.Kinds = { "Unit"_n };
 
-    TArray<EntityTransform> entities;
+    TVector<EntityTransform> entities;
     FeatureECS::QueryEntitiesInRange(world, pos, range, entities);
 
     uint32 numUnits = 0;
@@ -299,7 +305,7 @@ uint32 FeatureUnit::QueryUnitsInRange(
             continue;
         }
 
-        outUnits.PushBack(entityAsUnit);
+        outUnits.push_back(entityAsUnit);
 
         if (++numUnits >= args.MaxNum)
         {

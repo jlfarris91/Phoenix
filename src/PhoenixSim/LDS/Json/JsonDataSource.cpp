@@ -154,7 +154,7 @@ bool JsonDataSource::RegisterType(const nlohmann::json& typeJson)
     return true;
 }
 
-const TMap<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredTypes() const
+const std::unordered_map<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredTypes() const
 {
     return Types;
 }
@@ -178,16 +178,16 @@ void JsonDataSource::RegisterInterface(const PHXString& interfaceId, const PHXSt
     InterfaceToTypeIds[interfaceId].push_back(typeId);
 }
 
-const TArray<PHXString>& JsonDataSource::GetInterfacesOfType(const PHXString& typeId) const
+const TVector<PHXString>& JsonDataSource::GetInterfacesOfType(const PHXString& typeId) const
 {
-    static TArray<PHXString> EmptyArray;
+    static TVector<PHXString> EmptyArray;
     auto iter = TypeIdToInterfaceIds.find(typeId);
     return iter != TypeIdToInterfaceIds.end() ? iter->second : EmptyArray;
 }
 
-const TArray<PHXString>& JsonDataSource::GetTypesImplementingInterface(const PHXString& interfaceId) const
+const TVector<PHXString>& JsonDataSource::GetTypesImplementingInterface(const PHXString& interfaceId) const
 {
-    static TArray<PHXString> EmptyArray;
+    static TVector<PHXString> EmptyArray;
     auto iter = InterfaceToTypeIds.find(interfaceId);
     return iter != InterfaceToTypeIds.end() ? iter->second : EmptyArray;
 }
@@ -231,7 +231,7 @@ bool JsonDataSource::RegisterObject(const nlohmann::json& objectJson)
     return true;
 }
 
-const TMap<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredObjects() const
+const std::unordered_map<std::string, nlohmann::basic_json<>>& JsonDataSource::GetRegisteredObjects() const
 {
     return Objects;
 }

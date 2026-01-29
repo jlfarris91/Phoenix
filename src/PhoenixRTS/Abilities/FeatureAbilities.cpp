@@ -118,7 +118,7 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
 {
     bool success = true;
 
-    TArray2<FName> abilities;
+    TVector<FName> abilities;
     GetAbilities(world, unit, abilities);
 
     for (const FName& abilityId : abilities)
@@ -130,7 +130,7 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
     return success;
 }
 
-uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, TArray2<FName>& outAbilityIds)
+uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, TVector<FName>& outAbilityIds)
 {
     const ILDSQueryContext& queryContext = *FeatureLDS::StaticGetWorldQueryContext(world);
 
@@ -138,20 +138,26 @@ uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, T
     (void)unitPtr.Commands().ForEachItem(queryContext, [&](uint32, const Data::CommandPtr& command)
     {
         FName abilityId = command.Ability().GetReferenceId(queryContext);
+
+        if (std::ranges::find(outAbilityIds, abilityId) != outAbilityIds.end())
+        {
+            return;
+        }
+
         if (!FName::IsNoneOrEmpty(abilityId))
         {
-            outAbilityIds.PushBackUnique(abilityId);
+            outAbilityIds.push_back(abilityId);
         }
     });
 
-    return static_cast<uint32>(outAbilityIds.Num());
+    return static_cast<uint32>(outAbilityIds.size());
 }
 
 void FeatureAbilities::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    TArray2<TSharedPtr<IAbilityHandler>> handlers;
+    TVector<TSharedPtr<IAbilityHandler>> handlers;
     Session->GetServices2<IAbilityHandler>(handlers);
 
     for (const TSharedPtr<IAbilityHandler>& handler : handlers)

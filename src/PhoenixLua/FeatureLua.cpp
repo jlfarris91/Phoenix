@@ -18,7 +18,7 @@ using namespace Phoenix;
 
 FeatureLua::FeatureLua()
 {
-    FEATURE_SESSION_BLOCK(FeatureLuaDynamicBlock)
+    FEATURE_SESSION_BLOCK(FeatureLuaDynamicBlock, EBufferBlockType::Dynamic)
     FEATURE_CHANNEL(FeatureChannels::PreUpdate)
     FEATURE_CHANNEL(FeatureChannels::Update)
     FEATURE_CHANNEL(FeatureChannels::PostUpdate)

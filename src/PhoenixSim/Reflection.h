@@ -4,7 +4,6 @@
 #include <memory>
 #include <ranges>
 
-#include "Delegates.h"
 #include "Flags.h"
 #include "Utils.h"
 #include "FixedPoint/FixedVector.h"
@@ -47,7 +46,7 @@ namespace Phoenix
         virtual ~DescriptorBase() = default;
 
         PHXString Name;
-        TMap<PHXString, PHXString> Metadata;
+        std::unordered_map<PHXString, PHXString> Metadata;
     };
 
     struct PHOENIX_SIM_API IMethodPointer
@@ -700,7 +699,7 @@ namespace Phoenix
             return EPropertyValueType::Unknown;
         }
 
-        static TMap<PHXString, PHXString> GetMetadata()
+        static std::unordered_map<PHXString, PHXString> GetMetadata()
         {
             return {};
         }
@@ -714,7 +713,7 @@ namespace Phoenix
             return EPropertyValueType::FixedPoint;
         }
 
-        static TMap<PHXString, PHXString> GetMetadata()
+        static std::unordered_map<PHXString, PHXString> GetMetadata()
         {
             return { { "FractionalBits", std::format("{}", Tb) } };
         }
@@ -912,9 +911,9 @@ namespace Phoenix
             }
         }
 
-        TMap<PHXString, PropertyDescriptor> Properties;
-        TMap<PHXString, MethodDescriptor> Methods;
-        TMap<PHXString, BaseDescriptor> Bases;
+        std::unordered_map<PHXString, PropertyDescriptor> Properties;
+        std::unordered_map<PHXString, MethodDescriptor> Methods;
+        std::unordered_map<PHXString, BaseDescriptor> Bases;
         void (*DefaultConstructFunc)(void*) = nullptr;
         void (*DestructFunc)(void*) = nullptr;
         const char* CName;

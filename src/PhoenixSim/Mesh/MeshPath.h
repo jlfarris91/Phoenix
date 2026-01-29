@@ -47,12 +47,12 @@ namespace Phoenix
         TIdx GoalFaceIndex = Index<TIdx>::None;
         TIdx CurrEdgeIndex = Index<TIdx>::None;
         uint32 Steps = 0;
-        TFixedQueue<TIdx, 4098> OpenSet;
-        TFixedMap<TIdx, Node, 4098> Nodes;
+        TInlineQueue<TIdx, 4098> OpenSet;
+        TInlineMap<TIdx, Node, 4098> Nodes;
         EStepResult LastStepResult = EStepResult::Continue;
 
-        TFixedArray<TVec, 4098> Path;
-        TFixedArray<TIdx, 4098> PathEdges;
+        TInlineArray<TVec, 4098> Path;
+        TInlineArray<TIdx, 4098> PathEdges;
 
         TMeshFunnel<TMesh> Funnel;
 
@@ -322,9 +322,9 @@ namespace Phoenix
         int32 RightIndex = 0;
         int32 PortalSide = 0;
         Distance Radius;
-        TFixedArray<TVec, 256> PathChainRhs;
-        TFixedArray<TVec, 256> PathChainLhs;
-        TFixedArray<TLine<TVec>, 256> PathDebugLines;
+        TInlineArray<TVec, 256> PathChainRhs;
+        TInlineArray<TVec, 256> PathChainLhs;
+        TInlineArray<TLine<TVec>, 256> PathDebugLines;
 
         void Initialize(const TMesh& mesh, const TMeshPath<TMesh>& path, Distance radius)
         {

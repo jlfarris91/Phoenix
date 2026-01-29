@@ -114,6 +114,9 @@ namespace Phoenix
     template <bool bConst, class T, class TFunc, class TUserPolicy, class ...TVars>
     class TSPDelegateInstance;
 
+    template <class TFunctor, class TFunc, class TUserPolicy, class ...TVars>
+    class TFunctorDelegateInstance;
+
     //
     //
     // Delegate Instances Impl
@@ -198,6 +201,39 @@ namespace Phoenix
         TMethodPtr Func;
     };
 
+    template <class TFunctor, class TRet, class ...TArgs, class TUserPolicy, class ...TVars>
+    class TFunctorDelegateInstance<TFunctor, TRet(TArgs...), TUserPolicy, TVars...> : public TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>
+    {
+        using Super = TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>;
+        using DelegateBase = typename TUserPolicy::DelegateBase;
+
+    public:
+
+        template <class InFunctor, class ...InVars>
+        explicit TFunctorDelegateInstance(InFunctor&& functor, InVars&&... vars)
+            : Super(std::forward<TVars>(vars)...)
+            , Functor(std::forward<InFunctor>(functor))
+        {
+        }
+
+        TRet Execute(TArgs... args) const final
+        {
+            return ApplyAfter(this->Payload, Functor, args...);
+        }
+
+        bool IsSafeToExecute() const final
+        {
+            return true;
+        }
+
+        bool HasObject(const void*) const final
+        {
+            return false;
+        }
+
+        mutable std::remove_const_t<TFunctor> Functor;
+    };
+
     struct DelegateModeNotThreadSafe
     {
     };
@@ -248,6 +284,15 @@ namespace Phoenix
 
         TDelegateBase() = default;
 
+        TDelegateBase(const TDelegateBase& other)
+        {
+            if (other.DelegatePtr)
+            {
+                DelegatePtr = Allocate(other.DelegateSize);
+                memcpy(DelegatePtr, other.DelegatePtr, other.DelegateSize);
+            }
+        }
+
         TDelegateBase(TDelegateBase&& other) noexcept
         {
             auto otherScope = other.GetWriteAccessScope();
@@ -262,6 +307,39 @@ namespace Phoenix
         ~TDelegateBase()
         {
             Unbind();
+        }
+
+        TDelegateBase& operator=(const TDelegateBase& other)
+        {
+            if (this == &other)
+            {
+                return *this;
+            }
+
+            Unbind();
+
+            if (other.DelegatePtr)
+            {
+                DelegatePtr = Allocate(other.DelegateSize);
+                memcpy(DelegatePtr, other.DelegatePtr, other.DelegateSize);
+            }
+
+            return *this;
+        }
+
+        TDelegateBase& operator=(TDelegateBase&& other) noexcept
+        {
+            Unbind();
+
+            auto otherScope = other.GetWriteAccessScope();
+
+            DelegatePtr = other.DelegatePtr;
+            other.DelegatePtr = nullptr;
+
+            DelegateSize = other.DelegateSize;
+            other.DelegateSize = 0;
+
+            return *this;
         }
 
         void Unbind()
@@ -425,6 +503,20 @@ namespace Phoenix
             TVars&&... vars)
         {
             Super::template BindInstance<TSPDelegateInstance<true, T, TFunc, TUserPolicy, std::decay_t<TVars>...>>(ptr, func, std::forward<TVars>(vars)...);
+        }
+
+        template <class TFunctor, class ...TVars>
+        static TDelegate CreateLambda(TFunctor&& functor, TVars&&... vars)
+        {
+            TDelegate result;
+            result.BindLambda(std::forward<TFunctor>(functor), std::forward<TVars>(vars)...);
+            return result;
+        }
+
+        template <class TFunctor, class ...TVars>
+        void BindLambda(TFunctor&& functor, TVars&&... vars)
+        {
+            Super::template BindInstance<TFunctorDelegateInstance<std::remove_reference_t<TFunctor>, TFunc, TUserPolicy, std::decay_t<TVars>...>>(std::forward<TFunctor>(functor), std::forward<TVars>(vars)...);
         }
 
         TRet Execute(TArgs... args) const

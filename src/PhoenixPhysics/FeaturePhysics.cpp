@@ -12,8 +12,8 @@ using namespace Phoenix::Physics;
 
 FeaturePhysics::FeaturePhysics()
 {
-    FEATURE_WORLD_BLOCK(FeaturePhysicsDynamicBlock)
-    FEATURE_WORLD_BLOCK(FeaturePhysicsScratchBlock)
+    FEATURE_WORLD_BLOCK(FeaturePhysicsDynamicBlock, EBufferBlockType::Dynamic)
+    FEATURE_WORLD_BLOCK(FeaturePhysicsScratchBlock, EBufferBlockType::Scratch)
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 
@@ -31,7 +31,7 @@ void FeaturePhysics::QueryEntitiesInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TArray<EntityBody>& outEntities)
+    TVector<EntityBody>& outEntities)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -45,7 +45,7 @@ void FeaturePhysics::QueryEntitiesInRange(
         MortonCodeQuery(aabb, ranges);
     }
 
-    TArray<EntityBody*> overlappingEntities;
+    TVector<EntityBody*> overlappingEntities;
     ForEachInMortonCodeRanges<EntityBody, &EntityBody::ZCode>(
         scratchBlock.SortedEntities,
         ranges,
@@ -59,7 +59,7 @@ void FeaturePhysics::AddExplosionForceToEntitiesInRange(WorldRef world, const Ve
 {
     // Distance rangeSq = range * range;
 
-    TArray<EntityBody> outEntities;
+    TVector<EntityBody> outEntities;
     QueryEntitiesInRange(world, pos, range, outEntities);
 
     for (const EntityBody& entityBody : outEntities)

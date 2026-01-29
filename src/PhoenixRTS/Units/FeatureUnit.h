@@ -9,7 +9,6 @@
 #include "PhoenixRTS/Orders/Commands.h"
 #include "PhoenixRTS/TargetFiltering/TargetScanLevel.h"
 #include "PhoenixRTS/Teams/Teams.h"
-#include "PhoenixSim/Containers/Array.h"
 
 namespace Phoenix::ECS
 {
@@ -57,7 +56,7 @@ namespace Phoenix::RTS
     {
         EUnitQueryFlags Flags = EUnitQueryFlags::AliveOrDead;
         TeamMask TeamMask = Teams::All;
-        TArray<UnitId> Exclude;
+        TVector<UnitId> Exclude;
         uint32 MaxNum = 64;
     };
 
@@ -140,7 +139,7 @@ namespace Phoenix::RTS
             WorldConstRef world,
             const Vec2& pos,
             Distance range,
-            TArray2<UnitId>& outUnits,
+            TVector<UnitId>& outUnits,
             const UnitRangeQueryArgs& args);
 
         // TODO (jfarris): make this event-driven?

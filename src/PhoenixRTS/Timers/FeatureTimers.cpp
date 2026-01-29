@@ -6,27 +6,51 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
+FeatureTimersDynamicBlock::FeatureTimersDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
+    : TimerManager(allocator, config.MaxTimers)
+{
+}
+
+FeatureTimersDynamicBlock::FeatureTimersDynamicBlock(
+    BlockBufferAllocator& allocator,
+    const Config& config,
+    const FeatureTimersDynamicBlock& other)
+    : TimerManager(allocator, config.MaxTimers, other.TimerManager)
+{
+}
+
+BufferBlockLayout FeatureTimersDynamicBlock::Layout(Config config)
+{
+    BufferBlockLayout result;
+    result.BlockSize = sizeof(FeatureTimersDynamicBlock);
+    result.AllocSize += FixedTimerManager::GetAllocSizeBytes(config.MaxTimers);
+    return result;
+}
+
+void FeatureTimersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
+{
+    new (dest) FeatureTimersDynamicBlock(allocator, config);
+}
+
 FeatureTimers::FeatureTimers()
 {
-    FEATURE_SESSION_BLOCK(FeatureTimersDynamicSessionBlock)
-    FEATURE_WORLD_BLOCK(FeatureTimersDynamicWorldBlock)
     FEATURE_CHANNEL(FeatureChannels::PreUpdate)
     FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
 }
 
-FeatureTimers::SessionTimerManager* FeatureTimers::GetSessionTimerManager(SessionRef session)
+FixedTimerManager* FeatureTimers::GetSessionTimerManager(SessionRef session)
 {
-    FeatureTimersDynamicSessionBlock* block = session.GetBlock<FeatureTimersDynamicSessionBlock>();
+    FeatureTimersDynamicBlock* block = session.GetBlock<FeatureTimersDynamicBlock>();
     return block ? &block->TimerManager : nullptr;
 }
 
-const FeatureTimers::SessionTimerManager* FeatureTimers::GetSessionTimerManager(SessionConstRef session)
+const FixedTimerManager* FeatureTimers::GetSessionTimerManager(SessionConstRef session)
 {
-    const FeatureTimersDynamicSessionBlock* block = session.GetBlock<FeatureTimersDynamicSessionBlock>();
+    const FeatureTimersDynamicBlock* block = session.GetBlock<FeatureTimersDynamicBlock>();
     return block ? &block->TimerManager : nullptr;
 }
 
-FeatureTimers::SessionTimerManager* FeatureTimers::GetSessionTimerManager(WorldRef world)
+FixedTimerManager* FeatureTimers::GetSessionTimerManager(WorldRef world)
 {
     TWeakPtr<Phoenix::Session> weakSession = world.GetSession();
     if (auto session = weakSession.lock())
@@ -36,16 +60,32 @@ FeatureTimers::SessionTimerManager* FeatureTimers::GetSessionTimerManager(WorldR
     return nullptr;
 }
 
-FeatureTimers::WorldTimerManager* FeatureTimers::GetWorldTimerManager(WorldRef world)
+FixedTimerManager* FeatureTimers::GetWorldTimerManager(WorldRef world)
 {
-    FeatureTimersDynamicWorldBlock* block = world.GetBlock<FeatureTimersDynamicWorldBlock>();
+    FeatureTimersDynamicBlock* block = world.GetBlock<FeatureTimersDynamicBlock>();
     return block ? &block->TimerManager : nullptr;
 }
 
-const FeatureTimers::WorldTimerManager* FeatureTimers::GetWorldTimerManager(WorldConstRef world)
+const FixedTimerManager* FeatureTimers::GetWorldTimerManager(WorldConstRef world)
 {
-    const FeatureTimersDynamicWorldBlock* block = world.GetBlock<FeatureTimersDynamicWorldBlock>();
+    const FeatureTimersDynamicBlock* block = world.GetBlock<FeatureTimersDynamicBlock>();
     return block ? &block->TimerManager : nullptr;
+}
+
+void FeatureTimers::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
+    IFeature::OnWorldLayout(context, builder);
+
+    FeatureTimersDynamicBlock::Config dynamicBlockConfig;
+    dynamicBlockConfig.MaxTimers = PHX_MAX_WORLD_TIMERS;
+
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    {
+        const nlohmann::json& featureConfigData = featureConfig->GetData();
+        dynamicBlockConfig.MaxTimers = featureConfigData.value("max_world_timers", dynamicBlockConfig.MaxTimers);
+    }
+
+    builder.RegisterBlockWithAlloc<FeatureTimersDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
 }
 
 void FeatureTimers::OnPreUpdate(const FeatureUpdateArgs& args)

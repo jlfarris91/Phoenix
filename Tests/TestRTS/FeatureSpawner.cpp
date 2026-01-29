@@ -10,7 +10,7 @@ using namespace Phoenix::RTS;
 
 FeatureSpawner::FeatureSpawner()
 {
-    FEATURE_WORLD_BLOCK(FeatureSpawnerWorldBlock)
+    FEATURE_WORLD_BLOCK(FeatureSpawnerWorldBlock, EBufferBlockType::Dynamic)
     FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
     FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
 }
@@ -74,8 +74,9 @@ void FeatureSpawner::Reset(WorldRef world)
 
     while (!block.SpawnWaves.IsFull())
     {
-        SpawnWave& spawnWave = block.SpawnWaves.AddDefaulted_GetRef();
-        spawnWave.UnitDataIds = { { "Lancer"_n, 1.0 }, { "Archer"_n, 1.0 } };
+        SpawnWave& spawnWave = block.SpawnWaves.PushBack_GetRef();
+        spawnWave.UnitDataIds.EmplaceBack("Lancer"_n, 1.0);
+        spawnWave.UnitDataIds.EmplaceBack("Archer"_n, 1.0);
     }
 
     block.SpawnCooldownMin = 1.0;
@@ -91,7 +92,7 @@ void FeatureSpawner::Reset(WorldRef world)
 
 bool FeatureSpawner::SpawnUnit(WorldRef world, FeatureSpawnerWorldBlock& block)
 {
-    SpawnWave& spawnWave = block.SpawnWaves[block.WaveNum % block.SpawnWaves.Num()];
+    SpawnWave& spawnWave = block.SpawnWaves[block.WaveNum % block.SpawnWaves.GetNum()];
 
     Random& random = block.Random;
 

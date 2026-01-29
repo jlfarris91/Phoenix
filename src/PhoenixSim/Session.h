@@ -15,7 +15,8 @@ namespace Phoenix
     class WorldManager;
     class IFeature;
     class ServiceContainerBuilder;
-    
+    class IConfigService;
+
     struct PHOENIX_SIM_API SessionCtorArgs
     {
         PHXString DataDirectory;
@@ -86,14 +87,14 @@ namespace Phoenix
 
         // Begin ServiceLocator implementation
         TSharedPtr<IService> GetService(const FName& typeId) const override;
-        uint32 GetServices(const FName& typeId, TArray2<TSharedPtr<IService>>& outServices) const override;
-        const TArray2<TSharedPtr<IService>>& GetServices() const override;
+        uint32 GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const override;
+        const TVector<TSharedPtr<IService>>& GetServices() const override;
         // End ServiceLocator implementation
 
     private:
 
-        void LoadConfig();
-        void ApplyConfig();
+        void LoadConfig() const;
+        void ApplyConfig() const;
 
         void ProcessActions(simtime_t time);
 
@@ -102,15 +103,13 @@ namespace Phoenix
         std::filesystem::path DataDirectory;
 
         PHXString ConfigName;
-        nlohmann::json Config;
-        TOptional<nlohmann::json> CustomConfig;
-        TMap<FName, nlohmann::json> FeatureConfigs;
+        TSharedPtr<IConfigService> ConfigService;
 
         TSharedPtr<FeatureSet> FeatureSet;
         TSharedPtr<WorldManager> WorldManager;
         TSharedPtr<ServiceContainer> ServiceContainer;
 
-        TArray<TTuple<simtime_t, Action>> ActionQueue;
+        TVector<TTuple<simtime_t, Action>> ActionQueue;
         std::shared_mutex ActionQueueMutex;
 
         sys_clock_t StartTime;

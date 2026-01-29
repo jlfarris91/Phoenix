@@ -31,7 +31,7 @@ namespace Phoenix::ECS
     template <class T, class TEquality = std::equal_to<T>>
     struct EntityQueryFilterSet
     {
-        TArray<T> Items;
+        TVector<T> Items;
 
         EntityQueryFilterSet& AddAll(const EntityQueryFilterSet& other)
         {

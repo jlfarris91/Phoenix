@@ -8,13 +8,9 @@ namespace Phoenix
 {
     namespace ECS
     {
-        template <typename TArchetypeDefinition, uint32 N>
-        class TArchetypeList;
-
         struct PHOENIX_SIM_API ArchetypeHandle
         {
-            template <typename TArchetypeDefinition, uint32 N>
-            friend class TArchetypeList;
+            friend class FixedArchetypeList;
 
             ArchetypeHandle() = default;
 

@@ -18,7 +18,9 @@ namespace Phoenix::LDS
     }
 
     template <class T>
-    bool ILDSQueryContext::TryQueryRecordValueAs(const LDSRecordPath& path, T& outValue,
+    bool ILDSQueryContext::TryQueryRecordValueAs(
+        const LDSRecordPath& path,
+        T& outValue,
         ELDSRecordQueryFlags flags) const
     {
         if (const LDSRecord* record = QueryRecord(path, flags))

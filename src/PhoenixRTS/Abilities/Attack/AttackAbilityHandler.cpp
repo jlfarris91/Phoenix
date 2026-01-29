@@ -26,22 +26,25 @@ using namespace Phoenix::RTS;
 
 namespace AttackAbilitySystemDetail
 {
-    struct UpdateAttackAbilityComponentJob : IBufferJob<AttackAbilityComponent&>
+    struct UpdateAttackAbilityComponentJob
     {
-        void Execute(const EntityComponentSpan<AttackAbilityComponent&>& span) override
+        TSharedPtr<FeatureOrders> OrdersFeature;
+
+        void Begin(WorldRef world)
         {
-            PHX_PROFILE_ZONE_SCOPED_N("UpdateAttackAbilityComponentJob");
+            OrdersFeature = GetFeature<FeatureOrders>(world);
+        }
 
-            TSharedPtr<FeatureOrders> ordersFeature = GetFeature<FeatureOrders>(*World);
-
+        void Execute(WorldRef world, const EntityComponentSpan<AttackAbilityComponent&>& span) const
+        {
             for (auto && [entityId, index, attackComp] : span)
             {
                 if (attackComp.ActiveState != EAttackAbilityState::None)
                 {
-                    AbilityStateResult result = attackComp.Update(*World, UnitId(entityId));
+                    AbilityStateResult result = attackComp.Update(world, UnitId(entityId));
                     if (result != EAbilityStateResult::Continue)
                     {
-                        ordersFeature->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
+                        OrdersFeature->OnActiveOrderCompleted(world, UnitId(entityId), result == EAbilityStateResult::Complete);
                     }
                 }
             }
@@ -53,8 +56,11 @@ void AttackAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& 
 {
     ISystem::OnWorldUpdate(world, args);
 
-    AttackAbilitySystemDetail::UpdateAttackAbilityComponentJob job;
-    FeatureECS::Schedule(world, job);
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("UpdateAttackAbilityComponentJob");
+        AttackAbilitySystemDetail::UpdateAttackAbilityComponentJob job;
+        FeatureECS::ForEachEntity(world, job);
+    }
 }
 
 AttackAbilityComponent::AttackAbilityComponent()

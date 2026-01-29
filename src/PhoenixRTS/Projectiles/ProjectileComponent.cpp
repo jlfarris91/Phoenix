@@ -90,15 +90,15 @@ AbilityStateResult ProjectileState::HandleActiveStateResult(
         FeatureEffects::StaticExecuteEffect(world, comp.EffectParent, comp.ImpactEffectId);
     }
 
-    if (result.Result == EAbilityStateResult::Fail)
-    {
-        if (result.Reason == AbilityStateReasons::TargetLost ||
-            result.Reason == AbilityStateReasons::TargetInvalid)
-        {
-            comp.State.ActiveState = EProjectileState::MoveToLocation;
-            return comp.State.States.MoveToLocation.Enter(world, projectile, comp.State.States.MoveToEntity.LastKnownPosition, ArrivalThreshold);
-        }
-    }
+    // if (result.Result == EAbilityStateResult::Fail)
+    // {
+    //     if ((result.Reason == AbilityStateReasons::TargetLost || result.Reason == AbilityStateReasons::TargetInvalid) &&
+    //         !Vec2::Equals(comp.State.States.MoveToEntity.LastKnownPosition, Vec2::Max))
+    //     {
+    //         comp.State.ActiveState = EProjectileState::MoveToLocation;
+    //         return comp.State.States.MoveToLocation.Enter(world, projectile, comp.State.States.MoveToEntity.LastKnownPosition, ArrivalThreshold);
+    //     }
+    // }
 
     return result;
 }

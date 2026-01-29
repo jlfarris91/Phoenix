@@ -37,16 +37,21 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API FeatureEffectsDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_DYNAMIC(FeatureEffectsDynamicBlock)
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureEffectsDynamicBlock)
 
-        FixedResponseList<PHX_RTS_MAX_RESPONSES> Responses;
+        struct Config
+        {
+            uint32 MaxEffectResponses = PHX_RTS_MAX_RESPONSES;
+        };
+
+        FixedResponseList Responses;
     };
 
     struct PHOENIX_RTS_API FeatureEffectsScratchBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_SCRATCH(FeatureEffectsScratchBlock)
+        PHX_DECLARE_BLOCK(FeatureEffectsScratchBlock)
 
-        TFixedArray<EffectNodeId, PHX_RTS_MAX_DEFERRED_EFFECTS> DeferredEffects[2];
+        TInlineArray<EffectNodeId, PHX_RTS_MAX_DEFERRED_EFFECTS> DeferredEffects[2];
         uint8 DeferredEffectsWriteIndex;
     };
 
@@ -223,6 +228,7 @@ namespace Phoenix::RTS
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
+        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 
         void ProcessDeferredEffects(WorldRef world);
@@ -235,10 +241,10 @@ namespace Phoenix::RTS
             WorldConstRef world,
             ECS::EntityId entityId,
             const ResponseContext& responseContext,
-            TArray<PriorityResponseHandler>& outResponseHandlers);
+            TVector<PriorityResponseHandler>& outResponseHandlers);
 
         TSharedPtr<PeriodicEffectSystem> PeriodicEffectSystem;
-        TMap<FName, TSharedPtr<IEffectHandler>> EffectIdToHandlerMap;
-        TMap<FName, TSharedPtr<IResponseHandler>> ResponseIdToHandlerMap;
+        std::unordered_map<FName, TSharedPtr<IEffectHandler>> EffectIdToHandlerMap;
+        std::unordered_map<FName, TSharedPtr<IResponseHandler>> ResponseIdToHandlerMap;
     };
 }

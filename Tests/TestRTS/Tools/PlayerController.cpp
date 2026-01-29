@@ -65,7 +65,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 
         renderer.DrawRect(min, max, Color::White);
 
-        TArray<EntityTransform> entities;
+        TVector<EntityTransform> entities;
         FeatureECS::QueryEntitiesInRect(world, min, max, entities);
 
         for (const EntityTransform& entity : entities)
@@ -209,7 +209,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             max.X = std::max(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
             max.Y = std::max(boxSelectDragStartWS.Y, boxSelectDragEndWS.Y);
 
-            TArray<EntityTransform> entities;
+            TVector<EntityTransform> entities;
             FeatureECS::QueryEntitiesInRect(world, min, max, entities);
 
             if (!state.KeyDown(SDL_KMOD_CTRL) && !state.KeyDown(SDL_KMOD_SHIFT))
@@ -237,7 +237,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         }
         else
         {
-            TArray<EntityTransform> entities;
+            TVector<EntityTransform> entities;
             FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
 
             if (!state.KeyDown(SDL_KMOD_CTRL) && !state.KeyDown(SDL_KMOD_SHIFT))
@@ -271,7 +271,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     }
 
     {
-        TArray<EntityTransform> entities;
+        TVector<EntityTransform> entities;
         FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
 
         EntityId closestEntity;

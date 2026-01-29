@@ -150,7 +150,7 @@ namespace Phoenix::LDS
         uint32 count = 0;
         LDSArrayUtil::ForEachItem<TItemPtr>(context, path, [&count, &outItems](uint32, const TItemPtr& value)
         {
-            outItems.Add(value);
+            outItems.push_back(value);
             ++count;
         }, flags);
         return count;
@@ -164,10 +164,10 @@ namespace Phoenix::LDS
         ELDSRecordQueryFlags flags)
     {
         uint32 size = GetSize(context, path, flags);
-        outValues.Reserve(size);
+        outValues.reserve(size);
         for (uint32 i = 0; i < size; ++i)
         {
-            outValues.Add(GetItemValueAs<TValue, TValuePtr>(path, i, flags));
+            outValues.push_back(GetItemValueAs<TValue, TValuePtr>(path, i, flags));
         }
         return size;
     }
@@ -180,10 +180,10 @@ namespace Phoenix::LDS
         ELDSRecordQueryFlags flags)
     {
         uint32 size = GetSize(context, path, flags);
-        outObjects.Reserve(size);
+        outObjects.reserve(size);
         for (uint32 i = 0; i < size; ++i)
         {
-            outObjects.Add(GetResolvedItemObject<TObjectPtr, TObjectRefPtr>(context, path, i, flags));
+            outObjects.push_back(GetResolvedItemObject<TObjectPtr, TObjectRefPtr>(context, path, i, flags));
         }
         return size;
     }
@@ -196,13 +196,13 @@ namespace Phoenix::LDS
         ELDSRecordQueryFlags flags)
     {
         uint32 size = GetSize(context, path, flags);
-        outObjects.Reserve(size);
+        outObjects.reserve(size);
         for (uint32 i = 0; i < size; ++i)
         {
             TObjectPtr objectPtr = GetItem<TObjectPtr>(path, i, flags);
             TObject object;
             objectPtr.TryReadObject(context, object);
-            outObjects.Add(object);
+            outObjects.push_back(object);
         }
         return size;
     }

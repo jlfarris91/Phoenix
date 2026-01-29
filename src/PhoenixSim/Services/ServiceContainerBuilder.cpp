@@ -25,7 +25,7 @@ const ServiceRegistrar& ServiceRegistrar::AsInterfaces() const
 ServiceRegistrar ServiceContainerBuilder::RegisterService(const TSharedPtr<IService>& service)
 {
     const TypeDescriptor& typeDescriptor = service->GetTypeDescriptor();
-    Container.Services.PushBackUnique(service);
+    Container.Services.push_back(service);
     Container.ServiceMap.emplace(typeDescriptor.GetFName(), service);
     return { this, service };
 }
@@ -37,7 +37,7 @@ TSharedPtr<ServiceContainer> ServiceContainerBuilder::Build()
 
 void ServiceContainerBuilder::RegisterServiceAs(const TSharedPtr<IService>& service, const FName& typeId)
 {
-    Container.ServiceAsMap[typeId].PushBackUnique(service);
+    Container.ServiceAsMap[typeId].push_back(service);
 }
 
 void ServiceContainerBuilder::RegisterServiceAsInterfaces(const TSharedPtr<IService>& service)

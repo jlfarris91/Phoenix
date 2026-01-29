@@ -15,18 +15,17 @@ namespace Phoenix::LDS
 
 namespace Phoenix::LDS
 {
-    struct PHOENIX_SIM_API FeatureLDSSessionDynamicBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureLDSDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_STATIC(FeatureLDSSessionDynamicBlock)
+        PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureLDSDynamicBlock)
 
-        TFixedCatalog<8192, 1024> Catalog;
-    };
+        struct Config
+        {
+            uint32 MaxObjectRecords = 0;
+            uint32 MaxTypeRecords = 0;
+        };
 
-    struct PHOENIX_SIM_API FeatureLDSWorldDynamicBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK_STATIC(FeatureLDSWorldDynamicBlock)
-
-        TFixedCatalog<1024, 1024> Catalog;
+        FixedLDSCatalog Catalog;
     };
 
     enum class PHOENIX_SIM_API ELDSFeatureRecordQueryFlags : uint8
@@ -58,11 +57,11 @@ namespace Phoenix::LDS
         FeatureLDS();
 
         // Gets the static session-level catalog.
-        TSharedPtr<Catalog> GetStaticSessionCatalog();
-        TSharedPtr<const Catalog> GetStaticSessionCatalog() const;
+        TSharedPtr<HeapLDSCatalog> GetStaticSessionCatalog();
+        TSharedPtr<const HeapLDSCatalog> GetStaticSessionCatalog() const;
 
         // Gets the static catalog for a given world.
-        TSharedPtr<const Catalog> GetStaticWorldCatalog(WorldConstRef world) const;
+        TSharedPtr<const HeapLDSCatalog> GetStaticWorldCatalog(WorldConstRef world) const;
 
         TSharedPtr<const ILDSQueryContext> GetSessionQueryContext() const;
         TSharedPtr<const ILDSQueryContext> GetWorldQueryContext(WorldConstRef world) const;
@@ -103,22 +102,17 @@ namespace Phoenix::LDS
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
+        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
 
-        static bool LoadCatalog(const PHXString& catalogAbsolutePath, Catalog& catalog);
+        static bool LoadCatalog(const PHXString& catalogAbsolutePath, HeapLDSCatalog& catalog);
 
-        // A catalog that holds static LDS data for the session.
-        // These catalogs are stored on the heap.
-        TSharedPtr<Catalog> StaticSessionCatalog;
-
-        // Catalogs holding static LDS data for each world.
-        // These catalogs are stored on the heap.
-        TMap<FName, TSharedPtr<Catalog>> StaticWorldCatalogs;
+        TSharedPtr<HeapLDSCatalog> StaticSessionCatalog;
+        std::unordered_map<FName, TSharedPtr<HeapLDSCatalog>> StaticWorldCatalogs;
 
         TSharedPtr<ILDSQueryContext> SessionQueryContext;
-
-        TMap<FName, TSharedPtr<ILDSQueryContext>> WorldQueryContexts;
+        std::unordered_map<FName, TSharedPtr<ILDSQueryContext>> WorldQueryContexts;
     };
 }
 

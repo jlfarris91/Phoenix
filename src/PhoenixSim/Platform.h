@@ -82,12 +82,6 @@
 #   define PHX_FUNCTION __FUNCTION__
 #endif
 
-#if defined(_MSC_VER)
-#   define PHX_FORCE_INLINE __forceinline
-#else
-#   define PHX_FORCE_INLINE inline
-#endif
-
 namespace Phoenix
 {
     typedef int8_t int8;
@@ -101,11 +95,9 @@ namespace Phoenix
 
     typedef std::string PHXString;
 
-    template <class T> using TArray = std::vector<T>;
-    template <class T, class THasher = std::hash<T>> using TSet = std::unordered_set<T, THasher>;
+    template <class T> using TVector = std::vector<T>;
     template <class ...TArgs> using TTuple = std::tuple<TArgs...>;
     template <class TKey, class TValue> using TPair = std::pair<TKey, TValue>;
-    template <class TKey, class TValue> using TMap = std::map<TKey, TValue>;
     template <class T> using TFunction = std::function<T>;
 
     template <class T> using TSharedPtr = std::shared_ptr<T>;

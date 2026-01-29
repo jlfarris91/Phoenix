@@ -9,122 +9,94 @@ namespace Phoenix::ECS
     struct PHOENIX_SIM_API GroupEntity
     {
         GroupEntity() = default;
-        GroupEntity(EntityId group, EntityId entity = EntityId::Invalid)
-            : Group(group)
-            , Entity(entity)
-        {
-        }
+        GroupEntity(EntityId group, EntityId entity = EntityId::Invalid);
 
-        bool operator==(const GroupEntity& other) const
-        {
-            return Group == other.Group && Entity == other.Entity;
-        }
+        bool operator==(const GroupEntity& other) const;
 
-        bool IsValid() const { return Entity != EntityId::Invalid; }
-        void Invalidate() { Entity = EntityId::Invalid; }
+        bool IsValid() const;
+        void Invalidate();
 
         EntityId Group;
         EntityId Entity;
+
+        struct GetItemKey
+        {
+            EntityId operator()(const GroupEntity& item) const;
+        };
     };
 
-    template <size_t N>
-    class FixedGroupList
+    class PHOENIX_SIM_API FixedGroupList
     {
     public:
 
-        static constexpr uint32 Capacity = N;
+        using TItem = GroupEntity;
+        using TStorage = TFixedSortedList<GroupEntity, GroupEntity::GetItemKey>;
 
-        uint32 GetSize() const
+        FixedGroupList() = default;
+
+        template <class TAllocator>
+        FixedGroupList(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            return Items.GetSize();
         }
 
-        uint32 GetNumValidPairs() const
+        template <class TAllocator>
+        FixedGroupList(TAllocator& allocator, uint32 capacity, const FixedGroupList& other)
+            : Storage(allocator, capacity, other.Storage)
         {
-            return Items.GetNumValidItems();
         }
 
-        bool ContainsEntity(EntityId group, EntityId entity) const
-        {
-            return Items.Contains({ group, entity });
-        }
+        uint32 GetCapacity() const;
 
-        bool AddEntity(EntityId group, EntityId entity)
-        {
-            return Items.PushBackUnique({ group, entity });
-        }
+        static uint32 GetAllocSizeBytes(uint32 capacity);
 
-        bool RemoveEntity(EntityId group, EntityId entity)
-        {
-            return Items.Remove({ group, entity });
-        }
+        uint32 GetAllocSizeBytes() const;
 
-        bool RemoveEntityFromAllGroups(EntityId entity)
-        {
-            return Items.RemoveAll(RemoveEntityFromAllGroupsPred { entity });
-        }
+        const GroupEntity* GetData() const;
 
-        uint32 ClearGroup(EntityId group)
-        {
-            return Items.RemoveAll(group);
-        }
+        void Sort();
 
-        uint32 GetNumEntities(EntityId group) const
-        {
-            return Items.GetNumSubItems(group);
-        }
+        uint32 GetNumValidPairs() const;
 
-        EntityId GetFirstEntity(EntityId group, uint32& outIndex) const
-        {
-            const GroupEntity* item = Items.GetFirstSubItem(group, outIndex);
-            return item ? item->Entity : EntityId::Invalid;
-        }
+        bool ContainsEntity(EntityId group, EntityId entity) const;
 
-        EntityId GetNextEntity(EntityId group, uint32 currIndex, uint32& outIndex) const
-        {
-            const GroupEntity* item = Items.GetNextSubItem(group, currIndex, outIndex);
-            return item ? item->Entity : EntityId::Invalid;
-        }
+        bool AddEntity(EntityId group, EntityId entity);
+
+        bool RemoveEntity(EntityId group, EntityId entity);
+
+        bool RemoveEntityFromAllGroups(EntityId entity);
+
+        uint32 ClearGroup(EntityId group);
+
+        uint32 GetNumEntities(EntityId group) const;
+
+        EntityId GetFirstEntity(EntityId group, uint32& outIndex) const;
+
+        EntityId GetNextEntity(EntityId group, uint32 currIndex, uint32& outIndex) const;
 
         template <class TCallback>
         void ForEach(const TCallback& callback) const
         {
-            Items.ForEachItem(callback);
+            Storage.ForEachItem(callback);
         }
 
         template <class TCallback>
         void ForEachEntity(EntityId group, const TCallback& callback) const
         {
-            Items.ForEachSubItem(group, [&](const GroupEntity& item) -> const EntityId&
-            {
-                return item.Entity;
-            }, callback);
-        }
-
-        void Sort()
-        {
-            Items.Sort();
+            Storage.ForEachItemProjected(
+                group,
+                [&](const GroupEntity& item) -> const EntityId& { return item.Entity; },
+                callback);
         }
 
     private:
 
-        struct GetItemKey
-        {
-            EntityId operator()(const GroupEntity& item) const
-            {
-                return item.Group;
-            }
-        };
-
         struct RemoveEntityFromAllGroupsPred
         {
             EntityId Entity;
-            EntityId operator()(const GroupEntity& item) const
-            {
-                return item.Entity == Entity;
-            }
+            EntityId operator()(const GroupEntity& item) const;
         };
 
-        TFixedSortedList<GroupEntity, Capacity, GetItemKey> Items;
+        TStorage Storage;
     };
 }

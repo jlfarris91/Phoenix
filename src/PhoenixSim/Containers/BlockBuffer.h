@@ -2,8 +2,10 @@
 #pragma once
 
 #include "PhoenixSim/Platform.h"
+#include "PhoenixSim/Delegates.h"
 #include "PhoenixSim/Reflection.h"
 #include "PhoenixSim/Name.h"
+#include "PhoenixSim/OffsetRef.h"
 
 namespace Phoenix
 {
@@ -14,40 +16,129 @@ namespace Phoenix
         Scratch
     };
 
+    enum class PHOENIX_SIM_API EBufferBlockTypeFlags : uint8
+    {
+        None = 0,
+        Static = 1 << (uint8)EBufferBlockType::Static,
+        Dynamic = 1 << (uint8)EBufferBlockType::Dynamic,
+        Scratch = 1 << (uint8)EBufferBlockType::Scratch,
+        All = Static | Dynamic | Scratch
+    };
+
+    struct BlockBufferAllocator
+    {
+        BlockBufferAllocator(void* base, uint32 offset, uint32 capacity);
+
+        void* Allocate(uint32 size);
+
+        template <class T>
+        T* Allocate(uint32 num = 1)
+        {
+            return static_cast<T*>(Allocate(sizeof(T) * num));
+        }
+
+        template <class T>
+        TOffsetRef<T> AllocateRef(uint32 num = 1)
+        {
+            T* ptr = Allocate<T>(num);
+            return TOffsetRef<T>::Create(Base, ptr);
+        }
+
+    private:
+
+        void* Base = nullptr;
+        uint32 Offset = 0;
+        uint32 Capacity = 0;
+        uint32 Size = 0;
+    };
+
+    struct PHOENIX_SIM_API BufferBlockLayout
+    {
+        uint32 BlockSize = 0;
+        uint32 AllocSize = 0;
+    };
+
+    PHX_DECLARE_DELEGATE_RET(FBufferBlockLayout, BufferBlockLayout);
+    PHX_DECLARE_DELEGATE(FBufferBlockConstruct, void*, BlockBufferAllocator& allocator);
+
+    struct PHOENIX_SIM_API BufferBlockDefinition
+    {
+        // The type name of the block.
+        FName TypeName;
+
+        // The size of the block structure.
+        BufferBlockLayout Layout;
+
+        // The sort order of the block.
+        uint8 SortOrder = 0;
+
+        // A pointer to the block's type descriptor.
+        const TypeDescriptor* Type = nullptr;
+
+        // An optional factory delegate to control construction.
+        FBufferBlockLayout LayoutFn;
+
+        // An optional factory delegate to control construction.
+        FBufferBlockConstruct ConstructFn;
+    };
+
+    struct PHOENIX_SIM_API BlockBufferConfig
+    {
+        BufferBlockDefinition& RegisterBlock(const BufferBlockDefinition& def)
+        {
+            Definitions.push_back(def);
+            return Definitions.back();
+        }
+
+        template <class TBlock>
+        BufferBlockDefinition& RegisterBlock(EBufferBlockType type, const BufferBlockLayout& layout)
+        {
+            const TypeDescriptor& typeDescriptor = TBlock::GetStaticTypeDescriptor();
+            return Definitions.emplace_back(
+                typeDescriptor.GetFName(),
+                layout,
+                (uint8)type,
+                &typeDescriptor);
+        }
+
+        template <class TBlock>
+        BufferBlockDefinition& RegisterBlock(EBufferBlockType type)
+        {
+            return RegisterBlock<TBlock>(type, BufferBlockLayout { sizeof(TBlock), 0 });
+        }
+
+        template <class TBlock, class ...TVars>
+        BufferBlockDefinition& RegisterBlockWithAlloc(EBufferBlockType type, TVars&&... vars)
+        {
+            BufferBlockDefinition& registration = RegisterBlock<TBlock>(type);
+            if constexpr (requires { TBlock::Layout; })
+            {
+                registration.LayoutFn.BindStatic(&TBlock::Layout, std::forward<TVars>(vars)...);
+            }
+            if constexpr (requires { TBlock::Construct; })
+            {
+                registration.ConstructFn.BindStatic(&TBlock::Construct, std::forward<TVars>(vars)...);
+            }
+            return registration;
+        }
+
+        TVector<BufferBlockDefinition> Definitions;
+    };
+
     class PHOENIX_SIM_API BlockBuffer
     {
     public:
 
-        struct BlockDefinition
-        {
-            FName Name;
-            size_t Size = 0;
-            uint8 Priority = 0;
-            const TypeDescriptor* Type = nullptr;
-        };
-
-        struct CtorArgs
-        {
-            template <class TBlock>
-            void RegisterBlock()
-            {
-                const TypeDescriptor& type = TBlock::GetStaticTypeDescriptor();
-                Definitions.emplace_back(type.GetFName(), sizeof(TBlock), (uint8)TBlock::StaticBlockType, &type);
-            }
-
-            TArray<BlockDefinition> Definitions;
-        };
-
         struct Block
         {
-            Block(const BlockDefinition& definition);
+            Block(const BufferBlockDefinition& definition);
 
-            BlockDefinition Definition;
-            size_t Offset = 0;
+            BufferBlockDefinition Definition;
+            uint32 Offset = 0;
         };
 
         BlockBuffer() = default;
-        BlockBuffer(const CtorArgs& args);
+        BlockBuffer(const BlockBufferConfig& config);
         BlockBuffer(const BlockBuffer& other);
         BlockBuffer(BlockBuffer&& other) noexcept;
 
@@ -57,11 +148,11 @@ namespace Phoenix
         uint8* GetData();
         const uint8* GetData() const;
 
-        size_t GetSize() const;
+        uint32 GetSize() const;
 
-        const TArray<Block>& GetBlocks() const;
+        const TVector<Block>& GetBlocks() const;
 
-        const BlockDefinition* GetBlockDefinition(const FName& name) const;
+        const BufferBlockDefinition* GetBlockDefinition(const FName& name) const;
 
         uint8* GetBlock(const FName& name);
         const uint8* GetBlock(const FName& name) const;
@@ -108,9 +199,11 @@ namespace Phoenix
 
     private:
 
-        TArray<Block> Blocks;
+        TVector<Block> Blocks;
         TUniquePtr<uint8[]> Data = nullptr;
-        size_t Size = 0;
+        uint32 Size = 0;
+        uint32 BlockSize = 0;
+        uint32 AllocSize = 0;
     };
 
     struct PHOENIX_SIM_API BufferBlockBase
@@ -122,12 +215,12 @@ namespace Phoenix
     template <class T>
     struct PHOENIX_SIM_API BlockBufferOwner
     {
-        PHX_FORCE_INLINE uint8* GetBlock(const FName& name)
+        PHX_FORCEINLINE uint8* GetBlock(const FName& name)
         {
             return ThisAsT()->GetBuffer().GetBlock(name);
         }
 
-        PHX_FORCE_INLINE const uint8* GetBlock(const FName& name) const
+        PHX_FORCEINLINE const uint8* GetBlock(const FName& name) const
         {
             return ThisAsT()->GetBuffer().GetBlock(name);
         }
@@ -172,48 +265,43 @@ namespace Phoenix
 
         friend T;
 
-        PHX_FORCE_INLINE constexpr T* ThisAsT()
+        PHX_FORCEINLINE constexpr T* ThisAsT()
         {
             return static_cast<T*>(this);
         }
 
-        PHX_FORCE_INLINE constexpr const T* ThisAsT() const
+        PHX_FORCEINLINE constexpr const T* ThisAsT() const
         {
             return static_cast<const T*>(this);
         }
 
         BlockBuffer Buffer;
     };
+
+    void BlockBufferRunTests();
 }
 
-#define PHX_DECLARE_BLOCK_BEGIN(block, type) \
-    static constexpr Phoenix::EBufferBlockType StaticBlockType = type; \
-    PHX_DECLARE_TYPE_BEGIN(block)
+#define PHX_DECLARE_BLOCK_BEGIN(block) \
+    PHX_DECLARE_TYPE_WITH_BASE_BEGIN(block, BufferBlockBase)
 
 #define PHX_DECLARE_BLOCK_END() \
-    PHX_DECLARE_TYPE_END()
+    PHX_DECLARE_TYPE_WITH_BASE_END()
 
-#define PHX_DECLARE_BLOCK(block, type) \
-    static constexpr FName StaticTypeName = #block##_n; \
-    static constexpr Phoenix::EBufferBlockType StaticType = type;
-
-#define PHX_DECLARE_BLOCK_STATIC_BEGIN(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block, Phoenix::EBufferBlockType::Static)
-
-#define PHX_DECLARE_BLOCK_STATIC(block) \
-    PHX_DECLARE_BLOCK_STATIC_BEGIN(block) \
+#define PHX_DECLARE_BLOCK(block) \
+    PHX_DECLARE_BLOCK_BEGIN(block) \
     PHX_DECLARE_BLOCK_END()
 
-#define PHX_DECLARE_BLOCK_DYNAMIC_BEGIN(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block, Phoenix::EBufferBlockType::Dynamic)
+#define PHX_DECLARE_BLOCK_WITH_ALLOC_BEGIN(block) \
+    struct Config; \
+    block(BlockBufferAllocator& allocator, const Config& config); \
+    block(BlockBufferAllocator& allocator, const Config& config, const block& other); \
+    static BufferBlockLayout Layout(Config config); \
+    static void Construct(void* dest, BlockBufferAllocator& allocator, Config config); \
+    PHX_DECLARE_BLOCK_BEGIN(block)
 
-#define PHX_DECLARE_BLOCK_DYNAMIC(block) \
-    PHX_DECLARE_BLOCK_DYNAMIC_BEGIN(block) \
+#define PHX_DECLARE_BLOCK_WITH_ALLOC_END() \
     PHX_DECLARE_BLOCK_END()
 
-#define PHX_DECLARE_BLOCK_SCRATCH_BEGIN(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block, Phoenix::EBufferBlockType::Scratch)
-
-#define PHX_DECLARE_BLOCK_SCRATCH(block) \
-    PHX_DECLARE_BLOCK_SCRATCH_BEGIN(block) \
-    PHX_DECLARE_BLOCK_END()
+#define PHX_DECLARE_BLOCK_WITH_ALLOC(block) \
+    PHX_DECLARE_BLOCK_WITH_ALLOC_BEGIN(block) \
+    PHX_DECLARE_BLOCK_WITH_ALLOC_END()

@@ -4,7 +4,6 @@
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
 
 #include "PhoenixSteering/FeatureSteering.h"
 
@@ -17,15 +16,10 @@ using namespace Phoenix::RTS;
 
 namespace ProjectilesSystemDetail
 {
-    struct UpdateProjectilesJob : IBufferJob<TransformComponent&, ProjectileComponent&>
+    struct UpdateProjectilesJob
     {
-        void Execute(const EntityComponentSpan<TransformComponent&, ProjectileComponent&>& span) override
+        void Execute(WorldRef world, const EntityComponentSpan<TransformComponent&, ProjectileComponent&>& span) const
         {
-            PHX_PROFILE_ZONE_SCOPED_N("UpdateProjectilesJob");
-
-            WorldRef world = *World;
-            const LDS::ILDSQueryContext& lds = *LDS::FeatureLDS::StaticGetWorldQueryContext(world);
-
             for (auto && [entityId, index, transformComp, projectileComp] : span)
             {
                 if (projectileComp.State.ActiveState != EProjectileState::None)
@@ -45,6 +39,9 @@ void ProjectilesSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    ProjectilesSystemDetail::UpdateProjectilesJob job;
-    FeatureECS::ScheduleParallel(world, job);
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("UpdateProjectilesJob");
+        ProjectilesSystemDetail::UpdateProjectilesJob job;
+        FeatureECS::ForEachEntity(world, job);
+    }
 }

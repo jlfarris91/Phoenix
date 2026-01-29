@@ -16,6 +16,7 @@ AbilityStateResult MoveToEntityState::Enter(
 {
     Target = target;
     Range = range;
+    LastKnownPosition = Vec2::Max;
 
     if (!FeatureECS::IsEntityValid(world, Target))
     {
@@ -80,6 +81,7 @@ void MoveToEntityState::Interrupt(WorldRef world, const EntityId& entity)
 void MoveToEntityState::Exit(WorldRef world, const EntityId& entity)
 {
     FeatureSteering::Stop(world, entity);
+    LastKnownPosition = Vec2::Max;
 }
 
 AbilityStateResult MoveToLocationState::Enter(WorldRef world, const EntityId& entity, const Vec2& target, Distance range)
@@ -150,6 +152,7 @@ AbilityStateResult FaceEntityState::Enter(
     Target = target;
     MaxRange = range;
     Threshold = threshold;
+    LastKnownPosition = Vec2::Max;
 
     if (entity == target)
     {
@@ -219,6 +222,7 @@ void FaceEntityState::Interrupt(WorldRef world, const EntityId& entity)
 void FaceEntityState::Exit(WorldRef world, const EntityId& entity)
 {
     FeatureSteering::Stop(world, entity);
+    LastKnownPosition = Vec2::Max;
 }
 
 AbilityStateResult FaceLocationState::Enter(
@@ -293,6 +297,7 @@ AbilityStateResult FollowEntityState::Enter(
 {
     Target = target;
     FollowRange = range;
+    LastKnownPosition = Vec2::Max;
     return Update(world, entity);
 }
 
@@ -339,6 +344,7 @@ void FollowEntityState::Interrupt(WorldRef world, const EntityId& entity)
 void FollowEntityState::Exit(WorldRef world, const EntityId& entity)
 {
     FeatureSteering::Stop(world, entity);
+    LastKnownPosition = Vec2::Max;
 }
 
 AbilityStateResult FollowEntityState::SetSubState(WorldRef world, const EntityId& entity, ESubState subState)

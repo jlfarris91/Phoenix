@@ -14,9 +14,9 @@ using namespace Phoenix::Pathfinding;
 
 FeatureNavigation::FeatureNavigation()
 {
-    FEATURE_WORLD_BLOCK(FeatureNavMeshStaticBlock)
-    FEATURE_WORLD_BLOCK(FeatureNavMeshDynamicBlock)
-    FEATURE_WORLD_BLOCK(FeatureNavMeshScratchBlock)
+    FEATURE_WORLD_BLOCK(FeatureNavMeshStaticBlock, EBufferBlockType::Static)
+    FEATURE_WORLD_BLOCK(FeatureNavMeshDynamicBlock, EBufferBlockType::Dynamic)
+    FEATURE_WORLD_BLOCK(FeatureNavMeshScratchBlock, EBufferBlockType::Scratch)
     FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
     FEATURE_CHANNEL(FeatureChannels::DebugRender)
@@ -120,7 +120,7 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
         bool removedAny = false;
 
-        for (uint32 i = 0; i < dynamicBlock.DynamicPoints.Num();)
+        for (uint32 i = 0; i < dynamicBlock.DynamicPoints.GetNum();)
         {
             if (Vec2::Distance(dynamicBlock.DynamicPoints[i], pos) < radius)
             {
@@ -133,7 +133,7 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
             }
         }
 
-        for (uint32 i = 0; i < dynamicBlock.DynamicEdges.Num();)
+        for (uint32 i = 0; i < dynamicBlock.DynamicEdges.GetNum();)
         {
             if (DistanceToLine(dynamicBlock.DynamicEdges[i], pos) < radius)
             {
@@ -241,7 +241,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
         }
 
         // Redraw the edges of the face the mouse is within so that they draw on top
-        for (uint32 i = 0; i < mesh.GetFaces().Num(); ++i)
+        for (uint32 i = 0; i < mesh.GetFaces().GetNum(); ++i)
         {
             auto result = mesh.IsPointInFace(uint16(i), cursorPos);
             if (result.Result == EPointInFaceResult::Inside)
@@ -260,7 +260,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawVertexIds)
     {
-        for (uint16 i = 0; i < mesh.GetVertices().Num(); ++i)
+        for (uint16 i = 0; i < mesh.GetVertices().GetNum(); ++i)
         {
             const Vec2& pt = mesh.GetVertices()[i];
 
@@ -276,7 +276,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawHalfEdgeIds)
     {
-        for (uint16 i = 0; i < mesh.GetHalfEdges().Num(); ++i)
+        for (uint16 i = 0; i < mesh.GetHalfEdges().GetNum(); ++i)
         {
             if (!mesh.IsValidHalfEdge(uint16(i)))
                 continue;
@@ -297,7 +297,7 @@ void FeatureNavigation::OnDebugRender(WorldConstRef world, const IDebugState& st
 
     if (bDebugDrawFaceIds)
     {
-        for (uint16 i = 0; i < uint16(mesh.GetFaces().Num()); ++i)
+        for (uint16 i = 0; i < uint16(mesh.GetFaces().GetNum()); ++i)
         {
             if (!mesh.IsValidFace(i))
                 continue;
@@ -347,8 +347,8 @@ PathResult FeatureNavigation::PathTo(
 
     scratchBlock.MeshPath.ResolvePath(dynamicBlock.DynamicNavMesh, false);
 
-    int32 nextPointIndex = (int32)scratchBlock.MeshPath.Path.Num() - 2;
-    nextPointIndex = Clamp<int32>(nextPointIndex, 0, scratchBlock.MeshPath.Path.Num() - 1);
+    int32 nextPointIndex = (int32)scratchBlock.MeshPath.Path.GetNum() - 2;
+    nextPointIndex = Clamp<int32>(nextPointIndex, 0, scratchBlock.MeshPath.Path.GetNum() - 1);
 
     const Vec2& nextPoint = scratchBlock.MeshPath.Path[nextPointIndex];
 

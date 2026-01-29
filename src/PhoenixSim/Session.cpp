@@ -1,6 +1,7 @@
 ﻿
 #include "PhoenixSim/Session.h"
 
+#include "PhoenixSim/Config.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/Services/ServiceContainerBuilder.h"
@@ -14,8 +15,6 @@
 #endif
 
 #include <fstream>
-
-#include "Logging.h"
 
 using namespace Phoenix;
 
@@ -33,28 +32,22 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
     session->DataDirectory = std::filesystem::absolute(args.DataDirectory);
     session->ConfigName = args.ConfigName;
 
-    if (args.CustomConfig.IsSet())
-    {
-        session->CustomConfig = args.CustomConfig.Get();
-    }
-
     if (args.ServiceContainerBuilder)
     {
+        (void)args.ServiceContainerBuilder->RegisterService<DefaultConfigService>().AsInterfaces();
         session->ServiceContainer = args.ServiceContainerBuilder->Build();
     }
     else
     {
-        session->ServiceContainer = MakeShared<Phoenix::ServiceContainer>();
+        // TODO (jfarris): move default services somewhere else? Allow users to override default services?
+        ServiceContainerBuilder builder;
+        (void)builder.RegisterService<DefaultConfigService>().AsInterfaces();
+
+        session->ServiceContainer = builder.Build();
     }
 
-    auto featuresIter = session->Config.find("features");
-    if (featuresIter != session->Config.end())
-    {
-        for (auto && [featureId, featureConfig] : featuresIter->items())
-        {
-            session->FeatureConfigs.emplace(FName(featureId), featureConfig);
-        }
-    }
+    session->ConfigService = session->ServiceContainer->GetServiceAs<IConfigService>();
+    session->ConfigService->LoadConfig(args.DataDirectory, args.ConfigName);
 
     FeatureSetCtorArgs featureSetCtorArgs;
     session->ServiceContainer->GetServices2<IFeature>(featureSetCtorArgs.Features);
@@ -63,21 +56,21 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
     WorldManagerCtorArgs worldManagerArgs;
     worldManagerArgs.Session = session;
     worldManagerArgs.FeatureSet = session->FeatureSet;
+    worldManagerArgs.ConfigService = session->ConfigService;
     worldManagerArgs.OnPostWorldUpdate = args.OnPostWorldUpdate;
-    worldManagerArgs.Config = session->Config["worlds"];
     session->WorldManager = MakeShared<Phoenix::WorldManager>(worldManagerArgs);
 
-    BlockBuffer::CtorArgs sessionBlockArgs;
+    BlockBufferConfig sessionBlockConfig;
     for (const FeatureSharedPtr& feature : session->FeatureSet->GetFeatures())
     {
         const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
-        for (const BlockBuffer::BlockDefinition& sessionBlock : featureDefinition.SessionBlocks.Definitions)
+        for (const BufferBlockDefinition& sessionBlock : featureDefinition.SessionBlocks.Definitions)
         {
-            sessionBlockArgs.Definitions.push_back(sessionBlock);
+            sessionBlockConfig.Definitions.push_back(sessionBlock);
         }
     }
 
-    session->SessionBuffer = BlockBuffer(sessionBlockArgs);
+    session->SessionBuffer = BlockBuffer(sessionBlockConfig);
 
     return session;
 }
@@ -245,76 +238,36 @@ TSharedPtr<IService> Session::GetService(const FName& typeId) const
     return ServiceContainer->GetService(typeId);
 }
 
-uint32 Session::GetServices(const FName& typeId, TArray2<TSharedPtr<IService>>& outServices) const
+uint32 Session::GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const
 {
     return ServiceContainer->GetServices(typeId, outServices);
 }
 
-const TArray2<TSharedPtr<IService>>& Session::GetServices() const
+const TVector<TSharedPtr<IService>>& Session::GetServices() const
 {
     return ServiceContainer->GetServices();
 }
 
-void Session::LoadConfig()
+void Session::LoadConfig() const
 {
-    Config.clear();
-
-    std::filesystem::path sessionConfigPath = DataDirectory / (ConfigName + ".json");
-
-    LogVerbose("Loading config at path {0}", sessionConfigPath.string());
-
-    std::ifstream configStream(sessionConfigPath);
-    if (!configStream.is_open())
-    {
-        LogWarning("Failed to load config at path {0}", sessionConfigPath.string());
-        return;
-    }
-
-    nlohmann::json configJson = nlohmann::json::parse(configStream);
-    if (!configJson.is_discarded())
-    {
-        Config = configJson;
-    }
-
-    if (CustomConfig.IsSet())
-    {
-        Config.merge_patch(CustomConfig.Get());
-    }
-
-    FeatureConfigs.clear();
-
-    auto featuresIter = Config.find("features");
-    if (featuresIter != Config.end())
-    {
-        for (auto && [featureId, featureConfig] : featuresIter->items())
-        {
-            FeatureConfigs.emplace(FName(featureId), featureConfig);
-        }
-    }
-
+    ConfigService->LoadConfig(DataDirectory, ConfigName);
     ApplyConfig();
 }
 
-void Session::ApplyConfig()
+void Session::ApplyConfig() const
 {
     for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
     {
-        feature->Config.clear();
-
         const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
-        
-        auto featureConfigIter = FeatureConfigs.find(typeDescriptor.GetFName());
-        if (featureConfigIter != FeatureConfigs.end())
+
+        feature->Config.clear();
+        if (const FeatureJsonConfig* featureConfig = ConfigService->GetSessionFeatureConfig(typeDescriptor.GetFName()))
         {
-            feature->Config = featureConfigIter->second;
+            feature->Config = featureConfig->GetData();
         }
     }
 
-    auto worldsIter = Config.find("worlds");
-    if (worldsIter != Config.end())
-    {
-        WorldManager->LoadConfig(*worldsIter);
-    }
+    WorldManager->ApplyConfig();
 }
 
 void Session::ProcessActions(simtime_t time)
@@ -365,7 +318,7 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Pre-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreUpdate");
-        const TArray2<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreUpdate);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreUpdate(updateArgs);
@@ -375,7 +328,7 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Update
     {
         PHX_PROFILE_ZONE_SCOPED_N("Update");
-        const TArray2<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::Update);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::Update);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnUpdate(updateArgs);
@@ -385,7 +338,7 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Post-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostUpdate");
-        const TArray2<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostUpdate);
+        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostUpdate(updateArgs);

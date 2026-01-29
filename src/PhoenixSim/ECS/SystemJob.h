@@ -17,7 +17,7 @@ namespace Phoenix::ECS
             return Query;
         }
         
-        virtual void Execute(WorldRef world, ArchetypeList& list, uint32 startIndex)
+        virtual void Execute(WorldRef world, FixedArchetypeList& list, uint32 startIndex)
         {
             World = &world;
         }
@@ -38,7 +38,7 @@ namespace Phoenix::ECS
             Query = builder.GetQuery();
         }
 
-        void Execute(WorldRef world, ArchetypeList& list, uint32 startIndex) final
+        void Execute(WorldRef world, FixedArchetypeList& list, uint32 startIndex) final
         {
             IEntityJobBase::Execute(world, list, startIndex);
 
@@ -62,7 +62,7 @@ namespace Phoenix::ECS
             Query = builder.GetQuery();
         }
         
-        void Execute(WorldRef world, ArchetypeList& list, uint32 startIndex) final
+        void Execute(WorldRef world, FixedArchetypeList& list, uint32 startIndex) final
         {
             IEntityJobBase::Execute(world, list, startIndex);
 

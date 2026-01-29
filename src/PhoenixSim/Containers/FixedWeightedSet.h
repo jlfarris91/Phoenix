@@ -1,5 +1,6 @@
 #pragma once
 
+#include "FixedMemory.h"
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Random.h"
 #include "PhoenixSim/Containers/FixedArray.h"
@@ -7,42 +8,101 @@
 
 namespace Phoenix
 {
-    template <class T, uint32 N, class TWeight = Value, class TRandom = Random>
-    struct TFixedWeightedSet
+    template <class T, class TWeight = Value>
+    struct WeightedItem
     {
-        static constexpr uint32 Capacity = N;
+        T Value;
+        TWeight Weight;
+    };
 
-        struct WeightedItem
+    template <class T, class TWeight, class TStoragePolicy>
+    class TWeightedSetBase
+    {
+    protected:
+        using TItem = WeightedItem<T, TWeight>;
+        using TStorage = TArray<TItem, TStoragePolicy>;
+        TStorage Storage;
+        TWeight TotalWeight = {};
+    };
+
+    template <class T, class TWeight>
+    class TWeightedSetBase<T, TWeight, FixedStoragePolicy>
+    {
+    public:
+
+        TWeightedSetBase() = default;
+
+        template <class TAllocator>
+        TWeightedSetBase(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
         {
-            T Value;
-            TWeight Weight;
-        };
-
-        using TItems = TFixedArray<WeightedItem, Capacity>;
-
-        TFixedWeightedSet() = default;
-
-        TFixedWeightedSet(std::initializer_list<WeightedItem> list)
-        {
-            for (const auto& elem : list)
-            {
-                EmplaceBack(elem);
-            }
         }
 
-        uint32 Num() const
+        template <class TAllocator>
+        TWeightedSetBase(TAllocator& allocator, uint32 capacity, const TWeightedSetBase& other)
+            : Storage(allocator, capacity, other.Storage)
+            , TotalWeight(other.TotalWeight)
         {
-            return Items.Num();
+        }
+
+        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
+        {
+            return TStorage::GetAllocSizeBytes(capacity);
+        }
+
+        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
+        {
+            return Storage.GetAllocSizeBytes();
+        }
+
+    protected:
+        using TItem = WeightedItem<T, TWeight>;
+        using TStorage = TFixedArray<TItem>;
+        TStorage Storage;
+        TWeight TotalWeight = {};
+    };
+
+    template <class T, class TWeight, class TRandom, class TStoragePolicy>
+    class TWeightedSet : public TWeightedSetBase<T, TWeight, TStoragePolicy>
+    {
+        using Super = TWeightedSetBase<T, TWeight, TStoragePolicy>;
+        using Super::Super;
+        using Super::Storage;
+        using Super::TotalWeight;
+
+        using TStorage = typename Super::TStorage;
+        using TItem = typename Super::TItem;
+
+    public:
+
+        PHX_FORCEINLINE uint32 GetCapacity() const
+        {
+            return Storage.GetCapacity();
+        }
+
+        PHX_FORCEINLINE TItem* GetData()
+        {
+            return Storage.GetData();
+        }
+
+        PHX_FORCEINLINE const TItem* GetData() const
+        {
+            return Storage.GetData();
+        }
+
+        uint32 GetNum() const
+        {
+            return Storage.GetNum();
         }
 
         bool IsEmpty() const
         {
-            return Items.IsEmpty();
+            return Storage.IsEmpty();
         }
 
         bool IsFull() const
         {
-            return Items.IsFull();
+            return Storage.IsFull();
         }
 
         TWeight GetTotalWeight() const
@@ -52,30 +112,25 @@ namespace Phoenix
 
         bool IsValidIndex(uint32 index) const
         {
-            return Items.IsValidIndex(index);
+            return Storage.IsValidIndex(index);
         }
 
-        bool PushBack(const T& value, TWeight weight)
+        bool PushBack(const TItem& item)
         {
-            if (Items.PushBack({ value, weight }))
+            if (Storage.PushBack(item))
             {
-                TotalWeight += weight;
+                TotalWeight += item.Weight;
                 return true;
             }
             return false;
         }
 
-        bool Add(const T& value, TWeight weight)
-        {
-            return PushBack(value, weight);
-        }
-
         template <class ...TArgs>
         bool EmplaceBack(TArgs&&... args)
         {
-            if (Items.EmplaceBack(std::forward<TArgs>(args)...))
+            if (Storage.EmplaceBack(std::forward<TArgs>(args)...))
             {
-                TotalWeight += Items.Back().Weight;
+                TotalWeight += Storage.Back().Weight;
                 return true;
             }
             return false;
@@ -84,12 +139,12 @@ namespace Phoenix
         bool Remove(const T& value)
         {
             uint32 numRemoved = 0;
-            for (uint32 i = 0; i < Items.Num();)
+            for (uint32 i = 0; i < Storage.GetNum();)
             {
-                if (Items[i].Value == value)
+                if (Storage[i].Value == value)
                 {
-                    TotalWeight -= Items[i].Weight;
-                    Items.RemoveAtUnsorted(i);
+                    TotalWeight -= Storage[i].Weight;
+                    Storage.RemoveAtUnsorted(i);
                     ++numRemoved;
                 }
                 else
@@ -107,15 +162,15 @@ namespace Phoenix
                 return false;
             }
 
-            TotalWeight -= Items[index].Weight;
-            Items.RemoveAtUnsorted(index);
+            TotalWeight -= Storage[index].Weight;
+            Storage.RemoveAtUnsorted(index);
 
             return true;
         }
 
         TWeight GetWeight(uint32 index) const
         {
-            return IsValidIndex(index) ? Items[index].Weight : TWeight{};
+            return IsValidIndex(index) ? Storage[index].Weight : TWeight{};
         }
 
         bool SetWeight(uint32 index, TWeight weight)
@@ -125,8 +180,8 @@ namespace Phoenix
                 return false;
             }
 
-            TotalWeight -= Items[index].Weight;
-            Items[index].Weight = weight;
+            TotalWeight -= Storage[index].Weight;
+            Storage[index].Weight = weight;
             TotalWeight += weight;
 
             return true;
@@ -138,7 +193,7 @@ namespace Phoenix
             {
                 return {};
             }
-            return TotalWeight == 0 ? 1 : Items[index].Weight / TotalWeight;
+            return TotalWeight == 0 ? 1 : Storage[index].Weight / TotalWeight;
         }
 
         uint32 SampleIndex(TWeight weight) const
@@ -151,13 +206,13 @@ namespace Phoenix
             weight = Clamp<TWeight>(weight, 0, TotalWeight);
 
             uint32 i = 0;
-            for (; i < Items.Num() - 1; ++i)
+            for (; i < Storage.GetNum() - 1; ++i)
             {
-                if (weight >= 0 && weight <= Items[i].Weight)
+                if (weight >= 0 && weight <= Storage[i].Weight)
                 {
                     break;
                 }
-                weight -= Items[i].Weight;
+                weight -= Storage[i].Weight;
             }
 
             return i;
@@ -170,7 +225,7 @@ namespace Phoenix
             {
                 return false;
             }
-            outValue = Items[index].Value;
+            outValue = Storage[index].Value;
             return true;
         }
 
@@ -181,9 +236,9 @@ namespace Phoenix
             {
                 return false;
             }
-            outValue = Items[index].Value;
-            TotalWeight -= Items[index].Weight;
-            Items.RemoveAtUnsorted(index);
+            outValue = Storage[index].Value;
+            TotalWeight -= Storage[index].Weight;
+            Storage.RemoveAtUnsorted(index);
             return true;
         }
 
@@ -216,7 +271,7 @@ namespace Phoenix
         template <class TArray>
         uint32 GetRandomUnique(TRandom& random, uint32 n, TArray& outValues) const
         {
-            TFixedWeightedSet clone = *this;
+            TWeightedSet clone = *this;
             uint32 count = 0;
             for (uint32 i = 0; i < n; ++i)
             {
@@ -262,28 +317,29 @@ namespace Phoenix
 
         void Reset()
         {
-            Items.Reset();
+            Storage.Reset();
             TotalWeight = {};
         }
 
-        const WeightedItem& operator[](uint32 index) const
+        const TItem& operator[](uint32 index) const
         {
-            return Items[index];
+            return Storage[index];
         }
 
-        typename TItems::ConstIter begin() const
+        typename TStorage::ConstIter begin() const
         {
-            return Items.begin();
+            return Storage.begin();
         }
 
-        typename TItems::ConstIter end() const
+        typename TStorage::ConstIter end() const
         {
-            return Items.end();
+            return Storage.end();
         }
-
-    private:
-
-        TFixedArray<WeightedItem, Capacity> Items;
-        TWeight TotalWeight = {};
     };
+
+    template <class T, uint32 N, class TWeight = Value, class TRandom = Random>
+    using TInlineWeightedSet = TWeightedSet<T, TWeight, TRandom, InlineStoragePolicy<N>>;
+
+    template <class T, class TWeight = Value, class TRandom = Random>
+    using TFixedWeightedSet = TWeightedSet<T, TWeight, TRandom, FixedStoragePolicy>;
 }

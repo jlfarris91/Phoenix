@@ -39,44 +39,44 @@ namespace Phoenix
 
         struct PHOENIX_SIM_API ScopedZone
         {
-            PHX_FORCE_INLINE ScopedZone(const SourceLocation* srcLoc, int32 depth = INDEX_NONE)
+            PHX_FORCEINLINE ScopedZone(const SourceLocation* srcLoc, int32 depth = INDEX_NONE)
             {
                 GetProfiler().BeginZone(srcLoc, depth);
             }
 
-            PHX_FORCE_INLINE ~ScopedZone()
+            PHX_FORCEINLINE ~ScopedZone()
             {
                 GetProfiler().EndZone();
             }
 
-            PHX_FORCE_INLINE void Text(const char* txt, size_t size)
+            PHX_FORCEINLINE void Text(const char* txt, size_t size)
             {
                 GetProfiler().Text(txt, size);
             }
 
             template <class ...TArgs>
-            PHX_FORCE_INLINE void TextFmt(const char* fmt, TArgs&& ...)
+            PHX_FORCEINLINE void TextFmt(const char* fmt, TArgs&& ...)
             {
                 GetProfiler().TextFmt(fmt, std::forward<TArgs>()...);
             }
 
-            PHX_FORCE_INLINE void Name(const char* txt, size_t size)
+            PHX_FORCEINLINE void Name(const char* txt, size_t size)
             {
                 GetProfiler().Name(txt, size);
             }
 
             template <class ...TArgs>
-            PHX_FORCE_INLINE void NameFmt(const char* fmt, TArgs&& ...)
+            PHX_FORCEINLINE void NameFmt(const char* fmt, TArgs&& ...)
             {
                 GetProfiler().NameFmt(fmt, std::forward<TArgs>()...);
             }
 
-            PHX_FORCE_INLINE void Color(uint32 color)
+            PHX_FORCEINLINE void Color(uint32 color)
             {
                 GetProfiler().Color(color);
             }
 
-            PHX_FORCE_INLINE void Value(uint64 value)
+            PHX_FORCEINLINE void Value(uint64 value)
             {
                 GetProfiler().Value(value);
             }

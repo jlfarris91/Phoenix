@@ -66,6 +66,7 @@
 // Test App Tools
 #include "Console.h"
 #include "Logger.h"
+#include "PhoenixRTS/Units/UnitComponent.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -101,8 +102,8 @@ SDLDebugRenderer* GDebugRenderer;
 SDLCamera* GCamera;
 SDLViewport* GViewport;
 
-TArray<TSharedPtr<ISDLTool>> GTools;
-TArray<TSharedPtr<ISDLTool>> GActiveTools;
+TVector<TSharedPtr<ISDLTool>> GTools;
+TVector<TSharedPtr<ISDLTool>> GActiveTools;
 TSharedPtr<ISDLTool> GPlayerController;
 
 World* GCurrWorldView = nullptr;
@@ -300,6 +301,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     SetLogger(GLogger);
     InitConsole(GLogger);
 
+    BlockBufferRunTests();
     Json::RunLDSJsonTests();
 
     InitSession();
@@ -399,19 +401,24 @@ void OnAppRenderWorld()
 
         FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
         {
-            for (auto && [entity, index, transformComp, bodyComp] : span)
+            for (auto && [entityId, index, transformComp, bodyComp] : span)
             {
                 EntityBodyShape entityBodyShape;
-                entityBodyShape.EntityId = entity;
+                entityBodyShape.EntityId = entityId;
                 entityBodyShape.Transform = transformComp.Transform;
                 entityBodyShape.Radius = bodyComp.Radius;
                 entityBodyShape.ZCode = transformComp.ZCode;
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
                 Color color;
-                if (!FeatureECS::TryGetBlackboardValue(worldView, entity, "actor_tint"_n, color))
+                if (!FeatureECS::TryGetBlackboardValue(worldView, entityId, "actor_tint"_n, color))
                 {
                     color = Color::Red;
+                }
+
+                if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(worldView, entityId))
+                {
+                    color = GDebugRenderer->GetColor(unitComp->OwningPlayer);
                 }
 
                 entityBodyShape.Color = SDL_Color(color.R, color.G, color.B);
@@ -530,7 +537,7 @@ void OnAppRenderWorld()
         }
 
         // Let features draw to the renderer
-        TArray2<FeatureSharedPtr> channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
+        const TVector<FeatureSharedPtr>& channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
         for (const auto& feature : channelFeatures)
         {
             feature->OnDebugRender(worldView, *GDebugState, *GDebugRenderer);
@@ -592,9 +599,9 @@ void OnAppRenderUI()
 
                     if (ImGui::TreeNode("Session Blocks:"))
                     {
-                        for (const BlockBuffer::BlockDefinition& blockDef : featureDefinition.SessionBlocks.Definitions)
+                        for (const BufferBlockDefinition& blockDef : featureDefinition.SessionBlocks.Definitions)
                         {
-                            uint8* block = GSession->GetBlock(blockDef.Name);
+                            uint8* block = GSession->GetBlock(blockDef.TypeName);
                             if (!block || !blockDef.Type)
                             {
                                 continue;
@@ -612,9 +619,9 @@ void OnAppRenderUI()
 
                     if (ImGui::TreeNode("World Blocks:"))
                     {
-                        for (const BlockBuffer::BlockDefinition& blockDef : featureDefinition.WorldBlocks.Definitions)
+                        for (const BufferBlockDefinition& blockDef : featureDefinition.WorldBlocks.Definitions)
                         {
-                            uint8* block = GCurrWorldView->GetBlock(blockDef.Name);
+                            uint8* block = GCurrWorldView->GetBlock(blockDef.TypeName);
                             if (!block || !blockDef.Type)
                             {
                                 continue;
@@ -674,7 +681,7 @@ void OnAppRenderUI()
                 ImGui::TableNextColumn();
                 ImGui::Text("Entities HWM:");
                 ImGui::TableNextColumn();
-                ImGui::Text("%u", ecsDynamicBlock.Entities.GetSize());
+                ImGui::Text("%u", ecsDynamicBlock.Entities.GetNumHighWaterMark());
 
                 ImGui::TableNextColumn();
                 ImGui::Text("Num Tags:");
@@ -682,19 +689,9 @@ void OnAppRenderUI()
                 ImGui::Text("%u", ecsDynamicBlock.Tags.GetNumValidTags());
 
                 ImGui::TableNextColumn();
-                ImGui::Text("Tags HWM:");
-                ImGui::TableNextColumn();
-                ImGui::Text("%u", ecsDynamicBlock.Tags.GetSize());
-
-                ImGui::TableNextColumn();
                 ImGui::Text("Num Group Pairs:");
                 ImGui::TableNextColumn();
                 ImGui::Text("%u", ecsDynamicBlock.Groups.GetNumValidPairs());
-
-                ImGui::TableNextColumn();
-                ImGui::Text("Group Pairs HWM:");
-                ImGui::TableNextColumn();
-                ImGui::Text("%u", ecsDynamicBlock.Groups.GetSize());
                                 
                 ImGui::EndTable();
             }
@@ -793,7 +790,7 @@ void OnAppRenderUI()
                 {
                     uint32 listIndex = 0;
 
-                    archetypeManager.ForEachArchetypeList([&listIndex](const ArchetypeList& list)
+                    archetypeManager.ForEachArchetypeList([&listIndex](const FixedArchetypeList& list)
                     {
                         char treeNodeId[64];
                         sprintf_s(treeNodeId, _countof(treeNodeId), "[%u] %u (%u)", listIndex, list.GetId(), (hash32_t)list.GetDefinition().GetId());
@@ -810,7 +807,7 @@ void OnAppRenderUI()
                                 ImGui::TableNextColumn();
                                 ImGui::Text("Size:");
                                 ImGui::TableNextColumn();
-                                ImGui::Text("%u / %u", list.GetSize(), ArchetypeList::Capacity);
+                                ImGui::Text("%u / %u", list.GetSize(), list.GetCapacity());
 
                                 ImGui::EndTable();
                             }
@@ -850,6 +847,32 @@ void OnAppRenderUI()
                     });
 
                     ImGui::TreePop();
+                }
+                
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Entities:"))
+            {
+                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+
+                if (auto entitiesPtr = FeatureECS::GetEntities(*GCurrWorldView))
+                {
+                    if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit))
+                    {
+                        const auto& entities = *entitiesPtr;
+                        entities.ForEach([&](const Entity& entity)
+                        {
+                            ImGui::TableNextColumn();
+                            ImGui::Text("%u:", entities.GetEntityIndex(entity.Id));
+                            ImGui::TableNextColumn();
+                            ImGui::Text("Id: %u", entity.Id);
+                            ImGui::TableNextColumn();
+                            ImGui::Text("Kind: %u", entity.Kind);
+                        });
+
+                        ImGui::EndTable();
+                    }
                 }
                 
                 ImGui::TreePop();
@@ -910,19 +933,19 @@ void OnAppRenderUI()
     {
         if (GCurrWorldView)
         {
-            const FeatureBlackboardDynamicWorldBlock& blackboardWorldBlock = GCurrWorldView->GetBlockRef<FeatureBlackboardDynamicWorldBlock>();
+            const FeatureBlackboardBlock& blackboardBlock = GCurrWorldView->GetBlockRef<FeatureBlackboardBlock>();
 
             if (ImGui::BeginTable("Stats", 2, ImGuiTableFlags_SizingFixedFit))
             {
                 ImGui::TableNextColumn();
                 ImGui::Text("Num KVPs:");
                 ImGui::TableNextColumn();
-                ImGui::Text("%u", blackboardWorldBlock.Blackboard.GetNumActive());
+                ImGui::Text("%u", blackboardBlock.Blackboard.GetNumValidItems());
 
                 ImGui::TableNextColumn();
                 ImGui::Text("KVP HWM:");
                 ImGui::TableNextColumn();
-                ImGui::Text("%u", blackboardWorldBlock.Blackboard.GetSize());
+                ImGui::Text("%u", blackboardBlock.Blackboard.GetNum());
                                 
                 ImGui::EndTable();
             }
@@ -947,17 +970,12 @@ void OnAppRenderUI()
                     ImGui::TableNextColumn();
                     ImGui::Text("Entity Id:");
                     ImGui::TableNextColumn();
-                    ImGui::Text("%u", selectedEntity->Handle.GetEntityId());
+                    ImGui::Text("%u", selectedEntity->Id);
 
                     ImGui::TableNextColumn();
                     ImGui::Text("Kind:");
                     ImGui::TableNextColumn();
                     // ImGui::Text("%s", selectedEntity->Kind.Debug);
-
-                    ImGui::TableNextColumn();
-                    ImGui::Text("Archetype:");
-                    ImGui::TableNextColumn();
-                    ImGui::Text("%u", selectedEntity->Handle.GetOwnerId());
 
                     ImGui::EndTable();
                 }

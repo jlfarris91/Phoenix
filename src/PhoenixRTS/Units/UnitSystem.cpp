@@ -11,48 +11,69 @@
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
+using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
 namespace UnitSystemDetail
 {
-    struct UpdateUnitsJob : IBufferJob<UnitComponent&>
+    struct UpdateUnitsJob
     {
-        void Execute(const EntityComponentSpan<UnitComponent&>& span) override
+        Time ScanTimeCooldownMin = 1.0f;
+        Time ScanTimeCooldownMax = 2.0f;
+        TSharedPtr<const ILDSQueryContext> LDSQueryContext;
+
+        void Begin(WorldRef world)
         {
-            PHX_PROFILE_ZONE_SCOPED_N("UpdateUnitsJob");
+            LDSQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+        }
 
-            WorldRef world = *World;
-            auto lds = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
-
+        void Execute(WorldRef world, const EntityComponentSpan<UnitComponent&>& span) const
+        {
             for (auto && [entityId, index, unitComp] : span)
             {
-                UnitId unit = UnitId(entityId);
+                UnitId unitId = UnitId(entityId);
 
                 // The unit had an expiration timer set, should we release the entity?
-                if (FeatureUnit::HasExpired(world, unit))
+                if (FeatureUnit::HasExpired(world, unitId))
                 {
-                    FeatureECS::StaticReleaseEntity(world, unit);
+                    FeatureECS::StaticReleaseEntity(world, unitId);
                     continue;
                 }
 
-                if (!FeatureUnit::UnitIsDead(world, unit) && !FeatureUnit::UnitIsDormant(world, unit))
+                if (!FeatureUnit::UnitIsDead(world, unitId) && !FeatureUnit::UnitIsDormant(world, unitId))
                 {
-                    TargetScanArgs args;
-                    args.Level = FeatureUnit::GetTargetScanLevel(world, unit);
-                    args.Flags = ETargetScanFlags::AutoAcquire;
-                    args.LdsQueryContext = lds;
-                    TargetScanner::ScanForTarget(world, unit, args);
+                    Time nextScanTime = FeatureECS::GetBlackboardValue<Time>(world, unitId, "NextTargetScanTime"_n);
+                    if (world.GetSimTime() > nextScanTime)
+                    {
+                        TargetScanArgs args;
+                        args.Level = FeatureUnit::GetTargetScanLevel(world, unitId);
+                        args.Flags = ETargetScanFlags::AutoAcquire;
+                        args.LdsQueryContext = LDSQueryContext;
+                        TargetScanner::ScanForTarget(world, unitId, args);
+
+                        Time cooldown = world.GetRandom().RandomRange<Time>(ScanTimeCooldownMin, ScanTimeCooldownMax);
+                        nextScanTime = world.GetSimTime() + cooldown;
+                        FeatureECS::SetBlackboardValue(world, unitId, "NextTargetScanTime"_n, world.GetSimTime());
+                    }
                 }
             }
+        }
+
+        void End(WorldRef)
+        {
+            LDSQueryContext.reset();
         }
     };
 }
 
 void UnitSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
-    PHX_PROFILE_ZONE_SCOPED;
+    ISystem::OnWorldUpdate(world, args);
 
-    UnitSystemDetail::UpdateUnitsJob job;
-    FeatureECS::Schedule(world, job);
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("UpdateUnitsJob");
+        UnitSystemDetail::UpdateUnitsJob job;
+        FeatureECS::ForEachEntity(world, job);
+    }
 }

@@ -2,15 +2,15 @@
 #pragma once
 
 #include "PhoenixSim/LDS/Json/JsonCatalogBuilderBase.h"
+#include "PhoenixSim/Containers/Optional.h"
 
 namespace Phoenix::LDS::Json
 {
-    template <class TCatalog = Catalog>
-    struct JsonCatalogTypeBuilder : JsonCatalogBuilderBase<TCatalog>
+    struct PHOENIX_SIM_API JsonCatalogTypeBuilder : JsonCatalogBuilderBase
     {
         using json = nlohmann::json;
 
-        JsonCatalogTypeBuilder(const JsonDataSource* dataSource, TCatalog* catalog);
+        JsonCatalogTypeBuilder(const JsonDataSource* dataSource, HeapLDSCatalog* catalog);
 
         bool RegisterAllTypes();
 
@@ -60,7 +60,7 @@ namespace Phoenix::LDS::Json
             ELDSValueType valueType,
             const PHXString& propertyPath);
 
-        bool IsValidEnumUnderlyingType(ELDSValueType valueType);
+        static bool IsValidEnumUnderlyingType(ELDSValueType valueType);
 
         bool ProcessEnumProperty(const PHXString& rootTypeId, const json& jsonObject, const PHXString& propertyPath);
 
@@ -77,5 +77,3 @@ namespace Phoenix::LDS::Json
             const PHXString& propertyPath);
     };
 }
-
-#include "PhoenixSim/LDS/Json/JsonCatalogTypeBuilder.inl"

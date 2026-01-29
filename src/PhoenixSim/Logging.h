@@ -14,7 +14,7 @@ namespace Phoenix
         COUNT
     };
 
-    PHX_FORCE_INLINE const char* ToString(ELogLevel level)
+    PHX_FORCEINLINE const char* ToString(ELogLevel level)
     {
         switch (level)
         {
@@ -41,31 +41,31 @@ namespace Phoenix
         virtual void Log(ELogLevel level, const std::string& msg) = 0;
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE void LogVerbose(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
+        PHX_FORCEINLINE void LogVerbose(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
         {
             Log(ELogLevel::Verbose, fmt, std::forward<TFmtArgs>(fmtArgs)...);
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE void LogInfo(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
+        PHX_FORCEINLINE void LogInfo(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
         {
             Log(ELogLevel::Info, fmt, std::forward<TFmtArgs>(fmtArgs)...);
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE void LogWarning(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
+        PHX_FORCEINLINE void LogWarning(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
         {
             Log(ELogLevel::Warning, fmt, std::forward<TFmtArgs>(fmtArgs)...);
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE void LogError(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
+        PHX_FORCEINLINE void LogError(const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
         {
             Log(ELogLevel::Error, fmt, std::forward<TFmtArgs>(fmtArgs)...);
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE void Log(ELogLevel level, const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
+        PHX_FORCEINLINE void Log(ELogLevel level, const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
         {
             PHXString message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
             Log(level, message);
@@ -79,7 +79,7 @@ namespace Phoenix
     PHOENIX_SIM_API void SetLogger(const TSharedPtr<ILogger>& logger, const std::string& id);
 
     template <class ...TFmtArgs>
-    PHX_FORCE_INLINE void LogVerbose(
+    PHX_FORCEINLINE void LogVerbose(
         const std::format_string<TFmtArgs...>& fmt,
         TFmtArgs&&... fmtArgs)
     {
@@ -87,7 +87,7 @@ namespace Phoenix
     }
 
     template <class ...TFmtArgs>
-    PHX_FORCE_INLINE void LogInfo(
+    PHX_FORCEINLINE void LogInfo(
         const std::format_string<TFmtArgs...>& fmt,
         TFmtArgs&&... fmtArgs)
     {
@@ -95,7 +95,7 @@ namespace Phoenix
     }
 
     template <class ...TFmtArgs>
-    PHX_FORCE_INLINE void LogWarning(
+    PHX_FORCEINLINE void LogWarning(
         const std::format_string<TFmtArgs...>& fmt,
         TFmtArgs&&... fmtArgs)
     {
@@ -103,7 +103,7 @@ namespace Phoenix
     }
 
     template <class ...TFmtArgs>
-    PHX_FORCE_INLINE void LogError(
+    PHX_FORCEINLINE void LogError(
         const std::format_string<TFmtArgs...>& fmt,
         TFmtArgs&&... fmtArgs)
     {
@@ -111,7 +111,7 @@ namespace Phoenix
     }
 
     template <class ...TFmtArgs>
-    PHX_FORCE_INLINE void Log(
+    PHX_FORCEINLINE void Log(
         ELogLevel level,
         const std::format_string<TFmtArgs...>& fmt,
         TFmtArgs&&... fmtArgs)
@@ -144,13 +144,13 @@ namespace Phoenix
             return Logs;
         }
 
-        const TArray<TLog>& GetLogs(ELogLevel level) const
+        const TVector<TLog>& GetLogs(ELogLevel level) const
         {
             return Logs[static_cast<uint8>(level)];
         }
         
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogVerbose(
+        PHX_FORCEINLINE TLog& LogVerbose(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -158,7 +158,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogInfo(
+        PHX_FORCEINLINE TLog& LogInfo(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -166,7 +166,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogWarning(
+        PHX_FORCEINLINE TLog& LogWarning(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -174,7 +174,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogError(
+        PHX_FORCEINLINE TLog& LogError(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -182,7 +182,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& Log(
+        PHX_FORCEINLINE TLog& Log(
             ELogLevel level,
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
@@ -197,7 +197,7 @@ namespace Phoenix
     private:
 
         std::string LoggerId = {};
-        TArray<TLog> Logs[static_cast<uint8>(ELogLevel::COUNT)];
+        TVector<TLog> Logs[static_cast<uint8>(ELogLevel::COUNT)];
     };
 
     template <class TLog = LogMessage>
@@ -225,13 +225,13 @@ namespace Phoenix
             return Logs.GetLogs();
         }
 
-        const TArray<TLog>& GetLogs(ELogLevel level) const
+        const TVector<TLog>& GetLogs(ELogLevel level) const
         {
             return Logs.GetLogs(level);
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogVerbose(
+        PHX_FORCEINLINE TLog& LogVerbose(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -239,7 +239,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogInfo(
+        PHX_FORCEINLINE TLog& LogInfo(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -247,7 +247,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogWarning(
+        PHX_FORCEINLINE TLog& LogWarning(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -255,7 +255,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& LogError(
+        PHX_FORCEINLINE TLog& LogError(
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)
         {
@@ -263,7 +263,7 @@ namespace Phoenix
         }
 
         template <class ...TFmtArgs>
-        PHX_FORCE_INLINE TLog& Log(
+        PHX_FORCEINLINE TLog& Log(
             ELogLevel level,
             const std::format_string<TFmtArgs...>& fmt,
             TFmtArgs&&... fmtArgs)

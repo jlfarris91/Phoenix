@@ -4,7 +4,6 @@
 #include "AbilityHandler.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixRTS/DLLExport.h"
-#include "PhoenixSim/Containers/Array.h"
 
 namespace Phoenix::RTS
 {
@@ -60,13 +59,13 @@ namespace Phoenix::RTS
 
         static bool AddAbilitiesFromData(WorldRef world, const UnitId& unit, const FName& unitData);
 
-        static uint32 GetAbilities(WorldConstRef world, const UnitId& unit, TArray2<FName>& outAbilityIds);
+        static uint32 GetAbilities(WorldConstRef world, const UnitId& unit, TVector<FName>& outAbilityIds);
 
     protected:
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        TMap<FName, TSharedPtr<IAbilityHandler>> AbilityIdToHandlerMap;
+        std::unordered_map<FName, TSharedPtr<IAbilityHandler>> AbilityIdToHandlerMap;
     };
 }

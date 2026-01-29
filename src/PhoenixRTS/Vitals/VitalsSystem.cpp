@@ -16,12 +16,10 @@ using namespace Phoenix::RTS;
 
 namespace VitalsSystemDetail
 {
-    struct UpdateHealthComponentJob : IBufferJob<HealthComponent&>
+    struct UpdateHealthComponentJob
     {
-        void Execute(const EntityComponentSpan<HealthComponent&>& span) override
+        void Execute(WorldRef world, const EntityComponentSpan<HealthComponent&>& span) const
         {
-            PHX_PROFILE_ZONE_SCOPED_N("UpdateVitalsJob");
-
             for (auto && [entityId, index, healthComp] : span)
             {
                 if (healthComp.Health.Regen < 0.0)
@@ -32,7 +30,7 @@ namespace VitalsSystemDetail
                     damage.Amount = -healthComp.Health.Regen;
                     damage.BaseAmount = damage.Amount;
                     damage.ArmorMultiplier = 0;
-                    FeatureVitals::ApplyDamage(*World, UnitId(entityId), damage);
+                    FeatureVitals::ApplyDamage(world, UnitId(entityId), damage);
                 }
                 else
                 {
@@ -51,6 +49,9 @@ void VitalsSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    VitalsSystemDetail::UpdateHealthComponentJob job;
-    FeatureECS::Schedule(world, job);
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("UpdateVitalsJob");
+        VitalsSystemDetail::UpdateHealthComponentJob job;
+        FeatureECS::ForEachEntity(world, job);
+    }
 }

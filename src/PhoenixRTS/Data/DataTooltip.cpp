@@ -14,7 +14,7 @@ bool Tooltip::Read(const LDS::LDSReadObjectArgs& args, Tooltip& outItem)
     success = dataPtr.SubTitle().TryGetValue(queryContext, outItem.SubTitle) && success;
     success = dataPtr.Body().TryGetValue(queryContext, outItem.Body) && success;
 
-    outItem.Items.Reset();
+    outItem.Items.clear();
     dataPtr.Items().ReadObjects(queryContext, outItem.Items);
 
     return success;

@@ -1,45 +1,103 @@
 
 #pragma once
 
+#include "PhoenixSim/Containers/FixedMemory.h"
+
 namespace Phoenix
 {
-    template <class T, size_t N, bool AllowOverwrite = false>
-    struct TFixedQueue
+    template <class T, class TStoragePolicy>
+    class TQueueBase
     {
-        using ValueT = T;
-        static constexpr size_t Capacity = N;
+    protected:
+        using TStorage = TContiguousStorage<T, TStoragePolicy>;
+        TStorage Storage;
+        uint32 Start = 0, End = 0;
+    };
 
-        constexpr bool IsEmpty() const
+    template <class T>
+    class TQueueBase<T, FixedStoragePolicy>
+    {
+    public:
+
+        TQueueBase() = default;
+
+        template <class TAllocator>
+        TQueueBase(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
+        {
+        }
+
+        template <class TAllocator, class TOtherStoragePolicy>
+        TQueueBase(TAllocator& allocator, uint32 capacity, const TQueueBase<T, TOtherStoragePolicy>& other)
+            : Storage(allocator, capacity, other.Storage)
+            , Start(other.Start)
+            , End(other.End)
+        {
+        }
+
+        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
+        {
+            return TStorage::GetAllocSizeBytes(capacity);
+        }
+
+        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
+        {
+            return Storage.GetAllocSizeBytes();
+        }
+
+    protected:
+        using TStorage = TFixedStorage<T>;
+        TStorage Storage;
+        uint32 Start = 0, End = 0;
+    };
+
+    template <class T, class TStoragePolicy, bool AllowOverwrite = false>
+    class TQueue : TQueueBase<T, TStoragePolicy>
+    {
+        using Super = TQueueBase<T, TStoragePolicy>;
+        using Super::Super;
+        using Super::Storage;
+        using Super::Start;
+        using Super::End;
+
+    public:
+
+        PHX_FORCEINLINE uint32 GetCapacity() const
+        {
+            return Storage.GetCapacity();
+        }
+
+        bool IsEmpty() const
         {
             return Start == End;
         }
 
-        constexpr bool IsFull() const
+        bool IsFull() const
         {
-            return Num() == N - 1;
+            return GetNum() == GetCapacity() - 1;
         }
 
-        constexpr size_t Num() const
+        uint32 GetNum() const
         {
             if (Start > End)
-                return End + N - Start;
+                return End + GetCapacity() - Start;
             return End - Start;
         }
 
-        constexpr bool Contains(const T& value)
+        bool Contains(const T& value)
         {
-            for (size_t i = Start; i != End; i = MoveIndex(i, 1))
+            for (uint32 i = Start; i != End; i = MoveIndex(i, 1))
             {
-                if (Data[i] == value)
+                if (Storage[i] == value)
                     return true;
             }
             return false;
         }
 
-        constexpr void Enqueue(const T& value)
+        void Enqueue(const T& value)
         {
             PHX_ASSERT(AllowOverwrite || !IsFull());
-            Data[End] = value;
+            Storage[End] = value;
             if (AllowOverwrite && IsFull())
             {
                 Start = MoveIndex(Start, 1);
@@ -47,42 +105,48 @@ namespace Phoenix
             End = MoveIndex(End, 1);
         }
 
-        constexpr void EnqueueUnique(const T& value)
+        void EnqueueUnique(const T& value)
         {
             if (Contains(value))
                 return;
             Enqueue(value);
         }
 
-        constexpr T Dequeue()
+        T Dequeue()
         {
             PHX_ASSERT(!IsEmpty());
-            T value = Data[Start];
+            T value = Storage[Start];
             Start = MoveIndex(Start, 1);
             return value;
         }
 
-        constexpr void Reset()
+        void Reset()
         {
+            Storage.SetZero();
             Start = 0;
             End = 0;
         }
 
-        static constexpr size_t MoveIndex(const size_t i, int64 n)
+        static constexpr uint32 MoveIndex(const uint32 i, const uint32 capacity, int32 n)
         {
-            int64 r = static_cast<int64>(i) + n;
-            if (r < 0) return N + r;
-            return r % N;
+            int32 r = static_cast<int32>(i) + n;
+            if (r < 0) return static_cast<int32>(capacity) + r;
+            return r % static_cast<int32>(capacity);
         }
 
-        T& operator[](size_t n)
+        uint32 MoveIndex(const uint32 i, int32 n) const
         {
-            return Data[MoveIndex(Start, n)];
+            return MoveIndex(i, GetCapacity(), n);
         }
 
-        const T& operator[](size_t n) const
+        T& operator[](uint32 n)
         {
-            return Data[MoveIndex(Start, n)];
+            return Storage[MoveIndex(Start, n)];
+        }
+
+        const T& operator[](uint32 n) const
+        {
+            return Storage[MoveIndex(Start, n)];
         }
 
         struct Iter
@@ -91,7 +155,12 @@ namespace Phoenix
             using element_type = T;
             using iterator_category = std::contiguous_iterator_tag;
 
-            Iter(T* data, size_t index) : DataPtr(data), Index(index) {}
+            Iter(T* data, uint32 capacity, uint32 index)
+                : DataPtr(data)
+                , Capacity(capacity)
+                , Index(index)
+            {
+            }
 
             T* operator->() const
             {
@@ -105,12 +174,12 @@ namespace Phoenix
 
             T& operator[](int64 n) const
             {
-                return *(DataPtr + MoveIndex(Index, n));
+                return *(DataPtr + MoveIndex(Index, Capacity, n));
             }
 
             Iter& operator++()
             {
-                Index = MoveIndex(Index, 1);
+                Index = MoveIndex(Index, Capacity, 1);
                 return *this;
             }
 
@@ -123,7 +192,7 @@ namespace Phoenix
 
             Iter& operator--()
             {
-                Index = MoveIndex(Index, -1);
+                Index = MoveIndex(Index, Capacity, -1);
                 return *this;
             }
 
@@ -136,7 +205,7 @@ namespace Phoenix
 
             Iter& operator+=(int64 n)
             {
-                Index = MoveIndex(Index, n);
+                Index = MoveIndex(Index, Capacity, static_cast<int32>(n));
                 return *this;
             }
 
@@ -149,7 +218,7 @@ namespace Phoenix
 
             Iter& operator-=(int64 n)
             {
-                Index = MoveIndex(Index, -n);
+                Index = MoveIndex(Index, Capacity, static_cast<int32>(-n));
                 return *this;
             }
 
@@ -167,24 +236,25 @@ namespace Phoenix
 
             bool operator==(const Iter& other) const
             {
-                return DataPtr == other.DataPtr && Index == other.Index;
+                return DataPtr == other.DataPtr && Capacity == other.Capacity && Index == other.Index;
             }
 
             friend auto operator<=>(const Iter&, const Iter&) = default;
 
         private:
             T* DataPtr;
-            size_t Index;
+            uint32 Capacity;
+            uint32 Index;
         };
 
         Iter begin()
         {
-            return Iter(&Data[0], Start);
+            return Iter(Storage.GetData(), GetCapacity(), Start);
         }
 
         Iter end()
         {
-            return Iter(&Data[0], End);
+            return Iter(Storage.GetData(), GetCapacity(), End);
         }
 
         struct ConstIter
@@ -193,7 +263,12 @@ namespace Phoenix
             using element_type = T;
             using iterator_category = std::contiguous_iterator_tag;
 
-            ConstIter(const T* data, size_t index) : DataPtr(data), Index(index) {}
+            ConstIter(const T* data, uint32 capacity, uint32 index)
+                : DataPtr(data)
+                , Capacity(capacity)
+                , Index(index)
+            {
+            }
 
             const T* operator->() const
             {
@@ -207,40 +282,40 @@ namespace Phoenix
 
             const T& operator[](int32 n) const
             {
-                return *(DataPtr + MoveIndex(Index, n));
+                return *(DataPtr + MoveIndex(Index, Capacity, n));
             }
 
             ConstIter& operator++()
             {
-                Index = MoveIndex(Index, 1);
+                Index = MoveIndex(Index, Capacity, 1);
                 return *this;
             }
 
             ConstIter operator++(int32 n) const
             {
-                return { DataPtr, MoveIndex(Index, n) };
+                return { DataPtr, MoveIndex(Index, Capacity, n) };
             }
 
             ConstIter& operator--()
             {
-                Index = MoveIndex(Index, -1);
+                Index = MoveIndex(Index, Capacity, -1);
                 return *this;
             }
 
             ConstIter operator--(int32 n) const
             {
-                return { DataPtr, MoveIndex(Index, -n) };
+                return { DataPtr, MoveIndex(Index, Capacity, -n) };
             }
 
             ConstIter& operator+=(int32 n)
             {
-                Index = MoveIndex(Index, n);
+                Index = MoveIndex(Index, Capacity, n);
                 return *this;
             }
 
             ConstIter& operator-=(int32 n)
             {
-                Index = MoveIndex(Index, -n);
+                Index = MoveIndex(Index, Capacity, -n);
                 return *this;
             }
 
@@ -249,61 +324,66 @@ namespace Phoenix
             friend long operator-(const ConstIter& a, const ConstIter& b)
             {
                 if (a.Index > b.Index) return a.Index - b.Index;
-                return a.Index + N - b.Index;
+                return a.Index + a.Capacity - b.Index;
             }
 
             friend ConstIter operator+(ConstIter i, int32 n)
             {
-                return { i.DataPtr, MoveIndex(i.Index, n) };
+                return { i.DataPtr, MoveIndex(i.Index, i.Capacity, n) };
             }
 
             friend ConstIter operator-(ConstIter i, int32 n)
             {
-                return { i.DataPtr, MoveIndex(i.Index, -n) };
+                return { i.DataPtr, MoveIndex(i.Index, i.Capacity, -n) };
             }
 
             friend ConstIter operator+(int32 n, ConstIter i)
             {
-                return { i.DataPtr, MoveIndex(i.Index, n) };
+                return { i.DataPtr, MoveIndex(i.Index, i.Capacity, n) };
             }
 
             bool operator==(const ConstIter& other) const
             {
-                return DataPtr == other.DataPtr && Index == other.Index;
+                return DataPtr == other.DataPtr && Capacity == other.Capacity && Index == other.Index;
             }
 
         private:
             const T* DataPtr;
-            size_t Index;
+            uint32 Capacity;
+            uint32 Index;
         };
 
         ConstIter begin() const
         {
-            return ConstIter(&Data[0], Start);
+            return ConstIter(Storage.GetData(), GetCapacity(), Start);
         }
 
         ConstIter end() const
         {
-            return ConstIter(&Data[0], End);
+            return ConstIter(Storage.GetData(), GetCapacity(), End);
         }
-
-    private:
-
-        T Data[N];
-        size_t Start = 0, End = 0;
     };
 
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 32) == 0);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 31) == 31);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 30) == 30);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 3) == 3);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 2) == 2);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 1) == 1);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, 0) == 0);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, -1) == 31);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, -2) == 30);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, -3) == 29);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, -32) == 0);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, -31) == 1);
-    static_assert(TFixedQueue<int, 32>::MoveIndex(0, -30) == 2);
+    template <class T, uint32 N, bool AllowOverwrite = false>
+    using TInlineQueue = TQueue<T, InlineStoragePolicy<N>, AllowOverwrite>;
+
+    template <class T, bool AllowOverwrite = false>
+    using TFixedQueue = TQueue<T, FixedStoragePolicy, AllowOverwrite>;
+
+    template <class T, bool AllowOverwrite = false>
+    using THeapQueue = TQueue<T, HeapStoragePolicy, AllowOverwrite>;
+
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 32) == 0);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 31) == 31);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 30) == 30);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 3) == 3);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 2) == 2);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 1) == 1);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, 0) == 0);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, -1) == 31);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, -2) == 30);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, -3) == 29);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, -32) == 0);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, -31) == 1);
+    static_assert(TInlineQueue<int, 32>::MoveIndex(0, 32, -30) == 2);
 }

@@ -8,12 +8,7 @@ namespace Phoenix::ECS
 {
     struct PHOENIX_SIM_API Entity
     {
-        ArchetypeHandle Handle;
+        EntityId Id = EntityId::Invalid;
         FName Kind;
-
-        constexpr EntityId GetId() const
-        {
-            return Handle.GetEntityId();
-        }
     };
 }

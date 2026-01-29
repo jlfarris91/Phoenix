@@ -28,22 +28,25 @@ using namespace Phoenix::RTS;
 
 namespace MoveAbilitySystemDetail
 {
-    struct UpdateMoveAbilityComponentJob : IBufferJob<MoveAbilityComponent&>
+    struct UpdateMoveAbilityComponentJob
     {
-        void Execute(const EntityComponentSpan<MoveAbilityComponent&>& span) override
+        TSharedPtr<FeatureOrders> OrdersFeature;
+
+        void Begin(WorldRef world)
         {
-            PHX_PROFILE_ZONE_SCOPED_N("UpdateMoveAbilityComponentJob");
+            OrdersFeature = GetFeature<FeatureOrders>(world);
+        }
 
-            TSharedPtr<FeatureOrders> ordersFeature = GetFeature<FeatureOrders>(*World);
-
+        void Execute(WorldRef world, const EntityComponentSpan<MoveAbilityComponent&>& span) const
+        {
             for (auto && [entityId, index, moveComp] : span)
             {
                 if (moveComp.ActiveState != EMoveAbilityState::Idle)
                 {
-                    AbilityStateResult result = moveComp.Update(*World, UnitId(entityId));
+                    AbilityStateResult result = moveComp.Update(world, UnitId(entityId));
                     if (result != EAbilityStateResult::Continue)
                     {
-                        ordersFeature->OnActiveOrderCompleted(*World, UnitId(entityId), result == EAbilityStateResult::Complete);
+                        OrdersFeature->OnActiveOrderCompleted(world, UnitId(entityId), result == EAbilityStateResult::Complete);
                     }
                 }
             }
@@ -55,8 +58,11 @@ void MoveAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
 {
     ISystem::OnWorldUpdate(world, args);
 
-    MoveAbilitySystemDetail::UpdateMoveAbilityComponentJob job;
-    FeatureECS::Schedule(world, job);
+    {
+        PHX_PROFILE_ZONE_SCOPED_N("UpdateMoveAbilityComponentJob");
+        MoveAbilitySystemDetail::UpdateMoveAbilityComponentJob job;
+        FeatureECS::ForEachEntity(world, job);
+    }
 }
 
 MoveAbilityComponent::MoveAbilityComponent()

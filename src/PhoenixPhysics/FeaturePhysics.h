@@ -70,25 +70,25 @@ namespace Phoenix::Physics
 
     struct PHOENIX_PHYSICS_API FeaturePhysicsDynamicBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_SCRATCH(FeaturePhysicsDynamicBlock)
+        PHX_DECLARE_BLOCK(FeaturePhysicsDynamicBlock)
     };
 
     struct PHOENIX_PHYSICS_API FeaturePhysicsScratchBlock : BufferBlockBase
     {
-        PHX_DECLARE_BLOCK_SCRATCH(FeaturePhysicsScratchBlock)
+        PHX_DECLARE_BLOCK(FeaturePhysicsScratchBlock);
 
-        TFixedArray<EntityBody, PHX_ECS_MAX_ENTITIES> SortedEntities;
+        TInlineArray<EntityBody, PHX_ECS_MAX_ENTITIES> SortedEntities;
         TAtomic<uint32> SortedEntityCount = 0;
 
-        TFixedArray<ContactPair, PHX_PHS_MAX_CONTACTS> ContactPairs;
+        TInlineArray<ContactPair, PHX_PHS_MAX_CONTACTS> ContactPairs;
         TAtomic<uint32> ContactPairsCount = 0;
 
-        TFixedMap<uint64, uint32, PHX_PHS_MAX_CONTACTS> ContactPairSet;
+        TInlineMap<uint64, uint32, PHX_PHS_MAX_CONTACTS> ContactPairSet;
 
         int32 ContactFreeHead = INDEX_NONE;
 
-        TFixedArray<Contact, PHX_PHS_MAX_CONTACTS> Contacts;
-        TFixedArray<CollisionLine, 1000> CollisionLines;
+        TInlineArray<Contact, PHX_PHS_MAX_CONTACTS> Contacts;
+        TInlineArray<CollisionLine, 1000> CollisionLines;
     };
 
     class PHOENIX_PHYSICS_API FeaturePhysics : public IFeature
@@ -101,7 +101,7 @@ namespace Phoenix::Physics
 
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
 
-        static void QueryEntitiesInRange(WorldConstRef& world, const Vec2& pos, Distance range, TArray<EntityBody>& outEntities);
+        static void QueryEntitiesInRange(WorldConstRef& world, const Vec2& pos, Distance range, TVector<EntityBody>& outEntities);
 
         static void AddExplosionForceToEntitiesInRange(
             WorldRef& world,

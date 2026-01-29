@@ -7,6 +7,10 @@ Session* IService::GetSession() const
     return Session.get();
 }
 
+void IService::OnSessionLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
+}
+
 void IService::Initialize(const TSharedPtr<Phoenix::Session>& session)
 {
     PHX_ASSERT(session);
@@ -16,6 +20,10 @@ void IService::Initialize(const TSharedPtr<Phoenix::Session>& session)
 void IService::Shutdown()
 {
     Session.reset();
+}
+
+void IService::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+{
 }
 
 void IService::OnWorldInitialize(WorldRef world)

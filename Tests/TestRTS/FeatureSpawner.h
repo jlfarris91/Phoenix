@@ -5,12 +5,12 @@
 
 struct SpawnWave
 {
-    Phoenix::TFixedWeightedSet<Phoenix::FName, 6> UnitDataIds;
+    Phoenix::TInlineWeightedSet<Phoenix::FName, 6> UnitDataIds;
 };
 
 struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 {
-    PHX_DECLARE_BLOCK_DYNAMIC_BEGIN(FeatureSpawnerWorldBlock)
+    PHX_DECLARE_BLOCK_BEGIN(FeatureSpawnerWorldBlock)
         PHX_REGISTER_FIELD(Phoenix::Time, SpawnCooldownMin)
         PHX_REGISTER_FIELD(Phoenix::Time, SpawnCooldownMax)
         PHX_REGISTER_FIELD(Phoenix::Time, NextSpawnTime)
@@ -29,7 +29,7 @@ struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 
     Phoenix::uint32 WaveNum = 0;
 
-    Phoenix::TFixedArray<SpawnWave, 30> SpawnWaves;
+    Phoenix::TInlineArray<SpawnWave, 30> SpawnWaves;
     bool SpawningEnabled = false;
 
     Phoenix::Random Random;

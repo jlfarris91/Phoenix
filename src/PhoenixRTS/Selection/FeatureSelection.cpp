@@ -53,7 +53,7 @@ uint32 FeatureSelection::GetNumSelected(WorldConstRef world, uint32 player, cons
 
 FeatureSelection::FeatureSelection()
 {
-    FEATURE_WORLD_BLOCK(FeatureSelectionDynamicBlock)
+    FEATURE_WORLD_BLOCK(FeatureSelectionDynamicBlock, EBufferBlockType::Dynamic)
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 

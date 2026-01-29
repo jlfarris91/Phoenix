@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PhoenixRTS/DLLExport.h"
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Containers/FixedSortedList.h"
@@ -26,76 +27,6 @@ namespace Phoenix::RTS
 
         ECS::EntityId Entity;
         FName Response;
-    };
-
-    template <uint32 N>
-    struct FixedResponseList
-    {
-        static constexpr uint32 Capacity = N;
-
-        uint32 GetSize() const
-        {
-            return Items.GetSize();
-        }
-
-        uint32 GetNumValidResponses() const
-        {
-            return Items.GetNumValidItems();
-        }
-
-        bool ContainsResponse(ECS::EntityId entity, const FName& response) const
-        {
-            return Items.Contains({ entity, response });
-        }
-
-        bool AddResponse(ECS::EntityId entity, const FName& response)
-        {
-            return Items.PushBackUnique({ entity, response });
-        }
-
-        bool RemoveResponse(ECS::EntityId entity, const FName& response)
-        {
-            return Items.Remove({ entity, response });
-        }
-
-        uint32 ClearResponses(ECS::EntityId entity)
-        {
-            return Items.RemoveAll(entity);
-        }
-
-        FName GetFirstResponse(ECS::EntityId entity, uint32& outIndex) const
-        {
-            EntityResponse* item = Items.GetFirstSubItem(entity, outIndex);
-            return item ? item->Response : FName::None;
-        }
-
-        FName GetNextResponse(ECS::EntityId entity, uint32 currIndex, uint32& outIndex) const
-        {
-            EntityResponse* item = Items.GetNextSubItem(entity, currIndex, outIndex);
-            return item ? item->Response : FName::None;
-        }
-
-        template <class TCallback>
-        void ForEach(const TCallback& callback) const
-        {
-            Items.ForEachItem(callback);
-        }
-
-        template <class TCallback>
-        void ForEachResponse(ECS::EntityId entity, const TCallback& callback) const
-        {
-            Items.ForEachSubItem(entity, [&](const EntityResponse& item) -> const FName&
-            {
-                return item.Response;
-            }, callback);
-        }
-
-        void Sort()
-        {
-            Items.Sort();
-        }
-
-    private:
 
         struct GetItemKey
         {
@@ -104,8 +35,69 @@ namespace Phoenix::RTS
                 return item.Entity;
             }
         };
-
-        TFixedSortedList<EntityResponse, Capacity, GetItemKey> Items;
     };
-    
+
+    class PHOENIX_RTS_API FixedResponseList
+    {
+        using TStorage = TFixedSortedList<EntityResponse, EntityResponse::GetItemKey>;
+
+    public:
+
+        FixedResponseList() = default;
+
+        template <class TAllocator>
+        FixedResponseList(TAllocator& allocator, uint32 capacity)
+            : Storage(allocator, capacity)
+        {
+        }
+
+        template <class TAllocator>
+        FixedResponseList(TAllocator& allocator, uint32 capacity, const FixedResponseList& other)
+            : Storage(allocator, capacity, other.Storage)
+        {
+        }
+
+        uint32 GetCapacity() const;
+
+        static uint32 GetAllocSizeBytes(uint32 capacity);
+
+        uint32 GetAllocSizeBytes() const;
+
+        uint32 GetNum() const;
+
+        uint32 GetNumValidResponses() const;
+
+        bool ContainsResponse(ECS::EntityId entity, const FName& response) const;
+
+        bool AddResponse(ECS::EntityId entity, const FName& response);
+
+        bool RemoveResponse(ECS::EntityId entity, const FName& response);
+
+        uint32 ClearResponses(ECS::EntityId entity);
+
+        FName GetFirstResponse(ECS::EntityId entity, uint32& outIndex) const;
+
+        FName GetNextResponse(ECS::EntityId entity, uint32 currIndex, uint32& outIndex) const;
+
+        template <class TCallback>
+        void ForEach(const TCallback& callback) const
+        {
+            Storage.ForEachItem(callback);
+        }
+
+        template <class TCallback>
+        void ForEachResponse(ECS::EntityId entity, const TCallback& callback) const
+        {
+            Storage.ForEachItemProjected(entity, [&](const EntityResponse& item) -> const FName&
+            {
+                return item.Response;
+            }, callback);
+        }
+
+        void Sort();
+
+    private:
+
+        TStorage Storage;
+    };
 }

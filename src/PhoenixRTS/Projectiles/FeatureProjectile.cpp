@@ -35,6 +35,10 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
     Data::ProjectilePtr dataPtr(projectileData);
 
     TransformComponent* transformComp = FeatureECS::GetOrAddComponent<TransformComponent>(world, projectileId);
+    if (!transformComp)
+    {
+        return {};
+    }
     transformComp->Transform.Position = launchPos;
     transformComp->Transform.Rotation = launchFacing;
 
