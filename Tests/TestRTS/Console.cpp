@@ -10,13 +10,17 @@
 struct Console
 {
     char                    InputBuf[256];
-    ImVector<char*>         Items;
     ImVector<const char*>   Commands;
     ImVector<char*>         History;
     int                     HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
     ImGuiTextFilter         Filter;
     bool                    AutoScroll;
     bool                    ScrollToBottom;
+
+    char*                   Items[1024];
+    uint32_t                ItemsReadIdx = 0;
+    uint32_t                ItemsWriteIdx = 0;
+
     std::shared_ptr<Logger> Logger;
     std::mutex              LogMutex;
     std::vector<std::string> LogFlush;
@@ -61,9 +65,13 @@ struct Console
 
     void ClearLog()
     {
-        for (int i = 0; i < Items.Size; i++)
-            ImGui::MemFree(Items[i]);
-        Items.clear();
+        for (int i = 0; i < _countof(Items); i++)
+        {
+            if (Items[i]) ImGui::MemFree(Items[i]);
+            Items[i] = nullptr;
+        }
+        ItemsReadIdx = 0;
+        ItemsWriteIdx = 0;
     }
 
     void AddLog(const char* fmt, ...) IM_FMTARGS(2)
@@ -75,7 +83,18 @@ struct Console
         vsnprintf(buf, IM_ARRAYSIZE(buf), fmt, args);
         buf[IM_ARRAYSIZE(buf)-1] = 0;
         va_end(args);
-        Items.push_back(Strdup(buf));
+
+        if (Items[ItemsWriteIdx])
+        {
+            ImGui::MemFree(Items[ItemsWriteIdx]);
+        }
+
+        Items[ItemsWriteIdx] = Strdup(buf);
+        ItemsWriteIdx = (ItemsWriteIdx + 1) % _countof(Items);
+        if (ItemsWriteIdx == ItemsReadIdx)
+        {
+            ItemsReadIdx = (ItemsWriteIdx + 1) % _countof(Items);
+        }
     }
 
     void Draw(const char* title, bool* p_open)
@@ -168,9 +187,11 @@ struct Console
             if (copy_to_clipboard)
                 ImGui::LogToClipboard();
 
-            for (const char* item : Items)
+            for (uint32_t i = ItemsReadIdx; i != ItemsWriteIdx; i = (i + 1) % _countof(Items))
             {
-                if (!Filter.PassFilter(item))
+                char* item = Items[i];
+
+                if (!item || !Filter.PassFilter(item))
                     continue;
 
                 // Normally you would store more information in your item than just a string.
