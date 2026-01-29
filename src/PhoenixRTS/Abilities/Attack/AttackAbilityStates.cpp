@@ -187,6 +187,7 @@ void AttackTargetState::ExitActiveState(WorldRef world, const UnitId& unit)
         case EActiveState::WeaponBackSwing: States.WeaponBackSwing.Exit(world, unit); break;
         case EActiveState::None:            break;
     }
+    ActiveState = EActiveState::None;
 }
 
 AbilityStateResult AttackTargetState::HandleMoveToEntityResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result)
