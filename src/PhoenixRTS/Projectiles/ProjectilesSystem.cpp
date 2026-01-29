@@ -22,11 +22,14 @@ namespace ProjectilesSystemDetail
         {
             for (auto && [entityId, index, transformComp, projectileComp] : span)
             {
+                ProjectileId projectileId = ProjectileId(entityId);
+
                 if (projectileComp.State.ActiveState != EProjectileState::None)
                 {
-                    AbilityStateResult result = projectileComp.State.Update(world, ProjectileId(entityId), projectileComp);
+                    AbilityStateResult result = projectileComp.State.Update(world, projectileId, projectileComp);
                     if (result.Result != EAbilityStateResult::Continue)
                     {
+                        projectileComp.State.Exit(world, projectileId, projectileComp);
                         FeatureECS::StaticReleaseEntity(world, entityId);
                     }
                 }

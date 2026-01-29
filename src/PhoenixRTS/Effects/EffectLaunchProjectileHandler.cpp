@@ -24,6 +24,7 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
     const LDS::ILDSQueryContext& lds = *context.LdsQueryContext;
 
     ExecuteEffectArgs args;
+    args.Name = GetEffectTypeId();
     args.EffectId = context.EffectId;
     EffectNodeId nodeId = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.ParentComponent, args);
 
@@ -64,6 +65,9 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
             launchFacing,
             spawnArgs);
     }
+
+    // The projectile keeps the effect alive by incrementing the ref count
+    FeatureEffects::DereferenceEffectNode(world, nodeId);
 
     return true;
 }

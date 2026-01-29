@@ -993,6 +993,30 @@ void OnAppRenderUI()
 
                     ImGui::TreePop();
                 }
+
+                if (ImGui::TreeNode("Group:"))
+                {
+                    if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit))
+                    {
+                        const auto& entities = *FeatureECS::GetEntities(world);
+                        FeatureECS::ForEachEntityInGroup(world, selectedEntityId, [&](EntityId childId)
+                        {
+                            if (const Entity* childEntity = FeatureECS::GetEntityPtr(world, childId))
+                            {
+                                ImGui::TableNextColumn();
+                                ImGui::Text("%u:", entities.GetEntityIndex(childId));
+                                ImGui::TableNextColumn();
+                                ImGui::Text("Id: %u", childEntity->Id);
+                                ImGui::TableNextColumn();
+                                ImGui::Text("Kind: %u", childEntity->Kind);
+                            }
+                        });
+
+                        ImGui::EndTable();
+                    }
+
+                    ImGui::TreePop();
+                }
             }
             else
             {

@@ -173,7 +173,7 @@ EffectScopeId FeatureEffects::AcquireEffectScope(WorldRef world, const ExecuteEf
         return EffectScopeId{};
     }
 
-    effectComp->Name = args.Name.GetValue(FName::None);
+    effectComp->Name = args.Name.GetValue(args.EffectId);
     effectComp->SourceId = args.SourceId.Get();
     effectComp->SourcePos = args.SourcePos.GetValue([&]{ return FeatureECS::GetWorldPosition(world, args.SourceId.Get()); });
     effectComp->TargetId = args.TargetId.Get();
@@ -320,7 +320,7 @@ EffectNodeId FeatureEffects::AcquireEffectNode(
         return EffectNodeId{};
     }
 
-    nodeComp->Name = args.Name.GetValue(FName::None);
+    nodeComp->Name = args.Name.GetValue(args.EffectId);
     nodeComp->SourceId = args.SourceId.GetValue(parent.SourceId);
     nodeComp->SourcePos = args.SourcePos.GetValue(parent.SourcePos);
     nodeComp->TargetId = args.TargetId.GetValue(parent.TargetId);

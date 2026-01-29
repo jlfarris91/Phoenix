@@ -23,6 +23,7 @@ bool EffectDamageHandler::Execute(WorldRef world, const EffectExecuteContext& co
     const LDS::ILDSQueryContext& lds = *context.LdsQueryContext;
 
     ExecuteEffectArgs args;
+    args.Name = GetEffectTypeId();
     args.EffectId = context.EffectId;
     EffectNodeId nodeId = FeatureEffects::AcquireEffectNode(world, context.ParentId, *context.ParentComponent, args);
 
