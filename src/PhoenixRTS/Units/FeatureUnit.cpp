@@ -99,6 +99,11 @@ UnitId FeatureUnit::SpawnUnit(
         }
     });
 
+    dataPtr.Tags().ForEachResolvedItemObject(lds, [&](const Data::TagPtr& tag)
+    {
+       FeatureECS::AddTag(world, unitId, tag.GetObjectId()); 
+    });
+
     // TODO (jfarris): don't need this since the app will be able to read this value
     Data::UnitActorPtr actorPtr = dataPtr.Actor().ResolveObject(lds);
     Color color = Color(actorPtr.Tint().GetValue(lds, Color::White));
@@ -225,6 +230,7 @@ bool FeatureUnit::SetTargetScanLevel(WorldRef world, UnitId unit, ETargetScanLev
 bool FeatureUnit::ResetTargetScanLevel(WorldRef world, UnitId unit)
 {
     // TODO (jfarris): pull this default scan level value from unit data?
+    FeatureECS::SetBlackboardValue(world, unit, "NextTargetScanTime"_n, Time(0));
     return SetTargetScanLevel(world, unit, ETargetScanLevel::Offensive);
 }
 

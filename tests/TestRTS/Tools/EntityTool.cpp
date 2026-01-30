@@ -16,7 +16,7 @@ using namespace Phoenix;
 EntityTool::EntityTool(const TSharedPtr<Phoenix::Session>& session)
     : Session(session)
 {
-    UnitLabels = { "Lancer", "Archer" };
+    UnitLabels = { "Lancer", "Archer", "Tower" };
 }
 
 void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)

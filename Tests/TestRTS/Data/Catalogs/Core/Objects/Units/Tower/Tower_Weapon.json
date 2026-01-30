@@ -1,0 +1,24 @@
+{
+    "id": "Tower_Weapon",
+    "base": "BaseRangedWeapon",
+    "backswing_time": 0.1,
+    "effect": "Tower_Weapon_EffectLaunchProjectile",
+    "facing_arc_min": 180.0,
+    "facing_arc_slop": 180.0,
+    "flags": "Melee|ScanForNewTargets",
+    "icon": {
+        "display_name": "Tower Weapon"
+    },
+    "period": 0.25,
+    "range_acquire": 20.0,
+    "range_max": 6.0,
+    "range_slop": 2.0,
+    "swing_time": 0.0,
+    "target_filter": {
+        "alliance": "Ally|Enemy|Neutral|Player",
+        "tags": {
+            "excluded": [ "status_invulnerable" ],
+            "required": [ "movement_ground" ]
+        }
+    }
+}

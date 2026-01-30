@@ -44,6 +44,8 @@ void FeatureSpawner::OnWorldInitialize(WorldRef world)
     IFeature::OnWorldInitialize(world);
 
     Reset(world);
+
+    SpawnTowerForPlayer(world, 0);
 }
 
 void FeatureSpawner::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
@@ -120,4 +122,15 @@ bool FeatureSpawner::SpawnUnit(WorldRef world, FeatureSpawnerWorldBlock& block)
     command.TargetLocation = Vec2::Zero;
 
     return FeatureOrders::StaticIssueCommand(world, unit, command);
+}
+
+UnitId FeatureSpawner::SpawnTowerForPlayer(WorldRef world, uint8_t player)
+{
+    uint32 maxPlayers = 9;
+
+    // TODO (jfarris): ideally we pull this location from some map data?
+    Vec2 towerPos = Vec2::One * 10.0f * player;
+    towerPos.X = Wrap<Distance>(towerPos.X, 0.0f, 10.0f * Sqrt(Value(maxPlayers)));
+
+    return FeatureUnit::SpawnUnit(world, "Tower"_n, player, towerPos, 0);
 }

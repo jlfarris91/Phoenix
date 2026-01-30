@@ -46,7 +46,7 @@ bool EffectLaunchProjectileHandler::Execute(WorldRef world, const EffectExecuteC
         Data::ProjectilePtr projectileData = effectData.Projectile().ResolveObject(lds);
 
         const Vec2& launchPos = nodeComp->SourcePos;
-        Angle launchFacing = FeatureECS::GetWorldFacing(world, source);
+        Angle launchFacing = (targetPos - launchPos).AsRadians();
 
         SpawnProjectileArgs spawnArgs;
         spawnArgs.Owner = source;

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PhoenixRTS/Units/UnitId.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Containers/FixedWeightedSet.h"
 
@@ -49,11 +50,12 @@ public:
     static void SetIsEnabled(Phoenix::WorldRef world, const bool& enabled);
 
 private:
-
     void OnWorldInitialize(Phoenix::WorldRef world) override;
     void OnWorldUpdate(Phoenix::WorldRef world, const Phoenix::FeatureUpdateArgs& args) override;
 
     static void Reset(Phoenix::WorldRef world);
 
     static bool SpawnUnit(Phoenix::WorldRef world, FeatureSpawnerWorldBlock& block);
+
+    static Phoenix::RTS::UnitId SpawnTowerForPlayer(Phoenix::WorldRef world, uint8_t player);
 };

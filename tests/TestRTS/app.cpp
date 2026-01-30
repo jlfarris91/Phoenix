@@ -66,6 +66,7 @@
 // Test App Tools
 #include "Console.h"
 #include "Logger.h"
+#include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
@@ -113,9 +114,11 @@ struct EntityBodyShape
     EntityId EntityId;
     Transform2D Transform;
     Distance Radius;
-    SDL_Color Color;
     uint64 ZCode;
     Distance VelLen;
+    FName Asset;
+    Value AssetScale;
+    Color AssetTint;
 };
 
 struct ProjectileEntity
@@ -123,8 +126,8 @@ struct ProjectileEntity
     EntityId EntityId;
     Transform2D Transform;
     FName Asset;
-    Value Scale;
-    Color Tint;
+    Value AssetScale;
+    Color AssetTint;
 };
 
 std::vector<EntityBodyShape> GEntityBodies;
@@ -343,6 +346,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 
     std::filesystem::path rootAssetPath = std::filesystem::absolute("./Data/Catalogs/Core/Assets");
     LoadLineModel(rootAssetPath, "Abilities/Weapons/Arrow/ArrowMissile.json");
+    LoadLineModel(rootAssetPath, "Units/Human/Tower/Tower.json");
 }
 
 void OnAppRenderWorld()
@@ -399,6 +403,8 @@ void OnAppRenderWorld()
         builder.RequireAllComponents<const TransformComponent&, const BodyComponent&>();
         auto query = builder.GetQuery();
 
+        const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(worldView);
+
         FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
         {
             for (auto && [entityId, index, transformComp, bodyComp] : span)
@@ -416,16 +422,23 @@ void OnAppRenderWorld()
                     color = Color::Red;
                 }
 
+                entityBodyShape.AssetTint = color;
+
                 if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(worldView, entityId))
                 {
                     color = GDebugRenderer->GetColor(unitComp->OwningPlayer);
-                }
 
-                entityBodyShape.Color = SDL_Color(color.R, color.G, color.B);
+                    RTS::Data::UnitPtr unitData(unitComp->UnitData);
+                    RTS::Data::UnitActorPtr unitActorData = unitData.Actor().ResolveObject(lds);
+
+                    entityBodyShape.Asset = unitActorData.Asset().GetValue(lds);
+                    entityBodyShape.AssetScale = unitActorData.Scale().GetValue(lds);
+                    entityBodyShape.AssetTint = unitActorData.Tint().GetValue(lds);
+                }
 
                 if (!HasAnyFlags(bodyComp.Flags, EBodyFlags::Awake))
                 {
-                    entityBodyShape.Color = SDL_Color(color.R / 2, color.G / 2, color.B / 2);
+                    entityBodyShape.AssetTint = color / 2;
                 }
 
                 if (bodyComp.Movement == EBodyMovement::Attached &&
@@ -446,8 +459,6 @@ void OnAppRenderWorld()
         builder.RequireAllComponents<const TransformComponent&, const RTS::ProjectileComponent&>();
         query = builder.GetQuery();
 
-        const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(worldView);
-
         FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const RTS::ProjectileComponent&>& span)
         {
             for (auto && [entity, index, transformComp, projectileComp] : span)
@@ -459,8 +470,8 @@ void OnAppRenderWorld()
                 projectileEntity.EntityId = entity;
                 projectileEntity.Transform = transformComp.Transform;
                 projectileEntity.Asset = projectileActorData.Asset().GetValue(lds);
-                projectileEntity.Scale = projectileActorData.Scale().GetValue(lds);
-                projectileEntity.Tint = projectileActorData.Tint().GetValue(lds);
+                projectileEntity.AssetScale = projectileActorData.Scale().GetValue(lds);
+                projectileEntity.AssetTint = projectileActorData.Tint().GetValue(lds);
 
                 GProjectileEntities.push_back(projectileEntity);
             }
@@ -482,25 +493,44 @@ void OnAppRenderWorld()
                 pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
                 pt4 = entityBodyShape.Transform.Position + transform.RotateVector(pt4);
 
-                Color color(entityBodyShape.Color.r, entityBodyShape.Color.g, entityBodyShape.Color.b);
-                GDebugRenderer->DrawLine(pt1, pt3, color);
-                GDebugRenderer->DrawLine(pt2, pt4, color);
+                GDebugRenderer->DrawLine(pt1, pt3, entityBodyShape.AssetTint);
+                GDebugRenderer->DrawLine(pt2, pt4, entityBodyShape.AssetTint);
             }
             else
             {
-                Vec2 pt1 = Vec2::XAxis * entityBodyShape.Radius;
-                Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
-                Vec2 pt3 = pt1.Rotate(Deg2Rad(135));
+                auto modelIter = GLineModels.find(entityBodyShape.Asset);
+                if (modelIter != GLineModels.end())
+                {
+                    LineModel worldModel = modelIter->second;
 
-                Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
-                pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
-                pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
-                pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
+                    for (auto && [color, lines] : worldModel.LineBatches)
+                    {
+                        for (auto& line : lines)
+                        {
+                            line.Start *= entityBodyShape.AssetScale;
+                            line.End *= entityBodyShape.AssetScale;
+                            line.Start = entityBodyShape.Transform.TransformPoint(line.Start);
+                            line.End = entityBodyShape.Transform.TransformPoint(line.End);
+                        }
 
-                Vec2 points[4] = { pt1, pt2, pt3, pt1 };
+                        GDebugRenderer->DrawLines(lines.data(), lines.size(), color * entityBodyShape.AssetTint);
+                    }
+                }
+                else
+                {
+                    Vec2 pt1 = Vec2::XAxis * entityBodyShape.Radius;
+                    Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
+                    Vec2 pt3 = pt1.Rotate(Deg2Rad(135));
 
-                Color color(entityBodyShape.Color.r, entityBodyShape.Color.g, entityBodyShape.Color.b);
-                GDebugRenderer->DrawLines(points, 4, color);
+                    Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
+                    pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
+                    pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
+                    pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
+
+                    Vec2 points[4] = { pt1, pt2, pt3, pt1 };
+
+                    GDebugRenderer->DrawLines(points, 4, entityBodyShape.AssetTint);
+                }
             }
         }
 
@@ -526,13 +556,13 @@ void OnAppRenderWorld()
             {
                 for (auto& line : lines)
                 {
-                    line.Start *= projectileEntity.Scale;
-                    line.End *= projectileEntity.Scale;
+                    line.Start *= projectileEntity.AssetScale;
+                    line.End *= projectileEntity.AssetScale;
                     line.Start = projectileEntity.Transform.TransformPoint(line.Start);
                     line.End = projectileEntity.Transform.TransformPoint(line.End);
                 }
 
-                GDebugRenderer->DrawLines(lines.data(), lines.size(), color * projectileEntity.Tint);
+                GDebugRenderer->DrawLines(lines.data(), lines.size(), color * projectileEntity.AssetTint);
             }
         }
 

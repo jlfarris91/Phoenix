@@ -1,0 +1,46 @@
+{
+    "id": "Tower",
+    "base": "Unit",
+    "actor": "Tower_Actor",
+    "armor": {
+        "value": 2
+    },
+    "collision": "Ground|Air",
+    "commands": [
+        {
+            "ability": "StopAbility",
+            "button": "StopAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 1
+            }
+        },
+        {
+            "ability": "AttackAbility",
+            "button": "AttackAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 3
+            }
+        }
+    ],
+    "placement": {
+        "outer_radius": 0.5
+    },
+    "tags": [
+        "movement_ground"
+    ],
+    "vitals": [
+        {
+            "vital": "HealthVital",
+            "stats": {
+                "starting": 1500,
+                "max": 1500,
+                "regen": 0
+            }
+        }
+    ],
+    "weapons": [ "Tower_Weapon" ]
+}

@@ -61,7 +61,7 @@
         "placement": {
             "type": "Object#UnitPlacement"
         },
-        "starting_tags": {
+        "tags": {
             "type": "Array",
             "items": {
                 "type": "ObjectRef#Tag"
