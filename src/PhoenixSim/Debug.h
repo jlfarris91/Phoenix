@@ -33,6 +33,7 @@ namespace Phoenix
         virtual ~IDebugRenderer();
 
         virtual void DrawCircle(const Vec2& pt, Distance radius, const Color& color, int32 segments = 32) = 0;
+        virtual void DrawEllipse(const Vec2& pt, const Vec2& radius, const Color& color, int32 segments = 32) = 0;
         virtual void DrawLine(const Vec2& v0, const Vec2& v1, const Color& color) = 0;
         virtual void DrawLine(const Line2& line, const Color& color) = 0;
         virtual void DrawLines(const Vec2* points, size_t num, const Color& color) = 0;

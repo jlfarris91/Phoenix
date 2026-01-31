@@ -22,6 +22,8 @@ namespace Phoenix
 
         void DrawCircle(const Vec2& pt, Distance radius, const Color& color, int32 segments = 32) override;
 
+        void DrawEllipse(const Vec2& pt, const Vec2& radius, const Color& color, int32 segments = 32) override;
+
         void DrawLine(const Vec2& pt0, const Vec2& pt1, const Color& color) override;
 
         void DrawLine(const Line2& line, const Color& color) override;

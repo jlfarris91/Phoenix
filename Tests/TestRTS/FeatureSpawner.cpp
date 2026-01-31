@@ -107,7 +107,7 @@ bool FeatureSpawner::SpawnUnit(WorldRef world, FeatureSpawnerWorldBlock& block)
     Vec2 pos = random.RandomPointOnCircle<Distance>(10.0);
     Angle facing = -pos.AsDegrees();
 
-    uint32 owner = world.GetRandom().RandomRange(0, 10);
+    uint32 owner = world.GetRandom().RandomRange(1, 10);
 
     UnitId unit = FeatureUnit::SpawnUnit(world, unitDataId, owner, pos, facing);
     if (unit == UnitId::Invalid)

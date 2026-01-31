@@ -53,6 +53,7 @@ namespace Phoenix::RTS::Data
         UnitMovement Movement;
         UnitPlacement Placement;
         TVector<TagPtr> Tags;
+        Value SelectionCircleScale = 1.0;
         UnitSupply Supply;
         UnitVision Vision;
         TVector<VitalStatsPair> Vitals;
@@ -82,6 +83,7 @@ namespace Phoenix::RTS::Data
         UnitMovementPtr Movement() const;
         UnitPlacementPtr Placement() const;
         TagRefArrayPtr Tags() const;
+        LDS::ValuePtr SelectionCircleScale() const;
         UnitSupplyPtr Supply() const;
         UnitVisionPtr Vision() const;
         VitalStatsPairArrayPtr Vitals() const;

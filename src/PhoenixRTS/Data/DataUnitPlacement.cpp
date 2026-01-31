@@ -10,6 +10,7 @@ bool UnitPlacement::Read(const LDS::LDSReadObjectArgs& args, UnitPlacement& outI
     bool success = true;
 
     UnitPlacementPtr dataPtr = args.CreatePtr<UnitPlacementPtr>();
+    success = dataPtr.Footprint().TryResolveObject(queryContext, outItem.Footprint) && success;
     success = dataPtr.InnerRadius().TryGetValue(queryContext, outItem.InnerRadius) && success;
     success = dataPtr.OuterRadius().TryGetValue(queryContext, outItem.OuterRadius) && success;
     
@@ -19,6 +20,11 @@ bool UnitPlacement::Read(const LDS::LDSReadObjectArgs& args, UnitPlacement& outI
 UnitPlacementPtr::UnitPlacementPtr(const LDS::LDSRecordPath& path, LDS::ELDSRecordQueryFlags flags)
     : TLDSObjectPtr(path, flags)
 {
+}
+
+FootprintRefPtr UnitPlacementPtr::Footprint() const
+{
+    return ObjectRef<FootprintRefPtr>("footprint");
 }
 
 Phoenix::LDS::TLDSValuePtr<Phoenix::TFixed<12>> UnitPlacementPtr::InnerRadius() const

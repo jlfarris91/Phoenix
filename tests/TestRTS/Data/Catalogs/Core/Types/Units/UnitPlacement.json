@@ -3,7 +3,7 @@
     "type": "Object",
     "properties": {
         "footprint": {
-            "type": "Object#Footprint"
+            "type": "ObjectRef#Footprint"
         },
         "inner_radius": {
             "type": "Distance",

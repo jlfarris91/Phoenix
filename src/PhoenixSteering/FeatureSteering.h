@@ -89,6 +89,12 @@ namespace Phoenix::Steering
         // Stops an entity from seeking its current goal, if there was one.
         static bool Stop(WorldRef world, const ECS::EntityId& entity);
 
+        // Returns true if an entity is currently holding, meaning it cannot be pushed.
+        static bool IsHolding(WorldConstRef world, const ECS::EntityId& entity);
+
+        // Sets whether an entity is holding, meaning it cannot be pushed.
+        static bool SetHolding(WorldRef world, const ECS::EntityId& entity, bool holding);
+
         // Updates the speed properties of a steering component.
         static bool UpdateSpeed(WorldRef world, const ECS::EntityId& entity, const SteeringSpeedArgs& args);
 

@@ -27,8 +27,10 @@
         }
     ],
     "placement": {
-        "outer_radius": 0.5
+        "footprint": "DefaultFootprint2x2",
+        "outer_radius": 1.2
     },
+    "selection_circle_scale": 1.6,
     "tags": [
         "movement_ground"
     ],

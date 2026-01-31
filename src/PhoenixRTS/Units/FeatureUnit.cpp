@@ -18,6 +18,7 @@
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitSystem.h"
 #include "PhoenixRTS/Vitals/VitalComponents.h"
+#include "PhoenixSteering/FeatureSteering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -66,6 +67,17 @@ UnitId FeatureUnit::SpawnUnit(
     bodyComp->Radius = dataPtr.Placement().InnerRadius().GetValue(lds);
     bodyComp->InvMass = OneDivBy<Value>(1.0f);
     bodyComp->LinearDamping = 10.0f;
+    
+    SteeringComponent* steeringComp = FeatureECS::GetOrAddComponent<SteeringComponent>(world, unitId);
+    steeringComp->CollisionMask = (uint32)dataPtr.CollisionFlags().GetValue(lds);
+    steeringComp->InnerRadius = dataPtr.Placement().InnerRadius().GetValue(lds);
+    steeringComp->OuterRadius = dataPtr.Placement().OuterRadius().GetValue(lds);
+
+    Data::FootprintPtr footprint;
+    if (dataPtr.Placement().Footprint().TryResolveObject(lds, footprint))
+    {
+        FeatureSteering::SetHolding(world, unitId, true);
+    }
 
     // TODO (jfarris): hate that we hard-code the vitals component. What if I don't care about energy or shield?
     dataPtr.Vitals().ForEachItem(lds, [&](const Data::VitalStatsPairPtr& vitalStatsPair)

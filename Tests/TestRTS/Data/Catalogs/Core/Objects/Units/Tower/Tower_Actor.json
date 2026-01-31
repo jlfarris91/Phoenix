@@ -2,5 +2,6 @@
     "id": "Tower_Actor",
     "base": "UnitActor",
     "asset": "Units/Human/Tower/Tower.json",
+    "scale": 0.1,
     "tint": "#00AA00FF"
 }

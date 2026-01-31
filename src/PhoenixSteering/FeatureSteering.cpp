@@ -177,6 +177,24 @@ bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
     return true;
 }
 
+bool FeatureSteering::IsHolding(WorldConstRef world, const EntityId& entity)
+{
+    const SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    return comp && HasAnyFlags(comp->Flags, ESteerFlags::Holding);
+}
+
+bool FeatureSteering::SetHolding(WorldRef world, const EntityId& entity, bool holding)
+{
+    SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    if (!comp)
+    {
+        return false;
+    }
+
+    SetFlagRef(comp->Flags, ESteerFlags::Holding, holding);
+    return true;
+}
+
 bool FeatureSteering::UpdateSpeed(WorldRef world, const EntityId& entity, const SteeringSpeedArgs& args)
 {
     SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);

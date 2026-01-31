@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "DataFootprint.h"
 #include "PhoenixSim/LDS/LDSObjectModel.h"
 #include "PhoenixRTS/DLLExport.h"
 
@@ -8,7 +9,7 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API UnitPlacement
     {
-        // FootprintPtr Footprint;
+        FootprintPtr Footprint;
         Distance InnerRadius;
         Distance OuterRadius;
         static bool Read(const LDS::LDSReadObjectArgs& args, UnitPlacement& outItem);
@@ -17,7 +18,7 @@ namespace Phoenix::RTS::Data
     struct PHOENIX_RTS_API UnitPlacementPtr : LDS::TLDSObjectPtr<UnitPlacement>
     {
         PHX_LDS_DECLARE_OBJECT_PTR_FOR(UnitPlacement);
-        //LDS::TLDSObjectRefPtr<Footprint> Footprint;
+        FootprintRefPtr Footprint() const;
         LDS::TLDSValuePtr<Distance> InnerRadius() const;
         LDS::TLDSValuePtr<Distance> OuterRadius() const;
     };

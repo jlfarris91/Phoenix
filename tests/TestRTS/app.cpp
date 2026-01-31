@@ -68,6 +68,8 @@
 #include "Logger.h"
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
+#include "SDL/SDLLineModel.h"
+#include "SDL/SDLUtils.h"
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
 #include "Tools/ImGuiPropertyGrid.h"
@@ -133,13 +135,12 @@ struct ProjectileEntity
 std::vector<EntityBodyShape> GEntityBodies;
 std::vector<ProjectileEntity> GProjectileEntities;
 
-struct LineModel
-{
-    std::vector<std::tuple<Color, std::vector<Line2>>> LineBatches;
-};
-
 std::map<FName, LineModel> GLineModels;
 LineModel GDefaultLineModel;
+LineModel GCorpseModel;
+LineModel GDefaultUnitModel;
+
+bool GDrawGrid = false;
 
 void UpdateSessionWorker();
 void OnPostWorldUpdate(WorldConstRef world);
@@ -238,55 +239,21 @@ void OnPostWorldUpdate(WorldConstRef world)
     }
 }
 
-void DrawGrid();
-
-bool LoadLineModel(const std::filesystem::path& rootAssetPath, const std::filesystem::path& relativeFilePath)
+bool LoadLineModel(
+    const std::filesystem::path& rootAssetPath,
+    const std::filesystem::path& relativeFilePath,
+    LineModel* outModel = nullptr)
 {
-    std::filesystem::path absoluteFilePath = absolute(rootAssetPath / relativeFilePath);
-
-    std::ifstream fileStream(absoluteFilePath);
-    if (!fileStream.is_open())
-    {
-        GLogger->LogError("Failed to open line model file '{}'", absoluteFilePath.string());
-        return false;
-    }
-
-    nlohmann::json json;
-
-    try
-    {
-        json = nlohmann::json::parse(fileStream, nullptr, false);
-    }
-    catch (const nlohmann::detail::exception& ex)
-    {
-        GLogger->LogError("Failed to load line model file '{}': {}", absoluteFilePath.string(), ex.what());
-        return false;
-    }
-
     LineModel model;
-
-    for (auto& colorJson : json["colors"])
+    if (!LoadLineModel(rootAssetPath, relativeFilePath, model))
     {
-        std::string hexStr = colorJson.get<std::string>();
-        Color color = Color::FromHex(hexStr.c_str());
-        model.LineBatches.emplace_back(color, std::vector<Line2>());
+        return false;
     }
-
-    nlohmann::json& data = json["data"];
-    uint32 i = 0;
-    while (i + 5 <= data.size())
-    {
-        Line2 line;
-        uint32 colorIdx = data[i++].get<int>();
-        line.Start.X = data[i++].get<float>();
-        line.Start.Y = data[i++].get<float>();
-        line.End.X = data[i++].get<float>();
-        line.End.Y = data[i++].get<float>();
-        std::get<1>(model.LineBatches[colorIdx]).push_back(line);
-    }
-
     GLineModels.emplace(relativeFilePath.string(), model);
-
+    if (outModel)
+    {
+        *outModel = model;
+    }
     return true;
 }
 
@@ -347,6 +314,9 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     std::filesystem::path rootAssetPath = std::filesystem::absolute("./Data/Catalogs/Core/Assets");
     LoadLineModel(rootAssetPath, "Abilities/Weapons/Arrow/ArrowMissile.json");
     LoadLineModel(rootAssetPath, "Units/Human/Tower/Tower.json");
+
+    LoadLineModel(rootAssetPath, "Units/Corpse.json", &GCorpseModel);
+    LoadLineModel(rootAssetPath, "Units/DefaultUnit.json", &GDefaultUnitModel);
 }
 
 void OnAppRenderWorld()
@@ -387,7 +357,10 @@ void OnAppRenderWorld()
         GDebugRenderer->DrawLine(tl, bl, Color::Red);
     }
 
-    //DrawGrid();
+    if (GDrawGrid)
+    {
+        DrawGrid(GWindow, GDebugRenderer, GViewport, GCamera);
+    }
 
     // Realize the sim world
     if (GCurrWorldView)
@@ -479,91 +452,42 @@ void OnAppRenderWorld()
 
         for (const EntityBodyShape& entityBodyShape : GEntityBodies)
         {
+            LineModel* lineModel;
             if (RTS::FeatureUnit::UnitIsDead(worldView, RTS::UnitId(entityBodyShape.EntityId)))
             {
-                Vec2 pt = Vec2::XAxis * entityBodyShape.Radius;
-                Vec2 pt1 = pt.Rotate(RAD_45);
-                Vec2 pt2 = pt.Rotate(RAD_135);
-                Vec2 pt3 = pt.Rotate(RAD_225);
-                Vec2 pt4 = pt.Rotate(RAD_315);
-
-                Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
-                pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
-                pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
-                pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
-                pt4 = entityBodyShape.Transform.Position + transform.RotateVector(pt4);
-
-                GDebugRenderer->DrawLine(pt1, pt3, entityBodyShape.AssetTint);
-                GDebugRenderer->DrawLine(pt2, pt4, entityBodyShape.AssetTint);
+                lineModel = &GCorpseModel;
             }
             else
             {
                 auto modelIter = GLineModels.find(entityBodyShape.Asset);
                 if (modelIter != GLineModels.end())
                 {
-                    LineModel worldModel = modelIter->second;
-
-                    for (auto && [color, lines] : worldModel.LineBatches)
-                    {
-                        for (auto& line : lines)
-                        {
-                            line.Start *= entityBodyShape.AssetScale;
-                            line.End *= entityBodyShape.AssetScale;
-                            line.Start = entityBodyShape.Transform.TransformPoint(line.Start);
-                            line.End = entityBodyShape.Transform.TransformPoint(line.End);
-                        }
-
-                        GDebugRenderer->DrawLines(lines.data(), lines.size(), color * entityBodyShape.AssetTint);
-                    }
+                    lineModel = &modelIter->second;
                 }
                 else
                 {
-                    Vec2 pt1 = Vec2::XAxis * entityBodyShape.Radius;
-                    Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
-                    Vec2 pt3 = pt1.Rotate(Deg2Rad(135));
-
-                    Transform2D transform(Vec2::Zero, entityBodyShape.Transform.Rotation, 1.0f);
-                    pt1 = entityBodyShape.Transform.Position + transform.RotateVector(pt1);
-                    pt2 = entityBodyShape.Transform.Position + transform.RotateVector(pt2);
-                    pt3 = entityBodyShape.Transform.Position + transform.RotateVector(pt3);
-
-                    Vec2 points[4] = { pt1, pt2, pt3, pt1 };
-
-                    GDebugRenderer->DrawLines(points, 4, entityBodyShape.AssetTint);
+                    lineModel = &GDefaultUnitModel;
                 }
             }
+
+            DrawLineModel(GDebugRenderer, *lineModel, entityBodyShape.Transform, entityBodyShape.AssetScale, entityBodyShape.AssetTint);
         }
 
         for (const ProjectileEntity& projectileEntity : GProjectileEntities)
         {
-            LineModel worldModel;
-
-            const LineModel* model = nullptr;
+            const LineModel* lineModel = nullptr;
 
             auto modelIter = GLineModels.find(projectileEntity.Asset);
             if (modelIter != GLineModels.end())
             {
-                model = &modelIter->second;
+                lineModel = &modelIter->second;
             }
             else
             {
-                model = &GDefaultLineModel;
+                lineModel = &GDefaultLineModel;
             }
-
-            worldModel = *model;
-
-            for (auto && [color, lines] : worldModel.LineBatches)
-            {
-                for (auto& line : lines)
-                {
-                    line.Start *= projectileEntity.AssetScale;
-                    line.End *= projectileEntity.AssetScale;
-                    line.Start = projectileEntity.Transform.TransformPoint(line.Start);
-                    line.End = projectileEntity.Transform.TransformPoint(line.End);
-                }
-
-                GDebugRenderer->DrawLines(lines.data(), lines.size(), color * projectileEntity.AssetTint);
-            }
+            
+            DrawLineModel(GDebugRenderer, *lineModel, projectileEntity.Transform, projectileEntity.AssetScale, projectileEntity.AssetTint);
         }
 
         // Let features draw to the renderer
@@ -610,6 +534,8 @@ void OnAppRenderUI()
             
             ImGui::EndTable();
         }
+
+        ImGui::Checkbox("Draw Grid", &GDrawGrid);
 
         if (ImGui::CollapsingHeader("Features"))
         {
@@ -1078,94 +1004,4 @@ void OnAppShutdown()
     GSessionThread->join();
 
     GLogger.reset();
-}
-
-void DrawGrid()
-{
-    int32 windowWidth, windowHeight;
-    SDL_GetWindowSize(GWindow, &windowWidth, &windowHeight);
-    
-    auto tl = GViewport->ViewportPosToWorldPos({ 0, 0 });
-    auto br = GViewport->ViewportPosToWorldPos({ (float)windowWidth, (float)windowHeight });
-
-    tl.X = Clamp(tl.X, Distance::Min, Distance::Max);
-    tl.Y = Clamp(tl.Y, Distance::Min, Distance::Max);
-    br.X = Clamp(br.X, Distance::Min, Distance::Max);
-    br.Y = Clamp(br.Y, Distance::Min, Distance::Max);
-
-    auto m = Max((float)br.X - (float)tl.X, (float)tl.Y - (float)br.Y);
-
-    int32 step = 1 << MortonCodeGridBits;
-
-    while (GViewport->WorldVecToViewportVec(Vec2(step, 0)).x <= 10)
-    {
-        step *= 10;
-    }
-
-    float minVisStep = step / 10.0f;
-    float minVisStepAlpha = GViewport->WorldVecToViewportVec(Vec2(minVisStep, 0)).x;
-    minVisStepAlpha = Clamp(minVisStepAlpha / 10.0f, 0.0f, 1.0f);
-
-    int32 steps = int32(m / step);
-
-    m *= 0.5;
-
-    auto minX = (int32)(((float)GCamera->Position.X - m) / step) * step;
-    auto minY = (int32)(((float)GCamera->Position.Y - m) / step) * step;
-
-    auto calculateColor = [minVisStepAlpha, step](int32 s, Color& color)
-    {
-        if (s == 0)
-        {
-            color = Color::White;
-            return;
-        }
-
-        int32 a = s;
-        int32 n = 0;
-        while (a % (step * 10) == 0)
-        {
-            color *= 1.5;
-            a /= 10;
-            n++;
-            if (a == 0)
-                break;
-        }
-
-        if (n == 0)
-        {
-            color.A = uint8(minVisStepAlpha * 255);
-        }
-        else
-        {
-            color.A = 255;
-        }
-    };
-
-    Color color(30, 30, 30);
-
-    int32 a = step;
-    while (a > 1)
-    {
-        a /= 10;
-        color *= 1.5;
-    }
-
-    for (int32 i = 0; i < steps; ++i)
-    {
-        Color colorX = color;
-        Color colorY = color;
-
-        int32 stepX = minX + i * step;
-        calculateColor(stepX, colorX);
-
-        int32 stepY = minY + i * step;
-        calculateColor(stepY, colorY);
-
-        Distance x = stepX;
-        Distance y = stepY;
-
-        GDebugRenderer->DrawLine(Vec2(x, Distance::Min), Vec2(x, Distance::Max), colorX);
-        GDebugRenderer->DrawLine(Vec2(Distance::Min, y), Vec2(Distance::Max, y), colorY);
-    }
 }

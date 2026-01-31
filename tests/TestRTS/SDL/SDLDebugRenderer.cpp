@@ -18,7 +18,7 @@ SDL_FPoint operator/(const SDL_FPoint& fp, float scalar)
 
 namespace SDLDebugRenderer_Private
 {
-    void SDL_RenderCircle(SDL_Renderer *renderer, float x1, float y1, float radius, int32 segments = 32)
+    void SDL_RenderEllipse(SDL_Renderer *renderer, float x1, float y1, float radiusX, float radiusY, int32 segments = 32)
     {
         std::vector<SDL_FPoint> points;
         points.reserve(segments);
@@ -26,8 +26,8 @@ namespace SDLDebugRenderer_Private
         for (int32 i = 0; i < segments - 1; ++i)
         {
             float angle = float(i) * (2.0f * 3.14f) / (segments - 1);
-            float x = x1 + cos(angle) * radius; 
-            float y = y1 + sin(angle) * radius;
+            float x = x1 + cos(angle) * radiusX; 
+            float y = y1 + sin(angle) * radiusY;
             points.emplace_back(x, y);
         }
 
@@ -56,10 +56,15 @@ void SDLDebugRenderer::Reset()
 
 void SDLDebugRenderer::DrawCircle(const Vec2& pt, Distance radius, const Color& color, int32 segments)
 {
+    DrawEllipse(pt, Vec2(radius, radius), color, segments);
+}
+
+void SDLDebugRenderer::DrawEllipse(const Vec2& pt, const Vec2& radius, const Color& color, int32 segments)
+{
     SDL_FPoint sdlPt = Viewport->WorldPosToViewportPos(pt) / GetScale();
-    SDL_FPoint sdlRadius = Viewport->WorldVecToViewportVec(Vec2(radius, 0)) / GetScale();
+    SDL_FPoint sdlRadius = Viewport->WorldVecToViewportVec(radius) / GetScale();
     SDL_SetRenderDrawColor(Renderer, color.R, color.G, color.B, color.A);
-    SDLDebugRenderer_Private::SDL_RenderCircle(Renderer, sdlPt.x, sdlPt.y, sdlRadius.x, segments);
+    SDLDebugRenderer_Private::SDL_RenderEllipse(Renderer, sdlPt.x, sdlPt.y, sdlRadius.x, sdlRadius.y, segments);
 }
 
 void SDLDebugRenderer::DrawLine(const Vec2& pt0, const Vec2& pt1, const Color& color)

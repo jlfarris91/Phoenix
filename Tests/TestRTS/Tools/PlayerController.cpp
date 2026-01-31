@@ -16,7 +16,10 @@
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLDebugState.h"
 #include "../SDL/SDLDebugRenderer.h"
+#include "../SDL/SDLUtils.h"
+#include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
+#include "PhoenixSim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -50,6 +53,8 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
     constexpr uint32 playerId = 0;
     const FName groupId = FName::None;
 
+    const LDS::ILDSQueryContext& lds = *LDS::FeatureLDS::StaticGetWorldQueryContext(world);
+
     if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet())
     {
         Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragStart);
@@ -70,13 +75,12 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 
         for (const EntityTransform& entity : entities)
         {
-            renderer.DrawCircle(entity.TransformComponent->Transform.Position, 1.0, Color::Green);
+            DrawSelectionCircle(world, renderer, entity.EntityId);
         }
     }
     else if (FeatureUnit::UnitIsAlive(world, UnitId(HoverTarget)))
     {
-        Vec2 pos = FeatureECS::GetWorldPosition(world, HoverTarget);
-        renderer.DrawCircle(pos, 1.0, Color::Green);
+        DrawSelectionCircle(world, renderer, HoverTarget);
     }
 
     EntityId selectionGroup = FeatureSelection::GetPlayerSelection(world, playerId, groupId);
@@ -88,7 +92,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
             return;
         }
 
-        renderer.DrawCircle(transformPtr->Position, 1.0, Color::Green);
+        DrawSelectionCircle(world, renderer, entityId);
 
         Vec2 lastTargetPos = transformPtr->Position;
         FeatureOrders::ForEachOrder(world, UnitId(entityId), [&](const Order& order)

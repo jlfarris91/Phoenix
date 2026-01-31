@@ -11,7 +11,7 @@
     },
     "period": 0.25,
     "range_acquire": 20.0,
-    "range_max": 6.0,
+    "range_max": 8.0,
     "range_slop": 2.0,
     "swing_time": 0.0,
     "target_filter": {

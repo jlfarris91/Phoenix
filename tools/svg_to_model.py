@@ -10,6 +10,7 @@ import sys
 from svgpathtools import svg2paths2
 
 def main():
+    # ...existing code...
     # Parse command-line arguments
     import argparse
     parser = argparse.ArgumentParser(description="Convert SVG to line_list_2d model format.")
@@ -24,7 +25,76 @@ def main():
     color_map = {}
     color_list = []
     lines = []
-    for path, attr in zip(paths, attributes):
+
+    # --- Find all path indices that are in the Sockets layer ---
+    from xml.etree import ElementTree as ET
+    tree = ET.parse(svg_path)
+    root = tree.getroot()
+    svg_ns = '{http://www.w3.org/2000/svg}'
+    sockets_layer_ids = set()
+    for g in root.findall(f'.//{svg_ns}g'):
+        label = g.attrib.get(f'{{http://www.inkscape.org/namespaces/inkscape}}label') or g.attrib.get('label') or g.attrib.get('id','')
+        if label.lower() == 'sockets':
+            for elem in g:
+                if 'id' in elem.attrib:
+                    sockets_layer_ids.add(elem.attrib['id'])
+
+    # --- Extract sockets from SVG XML ---
+    # (reuse tree, root, svg_ns from above)
+    width = float(root.attrib.get('width', svg_attr.get('width', '1000')).replace('px',''))
+    height = float(root.attrib.get('height', svg_attr.get('height', '1000')).replace('px',''))
+    cx_svg = width / 2
+    cy_svg = height / 2
+    sockets = []
+    for g in root.findall(f'.//{svg_ns}g'):
+        label = g.attrib.get(f'{{http://www.inkscape.org/namespaces/inkscape}}label') or g.attrib.get('label') or g.attrib.get('id','')
+        if label.lower() == 'sockets':
+            for elem in g:
+                tag = elem.tag
+                circ_id = elem.attrib.get('id','')
+                cx = cy = None
+                rotation = 0.0
+                transform = elem.attrib.get('transform','')
+                import re
+                rot_match = re.search(r'rotate\(([-\d.]+)', transform)
+                if rot_match:
+                    try:
+                        rotation = float(rot_match.group(1))
+                    except ValueError:
+                        rotation = 0.0
+                if tag.endswith('circle'):
+                    cx = elem.attrib.get('cx')
+                    cy = elem.attrib.get('cy')
+                elif tag.endswith('ellipse'):
+                    cx = elem.attrib.get('cx')
+                    cy = elem.attrib.get('cy')
+                elif tag.endswith('rect'):
+                    x = elem.attrib.get('x')
+                    y = elem.attrib.get('y')
+                    width_e = elem.attrib.get('width')
+                    height_e = elem.attrib.get('height')
+                    if x is not None and y is not None and width_e is not None and height_e is not None:
+                        try:
+                            cx = float(x) + float(width_e)/2
+                            cy = float(y) + float(height_e)/2
+                        except ValueError:
+                            continue
+                    else:
+                        continue
+                else:
+                    continue
+                if cx is not None and cy is not None:
+                    try:
+                        cx = float(cx)
+                        cy = float(cy)
+                        sockets.append({'id': circ_id, 'cx': cx, 'cy': cy, 'rotation': rotation})
+                    except ValueError:
+                        continue
+    # ...existing code for lines...
+    for idx, (path, attr) in enumerate(zip(paths, attributes)):
+        # Exclude geometry from the Sockets layer
+        if attr.get('id', '') in sockets_layer_ids:
+            continue
         style = attr.get('style', '')
         color = None
         m = re.search(r'stroke:#([0-9a-fA-F]{6})', style)
@@ -50,40 +120,54 @@ def main():
     if not lines:
         print("No lines found in SVG!")
         return
-    # Normalize coordinates to [-1, 1] range, preserving aspect ratio
-    all_x = [l[1] for l in lines] + [l[3] for l in lines]
-    all_y = [l[2] for l in lines] + [l[4] for l in lines]
-    min_x, max_x = min(all_x), max(all_x)
-    min_y, max_y = min(all_y), max(all_y)
-    width = max_x - min_x
-    height = max_y - min_y
-    # Pad the shorter axis to make the bounds square
-    if width > height:
-        pad = (width - height) / 2
-        min_y -= pad
-        max_y += pad
-    elif height > width:
-        pad = (height - width) / 2
-        min_x -= pad
-        max_x += pad
-    def norm(val, minv, maxv):
-        return 2 * (val - minv) / (maxv - minv) - 1
-    def norm_y(val, minv, maxv):
-        # Flip Y axis so model is upright
-        return -1 * (2 * (val - minv) / (maxv - minv) - 1)
+    # Normalize coordinates to [-1, 1] range using SVG page (viewBox or width/height)
+    # Prefer viewBox if present, else use width/height attributes
+    viewBox = root.attrib.get('viewBox') or svg_attr.get('viewBox')
+    if viewBox:
+        vb_vals = [float(v) for v in viewBox.replace(',', ' ').split()]
+        min_x, min_y, width_box, height_box = vb_vals
+        max_x = min_x + width_box
+        max_y = min_y + height_box
+    else:
+        min_x = 0.0
+        min_y = 0.0
+        width_box = float(root.attrib.get('width', svg_attr.get('width', '1000')).replace('px',''))
+        height_box = float(root.attrib.get('height', svg_attr.get('height', '1000')).replace('px',''))
+        max_x = min_x + width_box
+        max_y = min_y + height_box
+    # Debug: print SVG page bounds
+    print(f"SVG page bounds for normalization:")
+    print(f"  min_x: {min_x}, max_x: {max_x}, width: {width_box}")
+    print(f"  min_y: {min_y}, max_y: {max_y}, height: {height_box}")
+    # Center coordinates so (0,0) is the SVG page center, no scaling
+    cx = (min_x + max_x) / 2
+    cy = (min_y + max_y) / 2
+    # Transform geometry
     for l in lines:
-        l[1] = norm(l[1], min_x, max_x)
-        l[3] = norm(l[3], min_x, max_x)
-        l[2] = norm_y(l[2], min_y, max_y)
-        l[4] = norm_y(l[4], min_y, max_y)
+        l[1] = l[1] - cx
+        l[3] = l[3] - cx
+        l[2] = -(l[2] - cy)  # Flip Y axis
+        l[4] = -(l[4] - cy)
+    # Transform sockets using SVG page center (even if outside)
+    sockets_out = []
+    for s in sockets:
+        x = s['cx'] - cx
+        y = -(s['cy'] - cy)
+        sockets_out.append({
+            'id': s['id'],
+            'x': x,
+            'y': y,
+            'rotation': s.get('rotation', 0.0)
+        })
     model = {
         "colors": color_list,
         "data": [float(v) for line in lines for v in line],
-        "format": "line_list_2d"
+        "format": "line_list_2d",
+        "sockets": sockets_out
     }
     with open(out_path, 'w') as f:
         json.dump(model, f, indent=2)
-    print(f"Saved model with {len(lines)} lines to {out_path}")
+    print(f"Saved model with {len(lines)} lines to {out_path} and {len(sockets_out)} sockets")
 
 if __name__ == '__main__':
     main()

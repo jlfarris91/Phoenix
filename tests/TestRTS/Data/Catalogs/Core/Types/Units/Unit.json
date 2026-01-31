@@ -67,6 +67,10 @@
                 "type": "ObjectRef#Tag"
             }
         },
+        "selection_circle_scale": {
+            "type": "Value",
+            "default": 1.0
+        },
         "supply": {
             "type": "Object#UnitSupply"
         },

@@ -19,8 +19,6 @@ namespace UnitSystemDetail
 {
     struct UpdateUnitsJob
     {
-        Time ScanTimeCooldownMin = 1.0f;
-        Time ScanTimeCooldownMax = 2.0f;
         TSharedPtr<const ILDSQueryContext> LDSQueryContext;
 
         void Begin(WorldRef world)
@@ -53,8 +51,7 @@ namespace UnitSystemDetail
                         args.LdsQueryContext = LDSQueryContext;
                         TargetScanner::ScanForTarget(world, unitId, args);
 
-                        Time cooldown = world.GetRandom().RandomRange<Time>(ScanTimeCooldownMin, ScanTimeCooldownMax);
-                        nextScanTime = simTime + cooldown;
+                        nextScanTime = simTime + 0.25;
                         FeatureECS::SetBlackboardValue(world, unitId, "NextTargetScanTime"_n, nextScanTime);
                     }
                 }

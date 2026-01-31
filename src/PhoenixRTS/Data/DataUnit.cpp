@@ -27,6 +27,7 @@ bool Unit::Read(const LDS::LDSReadObjectArgs& args, Unit& outItem)
     success = dataPtr.Movement().TryReadObject(queryContext, outItem.Movement) && success;
     success = dataPtr.Placement().TryReadObject(queryContext, outItem.Placement) && success;
     success = dataPtr.Tags().GetResolvedObjects(queryContext, outItem.Tags) && success;
+    success = dataPtr.SelectionCircleScale().TryGetValue(queryContext, outItem.SelectionCircleScale) && success;
     success = dataPtr.Supply().TryReadObject(queryContext, outItem.Supply) && success;
     success = dataPtr.Vision().TryReadObject(queryContext, outItem.Vision) && success;
     success = dataPtr.Weapons().GetResolvedObjects(queryContext, outItem.Weapons) && success;
@@ -122,6 +123,11 @@ UnitPlacementPtr UnitPtr::Placement() const
 TagRefArrayPtr UnitPtr::Tags() const
 {
     return ObjectRefArray<TagRefArrayPtr>("tags");
+}
+
+Phoenix::LDS::ValuePtr UnitPtr::SelectionCircleScale() const
+{
+    return Value<Phoenix::Value>("selection_circle_scale");
 }
 
 UnitSupplyPtr UnitPtr::Supply() const

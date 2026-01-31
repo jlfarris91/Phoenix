@@ -22,7 +22,8 @@ namespace Phoenix::Steering
         ArrivedAtGoal = 2,
         Active = 4,
         LockFacing = 8,
-        FailedPathPlan = 16
+        FailedPathPlan = 16,
+        Holding = 32
     };
 
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent

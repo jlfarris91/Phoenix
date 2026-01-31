@@ -52,6 +52,15 @@ namespace SteeringDetail
             {
                 return a.ZCode < b.ZCode;
             });
+
+        scratchBlock.MaxEntityRadius = 0;
+        for (const SortedEntity& entity : scratchBlock.SortedEntities)
+        {
+            if (entity.SteeringComponent->OuterRadius > scratchBlock.MaxEntityRadius)
+            {
+                scratchBlock.MaxEntityRadius = entity.SteeringComponent->OuterRadius;
+            }
+        }
     }
 
     struct PathfindingJob : IBufferJob<TransformComponent&, SteeringComponent&>
@@ -121,8 +130,10 @@ namespace SteeringDetail
             Vec2 targetOffset = targetPos - currPos;
             Distance distance = targetOffset.Length();
 
+            Distance arrivalRange = Max(ArrivalThreshold, steerComp.ArrivalRange);
+
             // The entity has reached its goal
-            if (distance < ArrivalThreshold || distance < steerComp.Slack)
+            if (distance < arrivalRange || distance < steerComp.Slack)
             {
                 SetFlagRef(steerComp.Flags, ESteerFlags::ArrivedAtGoal);
 
@@ -164,6 +175,11 @@ namespace SteeringDetail
                 transformComp,
                 steerComp] : span)
             {
+                if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+                {
+                    continue;
+                }
+                
                 const Vec2& currPos = transformComp.Transform.Position;
                 Vec2 vel = currPos - steerComp.PreviousPos;
 
@@ -249,7 +265,10 @@ namespace SteeringDetail
                 steerComp.Velocity = vel;
 
                 // Rotate to face goal direction
-                CalculateFacing(transformComp, steerComp, vecToStep0, transformComp.Transform.Rotation);
+                if (!HasAnyFlags(steerComp.Flags, ESteerFlags::LockFacing))
+                {
+                    CalculateFacing(transformComp, steerComp, vecToStep0, transformComp.Transform.Rotation);
+                }
 
                 CalculateSlack(transformComp, steerComp);
 
@@ -525,7 +544,8 @@ namespace SteeringDetail
                 {
                     PHX_PROFILE_ZONE_SCOPED_N("OverlapQuery");
 
-                    MortonCodeAABB aabb = ToMortonCodeAABB(transformCompA.Transform.Position, steerCompA.AvoidanceRadius);
+                    Distance range = Max(steerCompA.AvoidanceRadius, scratchBlock.MaxEntityRadius);
+                    MortonCodeAABB aabb = ToMortonCodeAABB(transformCompA.Transform.Position, range);
 
                     ranges.clear();
                     MortonCodeQuery(aabb, ranges);
@@ -574,13 +594,36 @@ namespace SteeringDetail
                         dd = rr;
                     }
 
-                    auto normal = dist.Normalized() * radius;
-                    auto separation = (normal - dist) / 2;
-                    transformCompA.Transform.Position -= separation;
-                    transformCompB.Transform.Position += separation;
+                    Value separationRatioA = 1.0;
+                    Value separationRatioB = 1.0;
 
-                    SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
-                    SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
+                    if (HasAnyFlags(steerCompA.Flags, ESteerFlags::Holding))
+                    {
+                        separationRatioA = 0.0;
+                    }
+                    if (HasAnyFlags(steerCompB.Flags, ESteerFlags::Holding))
+                    {
+                        separationRatioB = 0.0;
+                    }
+
+                    Value totalRatio = separationRatioA + separationRatioB;
+                    if (totalRatio != 0)
+                    {
+                        auto normal = dist.Normalized() * radius;
+                        auto separation = normal - dist;
+
+                        if (separationRatioA != 0)
+                        {
+                            transformCompA.Transform.Position -= separation * separationRatioA / totalRatio;
+                            SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
+                        }
+
+                        if (separationRatioB != 0)
+                        {
+                            transformCompB.Transform.Position += separation * separationRatioB / totalRatio;
+                            SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
+                        }
+                    }
                 }
             }
         }
