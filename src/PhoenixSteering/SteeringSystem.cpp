@@ -1,7 +1,7 @@
 ﻿
 #include "PhoenixSteering/SteeringSystem.h"
 
-#include "PhoenixSim/Debug.h"
+#include "PhoenixSim/Debug/Debug.h"
 #include "PhoenixSim/Flags.h"
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/WorldTaskQueue.h"
