@@ -34,15 +34,6 @@ bool IFeature::OnPostHandleAction(const FeatureActionArgs& args)
     return false;
 }
 
-bool IFeature::InitView(WorldConstRef world, ViewContext& context)
-{
-    return false;
-}
-
-void IFeature::FillView(WorldConstRef world, const ViewContext& context)
-{
-}
-
 void IFeature::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
 }

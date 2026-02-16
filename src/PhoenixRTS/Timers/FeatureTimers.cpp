@@ -72,7 +72,7 @@ const FixedTimerManager* FeatureTimers::GetWorldTimerManager(WorldConstRef world
     return block ? &block->TimerManager : nullptr;
 }
 
-void FeatureTimers::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+void FeatureTimers::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

@@ -238,7 +238,7 @@ bool FeatureECS::OnPostHandleAction(const FeatureActionArgs& action)
     return false;
 }
 
-void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 
@@ -296,16 +296,6 @@ void FeatureECS::OnWorldShutdown(WorldRef world)
     }
     
     TaskQueue::ReleaseTaskQueue((uint32)world.GetId());
-}
-
-bool FeatureECS::InitView(WorldConstRef world, ViewContext& context)
-{
-    return IFeature::InitView(world, context);
-}
-
-void FeatureECS::FillView(WorldConstRef world, const ViewContext& context)
-{
-    IFeature::FillView(world, context);
 }
 
 void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)

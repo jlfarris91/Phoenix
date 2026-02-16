@@ -115,12 +115,9 @@ namespace Phoenix::ECS
         bool OnHandleAction(const FeatureActionArgs& action) override;
         bool OnPostHandleAction(const FeatureActionArgs& action) override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
-
-        bool InitView(WorldConstRef world, ViewContext& context) override;
-        void FillView(WorldConstRef world, const ViewContext& context) override;
 
         void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;

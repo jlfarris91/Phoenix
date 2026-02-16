@@ -323,15 +323,15 @@ bool AttackAbilityHandler::ExecuteAttackTargetOrder(
     if (weapon.IsValid())
     {
         attackComp.ActiveState = EAttackAbilityState::AttackEntity;
-        attackComp.States.AttackEntity.Enter(world, unit, target, weapon, attackAbility);
-        return true;
+        auto result = attackComp.States.AttackEntity.Enter(world, unit, target, weapon, attackAbility);
+        return result != EAbilityStateResult::Fail;
     }
 
     if (unitCanMove)
     {
         attackComp.ActiveState = EAttackAbilityState::FollowEntity;
-        attackComp.States.FollowEntity.Enter(world, unit, target, 0);
-        return true;
+        auto result = attackComp.States.FollowEntity.Enter(world, unit, target, 0);
+        return result != EAbilityStateResult::Fail;
     }
 
     return false;
@@ -357,7 +357,12 @@ bool AttackAbilityHandler::ExecuteAttackMoveOrder(
     }
 
     attackComp.ActiveState = EAttackAbilityState::AttackMove;
-    attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
+    auto result = attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
+    if (result == EAbilityStateResult::Fail)
+    {
+        return false;
+    }
+
     FeatureUnit::SetTargetScanLevel(world, unit, ETargetScanLevel::Offensive);
     return true;
 }
@@ -377,6 +382,6 @@ bool AttackAbilityHandler::ExecuteAttackGroundOrder(
     }
 
     attackComp.ActiveState = EAttackAbilityState::AttackLocation;
-    attackComp.States.AttackLocation.Enter(world, unit, target, weapon, attackAbility);
-    return true;
+    auto result = attackComp.States.AttackLocation.Enter(world, unit, target, weapon, attackAbility);
+    return result != EAbilityStateResult::Fail;
 }

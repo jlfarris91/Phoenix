@@ -67,6 +67,10 @@ namespace Phoenix::RTS
 
         uint32 GetNumValidOrders() const;
 
+        bool IsEmpty() const;
+
+        bool IsFull() const;
+
         bool ContainsOrder(ECS::EntityId entity, const Order& order) const;
 
         bool EnqueueOrder(ECS::EntityId entity, const Order& order);

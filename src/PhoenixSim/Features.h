@@ -133,10 +133,6 @@ namespace Phoenix
         // Called once per action sent to the session, after OnHandleAction.
         virtual bool OnPostHandleAction(const FeatureActionArgs& args);
 
-        virtual bool InitView(WorldConstRef world, ViewContext& context);
-
-        virtual void FillView(WorldConstRef world, const ViewContext& context);
-
         // Called once per session step, per world, before OnWorldUpdate.
         virtual void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args);
 

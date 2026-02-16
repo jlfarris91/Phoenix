@@ -228,7 +228,7 @@ namespace Phoenix::RTS
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 
         void ProcessDeferredEffects(WorldRef world);

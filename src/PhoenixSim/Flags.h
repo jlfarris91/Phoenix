@@ -15,7 +15,7 @@ namespace Phoenix
     template <class T, class ...Us>
     constexpr bool HasAnyFlags(T flags, Us&& ...args)
     {
-        return (HasAnyFlags<T, Us>(flags, args) && ...);
+        return (HasAnyFlags<T, Us>(flags, args) || ...);
     }
 
     template <class T, class U>

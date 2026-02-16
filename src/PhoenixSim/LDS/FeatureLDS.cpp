@@ -164,7 +164,7 @@ void FeatureLDS::Shutdown()
     StaticSessionCatalog.reset();
 }
 
-void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

@@ -28,6 +28,11 @@ namespace Phoenix
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };
 
+    struct PHOENIX_SIM_API SessionLayoutContext
+    {
+        SessionJsonConfig Config;
+    };
+
     struct PHOENIX_SIM_API SessionStepArgs
     {
         uint32 StepHz = 60;

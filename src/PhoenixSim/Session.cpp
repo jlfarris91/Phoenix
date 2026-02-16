@@ -60,17 +60,27 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
     worldManagerArgs.OnPostWorldUpdate = args.OnPostWorldUpdate;
     session->WorldManager = MakeShared<Phoenix::WorldManager>(worldManagerArgs);
 
-    BlockBufferConfig sessionBlockConfig;
-    for (const FeatureSharedPtr& feature : session->FeatureSet->GetFeatures())
+    // Construct block buffer
     {
-        const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
-        for (const BufferBlockDefinition& sessionBlock : featureDefinition.SessionBlocks.Definitions)
-        {
-            sessionBlockConfig.Definitions.push_back(sessionBlock);
-        }
-    }
+        SessionLayoutContext layoutContext;
+        layoutContext.Config = session->ConfigService->GetSessionConfig();
+        
+        BlockBufferLayoutBuilder layoutBuilder;
 
-    session->SessionBuffer = BlockBuffer(sessionBlockConfig);
+        for (const TSharedPtr<IFeature>& feature : session->FeatureSet->GetFeatures())
+        {
+            const FeatureDefinition& featureDef = feature->GetFeatureDefinition();
+
+            for (const BufferBlockDefinition& block : featureDef.SessionBlocks.Definitions)
+            {
+                layoutBuilder.RegisterBlock(block);
+            }
+
+            feature->OnSessionLayout(layoutContext, layoutBuilder);
+        }
+
+        session->SessionBuffer = BlockBuffer(layoutBuilder.GetLayout());
+    }
 
     return session;
 }

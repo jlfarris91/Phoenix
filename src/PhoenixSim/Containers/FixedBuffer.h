@@ -8,41 +8,33 @@
 
 namespace Phoenix
 {
-    class PHOENIX_SIM_API TFixedBuffer
+    template <class TStoragePolicy>
+    class TBufferBase
+    {
+    protected:
+        using TStorage = TContiguousStorage<uint8, TStoragePolicy>;
+        TStorage Storage;
+        uint32 WritePos = 0;
+        uint32 ReadPos = 0;
+        uint32 Size = 0;
+    };
+
+    template <>
+    class TBufferBase<FixedStoragePolicy>
     {
     public:
-
-        using TStorage = TSelfOffsetStorage<uint8>;
-        using TElement = TStorage::TElement;
-
-        enum class ESeekOffset
-        {
-            Begin,
-            End,
-            Relative
-        };
-
-        TFixedBuffer() = default;
-
-        TFixedBuffer(uint32 offset, uint32 capacity)
-            : Storage(offset, capacity)
-        {
-        }
-
-        TFixedBuffer(TStorage::TElement* ptr, uint32 capacity)
-            : Storage(ptr, capacity)
-        {
-        }
+        TBufferBase() = default;
 
         template <class TAllocator>
-        TFixedBuffer(TAllocator& allocator, uint32 capacity)
+        TBufferBase(TAllocator& allocator, uint32 capacity)
             : Storage(allocator, capacity)
         {
         }
 
-        PHX_FORCEINLINE uint32 GetCapacity() const
+        template <class TAllocator, class TOtherStoragePolicy>
+        TBufferBase(TAllocator& allocator, uint32 capacity, const TBufferBase<TOtherStoragePolicy>& other)
+            : Storage(allocator, capacity, other.Storage)
         {
-            return Storage.GetCapacity();
         }
 
         PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
@@ -53,6 +45,53 @@ namespace Phoenix
         PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
         {
             return Storage.GetAllocSizeBytes();
+        }
+
+    protected:
+        using TStorage = TFixedStorage<uint8>;
+        TStorage Storage;
+        uint32 WritePos = 0;
+        uint32 ReadPos = 0;
+        uint32 Size = 0;
+    };
+
+    template <class TStoragePolicy>
+    class PHOENIX_SIM_API TBuffer : public TBufferBase<TStoragePolicy>
+    {
+        using Super = TBufferBase<TStoragePolicy>;
+        using Super::Super;
+        using Super::Storage;
+        using Super::WritePos;
+        using Super::ReadPos;
+        using Super::Size;
+
+    public:
+
+        enum class ESeekOffset
+        {
+            Begin,
+            End,
+            Relative
+        };
+
+        PHX_FORCEINLINE uint32 GetCapacity() const
+        {
+            return Storage.GetCapacity();
+        }
+
+        PHX_FORCEINLINE uint8* GetData()
+        {
+            return Storage.GetData();
+        }
+
+        PHX_FORCEINLINE const uint8* GetData() const
+        {
+            return Storage.GetData();
+        }
+
+        uint32 GetSize() const
+        {
+            return Size;
         }
 
         bool IsEmpty() const
@@ -189,12 +228,12 @@ namespace Phoenix
             ReadPos = 0;
             Size = 0;
         }
-
-    private:
-
-        TStorage Storage;
-        uint32 WritePos = 0;
-        uint32 ReadPos = 0;
-        uint32 Size = 0;
     };
+
+    template <uint32 N>
+    using TInlineBuffer = TBuffer<InlineStoragePolicy<N>>;
+
+    using TFixedBuffer = TBuffer<FixedStoragePolicy>;
+
+    using THeapBuffer = TBuffer<HeapStoragePolicy>;
 }

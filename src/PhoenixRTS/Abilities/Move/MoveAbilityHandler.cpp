@@ -236,13 +236,13 @@ bool MoveAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const 
         if (order.TargetEntity != EntityId::Invalid && FeatureECS::IsEntityValid(world, order.TargetEntity))
         {
             moveComp->ActiveState = EMoveAbilityState::FollowEntity;
-            moveComp->States.FollowEntity.Enter(world, unit, order.TargetEntity, 0);
+            auto result = moveComp->States.FollowEntity.Enter(world, unit, order.TargetEntity, 0);
+            return result != EAbilityStateResult::Fail;
         }
-        else
-        {
-            moveComp->ActiveState = EMoveAbilityState::MoveToPosition;
-            moveComp->States.MoveToPosition.Enter(world, unit, order.TargetLocation, 0);
-        }
+
+        moveComp->ActiveState = EMoveAbilityState::MoveToPosition;
+        auto result = moveComp->States.MoveToPosition.Enter(world, unit, order.TargetLocation, 0);
+        return result != EAbilityStateResult::Fail;
     }
 
     return false;

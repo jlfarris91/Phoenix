@@ -25,6 +25,16 @@ Phoenix::uint32 Phoenix::RTS::FixedOrderQueue::GetNumValidOrders() const
     return Storage.GetNumValidItems();
 }
 
+bool Phoenix::RTS::FixedOrderQueue::IsEmpty() const
+{
+    return Storage.IsEmpty();
+}
+
+bool Phoenix::RTS::FixedOrderQueue::IsFull() const
+{
+    return Storage.IsFull();
+}
+
 bool Phoenix::RTS::FixedOrderQueue::ContainsOrder(ECS::EntityId entity, const Order& order) const
 {
     return Storage.Contains({ entity, order });

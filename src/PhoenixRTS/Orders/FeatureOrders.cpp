@@ -170,18 +170,6 @@ bool FeatureOrders::HasOrders(WorldConstRef world, const UnitId& unit)
     return block.OrderQueue.GetFirstOrder(unit, index) != nullptr;
 }
 
-bool FeatureOrders::RemoveOrder(WorldRef world, const UnitId& unit, uint32 index)
-{
-    FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
-
-    if (index == 0)
-    {
-        StaticInterruptHeadOrder(world, unit);
-    }
-
-    return block.OrderQueue.RemoveOrder(unit, index);
-}
-
 uint32 FeatureOrders::ClearOrderQueue(WorldRef world, const UnitId& unit)
 {
     FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
@@ -321,7 +309,7 @@ void FeatureOrders::OnActiveOrderCompleted(WorldRef world, const UnitId& unit, b
     InterruptHeadOrder(world, unit);
 
     // Remove the active order from the queue
-    RemoveOrder(world, unit, 0);
+    RemoveHeadOrder(world, unit);
 
     // Handle the next head order
     ExecuteHeadOrder(world, unit);
@@ -358,7 +346,7 @@ void FeatureOrders::Shutdown()
     featureECS->OnEntityReleasing().RemoveAll(this);
 }
 
-void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 
@@ -483,7 +471,17 @@ bool FeatureOrders::ExecuteHeadOrder(WorldRef world, const UnitId& unit)
         // Don't actively scan for new targets when executing an order.
         FeatureUnit::SetTargetScanLevel(world, unit, ETargetScanLevel::None);
 
-        return handler->ExecuteOrder(world, unit, *headOrder);
+        if (handler->ExecuteOrder(world, unit, *headOrder))
+        {
+            return true;
+        }
+
+        // Failed to execute the order for some reason. Remove the head order.
+        bool removedOrder = RemoveHeadOrder(world, unit);
+        PHX_ASSERT(removedOrder);
+
+        // Try to execute the next head order, if there is one.
+        return ExecuteHeadOrder(world, unit);
     }
 
     // Return to scanning when there are no orders left in the queue.
@@ -534,20 +532,17 @@ bool FeatureOrders::AcquireOrder(WorldRef world, const UnitId& unit, const Order
         // If a head order exists and was acquired then interrupt it and replace it.
         if (HasAnyFlags(headOrder->Flags, EOrderFlags::Acquire))
         {
-            if (!InterruptOrder(world, unit, *headOrder))
-            {
-                return false;
-            }
+            bool interruptedOrder = InterruptOrder(world, unit, *headOrder);
+            PHX_ASSERT(interruptedOrder);
 
-            if (!RemoveOrder(world, unit, 0))
-            {
-                return false;
-            }
+            bool removedOrder = RemoveHeadOrder(world, unit);
+            PHX_ASSERT(removedOrder);
         }
-        // Otherwise, just interrupt the current order.
-        else if (!InterruptOrder(world, unit, *headOrder))
+        // Otherwise, just interrupt the current head order prior to inserting a new head order.
+        else if (!block.OrderQueue.IsFull())
         {
-            return false;
+            bool interruptedOrder = InterruptOrder(world, unit, *headOrder);
+            PHX_ASSERT(interruptedOrder);
         }
     }
 
@@ -557,6 +552,21 @@ bool FeatureOrders::AcquireOrder(WorldRef world, const UnitId& unit, const Order
     }
 
     return ExecuteHeadOrder(world, unit);
+}
+
+bool FeatureOrders::RemoveHeadOrder(WorldRef world, const UnitId& unit)
+{
+    FeatureOrdersDynamicBlock& block = world.GetBlockRef<FeatureOrdersDynamicBlock>();
+
+    const Order* headOrder = GetHeadOrder(world, unit);
+    if (!headOrder)
+    {
+        return false;
+    }
+
+    InterruptOrder(world, unit, *headOrder);
+
+    return block.OrderQueue.RemoveOrder(unit, 0);
 }
 
 struct SortHandlersByPriority

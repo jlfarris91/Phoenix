@@ -152,4 +152,6 @@ namespace Phoenix
         TVec Min = TVec::Zero;
         TVec Max = TVec::Zero;
     };
+
+    using Box2 = TFixedBox<Vec2>;
 }

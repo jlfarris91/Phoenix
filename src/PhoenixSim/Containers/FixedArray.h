@@ -160,6 +160,57 @@ namespace Phoenix
             return Storage[Size-1];
         }
 
+        bool Insert(const T& item, uint32 index)
+        {
+            if (IsFull())
+            {
+                return false;
+            }
+
+            // Shift items towards the back to insert a new item into the list
+            for (uint32 i = Size; i > index; --i)
+            {
+                if (i == Storage.GetCapacity())
+                {
+                    // Storage is full, drop last item
+                    continue;
+                }
+
+                Storage[i] = Storage[i - 1];
+            }
+
+            ++Size;
+
+            Storage[index] = item;
+            return true;
+        }
+
+        template <class ...TArgs>
+        bool EmplaceInsert(uint32 index, TArgs&& ...args)
+        {
+            if (IsFull())
+            {
+                return false;
+            }
+
+            // Shift items towards the back to insert a new item into the list
+            for (uint32 i = Size; i > index; --i)
+            {
+                if (i == Storage.GetCapacity())
+                {
+                    // Storage is full, drop last item
+                    continue;
+                }
+
+                Storage[i] = Storage[i - 1];
+            }
+
+            ++Size;
+
+            new (&Storage[index]) T(std::forward<TArgs>(args)...);
+            return true;
+        }
+
         void PopBack()
         {
             PHX_ASSERT(!IsEmpty());

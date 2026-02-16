@@ -38,7 +38,7 @@ FeatureBlackboard::FeatureBlackboard()
     FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
 
-void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder)
+void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

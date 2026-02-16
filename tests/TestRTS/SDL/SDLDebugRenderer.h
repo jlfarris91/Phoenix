@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL_render.h>
 
-#include <PhoenixSim/Debug.h>
+#include <PhoenixSim/Debug/Debug.h>
 #include <PhoenixSim/Color.h>
 #include <PhoenixSim/Platform.h>
 

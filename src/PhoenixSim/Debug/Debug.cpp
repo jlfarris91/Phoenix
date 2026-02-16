@@ -1,5 +1,5 @@
 
-#include "PhoenixSim/Debug.h"
+#include "PhoenixSim/Debug/Debug.h"
 
 Phoenix::IDebugState::~IDebugState() = default;
 

@@ -180,12 +180,12 @@ uint8 FeatureUnit::GetOwningTeam(WorldConstRef world, UnitId unit)
 
 bool FeatureUnit::UnitCanMove(WorldConstRef world, UnitId unit)
 {
-    return true;
+    return FeatureSteering::CanMove(world, unit);
 }
 
 bool FeatureUnit::UnitCanTurn(WorldConstRef world, UnitId unit)
 {
-    return true;
+    return FeatureSteering::CanTurn(world, unit);
 }
 
 bool FeatureUnit::UnitIsImmobilized(WorldConstRef world, UnitId unit)

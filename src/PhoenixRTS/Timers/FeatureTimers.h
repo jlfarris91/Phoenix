@@ -46,7 +46,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
         void OnPreUpdate(const FeatureUpdateArgs& args) override;
         void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 

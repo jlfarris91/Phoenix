@@ -122,39 +122,6 @@ namespace Phoenix
         TVector<BufferBlockDefinition> BlockDefinitions;
     };
 
-    struct PHOENIX_SIM_API WorldLayout
-    {
-        BlockBufferConfig BufferConfig;
-    };
-
-    struct PHOENIX_SIM_API WorldLayoutBuilder
-    {
-        BufferBlockDefinition& RegisterBlock(const BufferBlockDefinition& definition)
-        {
-            return Layout.BufferConfig.RegisterBlock(definition);
-        }
-
-        template <class TBlock>
-        BufferBlockDefinition& RegisterBlock(EBufferBlockType type)
-        {
-            return Layout.BufferConfig.RegisterBlock<TBlock>(type);
-        }
-
-        template <class TBlock, class ...TVars>
-        BufferBlockDefinition& RegisterBlockWithAlloc(EBufferBlockType type, TVars&&... vars)
-        {
-            return Layout.BufferConfig.RegisterBlockWithAlloc<TBlock>(type, std::forward<TVars>(vars)...);
-        }
-
-        const WorldLayout& GetLayout() const
-        {
-            return Layout;
-        }
-
-    private:
-        WorldLayout Layout;
-    };
-
     struct PHOENIX_SIM_API WorldLayoutContext
     {
         TSharedPtr<Session> Session;

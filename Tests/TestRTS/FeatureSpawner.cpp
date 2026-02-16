@@ -43,7 +43,7 @@ void FeatureSpawner::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
 
-    Reset(world);
+    //Reset(world);
 
     SpawnTowerForPlayer(world, 0);
 }
@@ -53,21 +53,34 @@ void FeatureSpawner::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args
     IFeature::OnWorldUpdate(world, args);
 
     FeatureSpawnerWorldBlock& block = world.GetBlockRef<FeatureSpawnerWorldBlock>();
-
-    Random& random = block.Random;
-
-    while (world.GetSimTime() >= block.NextSpawnTime)
+    if (block.SpawningEnabled)
     {
-        block.NextSpawnTime = world.GetSimTime() + random.RandomRange(block.SpawnCooldownMin, block.SpawnCooldownMax);
+        Random& random = block.Random;
 
-        SpawnUnit(world, block);
+        while (world.GetSimTime() >= block.NextSpawnTime)
+        {
+            block.NextSpawnTime = world.GetSimTime() + random.RandomRange(block.SpawnCooldownMin, block.SpawnCooldownMax);
+
+            SpawnUnit(world, block);
+        }
+
+        if (world.GetSimTime() >= block.NextWaveTime)
+        {
+            block.NextWaveTime += block.WaveDuration;
+            ++block.WaveNum;
+        }
+    }
+}
+
+bool FeatureSpawner::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args)
+{
+    if (args.Action.Verb == "enable_spawning"_n)
+    {
+        SetIsEnabled(world, args.Action.Data[0].Bool);
+        return true;
     }
 
-    if (world.GetSimTime() >= block.NextWaveTime)
-    {
-        block.NextWaveTime += block.WaveDuration;
-        ++block.WaveNum;
-    }
+    return false;
 }
 
 void FeatureSpawner::Reset(WorldRef world)
@@ -107,7 +120,7 @@ bool FeatureSpawner::SpawnUnit(WorldRef world, FeatureSpawnerWorldBlock& block)
     Vec2 pos = random.RandomPointOnCircle<Distance>(10.0);
     Angle facing = -pos.AsDegrees();
 
-    uint32 owner = world.GetRandom().RandomRange(1, 10);
+    uint8 owner = world.GetRandom().RandomRange<uint8>(1, 10);
 
     UnitId unit = FeatureUnit::SpawnUnit(world, unitDataId, owner, pos, facing);
     if (unit == UnitId::Invalid)

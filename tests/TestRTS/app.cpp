@@ -25,6 +25,8 @@
 #include <PhoenixSim/Features.h>
 
 // Phoenix features
+#include <PhoenixSim/Debug/FeatureDebug.h>
+#include <PhoenixSim/Strings/FeatureString.h>
 #include <PhoenixSim/LDS/FeatureLDS.h>
 #include <PhoenixSim/Blackboard/FeatureBlackboard.h>
 #include <PhoenixSim/ECS/FeatureECS.h>
@@ -151,6 +153,8 @@ void InitSession()
 
     // Register features
     // ReSharper disable CppExpressionWithoutSideEffects
+    serviceContainerBuilder->RegisterService<FeatureString>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureDebug>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureBlackboard>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureLDS>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureECS>().AsInterfaces();
@@ -508,6 +512,10 @@ void OnAppRenderUI()
 {
     ImGuiIO& io = ImGui::GetIO();
 
+    SDL_FPoint mousePos;
+    SDL_GetMouseState(&mousePos.x, &mousePos.y);
+    Vec2 worldMousePos = GViewport->ViewportPosToWorldPos(mousePos);
+
     ImGui::Begin("Debug");
     {
         if (ImGui::BeginTable("FPS", 2, ImGuiTableFlags_SizingFixedFit))
@@ -531,6 +539,16 @@ void OnAppRenderUI()
             ImGui::Text("Sim Time:");
             ImGui::TableNextColumn();
             ImGui::Text("%llu (%f)", GSession->GetSimTime(), GSession->GetSimTime() / (float)Time::D);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Mouse Pos:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%0.2f %0.2f", mousePos.x, mousePos.y);
+
+            ImGui::TableNextColumn();
+            ImGui::Text("World Pos:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%0.2f %0.2f", (float)worldMousePos.X, (float)worldMousePos.Y);
             
             ImGui::EndTable();
         }

@@ -6,8 +6,9 @@
 namespace Phoenix
 {
     class Session;
+    struct SessionLayoutContext;
     struct WorldLayoutContext;
-    struct WorldLayoutBuilder;
+    struct BlockBufferLayoutBuilder;
 
     class PHOENIX_SIM_API IService : public TSharedAsThis<IService>
     {
@@ -18,11 +19,11 @@ namespace Phoenix
         // Gets the session that this service belongs to.
         Session* GetSession() const;
 
-        virtual void OnSessionLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder);
+        virtual void OnSessionLayout(const SessionLayoutContext& context, BlockBufferLayoutBuilder& builder);
         virtual void Initialize(const TSharedPtr<Session>& session);
         virtual void Shutdown();
 
-        virtual void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder);
+        virtual void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder);
         virtual void OnWorldInitialize(WorldRef world);
         virtual void OnWorldShutdown(WorldRef world);
 

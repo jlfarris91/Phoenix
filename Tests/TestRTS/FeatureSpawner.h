@@ -39,7 +39,6 @@ struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 class FeatureSpawner : public Phoenix::IFeature
 {
     PHX_DECLARE_FEATURE_TYPE_BEGIN(FeatureSpawner)
-        PHX_REGISTER_STATIC_PROPERTY(bool, IsEnabled)
     PHX_DECLARE_FEATURE_TYPE_END()
 
 public:
@@ -52,6 +51,8 @@ public:
 private:
     void OnWorldInitialize(Phoenix::WorldRef world) override;
     void OnWorldUpdate(Phoenix::WorldRef world, const Phoenix::FeatureUpdateArgs& args) override;
+
+    bool OnHandleWorldAction(Phoenix::WorldRef world, const Phoenix::FeatureActionArgs& args) override;
 
     static void Reset(Phoenix::WorldRef world);
 

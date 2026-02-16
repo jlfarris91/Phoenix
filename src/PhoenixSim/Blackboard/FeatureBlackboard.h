@@ -36,7 +36,7 @@ namespace Phoenix::Blackboard
 
         FeatureBlackboard();
 
-        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
 
         void OnPostUpdate(const FeatureUpdateArgs& args) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;

@@ -13,20 +13,8 @@ namespace Phoenix
 
         constexpr FName() = default;
         constexpr FName(hash32_t hash) : Value(hash) {}
-
-        constexpr FName(const char* chars, size_t len)
-            : Value(Hashing::FNV1A32(chars, len))
-        {
-#if DEBUG
-            for (size_t i = 0; i < len && i < _countof(Debug); ++i)
-                Debug[i] = *(chars + i);
-#endif
-        }
-
-        constexpr FName(const PHXString& string)
-            : FName(string.data(), string.length())
-        {
-        }
+        constexpr FName(const char* chars, size_t len) : Value(Hashing::FNV1A32(chars, len)) { }
+        constexpr FName(const PHXString& string) : FName(string.data(), string.length()) { }
 
         constexpr operator hash32_t() const
         {
@@ -65,12 +53,6 @@ namespace Phoenix
             {
                 Value = Hashing::FNV1A32Combine(Value, other.Value);
             }
-#if DEBUG
-            if (!std::is_constant_evaluated())
-            {
-                (void)snprintf(Debug, _countof(Debug), "%s+%s", Debug, other.Debug);
-            }
-#endif
             return *this;
         }
 
@@ -99,12 +81,6 @@ namespace Phoenix
             {
                 result.Value = Hashing::FNV1A32Append(result.Value, c);
             }
-#if DEBUG
-            if (!std::is_constant_evaluated())
-            {
-                (void)snprintf(result.Debug, _countof(result.Debug), "%s%c", result.Debug, c);
-            }
-#endif
             return result;
         }
 
@@ -120,12 +96,6 @@ namespace Phoenix
             {
                 result.Value = Hashing::FNV1A32Append(result.Value, str, len);
             }
-#if DEBUG
-            if (!std::is_constant_evaluated())
-            {
-                (void)snprintf(result.Debug, _countof(result.Debug), "%s%s", result.Debug, str);
-            }
-#endif
             return result;
         }
 
@@ -142,12 +112,6 @@ namespace Phoenix
             {
                 result.Value = Hashing::FNV1A32Append(result.Value, chars);
             }
-#if DEBUG
-            if (!std::is_constant_evaluated())
-            {
-                (void)snprintf(result.Debug, _countof(result.Debug), "%s%s", result.Debug, chars);
-            }
-#endif
             return result;
         }
 
@@ -158,11 +122,6 @@ namespace Phoenix
 
     private:
         hash32_t Value = 0;
-
-#if DEBUG
-    public:
-        char Debug[64] = {};
-#endif
     };
 }
 

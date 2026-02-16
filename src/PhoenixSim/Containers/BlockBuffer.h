@@ -61,6 +61,8 @@ namespace Phoenix
     PHX_DECLARE_DELEGATE_RET(FBufferBlockLayout, BufferBlockLayout);
     PHX_DECLARE_DELEGATE(FBufferBlockConstruct, void*, BlockBufferAllocator& allocator);
 
+    // A definition for a block in a block buffer, which includes the block's type name, layout, sort order,
+    // and optional factory delegates for layout and construction.
     struct PHOENIX_SIM_API BufferBlockDefinition
     {
         // The type name of the block.
@@ -82,6 +84,7 @@ namespace Phoenix
         FBufferBlockConstruct ConstructFn;
     };
 
+    // A configuration for a block buffer, which consists of a list of block definitions.
     struct PHOENIX_SIM_API BlockBufferConfig
     {
         BufferBlockDefinition& RegisterBlock(const BufferBlockDefinition& def)
@@ -123,6 +126,35 @@ namespace Phoenix
         }
 
         TVector<BufferBlockDefinition> Definitions;
+    };
+
+    // A builder for a block buffer configuration, which provides a fluent interface for registering blocks and building the final layout.
+    struct PHOENIX_SIM_API BlockBufferLayoutBuilder
+    {
+        BufferBlockDefinition& RegisterBlock(const BufferBlockDefinition& definition)
+        {
+            return Layout.RegisterBlock(definition);
+        }
+
+        template <class TBlock>
+        BufferBlockDefinition& RegisterBlock(EBufferBlockType type)
+        {
+            return Layout.RegisterBlock<TBlock>(type);
+        }
+
+        template <class TBlock, class ...TVars>
+        BufferBlockDefinition& RegisterBlockWithAlloc(EBufferBlockType type, TVars&&... vars)
+        {
+            return Layout.RegisterBlockWithAlloc<TBlock>(type, std::forward<TVars>(vars)...);
+        }
+
+        const BlockBufferConfig& GetLayout() const
+        {
+            return Layout;
+        }
+
+    private:
+        BlockBufferConfig Layout;
     };
 
     class PHOENIX_SIM_API BlockBuffer

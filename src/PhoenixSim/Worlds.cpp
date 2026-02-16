@@ -167,7 +167,7 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
         layoutContext.Config = *worldJsonConfig;
     }
 
-    WorldLayoutBuilder layoutBuilder;
+    BlockBufferLayoutBuilder layoutBuilder;
 
     // TODO (jfarris): allow filter features for world
     // TODO (jfarris): sort features by dependencies so ie ECS is laid-out before steering
@@ -188,7 +188,7 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
     worldConfig.WorldId = worldId;
     worldConfig.WorldType = args.WorldType;
     worldConfig.Config = layoutContext.Config;
-    worldConfig.BufferConfig = layoutBuilder.GetLayout().BufferConfig;
+    worldConfig.BufferConfig = layoutBuilder.GetLayout();
 
     WorldSharedPtr world = std::make_shared<World>(worldConfig);
     Worlds.push_back(world);

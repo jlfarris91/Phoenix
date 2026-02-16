@@ -219,6 +219,11 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
                 continue;
             }
 
+            if (!Weapons::TargetIsInRange(world, unit, candidate, weaponId) && !unitCanMove)
+            {
+                continue;
+            }
+
             bestWeaponIndex = weaponIndex++;
             bestTargetPriority = attackPriority;
             target = candidate;

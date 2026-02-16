@@ -106,7 +106,7 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
             {
                 FName v = propertyDesc.PropertyAccessor->Get<FName>(obj);
 #if DEBUG
-                ImGui::InputText("##Editor", v.Debug, _countof(v.Debug));
+                // ImGui::InputText("##Editor", v.Debug, _countof(v.Debug));
 #else
                 ImGui::DragScalar("##Editor", ImGuiDataType_U32, &v);
 #endif

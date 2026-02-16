@@ -103,9 +103,6 @@ namespace Phoenix::RTS
         // Gets whether there is at least one order in a units order queue.
         static bool HasOrders(WorldConstRef world, const UnitId& unit);
 
-        // Attempts to remove an order from a unit's order queue.
-        static bool RemoveOrder(WorldRef world, const UnitId& unit, uint32 index);
-
         // Clears the order queue for a unit.
         static uint32 ClearOrderQueue(WorldRef world, const UnitId& unit);
 
@@ -149,7 +146,7 @@ namespace Phoenix::RTS
         void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, WorldLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 
@@ -179,6 +176,10 @@ namespace Phoenix::RTS
 
         // Interrupts the current order and inserts a new order at the head of the order queue.
         bool AcquireOrder(WorldRef world, const UnitId& unit, const Order& order);
+
+        // Attempts to interrupt and remove the head order from a unit's order queue.
+        // Note that this DOES NOT automatically execute the new head order, if there is one.
+        bool RemoveHeadOrder(WorldRef world, const UnitId& unit);
 
         uint32 GetPrioritizedHandlers(
             WorldConstRef world,

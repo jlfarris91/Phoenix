@@ -4,7 +4,7 @@
 #include <cstdio>   // For snprintf
 
 #include "PhoenixSim/Color.h"
-#include "PhoenixSim/Debug.h"
+#include "PhoenixSim/Debug/Debug.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/Worlds.h"
