@@ -10,6 +10,7 @@
 #include "SDLViewport.h"
 
 using namespace Phoenix;
+using PhoenixColor = Phoenix::Color;
 
 SDL_FPoint operator/(const SDL_FPoint& fp, float scalar)
 {
@@ -138,7 +139,7 @@ void SDLDebugRenderer::PopScale()
     SDL_SetRenderScale(Renderer, scale, scale);
 }
 
-Color SDLDebugRenderer::GetColor(size_t index) const
+PhoenixColor SDLDebugRenderer::GetColor(size_t index) const
 {
     return Colors[index % _countof(Colors)];
 }

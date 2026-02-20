@@ -14,6 +14,7 @@
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
+using PhoenixColor = Phoenix::Color;
 
 void DrawGrid(
     SDL_Window* window,
@@ -52,11 +53,11 @@ void DrawGrid(
     auto minX = (int32)(((float)camera->Position.X - m) / step) * step;
     auto minY = (int32)(((float)camera->Position.Y - m) / step) * step;
 
-    auto calculateColor = [minVisStepAlpha, step](int32 s, Color& color)
+    auto calculateColor = [minVisStepAlpha, step](int32 s, PhoenixColor& color)
     {
         if (s == 0)
         {
-            color = Color::White;
+            color = PhoenixColor::White;
             return;
         }
 
@@ -81,7 +82,7 @@ void DrawGrid(
         }
     };
 
-    Color color(30, 30, 30);
+    PhoenixColor color(30, 30, 30);
 
     int32 a = step;
     while (a > 1)
@@ -92,8 +93,8 @@ void DrawGrid(
 
     for (int32 i = 0; i < steps; ++i)
     {
-        Color colorX = color;
-        Color colorY = color;
+        PhoenixColor colorX = color;
+        PhoenixColor colorY = color;
 
         int32 stepX = minX + i * step;
         calculateColor(stepX, colorX);
@@ -119,5 +120,5 @@ void DrawSelectionCircle(
     RTS::Data::UnitPtr unitData = RTS::FeatureUnit::GetUnitData(world, RTS::UnitId(entityId));
     Value selectionCircleScale = unitData.SelectionCircleScale().GetValue(lds, 1.0f);
     Vec2 radius = { selectionCircleScale, selectionCircleScale * 0.75 };
-    renderer.DrawEllipse(pos, radius, Color::Green);
+    renderer.DrawEllipse(pos, radius, PhoenixColor::Green);
 }

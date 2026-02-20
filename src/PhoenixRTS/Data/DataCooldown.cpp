@@ -2,8 +2,9 @@
 #include "PhoenixRTS/Data/DataCooldown.h"
 
 using namespace Phoenix::RTS::Data;
+using DataCooldown = Phoenix::RTS::Data::Cooldown;
 
-bool Cooldown::Read(const LDS::LDSReadObjectArgs& args, Cooldown& outItem)
+bool DataCooldown::Read(const LDS::LDSReadObjectArgs& args, DataCooldown& outItem)
 {
     bool success = true;
     return success;

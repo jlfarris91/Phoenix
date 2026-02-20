@@ -3,8 +3,9 @@
 
 using namespace Phoenix::LDS;
 using namespace Phoenix::RTS::Data;
+using DataCommand = Phoenix::RTS::Data::Command;
 
-bool Command::Read(const LDSReadObjectArgs& args, Command& outItem)
+bool DataCommand::Read(const LDSReadObjectArgs& args, DataCommand& outItem)
 {
     bool success = true;
     return success;

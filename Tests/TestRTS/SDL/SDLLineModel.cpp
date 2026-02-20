@@ -7,6 +7,7 @@
 #include "PhoenixSim/Logging.h"
 
 using namespace Phoenix;
+using PhoenixColor = Phoenix::Color;
 
 bool LoadLineModel(
     const std::filesystem::path& rootAssetPath,
@@ -46,7 +47,7 @@ bool LoadLineModel(
     for (auto& colorJson : json["colors"])
     {
         std::string hexStr = colorJson.get<std::string>();
-        Color color = Color::FromHex(hexStr.c_str());
+        PhoenixColor color = PhoenixColor::FromHex(hexStr.c_str());
         model.LineBatches.emplace_back(color, std::vector<Line2>());
     }
 
@@ -85,7 +86,7 @@ void DrawLineModel(
     const LineModel& model,
     const Transform2D& worldTransform,
     Angle assetScale,
-    Color tint)
+    PhoenixColor tint)
 {
     LineModel worldModel = model;
 

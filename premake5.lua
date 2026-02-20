@@ -19,6 +19,7 @@ workspace "Phoenix"
     group "External"
         project "lua"
         project "sol2"
+        project "imgui"
 
     group "Phoenix"
         project "PhoenixSim"
@@ -97,6 +98,45 @@ project "sol2"
     disablewarnings {
         "4251", "4275"
     }
+
+project "imgui"
+    kind "StaticLib"
+    location (projects)
+
+    files {
+        ext .. "/imgui/*.h",
+        ext .. "/imgui/*.cpp",
+        ext .. "/imgui/backends/imgui_impl_sdl3.h",
+        ext .. "/imgui/backends/imgui_impl_sdl3.cpp",
+        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.h",
+        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.cpp",
+    }
+
+    externalincludedirs {
+        ext .. "/imgui/",
+        ext
+    }
+
+    defines { "IMGUI_DEFINE_MATH_OPERATORS" }
+
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "Off"
+        optimize "speed"
+
+    filter "configurations:ReleaseWithSymbols"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "On"
+        optimize "speed"
+
+    filter {}
 
 project "PhoenixSim"
     kind "StaticLib"
@@ -359,6 +399,7 @@ project "TestRTS"
     debugdir (_MAIN_SCRIPT_DIR .. "/tests/TestRTS")
 
     dependson {
+        "imgui",
         "PhoenixSim",
         "PhoenixPhysics",
         "PhoenixSteering",
@@ -367,19 +408,13 @@ project "TestRTS"
     }
 
     -- defines { "PHOENIX_DLL" }
-    defines { "TRACY_ENABLE", "PHX_PROFILE_ENABLE" }
+    defines { "TRACY_ENABLE", "PHX_PROFILE_ENABLE", "IMGUI_DEFINE_MATH_OPERATORS" }
 
     files {
         "tests/TestRTS/**.h",
         "tests/TestRTS/**.inl",
         "tests/TestRTS/**.cpp",
         "tests/TestRTS/**.json",
-
-        ext .. "/imgui/*",
-        ext .. "/imgui/backends/imgui_impl_sdl3.h",
-        ext .. "/imgui/backends/imgui_impl_sdl3.cpp",
-        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.h",
-        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.cpp",
 
         ext .. "/tracy/TracyClient.cpp",
     }
@@ -400,6 +435,7 @@ project "TestRTS"
 
     links {
         "lua",
+        "imgui",
         "PhoenixSim",
         "PhoenixPhysics",
         "PhoenixSteering",

@@ -86,6 +86,8 @@ using namespace Phoenix::Physics;
 using namespace Phoenix::Pathfinding;
 using namespace Phoenix::Steering;
 
+using PhoenixColor = Phoenix::Color;
+
 SDL_Window* GWindow;
 SDL_Renderer* GRenderer;
 
@@ -122,7 +124,7 @@ struct EntityBodyShape
     Distance VelLen;
     FName Asset;
     Value AssetScale;
-    Color AssetTint;
+    PhoenixColor AssetTint;
 };
 
 struct ProjectileEntity
@@ -131,7 +133,7 @@ struct ProjectileEntity
     Transform2D Transform;
     FName Asset;
     Value AssetScale;
-    Color AssetTint;
+    PhoenixColor AssetTint;
 };
 
 std::vector<EntityBodyShape> GEntityBodies;
@@ -310,7 +312,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 
     GDefaultLineModel.LineBatches = {
         {
-            Color::White,
+            PhoenixColor::White,
             { { pt1, pt2 }, { pt2, pt3 }, { pt3, pt1 }, }
         }
     };
@@ -355,10 +357,10 @@ void OnAppRenderWorld()
         Vec2 br = Vec2(Distance::Max, Distance::Min);
         Vec2 tl = Vec2(Distance::Min, Distance::Max);
         Vec2 tr = Vec2(Distance::Max, Distance::Max);
-        GDebugRenderer->DrawLine(bl, br, Color::Red);
-        GDebugRenderer->DrawLine(br, tr, Color::Red);
-        GDebugRenderer->DrawLine(tr, tl, Color::Red);
-        GDebugRenderer->DrawLine(tl, bl, Color::Red);
+        GDebugRenderer->DrawLine(bl, br, PhoenixColor::Red);
+        GDebugRenderer->DrawLine(br, tr, PhoenixColor::Red);
+        GDebugRenderer->DrawLine(tr, tl, PhoenixColor::Red);
+        GDebugRenderer->DrawLine(tl, bl, PhoenixColor::Red);
     }
 
     if (GDrawGrid)
@@ -393,10 +395,10 @@ void OnAppRenderWorld()
                 entityBodyShape.ZCode = transformComp.ZCode;
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
-                Color color;
+                PhoenixColor color;
                 if (!FeatureECS::TryGetBlackboardValue(worldView, entityId, "actor_tint"_n, color))
                 {
-                    color = Color::Red;
+                    color = PhoenixColor::Red;
                 }
 
                 entityBodyShape.AssetTint = color;
