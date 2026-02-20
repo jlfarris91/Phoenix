@@ -14,6 +14,7 @@ workspace "Phoenix"
     staticruntime "off"
     debugdir (_MAIN_SCRIPT_DIR)
     location (_MAIN_SCRIPT_DIR)
+    buildoptions { "/MP" }
 
     group "External"
         project "lua"
@@ -104,6 +105,10 @@ project "PhoenixSim"
     files { src .. "/PhoenixSim/**", }
     includedirs { src }
 
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixSim/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
+
     externalincludedirs {
         ext,
         ext .. "/nlohmann/*",
@@ -150,6 +155,10 @@ project "PhoenixPhysics"
     files { src .. "/PhoenixPhysics/**" }
     includedirs { src }
 
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixPhysics/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
+
     externalincludedirs {
         ext,
         ext .. "/nlohmann/*",
@@ -173,7 +182,7 @@ project "PhoenixPhysics"
         runtime "Release"
         symbols "On"
         optimize "speed"
-        
+
     filter {}
 
     -- TODO (jfarris): fix
@@ -194,6 +203,10 @@ project "PhoenixSteering"
     files { src .. "/PhoenixSteering/**" }
     includedirs { src }
 
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixSteering/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
+
     externalincludedirs {
         ext,
         ext .. "/nlohmann/*",
@@ -217,7 +230,7 @@ project "PhoenixSteering"
         runtime "Release"
         symbols "On"
         optimize "speed"
-        
+
     filter {}
 
     -- TODO (jfarris): fix
@@ -242,6 +255,10 @@ project "PhoenixLua"
 
     files { src .. "/PhoenixLua/**" }
     includedirs { src }
+
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixLua/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
 
     externalincludedirs {
         ext,
@@ -295,6 +312,10 @@ project "PhoenixRTS"
 
     files { src .. "/PhoenixRTS/**" }
     includedirs { src }
+
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixRTS/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
 
     externalincludedirs {
         ext,

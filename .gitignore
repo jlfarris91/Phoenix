@@ -4,3 +4,4 @@
 /.venv/
 Phoenix.sln
 *.log
+/.claude
