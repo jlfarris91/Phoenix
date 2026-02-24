@@ -105,11 +105,11 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
         case EPropertyValueType::Name:
             {
                 FName v = propertyDesc.PropertyAccessor->Get<FName>(obj);
-#if DEBUG
-                // ImGui::InputText("##Editor", v.Debug, _countof(v.Debug));
-#else
-                ImGui::DragScalar("##Editor", ImGuiDataType_U32, &v);
-#endif
+                // TODO (jfarris): this won't work for release builds but whatever
+                if (const char* string = FName::GetNameEntry(v))
+                {
+                    ImGui::InputText("##Editor", const_cast<char*>(string), strlen(string), ImGuiInputTextFlags_ReadOnly);
+                }
                 break;
             }
         case EPropertyValueType::FixedPoint:

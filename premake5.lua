@@ -142,7 +142,10 @@ project "PhoenixSim"
     kind "StaticLib"
     location (projects)
 
-    files { src .. "/PhoenixSim/**", }
+    files {
+        src .. "/PhoenixSim/**",
+        _MAIN_SCRIPT_DIR .. "/tools/PhoenixSim.natvis",
+    }
     includedirs { src }
 
     pchheader "PhoenixSim/pch.h"

@@ -4,6 +4,10 @@
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Hashing.h"
 
+#ifndef PHOENIX_SIM_NAME_ENTRIES
+#define PHOENIX_SIM_NAME_ENTRIES DEBUG
+#endif
+
 namespace Phoenix
 {
     struct PHOENIX_SIM_API FName
@@ -13,8 +17,17 @@ namespace Phoenix
 
         constexpr FName() = default;
         constexpr FName(hash32_t hash) : Value(hash) {}
-        constexpr FName(const char* chars, size_t len) : Value(Hashing::FNV1A32(chars, len)) { }
-        constexpr FName(const PHXString& string) : FName(string.data(), string.length()) { }
+        constexpr FName(const PHXString& string) : FName(string.data(), string.length()) {}
+
+        constexpr FName(const char* chars, size_t len) : Value(Hashing::FNV1A32(chars, len))
+        {
+#if PHOENIX_SIM_NAME_ENTRIES
+            if (!std::is_constant_evaluated())
+            {
+                RecordNameEntryAs(chars, len, Value);
+            }
+#endif
+        }
 
         constexpr operator hash32_t() const
         {
@@ -36,26 +49,6 @@ namespace Phoenix
             return Value <=> other.Value;
         }
 
-        constexpr FName operator+(const FName& other) const
-        {
-            FName result = *this;
-            result += other;
-            return result;
-        }
-
-        constexpr FName& operator+=(const FName& other)
-        {
-            if (Value == 0)
-            {
-                Value = other.Value;
-            }
-            else
-            {
-                Value = Hashing::FNV1A32Combine(Value, other.Value);
-            }
-            return *this;
-        }
-
         template <size_t N>
         constexpr FName operator+(const char (&chars)[N]) const
         {
@@ -72,16 +65,7 @@ namespace Phoenix
         // Append a single character to the hash.
         constexpr FName Append(char c) const
         {
-            FName result = *this;
-            if (result.Value == 0)
-            {
-                result.Value = Hashing::FNV1A32(c);
-            }
-            else
-            {
-                result.Value = Hashing::FNV1A32Append(result.Value, c);
-            }
-            return result;
+            return Append(&c, 1);
         }
 
         // Append a string to the hash.
@@ -96,6 +80,12 @@ namespace Phoenix
             {
                 result.Value = Hashing::FNV1A32Append(result.Value, str, len);
             }
+#if PHOENIX_SIM_NAME_ENTRIES
+            if (!std::is_constant_evaluated())
+            {
+                AppendNameEntryAs(Value, str, len, result.Value);
+            }
+#endif
             return result;
         }
 
@@ -112,6 +102,34 @@ namespace Phoenix
             {
                 result.Value = Hashing::FNV1A32Append(result.Value, chars);
             }
+#if PHOENIX_SIM_NAME_ENTRIES
+            if (!std::is_constant_evaluated())
+            {
+                AppendNameEntryAs(Value, chars, N, result.Value);
+            }
+#endif
+            return result;
+        }
+
+        // Combine is NOT SAFE for concatenation of names because of FNV1A.
+        // Use Append instead.
+        constexpr FName Combine(const FName& other) const
+        {
+            FName result;
+            if (Value == 0)
+            {
+                result.Value = other.Value;
+            }
+            else
+            {
+                result.Value = Hashing::FNV1A32Combine(Value, other.Value);
+#if PHOENIX_SIM_NAME_ENTRIES
+                if (!std::is_constant_evaluated())
+                {
+                    CombineNameEntryAs(Value, other.Value, result.Value);
+                }
+#endif
+            }
             return result;
         }
 
@@ -120,7 +138,19 @@ namespace Phoenix
             return name == None || name == Empty;
         }
 
+        // This is not safe for stateful use. Only use for visualizations!
+        // Requires that PHOENIX_SIM_NAME_ENTRIES be defined.
+        static const char* GetNameEntry(hash32_t hash);
+
     private:
+
+#if PHOENIX_SIM_NAME_ENTRIES
+        // These are unsafe and should only be used for natvis!
+        static const char* RecordNameEntryAs(const char* chars, size_t len, hash32_t value);
+        static const char* AppendNameEntryAs(hash32_t base, const char* chars, size_t len, hash32_t value);
+        static const char* CombineNameEntryAs(hash32_t base, hash32_t other, hash32_t value);
+#endif
+
         hash32_t Value = 0;
     };
 }
