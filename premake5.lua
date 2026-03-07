@@ -41,6 +41,10 @@ project "lua"
         ext .. "/lua/lua-5.4.8/src/**"
     }
 
+    removefiles {
+        ext .. "/lua/lua-5.4.8/src/luac.c",
+    }
+
     filter "configurations:Debug"
         defines { "DEBUG" }
         runtime "Debug"

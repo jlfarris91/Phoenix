@@ -14,8 +14,6 @@
 #include <unistd.h>   // For usleep
 #endif
 
-#include <fstream>
-
 using namespace Phoenix;
 
 Session::~Session()
@@ -146,7 +144,7 @@ void Session::Tick(const SessionStepArgs& args)
             break;
         }
 
-        AccTickTime -= hz;
+        AccTickTime -= std::max(stepElapsed, hz);
         CurrTickTime = PHX_SYS_CLOCK_NOW();
     }
 }
@@ -157,8 +155,6 @@ void Session::Step(const SessionStepArgs& args)
 
     LastStepTime = PHX_SYS_CLOCK_NOW();
     SimTime += 1;
-
-    FPSCalc.Tick();
 
     // Process actions
     ProcessActions(SimTime);
@@ -171,6 +167,8 @@ void Session::Step(const SessionStepArgs& args)
     worldStepArgs.SimTime = SimTime;
     worldStepArgs.StepHz = args.StepHz;
     WorldManager->Step(worldStepArgs);
+
+    FPSCalc.Tick();
 }
 
 BlockBuffer& Session::GetBuffer()

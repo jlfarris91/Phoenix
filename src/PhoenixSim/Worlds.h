@@ -70,6 +70,8 @@ namespace Phoenix
         World& operator=(const World& other);
         World& operator=(World&& other) noexcept;
 
+        void CopyTo(World& other) const;
+
         BlockBuffer& GetBuffer();
         const BlockBuffer& GetBuffer() const;
 

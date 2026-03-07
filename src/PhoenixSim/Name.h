@@ -5,7 +5,7 @@
 #include "PhoenixSim/Hashing.h"
 
 #ifndef PHOENIX_SIM_NAME_ENTRIES
-#define PHOENIX_SIM_NAME_ENTRIES DEBUG
+#define PHOENIX_SIM_NAME_ENTRIES 1
 #endif
 
 namespace Phoenix

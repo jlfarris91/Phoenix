@@ -13,7 +13,6 @@ public:
     using LogCallback = std::function<void(Phoenix::ELogLevel level, const std::string& msg)>;
 
     Logger(const std::filesystem::path& logFilePath);
-    ~Logger() override;
 
     void Log(Phoenix::ELogLevel level, const std::string& msg) override;
 

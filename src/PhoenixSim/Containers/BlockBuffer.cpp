@@ -2,7 +2,7 @@
 #include "PhoenixSim/Containers/BlockBuffer.h"
 
 #include <algorithm>
-#include <cstring>
+#include <malloc.h>
 
 #include "FixedArray.h"
 #include "PhoenixSim/Logging.h"
@@ -29,6 +29,11 @@ void* BlockBufferAllocator::Allocate(uint32 size)
     void* ptr = static_cast<uint8*>(Base) + Offset + Size;
     Size += size;
     return ptr;
+}
+
+void BlockBufferMemoryDeleter::operator()(void* p) const
+{
+    _aligned_free(p);
 }
 
 BlockBuffer::Block::Block(const BufferBlockDefinition& definition)
@@ -66,10 +71,9 @@ BlockBuffer::BlockBuffer(const BlockBufferConfig& config)
         size = blockSize + allocSize;
     }
 
-    Size = size;
+    AllocateMemory(size);
     BlockSize = blockSize;
     AllocSize = allocSize;
-    Data = MakeUnique<uint8[]>(Size);
 
     uint8* dataPtr = Data.get();
     for (Block& block : Blocks)
@@ -93,9 +97,10 @@ BlockBuffer::BlockBuffer(const BlockBufferConfig& config)
 
 BlockBuffer::BlockBuffer(const BlockBuffer& other)
     : Blocks(other.Blocks)
-    , Size(other.Size)
+    , BlockSize(other.BlockSize)
+    , AllocSize(other.AllocSize)
 {
-    Data = MakeUnique<uint8[]>(other.Size);
+    AllocateMemory(other.Size);
     std::memcpy(Data.get(), other.Data.get(), other.Size);
 }
 
@@ -116,12 +121,10 @@ BlockBuffer& BlockBuffer::operator=(const BlockBuffer& other)
     if (&other == this)
         return *this;
 
-    if (Size < other.Size)
-    {
-        Data.release();
-        Data = MakeUnique<uint8[]>(other.Size);
-        Size = other.Size;
-    }
+    AllocateMemory(other.Size);
+    BlockSize = other.BlockSize;
+    AllocSize = other.AllocSize;
+    Blocks = other.Blocks;
 
     std::memcpy(Data.get(), other.Data.get(), other.Size);
 
@@ -131,6 +134,8 @@ BlockBuffer& BlockBuffer::operator=(const BlockBuffer& other)
 BlockBuffer& BlockBuffer::operator=(BlockBuffer&& other) noexcept
 {
     Data = MoveTemp(other.Data);
+    BlockSize = other.BlockSize;
+    AllocSize = other.AllocSize;
     Size = other.Size;
     return *this;
 }
@@ -195,6 +200,52 @@ const uint8* BlockBuffer::GetBlock(const FName& name) const
         }
     }
     return nullptr;
+}
+
+void BlockBuffer::CopyTo(BlockBuffer& other) const
+{
+    PHX_PROFILE_ZONE_SCOPED_N("BlockBufferCopyTo");
+
+    other.AllocateMemory(Size);
+    other.Blocks = Blocks;
+    other.BlockSize = BlockSize;
+    other.AllocSize = AllocSize;
+
+    size_t pageSize = 4096;
+
+#ifdef _WIN32
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    pageSize = sysInfo.dwPageSize;
+#endif
+
+    ChunkedParallelCopy(other.Data.get(), Data.get(), Size, pageSize * 256);
+}
+
+void BlockBuffer::AllocateMemory(uint32 size)
+{
+    // The size of the current buffer is already larger.
+    if (Size >= size)
+    {
+        return;
+    }
+
+    uint32 pageSize = 4096;
+
+#ifdef _WIN32
+    SYSTEM_INFO sysInfo;
+    GetSystemInfo(&sysInfo);
+    pageSize = sysInfo.dwPageSize;
+#endif
+
+    uint8* data = static_cast<uint8*>(_aligned_malloc(size, pageSize));
+    if (!data)
+    {
+        throw std::bad_alloc();
+    }
+
+    Data.reset(data);
+    Size = size;
 }
 
 struct TestBlock : BufferBlockBase

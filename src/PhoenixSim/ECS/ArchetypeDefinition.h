@@ -220,7 +220,7 @@ namespace Phoenix
                     Hash = Hashing::FNV1A32Combine(Hash, (hash32_t)Components[i].Id);
                     if (generateId)
                     {
-                        Id += Components[i].Id;
+                        Id = Id.Combine(Components[i].Id);
                     }
                 }
             }
