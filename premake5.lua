@@ -1,6 +1,7 @@
 -- premake5.lua
 
 local projects = "" .. _MAIN_SCRIPT_DIR .. "/.build/" .. _ACTION
+local src = "" .. _MAIN_SCRIPT_DIR .. "/src"
 local ext = _MAIN_SCRIPT_DIR .. "/ext"
 
 workspace "Phoenix"
@@ -13,23 +14,22 @@ workspace "Phoenix"
     staticruntime "off"
     debugdir (_MAIN_SCRIPT_DIR)
     location (_MAIN_SCRIPT_DIR)
+    buildoptions { "/MP" }
 
     group "External"
         project "lua"
         project "sol2"
+        project "imgui"
 
     group "Phoenix"
-        project "PhoenixCore"
         project "PhoenixSim"
-        project "PhoenixLDS"
-        project "PhoenixBlackboard"
-        project "PhoenixECS"
         project "PhoenixPhysics"
         project "PhoenixSteering"
         project "PhoenixLua"
+        project "PhoenixRTS"
 
     group "Tests"
-        project "TestApp"
+        project "TestRTS"
 
     group ""
 
@@ -39,6 +39,10 @@ project "lua"
 
     files { 
         ext .. "/lua/lua-5.4.8/src/**"
+    }
+
+    removefiles {
+        ext .. "/lua/lua-5.4.8/src/luac.c",
     }
 
     filter "configurations:Debug"
@@ -99,12 +103,63 @@ project "sol2"
         "4251", "4275"
     }
 
-project "PhoenixCore"
+project "imgui"
     kind "StaticLib"
     location (projects)
 
-    files { "src/PhoenixCore/**", }
-    includedirs { "src/PhoenixCore/Public/" }
+    files {
+        ext .. "/imgui/*.h",
+        ext .. "/imgui/*.cpp",
+        ext .. "/imgui/backends/imgui_impl_sdl3.h",
+        ext .. "/imgui/backends/imgui_impl_sdl3.cpp",
+        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.h",
+        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.cpp",
+    }
+
+    externalincludedirs {
+        ext .. "/imgui/",
+        ext
+    }
+
+    defines { "IMGUI_DEFINE_MATH_OPERATORS" }
+
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "Off"
+        optimize "speed"
+
+    filter "configurations:ReleaseWithSymbols"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "On"
+        optimize "speed"
+
+    filter {}
+
+project "PhoenixSim"
+    kind "StaticLib"
+    location (projects)
+
+    files {
+        src .. "/PhoenixSim/**",
+        _MAIN_SCRIPT_DIR .. "/tools/PhoenixSim.natvis",
+    }
+    includedirs { src }
+
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixSim/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
+
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
+    }
 
     -- defines { "PHOENIX_DLL" }
     -- defines { "PHOENIXCORE_DLL_EXPORTS" }
@@ -134,83 +189,29 @@ project "PhoenixCore"
         "4251", "4275"
     }
 
-project "PhoenixSim"
+project "PhoenixPhysics"
     kind "StaticLib"
     location (projects)
 
-    dependson { "PhoenixCore" }
+    dependson { "PhoenixSim" }
 
     -- defines { "PHOENIX_DLL" }
-    -- defines { "PHOENIXSIM_DLL_EXPORTS" }
+    -- defines { "PHOENIX_PHYSICS_DLL_EXPORTS" }
     defines { "PHX_PROFILE_ENABLE" }
 
-    files { 
-        "src/PhoenixSim/**"
-    }
+    files { src .. "/PhoenixPhysics/**" }
+    includedirs { src }
 
-    includedirs {
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-    }
-
-    links {
-        "PhoenixCore"
-    }
-
-    filter "configurations:Debug"
-        defines { "DEBUG" }
-        runtime "Debug"
-        symbols "On"
-
-    filter "configurations:Release"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "Off"
-        optimize "speed"
-
-    filter "configurations:ReleaseWithSymbols"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "On"
-        optimize "speed"
-        
-    filter {}
-
-    -- TODO (jfarris): fix
-    disablewarnings {
-        "4251", "4275"
-    }
-
-project "PhoenixLDS"
-    kind "StaticLib"
-    location (projects)
-
-    dependson { "PhoenixCore", "PhoenixSim" }
-
-    -- defines { "PHOENIX_DLL" }
-    -- defines { "PHOENIX_LDS_DLL_EXPORTS" }
-    defines { "PHX_PROFILE_ENABLE" }
-
-    files { 
-        "src/PhoenixLDS/**"
-    }
-
-    includedirs {
-        "src/PhoenixLDS/Public",
-        "src/PhoenixLDS/Private",
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-    }
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixPhysics/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
 
     externalincludedirs {
         ext,
         ext .. "/nlohmann/*",
     }
 
-    links {
-        "PhoenixCore",
-        "PhoenixSim"
-    }
+    links { "PhoenixSim" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }
@@ -228,160 +229,7 @@ project "PhoenixLDS"
         runtime "Release"
         symbols "On"
         optimize "speed"
-        
-    filter {}
 
-    -- TODO (jfarris): fix
-    disablewarnings {
-        "4251", "4275"
-    }
-
-project "PhoenixBlackboard"
-    kind "StaticLib"
-    location (projects)
-
-    dependson { "PhoenixCore", "PhoenixSim" }
-
-    -- defines { "PHOENIX_DLL" }
-    -- defines { "PHOENIX_BLACKBOARD_DLL_EXPORTS" }
-    defines { "PHX_PROFILE_ENABLE" }
-
-    files { 
-        "src/PhoenixBlackboard/**"
-    }
-
-    includedirs {
-        "src/PhoenixBlackboard/Public",
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-    }
-
-    links {
-        "PhoenixCore",
-        "PhoenixSim"
-    }
-
-    filter "configurations:Debug"
-        defines { "DEBUG" }
-        runtime "Debug"
-        symbols "On"
-
-    filter "configurations:Release"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "Off"
-        optimize "speed"
-
-    filter "configurations:ReleaseWithSymbols"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "On"
-        optimize "speed"
-        
-    filter {}
-
-    -- TODO (jfarris): fix
-    disablewarnings {
-        "4251", "4275"
-    }
-
-project "PhoenixECS"
-    kind "StaticLib"
-    location (projects)
-
-    dependson { "PhoenixCore", "PhoenixSim", "PhoenixBlackboard" }
-
-    -- defines { "PHOENIX_DLL" }
-    -- defines { "PHOENIXECS_DLL_EXPORTS" }
-    defines { "PHX_PROFILE_ENABLE" }
-
-    files { 
-        "src/PhoenixECS/**"
-    }
-
-    includedirs {
-        "src/PhoenixECS/Public",
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-        "src/PhoenixBlackboard/Public"
-    }
-
-    links {
-        "PhoenixCore",
-        "PhoenixSim",
-        "PhoenixBlackboard"
-    }
-
-    filter "configurations:Debug"
-        defines { "DEBUG" }
-        runtime "Debug"
-        symbols "On"
-
-    filter "configurations:Release"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "Off"
-        optimize "speed"
-
-    filter "configurations:ReleaseWithSymbols"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "On"
-        optimize "speed"
-        
-    filter {}
-
-    -- TODO (jfarris): fix
-    disablewarnings {
-        "4251", "4275"
-    }
-
-project "PhoenixPhysics"
-    kind "StaticLib"
-    location (projects)
-
-    dependson { "PhoenixCore", "PhoenixSim", "PhoenixBlackboard", "PhoenixECS" }
-
-    -- defines { "PHOENIX_DLL" }
-    -- defines { "PHOENIX_PHYSICS_DLL_EXPORTS" }
-    defines { "PHX_PROFILE_ENABLE" }
-
-    files { 
-        "src/PhoenixPhysics/**"
-    }
-
-    includedirs {
-        "src/PhoenixPhysics/Public",
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-        "src/PhoenixBlackboard/Public",
-        "src/PhoenixECS/Public"
-    }
-
-    links {
-        "PhoenixCore",
-        "PhoenixSim",
-        "PhoenixBlackboard",
-        "PhoenixECS"
-    }
-
-    filter "configurations:Debug"
-        defines { "DEBUG" }
-        runtime "Debug"
-        symbols "On"
-
-    filter "configurations:Release"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "Off"
-        optimize "speed"
-
-    filter "configurations:ReleaseWithSymbols"
-        defines { "NDEBUG" }
-        runtime "Release"
-        symbols "On"
-        optimize "speed"
-        
     filter {}
 
     -- TODO (jfarris): fix
@@ -393,32 +241,25 @@ project "PhoenixSteering"
     kind "StaticLib"
     location (projects)
 
-    dependson { "PhoenixCore", "PhoenixSim", "PhoenixBlackboard", "PhoenixECS", "PhoenixPhysics" }
+    dependson { "PhoenixSim", "PhoenixPhysics" }
 
     -- defines { "PHOENIX_DLL" }
     -- defines { "PHOENIX_STEERING_DLL_EXPORTS" }
     defines { "PHX_PROFILE_ENABLE" }
 
-    files { 
-        "src/PhoenixSteering/**"
+    files { src .. "/PhoenixSteering/**" }
+    includedirs { src }
+
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixSteering/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
+
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*",
     }
 
-    includedirs {
-        "src/PhoenixPhysics/Public",
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-        "src/PhoenixBlackboard/Public",
-        "src/PhoenixECS/Public",
-        "src/PhoenixPhysics/Public",
-        "src/PhoenixSteering/Public",
-    }
-
-    links {
-        "PhoenixCore",
-        "PhoenixSim",
-        "PhoenixBlackboard",
-        "PhoenixECS"
-    }
+    links { "PhoenixSim" }
 
     filter "configurations:Debug"
         defines { "DEBUG" }
@@ -436,7 +277,7 @@ project "PhoenixSteering"
         runtime "Release"
         symbols "On"
         optimize "speed"
-        
+
     filter {}
 
     -- TODO (jfarris): fix
@@ -451,10 +292,7 @@ project "PhoenixLua"
     dependson {
         "lua",
         "sol2",
-        "PhoenixCore",
         "PhoenixSim",
-        "PhoenixBlackboard",
-        "PhoenixECS",
         "PhoenixPhysics"
     }
 
@@ -462,32 +300,22 @@ project "PhoenixLua"
     -- defines { "PHOENIXSIM_DLL_EXPORTS" }
     defines { "PHX_PROFILE_ENABLE" }
 
-    files { 
-        "src/PhoenixLua/**"
-    }
+    files { src .. "/PhoenixLua/**" }
+    includedirs { src }
 
-    includedirs {
-        "src/PhoenixLua/Public",
-        "src/PhoenixLua/Private",
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-        "src/PhoenixBlackboard/Public",
-        "src/PhoenixECS/Public",
-        "src/PhoenixPhysics/Public",
-    }
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixLua/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
 
     externalincludedirs {
         ext,
-        ext .. "/lua/lua-5.4.8/src/",
-        ext .. "/sol/"
+        ext .. "/nlohmann/*",
+        ext .. "/lua/lua-5.4.8/src/"
     }
 
     links {
         "lua",
-        "PhoenixCore",
         "PhoenixSim",
-        "PhoenixBlackboard",
-        "PhoenixECS",
         "PhoenixPhysics",
     }
 
@@ -515,49 +343,91 @@ project "PhoenixLua"
         "4251", "4275"
     }
 
-project "TestApp"
-    kind "ConsoleApp"
+project "PhoenixRTS"
+    kind "StaticLib"
     location (projects)
 
     dependson {
-        "PhoenixCore",
         "PhoenixSim",
-        "PhoenixLDS",
-        "PhoenixECS",
-        "PhoenixBlackboard",
         "PhoenixPhysics",
-        "PhoenixLua"
+        "PhoenixSteering",
     }
 
     -- defines { "PHOENIX_DLL" }
-    defines { "TRACY_ENABLE", "PHX_PROFILE_ENABLE" }
+    -- defines { "PHOENIX_RTS_DLL_EXPORTS" }
+    defines { "PHX_PROFILE_ENABLE" }
+
+    files { src .. "/PhoenixRTS/**" }
+    includedirs { src }
+
+    pchheader "PhoenixSim/pch.h"
+    pchsource (src .. "/PhoenixRTS/pch.cpp")
+    buildoptions { "/FIPhoenixSim/pch.h" }
+
+    externalincludedirs {
+        ext,
+        ext .. "/nlohmann/*"
+    }
+
+    links {
+        "PhoenixSim",
+        "PhoenixPhysics",
+        "PhoenixSteering",
+    }
+
+    filter "configurations:Debug"
+        defines { "DEBUG" }
+        runtime "Debug"
+        symbols "On"
+
+    filter "configurations:Release"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "Off"
+        optimize "speed"
+
+    filter "configurations:ReleaseWithSymbols"
+        defines { "NDEBUG" }
+        runtime "Release"
+        symbols "On"
+        optimize "speed"
+        
+    filter {}
+
+    -- TODO (jfarris): fix
+    disablewarnings {
+        "4251", "4275"
+    }
+
+project "TestRTS"
+    kind "ConsoleApp"
+    location (projects)
+    targetdir (projects .. "/bin/%{cfg.platform}/%{cfg.buildcfg}/TestRTS")
+    debugdir (_MAIN_SCRIPT_DIR .. "/tests/TestRTS")
+
+    dependson {
+        "imgui",
+        "PhoenixSim",
+        "PhoenixPhysics",
+        "PhoenixSteering",
+        "PhoenixLua",
+        "PhoenixRTS"
+    }
+
+    -- defines { "PHOENIX_DLL" }
+    defines { "TRACY_ENABLE", "PHX_PROFILE_ENABLE", "IMGUI_DEFINE_MATH_OPERATORS" }
 
     files {
-        "tests/TestApp/**.h",
-        "tests/TestApp/**.inl",
-        "tests/TestApp/**.cpp",
-
-        ext .. "/imgui/*",
-        ext .. "/imgui/backends/imgui_impl_sdl3.h",
-        ext .. "/imgui/backends/imgui_impl_sdl3.cpp",
-        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.h",
-        ext .. "/imgui/backends/imgui_impl_sdlrenderer3.cpp",
+        "tests/TestRTS/**.h",
+        "tests/TestRTS/**.inl",
+        "tests/TestRTS/**.cpp",
+        "tests/TestRTS/**.json",
 
         ext .. "/tracy/TracyClient.cpp",
     }
 
-    includedirs {
-        "src/PhoenixCore/Public",
-        "src/PhoenixSim/Public",
-        "src/PhoenixLDS/Public",
-        "src/PhoenixBlackboard/Public",
-        "src/PhoenixECS/Public",
-        "src/PhoenixPhysics/Public",
-        "src/PhoenixSteering/Public",
-        "src/PhoenixLua/Public"
-    }
-
     externalincludedirs {
+        src,
         ext,
         ext .. "/imgui/",
         ext .. "/imgui/**",
@@ -572,14 +442,12 @@ project "TestApp"
 
     links {
         "lua",
-        "PhoenixCore",
+        "imgui",
         "PhoenixSim",
-        "PhoenixLDS",
-        "PhoenixBlackboard",
-        "PhoenixECS",
         "PhoenixPhysics",
         "PhoenixSteering",
         "PhoenixLua",
+        "PhoenixRTS",
         "SDL3"
     }
 

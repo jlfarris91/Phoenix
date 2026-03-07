@@ -1,0 +1,12 @@
+{
+    "id": "Footprint",
+    "type": "Object",
+    "properties": {
+        "asset": {
+            "type": "Asset#Footprint"
+        },
+        "snap": {
+            "type": "Object#Vector2"
+        }
+    }
+}

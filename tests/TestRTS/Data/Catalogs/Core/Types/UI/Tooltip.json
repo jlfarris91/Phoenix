@@ -1,0 +1,21 @@
+{
+    "id": "Tooltip",
+    "type": "Object",
+    "properties": {
+        "title": {
+            "type": "String"
+        },
+        "sub_title": {
+            "type": "String"
+        },
+        "body": {
+            "type": "String"
+        },
+        "items": {
+            "type": "Array",
+            "items": {
+                "type": "Object#TooltipItem"
+            }
+        }
+    }
+}

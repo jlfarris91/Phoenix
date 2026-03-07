@@ -1,0 +1,13 @@
+{
+    "id": "CommandButton",
+    "type": "Object",
+    "properties": {
+        "icon": {
+            "type": "Object#Icon"
+        },
+        "repeatable": {
+            "type": "Boolean",
+            "default": false
+        }
+    }
+}

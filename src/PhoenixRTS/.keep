@@ -1,0 +1,2 @@
+This exists so that Rider will show the Private folder in the project explorer tree.
+Rider filters out any folders that have no files in them.

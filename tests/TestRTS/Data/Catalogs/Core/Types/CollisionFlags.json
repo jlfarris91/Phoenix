@@ -1,0 +1,9 @@
+{
+    "id": "CollisionFlags",
+    "type": "EnumFlags",
+    "underlying_type": "UInt32",
+    "items": [
+        { "Ground": 1 },
+        { "Air": 2 }
+    ]
+}

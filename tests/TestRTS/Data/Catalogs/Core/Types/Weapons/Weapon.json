@@ -1,0 +1,130 @@
+{
+    "id": "Weapon",
+    "type": "Object",
+    "properties": {
+        "ammo": {
+            "type": "Object#WeaponAmmo"
+        },
+        "backswing_time": {
+            "type": "Time",
+            "default": 0.5,
+            "minimum": 0.0,
+            "attributes": {
+                "description": "The time after damage is dealt before the weapon can begin its next attack."
+            }
+        },
+        "component": {
+            "type": "Asset#WeaponComponent"
+        },
+        "effect": {
+            "type": "ObjectRef#Effect"
+        },
+        "facing_arc_min": {
+            "type": "Degrees",
+            "default": 10.0,
+            "attributes": {
+                "description": "The maximum angle from the weapon's facing direction that it can fire."
+            }
+        },
+        "facing_arc_slop": {
+            "type": "Degrees",
+            "default": 10.0,
+            "attributes": {
+                "description": "Additional arc allowed before an attack is cancelled mid-swing."
+            }
+        },
+        "flags": {
+            "type": "EnumFlags",
+            "items": [
+                "CanAttackLocation",
+                "Melee",
+                "Channeled",
+                "ScanForNewTargets",
+                "HideUI",
+                "Passive"
+            ]
+        },
+        "icon": {
+            "type": "Object#Icon"
+        },
+        "period": {
+            "type": "Time",
+            "default": 1.0,
+            "minimum": 0.0,
+            "attributes": {
+                "description": "The time between the start of one attack and the start of the next."
+            }
+        },
+        "period_rand_delay_min": {
+            "type": "Time",
+            "default": -0.05,
+            "attributes": {
+                "description": "The minimum random delay to add to the weapon's period."
+            }
+        },
+        "period_rand_delay_max": {
+            "type": "Time",
+            "default": 0.01,
+            "attributes": {
+                "description": "The maximum random delay to add to the weapon's period."
+            }
+        },
+        "preswing_initial": {
+            "type": "Time",
+            "default": 0.0
+        },
+        "preswing_repeat": {
+            "type": "Time",
+            "default": 0.0
+        },
+        "preswing_cooldown": {
+            "type": "Time",
+            "default": 0.0
+        },
+        "range_acquire": {
+            "type": "Distance",
+            "default": 3.0,
+            "attributes": {
+                "description": "The distance at which the weapon can automatically acquire targets."
+            }
+        },
+        "range_min": {
+            "type": "Distance",
+            "default": 0.0,
+            "attributes": {
+                "description": "The minimum distance at which the weapon can hit targets."
+            }
+        },
+        "range_max": {
+            "type": "Distance",
+            "default": 3.0,
+            "attributes": {
+                "description": "The maximum distance at which the weapon can hit targets."
+            }
+        },
+        "range_slop": {
+            "type": "Distance",
+            "default": 0.0,
+            "attributes": {
+                "description": "Additional range allowed before an attack is cancelled mid-swing."
+            }
+        },
+        "swing_time": {
+            "type": "Time",
+            "default": 0.5,
+            "minimum": 0.0,
+            "attributes": {
+                "description": "The time it takes to perform the weapon's attack animation."
+            }
+        },
+        "target_filter": {
+            "type": "Object#TargetFilter"
+        },
+        "validator": {
+            "type": "ObjectRef#Validator"
+        },
+        "acquire_filter": {
+            "type": "Object#TargetFilter"
+        }
+    }
+}

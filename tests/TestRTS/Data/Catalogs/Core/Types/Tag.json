@@ -1,0 +1,18 @@
+{
+    "id": "Tag",
+    "type": "Object",
+    "properties": {
+        "flags": {
+            "type": "Object",
+            "properties": {
+                "display_as_attribute": {
+                    "type": "Boolean",
+                    "default": false
+                }
+            }
+        },
+        "icon": {
+            "type": "Object#Icon"
+        }
+    }
+}

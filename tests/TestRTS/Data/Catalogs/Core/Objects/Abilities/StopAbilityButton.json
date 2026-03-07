@@ -1,0 +1,13 @@
+{
+    "id": "StopAbilityButton",
+    "base": "CommandButton",
+    "icon": {
+        "asset": "Texture2D'/Game/UI/Assets/Icons/BasicCommands/UI_Icons_BasicCommands_Stop.UI_Icons_BasicCommands_Stop'",
+        "display_name": "Stop",
+        "tooltip": {
+            "title": "Stop",
+            "body": "Orders selected units to cancel all orders and stop moving."
+        }
+    },
+    "repeatable": false
+}

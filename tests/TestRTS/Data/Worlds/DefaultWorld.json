@@ -1,0 +1,8 @@
+{
+    "id": "DefaultWorld",
+    "features": {
+        "FeatureLDS": {
+            "catalog": "./DefaultWorld/Catalog/Catalog.json"
+        }
+    }
+}

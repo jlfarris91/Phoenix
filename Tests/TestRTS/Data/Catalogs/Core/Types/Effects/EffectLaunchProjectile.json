@@ -1,0 +1,46 @@
+﻿{
+    "id": "EffectLaunchProjectile",
+    "base": "Effect",
+    "type": "Object",
+    "properties": {
+        "flags": {
+            "type": "EnumFlags",
+            "items": [
+                "Channeling"
+            ]
+        },
+        "impact_effect": {
+            "type": "ObjectRef#Effect"
+        },
+        "impact_target": {
+            "type": "Object#EffectTarget"
+        },
+        "launch_effect": {
+            "type": "ObjectRef#Effect"
+        },
+        "launch_target": {
+            "type": "Object#EffectTarget",
+            "default": {
+                "flags": "Entity|Location|Source"
+            }
+        },
+        "periodic_effect": {
+            "type": "ObjectRef#Effect"
+        },
+        "periodic_time": {
+            "type": "Time"
+        },
+        "projectile": {
+            "type": "ObjectRef#Projectile"
+        },
+        "range_max": {
+            "type": "Distance"
+        },
+        "tracker_label": {
+            "type": "Name"
+        },
+        "validator": {
+            "type": "ObjectRef#Validator"
+        }
+    }
+}

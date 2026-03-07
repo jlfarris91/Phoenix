@@ -1,0 +1,13 @@
+{
+    "id": "HoldPositionAbilityButton",
+    "base": "CommandButton",
+    "icon": {
+        "asset": "Texture2D'/Game/UI/Assets/Icons/BasicCommands/UI_Icons_BasicCommands_HoldPosition.UI_Icons_BasicCommands_HoldPosition'",
+        "display_name": "HoldPosition",
+        "tooltip": {
+            "title": "HoldPosition",
+            "body": "Orders selected units to hold their current position."
+        }
+    },
+    "repeatable": false
+}

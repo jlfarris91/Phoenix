@@ -1,0 +1,12 @@
+{
+    "id": "VitalStatsPair",
+    "type": "Object",
+    "properties": {
+        "vital": {
+            "type": "ObjectRef#Vital"
+        },
+        "stats": {
+            "type": "Object#VitalStats"
+        }
+    }
+}

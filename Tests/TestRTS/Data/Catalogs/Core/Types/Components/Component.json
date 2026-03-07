@@ -1,0 +1,9 @@
+{
+    "id": "Component",
+    "type": "Object",
+    "properties": {
+        "type_id": {
+            "type": "Name"
+        }
+    }
+}

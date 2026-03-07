@@ -1,0 +1,9 @@
+{
+    "id": "Vital",
+    "type": "Object",
+    "properties": {
+        "component": {
+            "type": "ObjectRef#VitalComponent"
+        }
+    }
+}

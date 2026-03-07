@@ -1,0 +1,36 @@
+{
+    "id": "UnitEffects",
+    "type": "Object",
+    "properties": {
+        "birth": {
+            "type": "ObjectRef#Effect",
+            "attributes": {
+                "description": "Effect executed when the unit is born."
+            }
+        },
+        "constructed": {
+            "type": "ObjectRef#Effect",
+            "attributes": {
+                "description": "Effect executed when the unit finishes being constructed."
+            }
+        },
+        "death": {
+            "type": "ObjectRef#Effect",
+            "attributes": {
+                "description": "Effect executed on the unit when the it dies."
+            }
+        },
+        "revenge": {
+            "type": "ObjectRef#Effect",
+            "attributes": {
+                "description": "Effect executed on the killer when the unit dies."
+            }
+        },
+        "spawned": {
+            "type": "ObjectRef#Effect",
+            "attributes": {
+                "description": "Effect executed when the unit is spawned."
+            }
+        }
+    }
+}

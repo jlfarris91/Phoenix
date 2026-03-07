@@ -1,0 +1,23 @@
+﻿{
+    "id": "ProjectileMovement",
+    "type": "Object",
+    "properties": {
+        "acceleration_time": {
+            "type": "Time"
+        },
+        "flags": {
+            "type": "EnumFlags",
+            "items": [
+                "LockFacing",
+                "LockHeightOffset"
+            ]
+        },
+        "max_speed": {
+            "type": "Speed",
+            "default": 3.0
+        },
+        "radius": {
+            "type": "Distance"
+        }
+    }
+}

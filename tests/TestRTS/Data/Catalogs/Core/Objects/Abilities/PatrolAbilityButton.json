@@ -1,0 +1,13 @@
+{
+    "id": "PatrolAbilityButton",
+    "base": "CommandButton",
+    "icon": {
+        "asset": "Texture2D'/Game/UI/Assets/Icons/BasicCommands/UI_Icons_BasicCommands_Patrol.UI_Icons_BasicCommands_Patrol'",
+        "display_name": "Patrol",
+        "tooltip": {
+            "title": "Patrol",
+            "body": "Orders selected units to move back and forth between their current location and a target location."
+        }
+    },
+    "repeatable": false
+}

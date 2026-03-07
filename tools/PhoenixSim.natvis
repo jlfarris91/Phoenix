@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <Type Name="Phoenix::FName">
+    <DisplayString>{Phoenix::FName::GetNameEntry(Value)}</DisplayString>
+  </Type>
+  
+  <!-- Fixed Point -->
+
+  <!-- Visualizer for TFixed<Tb, T> -->
+  <Type Name="Phoenix::TFixed&lt;*, *&gt;">
+    <DisplayString>{static_cast&lt;double&gt;(Value) / Phoenix::TFixed&lt;$T1, $T2&gt;::D}</DisplayString>
+  </Type>
+
+  <!-- Visualizer for TInvFixed<Tb, T> -->
+  <Type Name="Phoenix::TInvFixed&lt;*, *&gt;">
+    <DisplayString>{Phoenix::TFixed&lt;$T1, $T2&gt;::D / static_cast&lt;double&gt;(Value)}</DisplayString>
+  </Type>
+  
+  <!-- Visualizer for TVec2<T> -->
+  <Type Name="Phoenix::TVec2&lt;*&gt;">
+    <DisplayString>{X}, {Y}</DisplayString>
+  </Type>
+
+  <!-- Visualizer for TVec3<T> -->
+  <Type Name="Phoenix::TVec3&lt;*&gt;">
+    <DisplayString>{X}, {Y}, {Z}</DisplayString>
+  </Type>
+
+  <!-- Containers -->
+
+  <!-- Visualizer for TContiguousStorage<T, InlineStoragePolicy<N>> -->
+  <Type Name="Phoenix::TContiguousStorage&lt;*, Phoenix::InlineStoragePolicy&lt;*&gt;&gt;">
+    <DisplayString>Capacity={Phoenix::InlineStoragePolicy&lt;*&gt;::Capacity}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>Phoenix::InlineStoragePolicy&lt;*&gt;::Capacity</Size>
+        <ValuePointer>Data</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TContiguousStorage<T, FixedStoragePolicy> -->
+  <Type Name="Phoenix::TContiguousStorage&lt;*, Phoenix::FixedStoragePolicy&gt;">
+    <DisplayString>Capacity={Capacity}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>Capacity</Size>
+        <ValuePointer>Data.Get()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TContiguousStorage<T, HeapStoragePolicy> -->
+  <Type Name="Phoenix::TContiguousStorage&lt;*, Phoenix::HeapStoragePolicy&gt;">
+    <DisplayString>Size={Data.size()} Capacity={Data.capacity()}</DisplayString>
+    <Expand>
+      <ArrayItems>
+        <Size>Data.size()</Size>
+        <ValuePointer>Data.data()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TArray<T, TStoragePolicy> -->
+  <Type Name="Phoenix::TArray&lt;*, *&gt;">
+    <DisplayString>Size={Size} Capacity={Storage.GetCapacity()}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Size</Item>
+      <ArrayItems>
+        <Size>Size</Size>
+        <ValuePointer>Storage.GetData()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TSet<TKey, TStoragePolicy> -->
+  <Type Name="Phoenix::TSet&lt;*, *&gt;">
+    <DisplayString>Size={Size} Capacity={Storage.GetCapacity()}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Size</Item>
+      <CustomListItems MaxItemsPerView="100">
+        <Variable Name="iter" InitialValue="begin()"/>
+        <Variable Name="end" InitialValue="end()"/>
+        <Loop>
+          <If Condition="iter == end">
+            <Break/>
+          </If>
+          <Item>*iter</Item>
+          <Exec>++iter</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TQueue<T, TStoragePolicy, bool> -->
+  <Type Name="Phoenix::TQueue&lt;*, *, *&gt;">
+    <DisplayString>Size={Size} Capacity={Storage.GetCapacity()}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Size</Item>
+      <CustomListItems MaxItemsPerView="100">
+        <Variable Name="iter" InitialValue="begin()"/>
+        <Variable Name="end" InitialValue="end()"/>
+        <Loop>
+          <If Condition="iter == end">
+            <Break/>
+          </If>
+          <Item>*iter</Item>
+          <Exec>++iter</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TMap<TKey, TValue, TStoragePolicy, THasher> -->
+  <Type Name="Phoenix::TMap&lt;*, *, *, *&gt;">
+    <DisplayString>Size={Size} Capacity={Storage.GetCapacity()}}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Size</Item>
+      <CustomListItems MaxItemsPerView="100">
+        <Variable Name="iter" InitialValue="begin()"/>
+        <Variable Name="end" InitialValue="end()"/>
+        <Loop>
+          <If Condition="iter == end">
+            <Break/>
+          </If>
+          <Item>*iter</Item>
+          <Exec>++iter</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TSortedList<T, TStoragePolicy> -->
+  <Type Name="Phoenix::TSortedList&lt;*, *&gt;">
+    <DisplayString>Size={Storage.Size} Capacity={Storage.GetCapacity()}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Storage.Size</Item>
+      <Item Name="[SortedNum]">SortedNum</Item>
+      <Item Name="[NumValidItems]">NumValidItems</Item>
+      <ArrayItems IncludeView="simple">
+        <Size>Storage.Size</Size>
+        <ValuePointer>Storage.GetData()</ValuePointer>
+      </ArrayItems>
+      <Item Name="Sorted" ExcludeView="simple">
+        <ArrayItems>
+          <Size>SortedNum</Size>
+          <ValuePointer>Storage.GetData()</ValuePointer>
+        </ArrayItems>
+      </Item>
+      <Item Name="Unsorted" ExcludeView="simple">
+        <Size>Storage.Size - SortedNum</Size>
+        <ValuePointer>Storage.GetData() + SortedNum</ValuePointer>
+      </Item>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TWeightedSet<T, TWeight, TStoragePolicy> -->
+  <Type Name="Phoenix::TWeightedSet&lt;*, *, *&gt;">
+    <DisplayString>Size={Storage.Size} Capacity={Storage.GetCapacity()}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Storage.Size</Item>
+      <Item Name="[TotalWeight]">TotalWeight</Item>
+      <ArrayItems>
+        <Size>Storage.Size</Size>
+        <ValuePointer>Storage.GetData()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+
+  <!-- Visualizer for TLeaderboard<T, TRank, TStoragePolicy> -->
+  <Type Name="Phoenix::TLeaderboard&lt;*, *, *&gt;">
+    <DisplayString>Size={Storage.Size} Capacity={Storage.GetCapacity()}</DisplayString>
+    <Expand>
+      <Item Name="[Capacity]">Storage.GetCapacity()</Item>
+      <Item Name="[Size]">Storage.Size</Item>
+      <ArrayItems>
+        <Size>Storage.Size</Size>
+        <ValuePointer>Storage.GetData()</ValuePointer>
+      </ArrayItems>
+    </Expand>
+  </Type>
+</AutoVisualizer>

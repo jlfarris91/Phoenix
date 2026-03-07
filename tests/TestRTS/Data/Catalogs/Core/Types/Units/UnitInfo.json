@@ -1,0 +1,21 @@
+{
+    "id": "UnitInfo",
+    "type": "Object",
+    "properties": {
+        "button": {
+            "type": "Object#Icon"
+        },
+        "icon": {
+            "type": "Object#Icon"
+        },
+        "proper_names": {
+            "type": "ObjectRef#UnitProperNames"
+        },
+        "portrait": {
+            "type": "Asset#Portrait"
+        },
+        "tooltip": {
+            "type": "Object#Tooltip"
+        }
+    }
+}

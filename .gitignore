@@ -1,4 +1,7 @@
 /.build/
 *.user
-/.idea
+/.idea/
+/.venv/
 Phoenix.sln
+*.log
+/.claude

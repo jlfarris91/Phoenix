@@ -1,0 +1,21 @@
+{
+    "id": "UnitPlacement",
+    "type": "Object",
+    "properties": {
+        "footprint": {
+            "type": "ObjectRef#Footprint"
+        },
+        "inner_radius": {
+            "type": "Distance",
+            "default": 0.375,
+            "minimum": 0.0,
+            "maximum": 8.0
+        },
+        "outer_radius": {
+            "type": "Distance",
+            "default": 0.375,
+            "minimum": 0.0,
+            "maximum": 8.0
+        }
+    }
+}
