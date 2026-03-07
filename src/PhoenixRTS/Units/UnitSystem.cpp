@@ -49,7 +49,7 @@ namespace UnitSystemDetail
                         args.Level = FeatureUnit::GetTargetScanLevel(world, unitId);
                         args.Flags = ETargetScanFlags::AutoAcquire;
                         args.LdsQueryContext = LDSQueryContext;
-                        //TargetScanner::ScanForTarget(world, unitId, args);
+                        TargetScanner::ScanForTarget(world, unitId, args);
 
                         nextScanTime = simTime + 0.25;
                         FeatureECS::SetBlackboardValue(world, unitId, "NextTargetScanTime"_n, nextScanTime);
