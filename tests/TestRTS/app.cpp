@@ -100,8 +100,6 @@ bool GShowConsoleWindow = true;
 TSharedPtr<Session> GSession;
 bool GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
-World* GLatestWorldView = nullptr;
-std::mutex GWorldViewUpdateMutex;
 
 SDLDebugState* GDebugState;
 SDLDebugRenderer* GDebugRenderer;
@@ -113,7 +111,30 @@ TVector<TSharedPtr<ISDLTool>> GTools;
 TVector<TSharedPtr<ISDLTool>> GActiveTools;
 TSharedPtr<ISDLTool> GPlayerController;
 
+struct DoubleWorldBuffer
+{
+    World* Buffers[2] = { nullptr, nullptr };
+    std::atomic<int> SimIndex{0};
+    std::atomic<int> RenderIndex{1};
+
+    World* GetSimWorld() { return Buffers[SimIndex.load(std::memory_order_acquire)]; }
+    World* GetRenderWorld() { return Buffers[RenderIndex.load(std::memory_order_acquire)]; }
+
+    // Swap the indices atomically after copy
+    void Swap()
+    {
+        int oldSim = SimIndex.load(std::memory_order_acquire);
+        int oldRender = RenderIndex.load(std::memory_order_acquire);
+        SimIndex.store(oldRender, std::memory_order_release);
+        RenderIndex.store(oldSim, std::memory_order_release);
+    }
+};
+
+DoubleWorldBuffer GDoubleWorldBuffer;
+
 World* GCurrWorldView = nullptr;
+bool GCopyWorld = true;
+FPSCalc GWorldViewUpdateCalc;
 
 struct EntityBodyShape
 {
@@ -145,6 +166,8 @@ LineModel GCorpseModel;
 LineModel GDefaultUnitModel;
 
 bool GDrawGrid = false;
+
+uint32 GSimStepHz = Time::D;
 
 void UpdateSessionWorker();
 void OnPostWorldUpdate(WorldConstRef world);
@@ -215,34 +238,48 @@ void UpdateSessionWorker()
 
     GSessionThreadWantsExit = false;
 
-    SessionStepArgs stepArgs;
-    stepArgs.StepHz = Time::D / 2;
-
     while (!GSessionThreadWantsExit)
     {
         //FrameMarkNamed("Sim");
 
+        SessionStepArgs stepArgs;
+        stepArgs.StepHz = GSimStepHz;
         GSession->Tick(stepArgs);
 
         // Sleep(10);
-        std::this_thread::yield();
+        // std::this_thread::yield();
     }
 }
+
+bool GEnableChunkedParallelCopy = true;
 
 void OnPostWorldUpdate(WorldConstRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    std::lock_guard lock(GWorldViewUpdateMutex);
-
-    if (!GLatestWorldView)
+    if (!GCopyWorld)
     {
-        GLatestWorldView = new World(world);
+        return;
+    }
+
+    GWorldViewUpdateCalc.Time = PHX_SYS_CLOCK_NOW();
+
+    if (!GDoubleWorldBuffer.Buffers[0])
+    {
+        // Initialize both buffers
+        GDoubleWorldBuffer.Buffers[0] = new World(world);
+        GDoubleWorldBuffer.Buffers[1] = new World(world);
     }
     else
     {
-        *GLatestWorldView = world;
+        // Copy latest sim state to standby
+        world.CopyTo(*GDoubleWorldBuffer.GetSimWorld());
+
+        // Swap sim/render
+        GDoubleWorldBuffer.Swap();
     }
+
+    GWorldViewUpdateCalc.Tick();
 }
 
 bool LoadLineModel(
@@ -334,23 +371,6 @@ void OnAppRenderWorld()
 
     GDebugRenderer->Reset();
 
-    // Copy world view
-    {
-        std::lock_guard lock(GWorldViewUpdateMutex);
-
-        if (GLatestWorldView)
-        {
-            if (!GCurrWorldView)
-            {
-                GCurrWorldView = new World(*GLatestWorldView);
-            }
-            else if (GCurrWorldView->GetSimTime() < GLatestWorldView->GetSimTime())
-            {
-                *GCurrWorldView = *GLatestWorldView;
-            }
-        }
-    }
-
     // Draw distance value bounds
     {
         Vec2 bl = Vec2(Distance::Min, Distance::Min);
@@ -368,11 +388,17 @@ void OnAppRenderWorld()
         DrawGrid(GWindow, GDebugRenderer, GViewport, GCamera);
     }
 
-    // Realize the sim world
-    if (GCurrWorldView)
+    World* worldPtr = GDoubleWorldBuffer.GetRenderWorld();
+    GCurrWorldView = worldPtr;
+    if (!worldPtr)
     {
-        World& worldView = *GCurrWorldView;
+        return;
+    }
 
+    World& world = *worldPtr;
+
+    // Realize the sim world
+    {
         PHX_PROFILE_ZONE_SCOPED_N("RealizeWorld");
 
         GEntityBodies.clear();
@@ -382,9 +408,9 @@ void OnAppRenderWorld()
         builder.RequireAllComponents<const TransformComponent&, const BodyComponent&>();
         auto query = builder.GetQuery();
 
-        const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(worldView);
+        const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
 
-        FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
+        FeatureECS::ForEachEntity(world, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
         {
             for (auto && [entityId, index, transformComp, bodyComp] : span)
             {
@@ -396,14 +422,14 @@ void OnAppRenderWorld()
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
                 PhoenixColor color;
-                if (!FeatureECS::TryGetBlackboardValue(worldView, entityId, "actor_tint"_n, color))
+                if (!FeatureECS::TryGetBlackboardValue(world, entityId, "actor_tint"_n, color))
                 {
                     color = PhoenixColor::Red;
                 }
 
                 entityBodyShape.AssetTint = color;
 
-                if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(worldView, entityId))
+                if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(world, entityId))
                 {
                     color = GDebugRenderer->GetColor(unitComp->OwningPlayer);
 
@@ -423,7 +449,7 @@ void OnAppRenderWorld()
                 if (bodyComp.Movement == EBodyMovement::Attached &&
                     transformComp.AttachParent != EntityId::Invalid)
                 {
-                    if (TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(worldView, transformComp.AttachParent))
+                    if (TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(world, transformComp.AttachParent))
                     {
                         entityBodyShape.Transform.Position = parentTransformComp->Transform.Position + entityBodyShape.Transform.Position.Rotate(parentTransformComp->Transform.Rotation);
                         entityBodyShape.Transform.Rotation += parentTransformComp->Transform.Rotation;
@@ -438,7 +464,7 @@ void OnAppRenderWorld()
         builder.RequireAllComponents<const TransformComponent&, const RTS::ProjectileComponent&>();
         query = builder.GetQuery();
 
-        FeatureECS::ForEachEntity(worldView, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const RTS::ProjectileComponent&>& span)
+        FeatureECS::ForEachEntity(world, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const RTS::ProjectileComponent&>& span)
         {
             for (auto && [entity, index, transformComp, projectileComp] : span)
             {
@@ -459,7 +485,7 @@ void OnAppRenderWorld()
         for (const EntityBodyShape& entityBodyShape : GEntityBodies)
         {
             LineModel* lineModel;
-            if (RTS::FeatureUnit::UnitIsDead(worldView, RTS::UnitId(entityBodyShape.EntityId)))
+            if (RTS::FeatureUnit::UnitIsDead(world, RTS::UnitId(entityBodyShape.EntityId)))
             {
                 lineModel = &GCorpseModel;
             }
@@ -500,12 +526,12 @@ void OnAppRenderWorld()
         const TVector<FeatureSharedPtr>& channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
         for (const auto& feature : channelFeatures)
         {
-            feature->OnDebugRender(worldView, *GDebugState, *GDebugRenderer);
+            feature->OnDebugRender(world, *GDebugState, *GDebugRenderer);
         }
 
         for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
         {
-            tool->OnAppRenderWorld(worldView, *GDebugState, *GDebugRenderer);
+            tool->OnAppRenderWorld(world, *GDebugState, *GDebugRenderer);
         }
     }
 }
@@ -543,6 +569,11 @@ void OnAppRenderUI()
             ImGui::Text("%llu (%f)", GSession->GetSimTime(), GSession->GetSimTime() / (float)Time::D);
 
             ImGui::TableNextColumn();
+            ImGui::Text("World Copy:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%.3f ms/frame", GWorldViewUpdateCalc.GetFPS());
+
+            ImGui::TableNextColumn();
             ImGui::Text("Mouse Pos:");
             ImGui::TableNextColumn();
             ImGui::Text("%0.2f %0.2f", mousePos.x, mousePos.y);
@@ -555,6 +586,8 @@ void OnAppRenderUI()
             ImGui::EndTable();
         }
 
+        ImGui::InputScalar("Step Hz", ImGuiDataType_U32, &GSimStepHz);
+        ImGui::Checkbox("Copy World", &GCopyWorld);
         ImGui::Checkbox("Draw Grid", &GDrawGrid);
 
         if (ImGui::CollapsingHeader("Features"))
@@ -1025,3 +1058,7 @@ void OnAppShutdown()
 
     GLogger.reset();
 }
+
+
+
+

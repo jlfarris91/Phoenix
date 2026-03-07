@@ -118,6 +118,16 @@ World& World::operator=(World&& other) noexcept
     return *this;
 }
 
+void World::CopyTo(World& other) const
+{
+    other.Id = Id;
+    other.Type = Type;
+    other.Config = Config;
+    other.SimTime = SimTime;
+    other.Random = Random;
+    Buffer.CopyTo(other.Buffer);
+}
+
 BlockBuffer& World::GetBuffer()
 {
     return Buffer;

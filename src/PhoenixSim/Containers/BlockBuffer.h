@@ -156,6 +156,13 @@ namespace Phoenix
     private:
         BlockBufferConfig Layout;
     };
+    
+    struct PHOENIX_SIM_API BlockBufferMemoryDeleter
+    {
+        void operator()(void* p) const;
+    };
+
+    using BlockBufferMemoryPtr = std::unique_ptr<uint8, BlockBufferMemoryDeleter>;
 
     class PHOENIX_SIM_API BlockBuffer
     {
@@ -229,10 +236,14 @@ namespace Phoenix
             return *block;
         }
 
+        void CopyTo(BlockBuffer& other) const;
+
     private:
 
+        void AllocateMemory(uint32 size);
+
         TVector<Block> Blocks;
-        TUniquePtr<uint8[]> Data = nullptr;
+        BlockBufferMemoryPtr Data = nullptr;
         uint32 Size = 0;
         uint32 BlockSize = 0;
         uint32 AllocSize = 0;
