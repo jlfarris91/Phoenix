@@ -294,7 +294,7 @@ namespace SteeringDetail
             {
                 auto targetAngle = stepDir.AsRadians();
                 auto delta = AngleDelta(targetAngle, transformComp.Transform.Rotation);
-                if (Abs(delta) > RAD_45)
+                if (Abs(delta) > Rad45)
                 {
                     return Vec2::Zero;
                 }
@@ -322,7 +322,7 @@ namespace SteeringDetail
             {
                 auto targetAngle = stepDir.AsRadians();
                 auto delta = AngleDelta(targetAngle, transformComp.Transform.Rotation);
-                if (Abs(delta) > RAD_45)
+                if (Abs(delta) > Rad45)
                 {
                     return Vec2::Zero;
                 }
@@ -422,7 +422,7 @@ namespace SteeringDetail
                 return false;
             }
 
-            Angle turnRate = PI / steerComp.TurnRateMoving * DeltaTime;
+            Angle turnRate = Pi / steerComp.TurnRateMoving * DeltaTime;
 
             if (absDelta < turnRate)
             {

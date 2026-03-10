@@ -5,16 +5,16 @@
 using namespace Phoenix;
 
 static_assert(Deg2Rad(0.0f) == 0.0f);
-static_assert(Deg2Rad(90.0f) == HALF_PI);
-static_assert(Deg2Rad(180.0f).Value == PI.Value);
-static_assert(Deg2Rad(270.0f) == (PI + HALF_PI));
-static_assert(Deg2Rad(360.0f) == TWO_PI);
+static_assert(Deg2Rad(90.0f) == HalfPi);
+static_assert(Deg2Rad(180.0f).Value == Pi.Value);
+static_assert(Deg2Rad(270.0f) == (Pi + HalfPi));
+static_assert(Deg2Rad(360.0f) == TwoPi);
 
 static_assert(Rad2Deg(0.0f) == 0.0f);
-static_assert(Rad2Deg(HALF_PI) == DEG_90);
-static_assert(Rad2Deg(PI) == DEG_180);
-static_assert(Rad2Deg(PI + HALF_PI) == DEG_270);
-static_assert(Rad2Deg(TWO_PI) == DEG_360);
+static_assert(Rad2Deg(HalfPi) == Deg90);
+static_assert(Rad2Deg(Pi) == Deg180);
+static_assert(Rad2Deg(Pi + HalfPi) == Deg270);
+static_assert(Rad2Deg(TwoPi) == Deg360);
 
 static_assert(Abs_(-1) == 1);
 static_assert(Abs_(-2) == 2);

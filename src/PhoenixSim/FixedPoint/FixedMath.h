@@ -81,9 +81,9 @@ namespace Phoenix
 
     constexpr Angle AngleDelta(Angle a, Angle b)
     {
-        Angle delta = static_cast<Angle::QT>((a - b + PI).Value % TWO_PI.Value);
-        if (delta < 0) delta += TWO_PI;
-        return delta - PI;
+        Angle delta = static_cast<Angle::QT>((a - b + Pi).Value % TwoPi.Value);
+        if (delta < 0) delta += TwoPi;
+        return delta - Pi;
     }
 
     template <class T>

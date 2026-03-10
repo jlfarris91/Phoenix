@@ -116,9 +116,9 @@ namespace Phoenix
         {
             if (a.Value < b.Value)
             {
-                return Q64(int64(b.Value) - (int64(b.Value) - a.Value) % TWO_PI.Value + TWO_PI.Value);
+                return Q64(int64(b.Value) - (int64(b.Value) - a.Value) % TwoPi.Value + TwoPi.Value);
             }
-            return Q64(int64(b.Value) + (int64(a.Value) - b.Value) % TWO_PI.Value);
+            return Q64(int64(b.Value) + (int64(a.Value) - b.Value) % TwoPi.Value);
         }
 
 #if _WIN32
@@ -147,13 +147,13 @@ namespace Phoenix
             {
                 xn = -xn;
                 yn = -yn;
-                offset = -PI.Value;
+                offset = -Pi.Value;
             }
             else if (xn < 0)
             {
                 xn = -xn;
                 sign = -1;
-                offset = PI.Value;
+                offset = Pi.Value;
             }
             else if (yn < 0)
             {
@@ -194,16 +194,16 @@ namespace Phoenix
             int32 sign;
             ValueT powerOfTwo = T::D;
 
-            AngleT theta = AngleShift(a, -PI).Value;
+            AngleT theta = AngleShift(a, -Pi).Value;
 
-            if (theta < -HALF_PI)
+            if (theta < -HalfPi)
             {
-                theta += PI.Value;
+                theta += Pi.Value;
                 sign = -1;
             }
-            else if (HALF_PI < theta)
+            else if (HalfPi < theta)
             {
-                theta -= PI.Value;
+                theta -= Pi.Value;
                 sign = -1;
             }
             else
@@ -333,17 +333,17 @@ namespace Phoenix
 
             ValueT xn = x.Value;
             ValueT yn = y.Value;
-            AngleT z = AngleShift(a, -PI).Value;
+            AngleT z = AngleShift(a, -Pi).Value;
 
             int32 sign = 1;
-            if (z > HALF_PI.Value && z < PI.Value)
+            if (z > HalfPi.Value && z < Pi.Value)
             {
-                z -= PI.Value;
+                z -= Pi.Value;
                 sign = -1;
             }
-            else if (z < -HALF_PI.Value && z > -PI.Value)
+            else if (z < -HalfPi.Value && z > -Pi.Value)
             {
-                z += PI.Value;
+                z += Pi.Value;
                 sign = -1;
             }
 
@@ -380,7 +380,7 @@ namespace Phoenix
             {
                 xn = -xn;
                 yn = -yn;
-                z += (yn >= 0) ? PI.Value : -PI.Value;
+                z += (yn >= 0) ? Pi.Value : -Pi.Value;
             }
 
             for (int32 i = 0; i <= n; ++i)
