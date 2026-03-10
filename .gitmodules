@@ -1,4 +1,18 @@
 [submodule "ext/imgui"]
 	path = ext/imgui
 	url = https://github.com/ocornut/imgui.git
-	branch = docking
+[submodule "ext/lua"]
+	path = ext/lua
+	url = https://github.com/lua/lua.git
+[submodule "ext/nlohmann"]
+	path = ext/nlohmann
+	url = https://github.com/nlohmann/json.git
+[submodule "ext/SDL3"]
+	path = ext/SDL3
+	url = https://github.com/libsdl-org/SDL.git
+[submodule "ext/sol"]
+	path = ext/sol
+	url = https://github.com/ThePhD/sol2.git
+[submodule "ext/tracy"]
+	path = ext/tracy
+	url = https://github.com/wolfpld/tracy.git
