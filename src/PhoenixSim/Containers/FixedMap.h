@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Containers/FixedMemory.h"
@@ -348,7 +347,7 @@ namespace Phoenix
         {
             Iter(TMap* map, size_t index) : Map(map), Index(index) {}
 
-            TPair<TKey, TValue&> operator*() const
+            std::pair<TKey, TValue&> operator*() const
             {
                 const TItem* data = Map->GetData();
                 return { data[Index].Key, data[Index].Value };

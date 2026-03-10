@@ -1,4 +1,3 @@
-
 #include "ImGuiPropertyGrid.h"
 
 #include "imgui.h"
@@ -42,7 +41,7 @@ void DrawPropertyEditor(void* obj, const PropertyDescriptor& propertyDesc)
             }
         case EPropertyValueType::String:
             {
-                PHXString v = propertyDesc.PropertyAccessor->Get<PHXString>(obj);
+                std::string v = propertyDesc.PropertyAccessor->Get<std::string>(obj);
                 
                 char buff[MAX_PATH];
                 strcpy_s(buff, MAX_PATH, v.data());
@@ -94,7 +93,7 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
             }
         case EPropertyValueType::String:
             {
-                PHXString v = propertyDesc.PropertyAccessor->Get<PHXString>(obj);
+                std::string v = propertyDesc.PropertyAccessor->Get<std::string>(obj);
                 
                 char buff[MAX_PATH];
                 strcpy_s(buff, MAX_PATH, v.data());

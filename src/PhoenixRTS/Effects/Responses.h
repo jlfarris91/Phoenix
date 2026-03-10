@@ -24,7 +24,7 @@ namespace Phoenix::RTS
         EffectComponent* EffectComponent = nullptr;
         FName ResponseId;
         Data::EResponseTarget Target = Data::EResponseTarget::None;
-        TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
+        std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
     class PHOENIX_RTS_API IResponseHandler : public IService
@@ -33,7 +33,7 @@ namespace Phoenix::RTS
         
     public:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         virtual FName GetResponseId() const;
@@ -45,7 +45,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        TSharedPtr<FeatureEffects> EffectsFeature;
+        std::shared_ptr<FeatureEffects> EffectsFeature;
     };
 
     class PHOENIX_RTS_API ResponseHandlerBase : public IResponseHandler

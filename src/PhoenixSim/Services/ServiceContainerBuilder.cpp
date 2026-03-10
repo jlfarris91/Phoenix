@@ -4,7 +4,7 @@
 
 using namespace Phoenix;
 
-ServiceRegistrar::ServiceRegistrar(ServiceContainerBuilder* builder, const TSharedPtr<IService>& service)
+ServiceRegistrar::ServiceRegistrar(ServiceContainerBuilder* builder, const std::shared_ptr<IService>& service)
     : Builder(builder)
     , Service(service)
 {
@@ -22,7 +22,7 @@ const ServiceRegistrar& ServiceRegistrar::AsInterfaces() const
     return *this;
 }
 
-ServiceRegistrar ServiceContainerBuilder::RegisterService(const TSharedPtr<IService>& service)
+ServiceRegistrar ServiceContainerBuilder::RegisterService(const std::shared_ptr<IService>& service)
 {
     const TypeDescriptor& typeDescriptor = service->GetTypeDescriptor();
     Container.Services.push_back(service);
@@ -30,17 +30,17 @@ ServiceRegistrar ServiceContainerBuilder::RegisterService(const TSharedPtr<IServ
     return { this, service };
 }
 
-TSharedPtr<ServiceContainer> ServiceContainerBuilder::Build()
+std::shared_ptr<ServiceContainer> ServiceContainerBuilder::Build()
 {
-    return MakeShared<ServiceContainer>(std::move(Container));
+    return std::make_shared<ServiceContainer>(std::move(Container));
 }
 
-void ServiceContainerBuilder::RegisterServiceAs(const TSharedPtr<IService>& service, const FName& typeId)
+void ServiceContainerBuilder::RegisterServiceAs(const std::shared_ptr<IService>& service, const FName& typeId)
 {
     Container.ServiceAsMap[typeId].push_back(service);
 }
 
-void ServiceContainerBuilder::RegisterServiceAsInterfaces(const TSharedPtr<IService>& service)
+void ServiceContainerBuilder::RegisterServiceAsInterfaces(const std::shared_ptr<IService>& service)
 {
     service->GetTypeDescriptor().ForEachInterface([&](const TypeDescriptor& interface)
     {

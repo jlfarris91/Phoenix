@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <map>
 #include <nlohmann/json.hpp>
 
 #include "PhoenixSim/Actions.h"
@@ -86,8 +85,8 @@ namespace Phoenix
     {
         BlockBufferConfig SessionBlocks;
         BlockBufferConfig WorldBlocks;
-        TVector<FeatureChannelInsertArgs> Channels;
-        TVector<FName> DependentFeatures;
+        std::vector<FeatureChannelInsertArgs> Channels;
+        std::vector<FName> DependentFeatures;
 
         template <class TBlock>
         BufferBlockDefinition& RegisterSessionBlock(EBufferBlockType type)
@@ -164,12 +163,12 @@ namespace Phoenix
 
     typedef IFeature* FeaturePtr;
     typedef const IFeature* FeatureConstPtr;
-    typedef TSharedPtr<IFeature> FeatureSharedPtr;
-    typedef TSharedPtr<const IFeature> FeatureSharedConstPtr;
+    typedef std::shared_ptr<IFeature> FeatureSharedPtr;
+    typedef std::shared_ptr<const IFeature> FeatureSharedConstPtr;
 
     struct PHOENIX_SIM_API FeatureSetCtorArgs
     {
-        TVector<FeatureSharedPtr> Features;
+        std::vector<FeatureSharedPtr> Features;
     };
 
     class PHOENIX_SIM_API FeatureSet
@@ -181,24 +180,23 @@ namespace Phoenix
         FeatureSharedPtr GetFeature(const FName& name) const;
 
         template <class TFeature>
-        TSharedPtr<TFeature> GetFeature(const FName& name) const
+        std::shared_ptr<TFeature> GetFeature(const FName& name) const
         {
             return std::static_pointer_cast<TFeature>(GetFeature(name));
         }
 
         template <class TFeature>
-        TSharedPtr<TFeature> GetFeature() const
+        std::shared_ptr<TFeature> GetFeature() const
         {
             return GetFeature<TFeature>(TFeature::StaticTypeName);
         }
 
-        TVector<FeatureSharedPtr> GetFeatures() const;
+        std::vector<FeatureSharedPtr> GetFeatures() const;
 
         // Gets an array containing all the names of the channels.
-        TVector<FName> GetChannelNames() const;
-        
-        TVector<FeatureSharedPtr> GetChannel(const FName& channelName) const;
-        const TVector<FeatureSharedPtr>& GetChannelRef(const FName& channelName) const;
+        std::vector<FName> GetChannelNames() const;
+        std::vector<FeatureSharedPtr> GetChannel(const FName& channelName) const;
+        const std::vector<FeatureSharedPtr>& GetChannelRef(const FName& channelName) const;
 
         template <class TCallback>
         void ForEachFeatureInChannel(const FName& channelName, const TCallback& callback)
@@ -218,15 +216,14 @@ namespace Phoenix
         }
 
     private:
-        
-        void RegisterFeatureChannels(const TVector<FeatureSharedPtr>& featureDefs);
+        void RegisterFeatureChannels(const std::vector<FeatureSharedPtr>& featureDefs);
 
         static int32 FindChannelInsertIndex(
-            const TVector<FeatureSharedPtr>& channelFeatures,
+            const std::vector<FeatureSharedPtr>& channelFeatures,
             const FeatureInsertPosition& insertPosition);
 
         std::unordered_map<FName, FeatureSharedPtr> Features;
-        std::unordered_map<FName, TVector<FeatureSharedPtr>> Channels;
+        std::unordered_map<FName, std::vector<FeatureSharedPtr>> Channels;
     };
 }
 

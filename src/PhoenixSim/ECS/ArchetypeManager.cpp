@@ -429,7 +429,7 @@ const ArchetypeManager::TArchetypeList* ArchetypeManager::FindOwningArchetypeLis
     return FindOwningArchetypeList(handle);
 }
 
-void ArchetypeManager::ForEachArchetypeList(const TFunction<void(TArchetypeList&)>& func)
+void ArchetypeManager::ForEachArchetypeList(const std::function<void(TArchetypeList&)>& func)
 {
     PHX_PROFILE_ZONE_SCOPED;
     for (const TBlockHandle& handle : ArchetypeLists)
@@ -442,7 +442,7 @@ void ArchetypeManager::ForEachArchetypeList(const TFunction<void(TArchetypeList&
     }
 }
 
-void ArchetypeManager::ForEachArchetypeList(const TFunction<void(const TArchetypeList&)>& func) const
+void ArchetypeManager::ForEachArchetypeList(const std::function<void(const TArchetypeList&)>& func) const
 {
     PHX_PROFILE_ZONE_SCOPED;
     for (const TBlockHandle& handle : ArchetypeLists)
@@ -456,7 +456,7 @@ void ArchetypeManager::ForEachArchetypeList(const TFunction<void(const TArchetyp
 }
 
 void ArchetypeManager::ForEachArchetypeList(const FName& archetypeIdOrHash,
-    const TFunction<void(TArchetypeList&)>& func)
+    const std::function<void(TArchetypeList&)>& func)
 {
     PHX_PROFILE_ZONE_SCOPED;
     for (const TBlockHandle& handle : ArchetypeLists)

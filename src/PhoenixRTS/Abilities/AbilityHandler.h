@@ -45,7 +45,7 @@ namespace Phoenix::RTS
 
     public:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         virtual bool AddAbility(WorldRef world, const UnitId& unit) const;
@@ -58,6 +58,6 @@ namespace Phoenix::RTS
 
     protected:
 
-        TSharedPtr<FeatureAbilities> AbilitiesFeature;
+        std::shared_ptr<FeatureAbilities> AbilitiesFeature;
     };
 }

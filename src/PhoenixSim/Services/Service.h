@@ -10,7 +10,7 @@ namespace Phoenix
     struct WorldLayoutContext;
     struct BlockBufferLayoutBuilder;
 
-    class PHOENIX_SIM_API IService : public TSharedAsThis<IService>
+    class PHOENIX_SIM_API IService : public std::enable_shared_from_this<IService>
     {
         PHX_DECLARE_INTERFACE(IService)
 
@@ -20,7 +20,7 @@ namespace Phoenix
         Session* GetSession() const;
 
         virtual void OnSessionLayout(const SessionLayoutContext& context, BlockBufferLayoutBuilder& builder);
-        virtual void Initialize(const TSharedPtr<Session>& session);
+        virtual void Initialize(const std::shared_ptr<Session>& session);
         virtual void Shutdown();
 
         virtual void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder);
@@ -29,6 +29,6 @@ namespace Phoenix
 
     protected:
 
-        TSharedPtr<Session> Session;
+        std::shared_ptr<Session> Session;
     };
 }

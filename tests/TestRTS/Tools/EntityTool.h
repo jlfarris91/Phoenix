@@ -19,13 +19,13 @@ namespace Phoenix
             PHX_REGISTER_FIELD(float, PushForce)
         PHX_DECLARE_TYPE_END()
 
-        EntityTool(const TSharedPtr<Session>& session);
+        EntityTool(const std::shared_ptr<Session>& session);
 
         void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
         void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
 
-        TSharedPtr<Session> Session;
+        std::shared_ptr<Session> Session;
         float BrushSize = 10.0f;
         uint32 SpawnCount = 1;
         uint8 Player = 0;

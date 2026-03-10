@@ -36,7 +36,7 @@ FeatureLua::FeatureLua()
     FEATURE_CHANNEL(FeatureChannels::DebugRender)
 }
 
-void FeatureLua::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureLua::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
@@ -186,7 +186,7 @@ namespace detail
             return TOptional<TRet>();
         }
 
-        sol::protected_function_result result = luaFunc(Forward<TArgs>(args)...);
+        sol::protected_function_result result = luaFunc(std::forward<TArgs>(args)...);
 
         if (!result.valid())
         {
@@ -220,7 +220,7 @@ namespace detail
             return false;
         }
 
-        sol::protected_function_result result = luaFunc(Forward<TArgs>(args)...);
+        sol::protected_function_result result = luaFunc(std::forward<TArgs>(args)...);
 
         if (!result.valid())
         {
@@ -233,7 +233,7 @@ namespace detail
     }
 
     template <class TRet, class ...TArgs>
-    TOptional<TRet> TryExecuteLuaFunctionRet(const TSharedPtr<Session>& session, const char* funcName, TArgs&& ...args)
+    TOptional<TRet> TryExecuteLuaFunctionRet(const std::shared_ptr<Session>& session, const char* funcName, TArgs&& ...args)
     {
         BlockBuffer& buffer = session->GetBuffer();
         FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
@@ -243,11 +243,11 @@ namespace detail
         }
 
         sol::state& lua = dynamicBlock->State;
-        return TryExecuteLuaFunctionRet<TRet, TArgs...>(lua, funcName, Forward<TArgs>(args)...);
+        return TryExecuteLuaFunctionRet<TRet, TArgs...>(lua, funcName, std::forward<TArgs>(args)...);
     }
 
     template <class ...TArgs>
-    bool TryExecuteLuaFunction(const TSharedPtr<Session>& session, const char* funcName, TArgs&& ...args)
+    bool TryExecuteLuaFunction(const std::shared_ptr<Session>& session, const char* funcName, TArgs&& ...args)
     {
         BlockBuffer& buffer = session->GetBuffer();
         FeatureLuaDynamicBlock* dynamicBlock = buffer.GetBlock<FeatureLuaDynamicBlock>();
@@ -257,7 +257,7 @@ namespace detail
         }
 
         sol::state& lua = dynamicBlock->State;
-        return TryExecuteLuaFunction(lua, funcName, Forward<TArgs>(args)...);
+        return TryExecuteLuaFunction(lua, funcName, std::forward<TArgs>(args)...);
     }
 }
 

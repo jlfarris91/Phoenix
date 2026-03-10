@@ -15,14 +15,14 @@ namespace Phoenix::RTS
     {
         UnitId Unit;
         FName SelectionGroupId;
-        TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
+        std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
     struct PHOENIX_RTS_API AcquireContext
     {
         UnitId Unit;
         FName AbilityId;
-        TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
+        std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
     class PHOENIX_RTS_API ICommandHandler : public IService
@@ -33,7 +33,7 @@ namespace Phoenix::RTS
 
         virtual FName GetCommandId() const;
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         virtual bool IgnoreCommand(WorldConstRef world, const CommandContext& context, const Command& command) const;
@@ -52,6 +52,6 @@ namespace Phoenix::RTS
 
     protected:
 
-        TSharedPtr<FeatureOrders> OrdersFeature;
+        std::shared_ptr<FeatureOrders> OrdersFeature;
     };
 }

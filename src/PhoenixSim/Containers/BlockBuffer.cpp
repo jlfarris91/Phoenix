@@ -1,4 +1,3 @@
-
 #include "PhoenixSim/Containers/BlockBuffer.h"
 
 #include <algorithm>
@@ -105,8 +104,8 @@ BlockBuffer::BlockBuffer(const BlockBuffer& other)
 }
 
 BlockBuffer::BlockBuffer(BlockBuffer&& other) noexcept
-    : Blocks(MoveTemp(other.Blocks))
-    , Data(MoveTemp(other.Data))
+    : Blocks(std::move(other.Blocks))
+    , Data(std::move(other.Data))
     , Size(other.Size)
 {
     other.Data = nullptr;
@@ -133,7 +132,7 @@ BlockBuffer& BlockBuffer::operator=(const BlockBuffer& other)
 
 BlockBuffer& BlockBuffer::operator=(BlockBuffer&& other) noexcept
 {
-    Data = MoveTemp(other.Data);
+    Data = std::move(other.Data);
     BlockSize = other.BlockSize;
     AllocSize = other.AllocSize;
     Size = other.Size;
@@ -155,7 +154,7 @@ uint32 BlockBuffer::GetSize() const
     return Size;
 }
 
-const TVector<BlockBuffer::Block>& BlockBuffer::GetBlocks() const
+const std::vector<BlockBuffer::Block>& BlockBuffer::GetBlocks() const
 {
     return Blocks;
 }

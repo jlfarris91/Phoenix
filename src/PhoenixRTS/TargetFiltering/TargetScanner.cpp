@@ -90,7 +90,7 @@ TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, Uni
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    TVector<FName> abilityIds;
+    std::vector<FName> abilityIds;
     if (!FeatureAbilities::GetAbilities(world, unit, abilityIds))
     {
         return {};
@@ -102,7 +102,7 @@ TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, Uni
 
     for (const FName& abilityId : abilityIds)
     {
-        TSharedPtr<IAbilityHandler> handler = FeatureAbilities::StaticFindAbilityHandler(world, abilityId);
+        std::shared_ptr<IAbilityHandler> handler = FeatureAbilities::StaticFindAbilityHandler(world, abilityId);
         if (!handler)
         {
             continue;
@@ -139,7 +139,7 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
 
     Data::UnitPtr unitData(unitDataId);
 
-    TVector<Data::WeaponPtr> weapons;
+    std::vector<Data::WeaponPtr> weapons;
     unitData.Weapons().GetResolvedObjects(lds, weapons);
 
     if (weapons.empty())
@@ -174,7 +174,7 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     rangeQueryArgs.Flags = EUnitQueryFlags::Alive;
     rangeQueryArgs.TeamMask = Teams::EnemiesOf(world, FeatureUnit::GetOwningTeam(world, unit));
 
-    TVector<UnitId> unitsInRange;
+    std::vector<UnitId> unitsInRange;
     FeatureUnit::QueryUnitsInRange(world, scanPos, minScanRange, unitsInRange, rangeQueryArgs);
 
     if (unitsInRange.empty())

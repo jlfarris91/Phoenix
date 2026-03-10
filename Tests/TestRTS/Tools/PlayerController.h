@@ -23,7 +23,7 @@ namespace Phoenix
             PHX_REGISTER_FIELD(float, ZoomSpeed)
         PHX_DECLARE_TYPE_END()
 
-        PlayerController(const TSharedPtr<Session>& session, SDLCamera* camera, SDLViewport* viewport);
+        PlayerController(const std::shared_ptr<Session>& session, SDLCamera* camera, SDLViewport* viewport);
 
         void OnActivated() override;
         void OnDeactivated() override;
@@ -31,7 +31,7 @@ namespace Phoenix
         void OnAppRenderUI(ImGuiIO& io) override;
         void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
 
-        TSharedPtr<Session> Session;
+        std::shared_ptr<Session> Session;
         SDLCamera* Camera;
         SDLViewport* Viewport;
         float PanSpeed = 100.0f;

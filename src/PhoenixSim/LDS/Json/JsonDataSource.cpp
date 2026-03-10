@@ -1,4 +1,3 @@
-
 #include "PhoenixSim/LDS/Json/JsonDataSource.h"
 
 #include <fstream>
@@ -7,9 +6,9 @@ using namespace Phoenix;
 using namespace Phoenix::LDS::Json;
 namespace fs = std::filesystem;
 
-TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& catalogPath)
+std::shared_ptr<JsonDataSource> JsonDataSource::LoadFromCatalog(const std::string& catalogPath)
 {
-    auto dataSource = MakeShared<JsonDataSource>();
+    auto dataSource = std::make_shared<JsonDataSource>();
 
     fs::path absoluteCatalogPath = fs::absolute(catalogPath);
     fs::path absoluteCatalogDir = absoluteCatalogPath.parent_path();
@@ -38,7 +37,7 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
     {
         for (auto&& typesPath : typesIter->items())
         {
-            auto typeDir = absolute(absoluteCatalogDir / typesPath.value().get<PHXString>());
+            auto typeDir = absolute(absoluteCatalogDir / typesPath.value().get<std::string>());
             for (const auto& filePath : fs::recursive_directory_iterator(typeDir))
             {
                 if (!filePath.is_regular_file())
@@ -75,7 +74,7 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
     {
         for (auto&& objectsPath : objectsIter->items())
         {
-            auto objectsDir = absolute(absoluteCatalogDir / objectsPath.value().get<PHXString>());
+            auto objectsDir = absolute(absoluteCatalogDir / objectsPath.value().get<std::string>());
             for (const auto& filePath : fs::recursive_directory_iterator(objectsDir))
             {
                 if (!filePath.is_regular_file())
@@ -110,12 +109,12 @@ TSharedPtr<JsonDataSource> JsonDataSource::LoadFromCatalog(const PHXString& cata
     return dataSource;
 }
 
-TSharedPtr<JsonDataSource> JsonDataSource::GetParent() const
+std::shared_ptr<JsonDataSource> JsonDataSource::GetParent() const
 {
     return Parent;
 }
 
-void JsonDataSource::SetParent(const TSharedPtr<JsonDataSource>& parent)
+void JsonDataSource::SetParent(const std::shared_ptr<JsonDataSource>& parent)
 {
     Parent = parent;
 }
@@ -129,7 +128,7 @@ bool JsonDataSource::RegisterType(const nlohmann::json& typeJson)
         return false;
     }
 
-    PHXString typeId = idIter->get<PHXString>();
+    std::string typeId = idIter->get<std::string>();
     if (Types.contains(typeId))
     {
         this->LogError("Type with id '{}' has already been registered.", typeId);
@@ -144,7 +143,7 @@ bool JsonDataSource::RegisterType(const nlohmann::json& typeJson)
         const nlohmann::json& implementsArray = *implementsIter;
         for (const auto& implementIdJson : implementsArray)
         {
-            PHXString implementId = implementIdJson.get<PHXString>();
+            std::string implementId = implementIdJson.get<std::string>();
 
             TypeIdToInterfaceIds[typeId].push_back(implementId);
             InterfaceToTypeIds[implementId].push_back(typeId);
@@ -159,7 +158,7 @@ const std::unordered_map<std::string, nlohmann::basic_json<>>& JsonDataSource::G
     return Types;
 }
 
-const nlohmann::json* JsonDataSource::FindType(const PHXString& typeId) const
+const nlohmann::json* JsonDataSource::FindType(const std::string& typeId) const
 {
     auto iter = Types.find(typeId);
     if (iter != Types.end())
@@ -173,31 +172,31 @@ const nlohmann::json* JsonDataSource::FindType(const PHXString& typeId) const
     return nullptr;
 }
 
-void JsonDataSource::RegisterInterface(const PHXString& interfaceId, const PHXString& typeId)
+void JsonDataSource::RegisterInterface(const std::string& interfaceId, const std::string& typeId)
 {
     InterfaceToTypeIds[interfaceId].push_back(typeId);
 }
 
-const TVector<PHXString>& JsonDataSource::GetInterfacesOfType(const PHXString& typeId) const
+const std::vector<std::string>& JsonDataSource::GetInterfacesOfType(const std::string& typeId) const
 {
-    static TVector<PHXString> EmptyArray;
+    static std::vector<std::string> EmptyArray;
     auto iter = TypeIdToInterfaceIds.find(typeId);
     return iter != TypeIdToInterfaceIds.end() ? iter->second : EmptyArray;
 }
 
-const TVector<PHXString>& JsonDataSource::GetTypesImplementingInterface(const PHXString& interfaceId) const
+const std::vector<std::string>& JsonDataSource::GetTypesImplementingInterface(const std::string& interfaceId) const
 {
-    static TVector<PHXString> EmptyArray;
+    static std::vector<std::string> EmptyArray;
     auto iter = InterfaceToTypeIds.find(interfaceId);
     return iter != InterfaceToTypeIds.end() ? iter->second : EmptyArray;
 }
 
-bool JsonDataSource::HasTypeOrInterface(const PHXString& typeOrInterfaceId) const
+bool JsonDataSource::HasTypeOrInterface(const std::string& typeOrInterfaceId) const
 {
     return FindType(typeOrInterfaceId) || InterfaceToTypeIds.contains(typeOrInterfaceId);
 }
 
-const nlohmann::json* JsonDataSource::FindObject(const PHXString& objectId) const
+const nlohmann::json* JsonDataSource::FindObject(const std::string& objectId) const
 {
     auto iter = Objects.find(objectId);
     if (iter != Objects.end())
@@ -220,7 +219,7 @@ bool JsonDataSource::RegisterObject(const nlohmann::json& objectJson)
         return false;
     }
 
-    PHXString rootObjectId = idIter->get<PHXString>();
+    std::string rootObjectId = idIter->get<std::string>();
     if (Objects.contains(rootObjectId))
     {
         this->LogError("Object with id '{}' has already been registered.", rootObjectId);

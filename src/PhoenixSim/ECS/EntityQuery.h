@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <functional>
+#include <vector>
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
@@ -31,7 +32,7 @@ namespace Phoenix::ECS
     template <class T, class TEquality = std::equal_to<T>>
     struct EntityQueryFilterSet
     {
-        TVector<T> Items;
+        std::vector<T> Items;
 
         EntityQueryFilterSet& AddAll(const EntityQueryFilterSet& other)
         {
@@ -60,7 +61,7 @@ namespace Phoenix::ECS
         }
     };
 
-    using EntityQueryFilterComponentSet = EntityQueryFilterSet<TTuple<FName, EComponentAccess>>;
+    using EntityQueryFilterComponentSet = EntityQueryFilterSet<std::tuple<FName, EComponentAccess>>;
     using EntityQueryFilterTagSet = EntityQueryFilterSet<FName>;
 
     struct PHOENIX_SIM_API EntityQuery

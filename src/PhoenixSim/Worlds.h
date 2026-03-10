@@ -35,7 +35,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API WorldConfig
     {
-        TSharedPtr<Session> Session;
+        std::shared_ptr<Session> Session;
         FName WorldType;
         FName WorldId;
         WorldJsonConfig Config;
@@ -51,7 +51,7 @@ namespace Phoenix
         World(World&& other) noexcept;
         ~World() = default;
 
-        TWeakPtr<Session> GetSession() const;
+        std::weak_ptr<Session> GetSession() const;
 
         FName GetId() const;
         FName GetType() const;
@@ -79,7 +79,7 @@ namespace Phoenix
 
         friend class WorldManager;
 
-        TWeakPtr<Session> Session;
+        std::weak_ptr<Session> Session;
         FName Id;
         FName Type;
         BlockBuffer Buffer;
@@ -92,9 +92,9 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API WorldManagerCtorArgs
     {
-        TWeakPtr<Session> Session;
-        TWeakPtr<FeatureSet> FeatureSet;
-        TWeakPtr<IConfigService> ConfigService;
+        std::weak_ptr<Session> Session;
+        std::weak_ptr<FeatureSet> FeatureSet;
+        std::weak_ptr<IConfigService> ConfigService;
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };
 
@@ -121,12 +121,12 @@ namespace Phoenix
     struct PHOENIX_SIM_API ViewContext
     {
         EBufferBlockTypeFlags BlockTypeFlags = EBufferBlockTypeFlags::None;
-        TVector<BufferBlockDefinition> BlockDefinitions;
+        std::vector<BufferBlockDefinition> BlockDefinitions;
     };
 
     struct PHOENIX_SIM_API WorldLayoutContext
     {
-        TSharedPtr<Session> Session;
+        std::shared_ptr<Session> Session;
         FName WorldType;
         FName WorldId;
         WorldJsonConfig Config;
@@ -164,14 +164,13 @@ namespace Phoenix
         void UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const;
         void SendActionToWorld(WorldRef world, const Action& action) const;
 
-        TSharedPtr<Session> Session;
-        TSharedPtr<FeatureSet> FeatureSet;
-        TSharedPtr<IConfigService> ConfigService;
-        TVector<WorldSharedPtr> Worlds;
+        std::shared_ptr<Session> Session;
+        std::shared_ptr<FeatureSet> FeatureSet;
+        std::shared_ptr<IConfigService> ConfigService;
+        std::vector<WorldSharedPtr> Worlds;
 
         uint32 WorldIdGen = 0;
 
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };
 }
-

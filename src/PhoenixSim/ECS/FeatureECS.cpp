@@ -133,7 +133,7 @@ FeatureECS::FeatureECS()
 FeatureECS::FeatureECS(const FeatureECSCtorArgs& args)
     : FeatureECS()
 {
-    for (const TSharedPtr<ISystem>& system : args.Systems)
+    for (const std::shared_ptr<ISystem>& system : args.Systems)
     {
         Systems.push_back(system);
     }
@@ -147,7 +147,7 @@ void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
     systemUpdateArgs.SimTime = args.SimTime;
     systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnPreUpdate(systemUpdateArgs);
     }
@@ -161,7 +161,7 @@ void FeatureECS::OnUpdate(const FeatureUpdateArgs& args)
     systemUpdateArgs.SimTime = args.SimTime;
     systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnUpdate(systemUpdateArgs);
     }
@@ -175,7 +175,7 @@ void FeatureECS::OnPostUpdate(const FeatureUpdateArgs& args)
     systemUpdateArgs.SimTime = args.SimTime;
     systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnPostUpdate(systemUpdateArgs);
     }
@@ -189,7 +189,7 @@ bool FeatureECS::OnPreHandleAction(const FeatureActionArgs& action)
     systemActionArgs.SimTime = action.SimTime;
     systemActionArgs.Action = action.Action;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         if (system->OnPreHandleAction(systemActionArgs))
         {
@@ -208,7 +208,7 @@ bool FeatureECS::OnHandleAction(const FeatureActionArgs& action)
     systemActionArgs.SimTime = action.SimTime;
     systemActionArgs.Action = action.Action;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         if (system->OnHandleAction(systemActionArgs))
         {
@@ -227,7 +227,7 @@ bool FeatureECS::OnPostHandleAction(const FeatureActionArgs& action)
     systemActionArgs.SimTime = action.SimTime;
     systemActionArgs.Action = action.Action;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         if (system->OnPostHandleAction(systemActionArgs))
         {
@@ -280,7 +280,7 @@ void FeatureECS::OnWorldInitialize(WorldRef world)
     
     TaskQueue::CreateTaskQueue((uint32)world.GetId());
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnWorldInitialize(world);
     }
@@ -290,7 +290,7 @@ void FeatureECS::OnWorldShutdown(WorldRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnWorldShutdown(world);
     }
@@ -308,7 +308,7 @@ void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
     systemUpdateArgs.SimTime = args.SimTime;
     systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnPreWorldUpdate(world, systemUpdateArgs);
     }
@@ -324,7 +324,7 @@ void FeatureECS::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
     systemUpdateArgs.SimTime = args.SimTime;
     systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
     
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnWorldUpdate(world, systemUpdateArgs);
     }
@@ -340,7 +340,7 @@ void FeatureECS::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args
     systemUpdateArgs.SimTime = args.SimTime;
     systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
     
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnPostWorldUpdate(world, systemUpdateArgs);
     }
@@ -358,7 +358,7 @@ bool FeatureECS::OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs&
     systemActionArgs.SimTime = action.SimTime;
     systemActionArgs.Action = action.Action;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         if (system->OnPreHandleWorldAction(world, systemActionArgs))
         {
@@ -378,7 +378,7 @@ bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& ac
         Vec2 pos = { action.Action.Data[0].Distance, action.Action.Data[1].Distance };
         Distance range = action.Action.Data[2].Distance;
 
-        TVector<EntityTransform> outEntities;
+        std::vector<EntityTransform> outEntities;
         QueryEntitiesInRange(world, pos, range, outEntities);
 
         for (const EntityTransform& entity : outEntities)
@@ -393,7 +393,7 @@ bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& ac
     systemActionArgs.SimTime = action.SimTime;
     systemActionArgs.Action = action.Action;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         if (system->OnHandleWorldAction(world, systemActionArgs))
         {
@@ -412,7 +412,7 @@ bool FeatureECS::OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs
     systemActionArgs.SimTime = action.SimTime;
     systemActionArgs.Action = action.Action;
 
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         if (system->OnPostHandleWorldAction(world, systemActionArgs))
         {
@@ -425,7 +425,7 @@ bool FeatureECS::OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs
 
 void FeatureECS::OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer)
 {
-    for (const TSharedPtr<ISystem>& system : Systems)
+    for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnDebugRender(world, state, renderer);
     }
@@ -446,12 +446,12 @@ FOnEntityReleased& FeatureECS::OnEntityReleased()
     return EntityDestroyedEvent;
 }
 
-void FeatureECS::RegisterSystem(const TSharedPtr<ISystem>& system)
+void FeatureECS::RegisterSystem(const std::shared_ptr<ISystem>& system)
 {
     Systems.push_back(system);
 }
 
-bool FeatureECS::UnregisterSystem(const TSharedPtr<ISystem>& system)
+bool FeatureECS::UnregisterSystem(const std::shared_ptr<ISystem>& system)
 {
     auto iter = std::ranges::find(Systems, system);
     if (iter == Systems.end())
@@ -460,7 +460,7 @@ bool FeatureECS::UnregisterSystem(const TSharedPtr<ISystem>& system)
     return true;
 }
 
-const TVector<TSharedPtr<ISystem>>& FeatureECS::GetSystems() const
+const std::vector<std::shared_ptr<ISystem>>& FeatureECS::GetSystems() const
 {
     return Systems;
 }
@@ -510,7 +510,7 @@ const Entity& FeatureECS::GetEntityRef(WorldConstRef world, EntityId entityId)
 
 EntityId FeatureECS::StaticAcquireEntity(WorldRef world, const FName& kind)
 {
-    TSharedPtr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
     return feature ? feature->AcquireEntity(world, kind) : EntityId::Invalid;
 }
 
@@ -539,7 +539,7 @@ EntityId FeatureECS::AcquireEntity(WorldRef world, const FName& kind) const
 
 bool FeatureECS::StaticReleaseEntity(WorldRef world, EntityId entityId)
 {
-    TSharedPtr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
     return feature && feature->ReleaseEntity(world, entityId);
 }
 
@@ -978,7 +978,7 @@ void FeatureECS::QueryEntitiesInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TVector<EntityTransform>& outEntities,
+    std::vector<EntityTransform>& outEntities,
     const EntityRangeQueryArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -995,7 +995,7 @@ void FeatureECS::QueryEntitiesInRange(
     MortonCodeAABB aabb = ToMortonCodeAABB(pos, range);
     MortonCodeQuery(aabb, ranges);
 
-    TVector<EntityTransform*> overlappingEntities;
+    std::vector<EntityTransform*> overlappingEntities;
     ForEachInMortonCodeRanges<EntityTransform, &EntityTransform::ZCode>(
         scratchBlock->SortedEntities,
         ranges,
@@ -1024,7 +1024,7 @@ void FeatureECS::QueryEntitiesInRect(
     WorldConstRef world,
     const Vec2& min,
     const Vec2& max,
-    TVector<EntityTransform>& outEntities,
+    std::vector<EntityTransform>& outEntities,
     const EntityRangeQueryArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -1041,7 +1041,7 @@ void FeatureECS::QueryEntitiesInRect(
     MortonCodeAABB aabb = ToMortonCodeAABB(min, max);
     MortonCodeQuery(aabb, ranges);
 
-    TVector<EntityTransform*> overlappingEntities;
+    std::vector<EntityTransform*> overlappingEntities;
     ForEachInMortonCodeRanges<EntityTransform, &EntityTransform::ZCode>(
         scratchBlock->SortedEntities,
         ranges,
@@ -1075,7 +1075,7 @@ void FeatureECS::SortAndCompact(WorldRef world)
 
     {
         PHX_PROFILE_ZONE_SCOPED_N("ReclaimEntities");
-        TSharedPtr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+        std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
         dynamicBlock.Entities.ReclaimEntities([&](const EntityId& entityId)
         {
             feature->OnReclaimEntity(world, entityId);

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Platform.h"
@@ -53,7 +52,7 @@ namespace Phoenix
             return bHasValue ? Value : defaultValue;
         }
 
-        T GetValue(const TFunction<T()>& defaultValue) const
+        T GetValue(const std::function<T()>& defaultValue) const
         {
             return bHasValue ? Value : defaultValue();
         }

@@ -9,7 +9,7 @@ Phoenix::FName Phoenix::RTS::IEffectHandler::GetEffectTypeId() const
     return FName::None;
 }
 
-void Phoenix::RTS::IEffectHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void Phoenix::RTS::IEffectHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IService::Initialize(session);
     EffectsFeature = session->GetFeature<FeatureEffects>();

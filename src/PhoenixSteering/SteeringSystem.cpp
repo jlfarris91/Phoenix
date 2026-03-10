@@ -457,7 +457,7 @@ namespace SteeringDetail
                 return;
             }
 
-            TVector<const SortedEntity*> entities;
+            std::vector<const SortedEntity*> entities;
             SteeringRangeQueryArgs queryArgs = { steerComp.CollisionMask };
             FeatureSteering::QueryEntitiesInRange(*World, steerComp.GoalPos, steerComp.Slack, entities);
 
@@ -684,7 +684,7 @@ void SteeringSystem::OnDebugRender(
     // builder.RequireAllComponents<TransformComponent, BodyComponent, SteeringComponent>();
     // auto query = builder.GetQuery();
     //
-    // FeatureECS::ForEachEntity(world, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&, const SteeringComponent&>& span)
+    // FeatureECS::ForEachEntity(world, query, std::function([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&, const SteeringComponent&>& span)
     // {
     //     for (auto && [entity, index, transformComp, bodyComp, steeringComp] : span)
     //     {

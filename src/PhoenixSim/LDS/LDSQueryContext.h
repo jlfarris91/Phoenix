@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Platform.h"
@@ -8,7 +7,7 @@
 
 namespace Phoenix::LDS
 {
-    class PHOENIX_SIM_API ILDSQueryContext : TSharedAsThis<ILDSQueryContext>
+    class PHOENIX_SIM_API ILDSQueryContext : public std::enable_shared_from_this<ILDSQueryContext>
     {
     public:
 

@@ -25,7 +25,7 @@ namespace Phoenix
 
         FeatureLua();
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnPreUpdate(const FeatureUpdateArgs& args) override;

@@ -9,7 +9,7 @@ Phoenix::FName Phoenix::RTS::ICommandHandler::GetCommandId() const
     return FName::None;
 }
 
-void Phoenix::RTS::ICommandHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void Phoenix::RTS::ICommandHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IService::Initialize(session);
     OrdersFeature = session->GetFeature<FeatureOrders>();

@@ -1,9 +1,8 @@
-
 #include "PhoenixSim/LDS/LDSValue.h"
 
 namespace Phoenix::LDS
 {
-    bool TryParse(const PHXString& string, ELDSValueType& outEnum)
+    bool TryParse(const std::string& string, ELDSValueType& outEnum)
     {
 #define PARSE(str, estr, e) \
         if (str == estr) \
@@ -38,7 +37,7 @@ namespace Phoenix::LDS
         return false;
     }
 
-    PHXString ToString(ELDSValueType valueType)
+    std::string ToString(ELDSValueType valueType)
     {
 #define TO_STRING(estr, e) case ELDSValueType::e: return estr;
         switch (valueType)

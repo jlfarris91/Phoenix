@@ -73,9 +73,9 @@ FeatureSharedPtr FeatureSet::GetFeature(const FName& name) const
     return feature->second;
 }
 
-TVector<FeatureSharedPtr> FeatureSet::GetFeatures() const
+std::vector<FeatureSharedPtr> FeatureSet::GetFeatures() const
 {
-    TVector<FeatureSharedPtr> features;
+    std::vector<FeatureSharedPtr> features;
     features.reserve(static_cast<uint32>(Features.size()));
     for (auto&& feature : Features)
     {
@@ -106,9 +106,9 @@ FeatureSet::FeatureSet(const FeatureSetCtorArgs& args)
     RegisterFeatureChannels(args.Features);
 }
 
-TVector<FName> FeatureSet::GetChannelNames() const
+std::vector<FName> FeatureSet::GetChannelNames() const
 {
-    TVector<FName> channelNames;
+    std::vector<FName> channelNames;
     channelNames.reserve(static_cast<uint32>(Channels.size()));
     for (auto&& channels : Channels)
     {
@@ -117,9 +117,9 @@ TVector<FName> FeatureSet::GetChannelNames() const
     return channelNames;
 }
 
-TVector<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
+std::vector<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
 {
-    TVector<FeatureSharedPtr> features;
+    std::vector<FeatureSharedPtr> features;
     auto&& channelIter = Channels.find(channelName);
     if (channelIter != Channels.end())
     {
@@ -128,12 +128,12 @@ TVector<FeatureSharedPtr> FeatureSet::GetChannel(const FName& channelName) const
     return features;
 }
 
-const TVector<FeatureSharedPtr>& FeatureSet::GetChannelRef(const FName& channelName) const
+const std::vector<FeatureSharedPtr>& FeatureSet::GetChannelRef(const FName& channelName) const
 {
     auto channelIter = Channels.find(channelName);
     if (channelIter == Channels.end())
     {
-        static TVector<FeatureSharedPtr> staticEmpty;
+        static std::vector<FeatureSharedPtr> staticEmpty;
         return staticEmpty;
     }
     return channelIter->second;
@@ -146,9 +146,9 @@ struct FeatureChannelInsert
     FeatureInsertPosition InsertPosition;
 };
 
-void FeatureSet::RegisterFeatureChannels(const TVector<FeatureSharedPtr>& features)
+void FeatureSet::RegisterFeatureChannels(const std::vector<FeatureSharedPtr>& features)
 {
-    TVector<FeatureChannelInsert> remainingInserts;
+    std::vector<FeatureChannelInsert> remainingInserts;
 
     for (const FeatureSharedPtr& feature : features)
     {
@@ -192,7 +192,7 @@ void FeatureSet::RegisterFeatureChannels(const TVector<FeatureSharedPtr>& featur
             }
 
             // The channel exists, try to insert the feature relative to another existing in the channel
-            TVector<FeatureSharedPtr>& channel = Channels[featureInsert.Channel];
+            std::vector<FeatureSharedPtr>& channel = Channels[featureInsert.Channel];
 
             int32 insertIndex = FindChannelInsertIndex(channel, featureInsert.InsertPosition);
 
@@ -218,7 +218,7 @@ void FeatureSet::RegisterFeatureChannels(const TVector<FeatureSharedPtr>& featur
 }
 
 int32 FeatureSet::FindChannelInsertIndex(
-    const TVector<FeatureSharedPtr>& channelFeatures,
+    const std::vector<FeatureSharedPtr>& channelFeatures,
     const FeatureInsertPosition& insertPosition)
 {
     if (insertPosition.RelativePosition == EFeatureInsertPosition::Default)

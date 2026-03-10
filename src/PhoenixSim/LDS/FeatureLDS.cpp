@@ -1,4 +1,3 @@
-
 #include "FeatureLDS.h"
 
 #include "LDSFeatureQueryContext.h"
@@ -51,17 +50,17 @@ FeatureLDS::FeatureLDS()
     FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
 }
 
-TSharedPtr<HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog()
+std::shared_ptr<HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog()
 {
     return StaticSessionCatalog;
 }
 
-TSharedPtr<const HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog() const
+std::shared_ptr<const HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog() const
 {
     return StaticSessionCatalog;
 }
 
-TSharedPtr<const HeapLDSCatalog> FeatureLDS::GetStaticWorldCatalog(WorldConstRef world) const
+std::shared_ptr<const HeapLDSCatalog> FeatureLDS::GetStaticWorldCatalog(WorldConstRef world) const
 {
     auto worldCatalog = StaticWorldCatalogs.find(world.GetId());
     if (worldCatalog != StaticWorldCatalogs.end())
@@ -71,27 +70,27 @@ TSharedPtr<const HeapLDSCatalog> FeatureLDS::GetStaticWorldCatalog(WorldConstRef
     return nullptr;
 }
 
-TSharedPtr<const ILDSQueryContext> FeatureLDS::GetSessionQueryContext() const
+std::shared_ptr<const ILDSQueryContext> FeatureLDS::GetSessionQueryContext() const
 {
     return SessionQueryContext;
 }
 
-TSharedPtr<const ILDSQueryContext> FeatureLDS::GetWorldQueryContext(WorldConstRef world) const
+std::shared_ptr<const ILDSQueryContext> FeatureLDS::GetWorldQueryContext(WorldConstRef world) const
 {
     auto iter = WorldQueryContexts.find(world.GetId());
-    return iter != WorldQueryContexts.end() ? iter->second : TSharedPtr<const ILDSQueryContext>();
+    return iter != WorldQueryContexts.end() ? iter->second : std::shared_ptr<const ILDSQueryContext>();
 }
 
-TSharedPtr<const ILDSQueryContext> FeatureLDS::StaticGetSessionQueryContext(SessionConstRef session)
+std::shared_ptr<const ILDSQueryContext> FeatureLDS::StaticGetSessionQueryContext(SessionConstRef session)
 {
-    TSharedPtr<FeatureLDS> featureLDS = session.GetFeature<FeatureLDS>();
-    return featureLDS ? featureLDS->GetSessionQueryContext() : TSharedPtr<const ILDSQueryContext>();
+    std::shared_ptr<FeatureLDS> featureLDS = session.GetFeature<FeatureLDS>();
+    return featureLDS ? featureLDS->GetSessionQueryContext() : std::shared_ptr<const ILDSQueryContext>();
 }
 
-TSharedPtr<const ILDSQueryContext> FeatureLDS::StaticGetWorldQueryContext(WorldConstRef world)
+std::shared_ptr<const ILDSQueryContext> FeatureLDS::StaticGetWorldQueryContext(WorldConstRef world)
 {
-    TSharedPtr<FeatureLDS> featureLDS = GetFeature<FeatureLDS>(world);
-    return featureLDS ? featureLDS->GetWorldQueryContext(world) : TSharedPtr<const ILDSQueryContext>();
+    std::shared_ptr<FeatureLDS> featureLDS = GetFeature<FeatureLDS>(world);
+    return featureLDS ? featureLDS->GetWorldQueryContext(world) : std::shared_ptr<const ILDSQueryContext>();
 }
 
 const LDSRecord* FeatureLDS::QueryObjectRecord(
@@ -100,7 +99,7 @@ const LDSRecord* FeatureLDS::QueryObjectRecord(
     ELDSFeatureRecordQueryFlags flags,
     ELDSRecordQueryFlags flags2)
 {
-    TSharedPtr<const ILDSQueryContext> queryContext = StaticGetWorldQueryContext(world);
+    std::shared_ptr<const ILDSQueryContext> queryContext = StaticGetWorldQueryContext(world);
     if (!queryContext)
     {
         return nullptr;
@@ -118,7 +117,7 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     ELDSFeatureRecordQueryFlags flags,
     ELDSRecordQueryFlags flags2)
 {
-    TSharedPtr<const ILDSQueryContext> queryContext = StaticGetWorldQueryContext(world);
+    std::shared_ptr<const ILDSQueryContext> queryContext = StaticGetWorldQueryContext(world);
     if (!queryContext)
     {
         return nullptr;
@@ -130,20 +129,20 @@ const LDSRecord* FeatureLDS::QueryTypeRecord(
     return queryContext->QueryRecord(path, flags2);
 }
 
-void FeatureLDS::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureLDS::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
     // TODO (jfarris): load session-level catalogs from disk
-    StaticSessionCatalog = MakeShared<HeapLDSCatalog>();
+    StaticSessionCatalog = std::make_shared<HeapLDSCatalog>();
 
-    SessionQueryContext = MakeShared<LDSFeatureQueryContext>(LDSFeatureQueryContext::Create(*Session, nullptr));
+    SessionQueryContext = std::make_shared<LDSFeatureQueryContext>(LDSFeatureQueryContext::Create(*Session, nullptr));
 
     auto catalogPathIter = Config.find("catalog");
     if (catalogPathIter != Config.end())
     {
         fs::path dataDir = Session->GetDataDirectory();
-        fs::path catalogPath = absolute(dataDir / catalogPathIter->get<PHXString>());
+        fs::path catalogPath = absolute(dataDir / catalogPathIter->get<std::string>());
         LoadCatalog(catalogPath.generic_string(), *StaticSessionCatalog);
     }
 }
@@ -186,10 +185,10 @@ void FeatureLDS::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
 
-    TSharedPtr<HeapLDSCatalog> staticWorldCatalog = StaticWorldCatalogs[world.GetId()];
+    std::shared_ptr<HeapLDSCatalog> staticWorldCatalog = StaticWorldCatalogs[world.GetId()];
     if (!staticWorldCatalog)
     {
-        staticWorldCatalog = MakeShared<HeapLDSCatalog>();
+        staticWorldCatalog = std::make_shared<HeapLDSCatalog>();
         StaticWorldCatalogs.emplace(world.GetId(), staticWorldCatalog);
     }
 
@@ -200,12 +199,12 @@ void FeatureLDS::OnWorldInitialize(WorldRef world)
         if (catalogPathIter != featureConfigData.end())
         {
             fs::path worldsDir = Session->GetWorldsDirectory();
-            fs::path catalogPath = absolute(worldsDir / catalogPathIter->get<PHXString>());
-            LoadCatalog(catalogPathIter->get<PHXString>(), *staticWorldCatalog);
+            fs::path catalogPath = absolute(worldsDir / catalogPathIter->get<std::string>());
+            LoadCatalog(catalogPathIter->get<std::string>(), *staticWorldCatalog);
         }
     }
 
-    TSharedPtr<LDSFeatureQueryContext> queryContext = MakeShared<LDSFeatureQueryContext>(LDSFeatureQueryContext::Create(*Session, &world));
+    std::shared_ptr<LDSFeatureQueryContext> queryContext = std::make_shared<LDSFeatureQueryContext>(LDSFeatureQueryContext::Create(*Session, &world));
     WorldQueryContexts.emplace(world.GetId(), queryContext);
 }
 
@@ -228,9 +227,9 @@ void FeatureLDS::OnWorldShutdown(WorldRef world)
     }
 }
 
-bool FeatureLDS::LoadCatalog(const PHXString& catalogAbsolutePath, HeapLDSCatalog& catalog)
+bool FeatureLDS::LoadCatalog(const std::string& catalogAbsolutePath, HeapLDSCatalog& catalog)
 {
-    TSharedPtr<JsonDataSource> dataSource = JsonDataSource::LoadFromCatalog(catalogAbsolutePath);
+    std::shared_ptr<JsonDataSource> dataSource = JsonDataSource::LoadFromCatalog(catalogAbsolutePath);
     if (!dataSource)
     {
         // Error: could not load catalog

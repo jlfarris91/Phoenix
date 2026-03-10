@@ -12,7 +12,7 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
-void IResponseHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void IResponseHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IService::Initialize(session);
     EffectsFeature = session->GetFeature<FeatureEffects>();

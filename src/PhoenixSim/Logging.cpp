@@ -1,4 +1,3 @@
-
 #include "Logging.h"
 
 using namespace Phoenix;
@@ -12,8 +11,8 @@ public:
     }
 } gDefaultLogger;
 
-TSharedPtr<ILogger> gPrimaryLogger;
-std::unordered_map<std::string, TSharedPtr<ILogger>> gSecondaryLoggers;
+std::shared_ptr<ILogger> gPrimaryLogger;
+std::unordered_map<std::string, std::shared_ptr<ILogger>> gSecondaryLoggers;
 
 bool Phoenix::HasLogger(const std::string& id)
 {
@@ -34,12 +33,12 @@ ILogger& Phoenix::GetLogger(const std::string& id)
     return *gSecondaryLoggers[id];
 }
 
-void Phoenix::SetLogger(const TSharedPtr<ILogger>& logger)
+void Phoenix::SetLogger(const std::shared_ptr<ILogger>& logger)
 {
     gPrimaryLogger = logger;
 }
 
-void Phoenix::SetLogger(const TSharedPtr<ILogger>& logger, const std::string& id)
+void Phoenix::SetLogger(const std::shared_ptr<ILogger>& logger, const std::string& id)
 {
     if (id.empty())
     {

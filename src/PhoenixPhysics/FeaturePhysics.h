@@ -78,10 +78,10 @@ namespace Phoenix::Physics
         PHX_DECLARE_BLOCK(FeaturePhysicsScratchBlock);
 
         TInlineArray<EntityBody, PHX_ECS_MAX_ENTITIES> SortedEntities;
-        TAtomic<uint32> SortedEntityCount = 0;
+        std::atomic<uint32> SortedEntityCount = 0;
 
         TInlineArray<ContactPair, PHX_PHS_MAX_CONTACTS> ContactPairs;
-        TAtomic<uint32> ContactPairsCount = 0;
+        std::atomic<uint32> ContactPairsCount = 0;
 
         TInlineMap<uint64, uint32, PHX_PHS_MAX_CONTACTS> ContactPairSet;
 
@@ -99,9 +99,9 @@ namespace Phoenix::Physics
 
         FeaturePhysics();
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
 
-        static void QueryEntitiesInRange(WorldConstRef& world, const Vec2& pos, Distance range, TVector<EntityBody>& outEntities);
+        static void QueryEntitiesInRange(WorldConstRef& world, const Vec2& pos, Distance range, std::vector<EntityBody>& outEntities);
 
         static void AddExplosionForceToEntitiesInRange(
             WorldRef& world,
@@ -115,6 +115,6 @@ namespace Phoenix::Physics
 
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
 
-        TSharedPtr<PhysicsSystem> PhysicsSystem;
+        std::shared_ptr<PhysicsSystem> PhysicsSystem;
     };
 }

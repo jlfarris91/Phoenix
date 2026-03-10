@@ -11,7 +11,7 @@ void IService::OnSessionLayout(const SessionLayoutContext& context, BlockBufferL
 {
 }
 
-void IService::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void IService::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     PHX_ASSERT(session);
     Session = session;

@@ -1,4 +1,3 @@
-
 #include "NavMeshTool.h"
 
 #include <fstream>
@@ -16,7 +15,7 @@
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;
 
-NavMeshTool::NavMeshTool(TSharedPtr<Phoenix::Session> session)
+NavMeshTool::NavMeshTool(std::shared_ptr<Phoenix::Session> session)
     : Session(session)
 {
 }
@@ -410,8 +409,8 @@ void NavMeshTool::RenderCircumcircle(SDLDebugRenderer& renderer, const Vec2& a, 
 
 void NavMeshTool::LoadMeshFromFile()
 {
-    PHXString mapFilePath = MapDir + "\\map.json";
-    PHXString pathingMeshFilePath = MapDir + "\\pathing_mesh.json";
+    std::string mapFilePath = MapDir + "\\map.json";
+    std::string pathingMeshFilePath = MapDir + "\\pathing_mesh.json";
 
     std::ifstream mapFile(mapFilePath);
     std::ifstream pathingMeshFile(pathingMeshFilePath);

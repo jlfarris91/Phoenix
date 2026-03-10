@@ -1,5 +1,4 @@
-﻿
-#include "PhoenixPhysics/FeaturePhysics.h"
+﻿#include "PhoenixPhysics/FeaturePhysics.h"
 
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/Profiling.h"
@@ -17,13 +16,13 @@ FeaturePhysics::FeaturePhysics()
     FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 
-void FeaturePhysics::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeaturePhysics::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    PhysicsSystem = MakeShared<Physics::PhysicsSystem>();
+    PhysicsSystem = std::make_shared<Physics::PhysicsSystem>();
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
+    auto featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->RegisterSystem(PhysicsSystem);
 }
 
@@ -31,7 +30,7 @@ void FeaturePhysics::QueryEntitiesInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TVector<EntityBody>& outEntities)
+    std::vector<EntityBody>& outEntities)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -45,7 +44,7 @@ void FeaturePhysics::QueryEntitiesInRange(
         MortonCodeQuery(aabb, ranges);
     }
 
-    TVector<EntityBody*> overlappingEntities;
+    std::vector<EntityBody*> overlappingEntities;
     ForEachInMortonCodeRanges<EntityBody, &EntityBody::ZCode>(
         scratchBlock.SortedEntities,
         ranges,
@@ -59,7 +58,7 @@ void FeaturePhysics::AddExplosionForceToEntitiesInRange(WorldRef world, const Ve
 {
     // Distance rangeSq = range * range;
 
-    TVector<EntityBody> outEntities;
+    std::vector<EntityBody> outEntities;
     QueryEntitiesInRange(world, pos, range, outEntities);
 
     for (const EntityBody& entityBody : outEntities)

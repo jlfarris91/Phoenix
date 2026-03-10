@@ -52,7 +52,7 @@ const FixedTimerManager* FeatureTimers::GetSessionTimerManager(SessionConstRef s
 
 FixedTimerManager* FeatureTimers::GetSessionTimerManager(WorldRef world)
 {
-    TWeakPtr<Phoenix::Session> weakSession = world.GetSession();
+    std::weak_ptr<Phoenix::Session> weakSession = world.GetSession();
     if (auto session = weakSession.lock())
     {
         return GetSessionTimerManager(*session);

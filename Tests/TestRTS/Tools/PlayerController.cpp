@@ -1,4 +1,3 @@
-
 #include "PlayerController.h"
 
 #include <SDL3/SDL_events.h>
@@ -25,7 +24,7 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-PlayerController::PlayerController(const TSharedPtr<Phoenix::Session>& session, SDLCamera* camera, SDLViewport* viewport)
+PlayerController::PlayerController(const std::shared_ptr<Phoenix::Session>& session, SDLCamera* camera, SDLViewport* viewport)
     : Session(session)
     , Camera(camera)
     , Viewport(viewport)
@@ -70,7 +69,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 
         renderer.DrawRect(min, max, Color::White);
 
-        TVector<EntityTransform> entities;
+        std::vector<EntityTransform> entities;
         FeatureECS::QueryEntitiesInRect(world, min, max, entities);
 
         for (const EntityTransform& entity : entities)
@@ -213,7 +212,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             max.X = std::max(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
             max.Y = std::max(boxSelectDragStartWS.Y, boxSelectDragEndWS.Y);
 
-            TVector<EntityTransform> entities;
+            std::vector<EntityTransform> entities;
             FeatureECS::QueryEntitiesInRect(world, min, max, entities);
 
             if (!state.KeyDown(SDL_KMOD_CTRL) && !state.KeyDown(SDL_KMOD_SHIFT))
@@ -241,7 +240,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         }
         else
         {
-            TVector<EntityTransform> entities;
+            std::vector<EntityTransform> entities;
             FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
 
             if (!state.KeyDown(SDL_KMOD_CTRL) && !state.KeyDown(SDL_KMOD_SHIFT))
@@ -275,7 +274,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     }
 
     {
-        TVector<EntityTransform> entities;
+        std::vector<EntityTransform> entities;
         FeatureECS::QueryEntitiesInRange(world, CursorWorldPos, 1.0, entities);
 
         EntityId closestEntity;

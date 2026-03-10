@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Features.h"
@@ -38,7 +37,7 @@ namespace Phoenix::RTS
         FixedOrderQueue OrderQueue;
     };
 
-    using PrioritizedCommandHandler = TTuple<UnitId, uint32, TSharedPtr<ICommandHandler>>;
+    using PrioritizedCommandHandler = std::tuple<UnitId, uint32, std::shared_ptr<ICommandHandler>>;
 
     // Manages the order queues of all units in the game.
     class PHOENIX_RTS_API FeatureOrders : public IFeature
@@ -53,23 +52,23 @@ namespace Phoenix::RTS
         // Command Handler Management
         //
 
-        void RegisterCommandHandler(const TSharedPtr<ICommandHandler>& handler);
+        void RegisterCommandHandler(const std::shared_ptr<ICommandHandler>& handler);
 
         template <class T, class ...TArgs>
-        TSharedPtr<T> RegisterCommandHandler(TArgs&&... args)
+        std::shared_ptr<T> RegisterCommandHandler(TArgs&&... args)
         {
-            TSharedPtr<T> handler = MakeShared<T>(std::forward<TArgs>(args)...);
+            auto handler = std::make_shared<T>(std::forward<TArgs>(args)...);
             RegisterCommandHandler(handler);
             return handler;
         }
 
         bool UnregisterCommandHandler(const FName& commandId);
 
-        TSharedPtr<ICommandHandler> FindCommandHandlerCached(WorldConstRef world, const FName& commandId);
+        std::shared_ptr<ICommandHandler> FindCommandHandlerCached(WorldConstRef world, const FName& commandId);
 
-        TSharedPtr<ICommandHandler> FindCommandHandler(WorldConstRef world, const FName& commandId) const;
+        std::shared_ptr<ICommandHandler> FindCommandHandler(WorldConstRef world, const FName& commandId) const;
 
-        static TSharedPtr<ICommandHandler> StaticFindCommandHandler(WorldConstRef world, const FName& abilityId);
+        static std::shared_ptr<ICommandHandler> StaticFindCommandHandler(WorldConstRef world, const FName& abilityId);
 
         //
         // Order Queue
@@ -143,7 +142,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
@@ -158,7 +157,7 @@ namespace Phoenix::RTS
             WorldRef world,
             const UnitId& unit,
             const Command& command,
-            const TSharedPtr<ICommandHandler>& handler);
+            const std::shared_ptr<ICommandHandler>& handler);
 
         static bool StaticExecuteHeadOrder(WorldRef world, const UnitId& unit);
         bool ExecuteHeadOrder(WorldRef world, const UnitId& unit);
@@ -167,7 +166,7 @@ namespace Phoenix::RTS
             WorldRef world,
             const UnitId& unit,
             const Order& order,
-            const TSharedPtr<ICommandHandler>& handler);
+            const std::shared_ptr<ICommandHandler>& handler);
 
         static bool StaticInterruptHeadOrder(WorldRef world, const UnitId& unit);
         bool InterruptHeadOrder(WorldRef world, const UnitId& unit);
@@ -186,7 +185,7 @@ namespace Phoenix::RTS
             const UnitId& unit,
             const CommandContext& context,
             const Command& command,
-            TVector<PrioritizedCommandHandler>& outHandlers);
+            std::vector<PrioritizedCommandHandler>& outHandlers);
 
         bool GetHighestPriorityHandler(
             WorldConstRef world,
@@ -198,8 +197,8 @@ namespace Phoenix::RTS
         uint32 GetHighestPriorityHandlersForSelection(
             WorldConstRef world,
             const Command& command,
-            TVector<PrioritizedCommandHandler>& outHandlers);
+            std::vector<PrioritizedCommandHandler>& outHandlers);
 
-        std::unordered_map<FName, TSharedPtr<ICommandHandler>> CommandIdToHandlerMap;
+        std::unordered_map<FName, std::shared_ptr<ICommandHandler>> CommandIdToHandlerMap;
     };
 }

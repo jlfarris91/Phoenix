@@ -1,4 +1,3 @@
-
 #pragma once
 
 #ifdef _WIN32
@@ -92,71 +91,6 @@ namespace Phoenix
     typedef uint16_t uint16;
     typedef uint32_t uint32;
     typedef uint64_t uint64;
-
-    typedef std::string PHXString;
-
-    template <class T> using TVector = std::vector<T>;
-    template <class ...TArgs> using TTuple = std::tuple<TArgs...>;
-    template <class TKey, class TValue> using TPair = std::pair<TKey, TValue>;
-    template <class T> using TFunction = std::function<T>;
-
-    template <class T> using TSharedPtr = std::shared_ptr<T>;
-    template <class T> using TSharedAsThis = std::enable_shared_from_this<T>;
-    template <class T> using TWeakPtr = std::weak_ptr<T>;
-    template <class T> using TUniquePtr = std::unique_ptr<T>;
-
-    template <class T> using TAtomic = std::atomic<T>;
-
-    template <class T, class ...TArgs, std::enable_if_t<!std::is_array_v<T>, int> = 0>
-    TSharedPtr<T> MakeShared(TArgs&&... args)
-    {
-        return std::make_shared<T>(std::forward<TArgs>(args)...);
-    }
-
-    template <class T, std::enable_if_t<std::is_array_v<T> && std::extent_v<T> == 0, int> = 0>
-    TSharedPtr<T> MakeShared(const size_t size)
-    {
-        return std::make_shared<T>(size);
-    }
-
-    template <class T, class ...TArgs, std::enable_if_t<!std::is_array_v<T>, int> = 0>
-    TUniquePtr<T> MakeUnique(TArgs&&... args)
-    {
-        return std::make_unique<T>(std::forward<TArgs>(args)...);
-    }
-
-    template <class T, std::enable_if_t<std::is_array_v<T> && std::extent_v<T> == 0, int> = 0>
-    TUniquePtr<T> MakeUnique(const size_t size)
-    {
-        return std::make_unique<T>(size);
-    }
-
-    template <class T>
-    PHX_FORCEINLINE T&& Forward(std::remove_reference_t<T>& obj)
-    {
-        return static_cast<T&&>(obj);
-    }
-
-    template <class T>
-    PHX_FORCEINLINE T&& Forward(std::remove_reference_t<T>&& obj)
-    {
-        return static_cast<T&&>(obj);
-    }
-
-    template <class T>
-    PHX_FORCEINLINE constexpr std::remove_reference_t<T>&& MoveTemp(T&& arg)
-    {
-        return std::move<T>(arg);
-    }
-
-    template <class T>
-    struct Underlying
-    {
-        using type = std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<T>>>;
-    };
-
-    template <class T>
-    using Underlying_T = typename Underlying<T>::type;
 
     typedef decltype(PHX_SYS_CLOCK_NOW()) sys_clock_t;
     typedef std::chrono::duration<sys_clock_t::rep, sys_clock_t::period> sys_clock_dur_t;

@@ -1,4 +1,3 @@
-
 #include "Parallel.h"
 
 // xatomic.h is Windows-specific, using standard <atomic> and <thread> from Parallel.h
@@ -38,7 +37,7 @@ void TaskHandle::OnCompleted(std::function<void()>&& fn)
 
 Task::Task() = default;
 
-Task::Task(Task&& other)
+Task::Task(Task&& other) noexcept
     : WorkFunc(std::move(other.WorkFunc))
 {
 }
@@ -59,14 +58,14 @@ void Task::operator()() const
     }
 }
 
-bool Task::WaitAll(const std::vector<TSharedPtr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime)
+bool Task::WaitAll(const std::vector<std::shared_ptr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime)
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
    
     for (;;)
     {
         bool done = true;
-        for (const TSharedPtr<TaskHandle>& handle : handles)
+        for (const std::shared_ptr<TaskHandle>& handle : handles)
         {
             if (!handle->IsCompleted())
             {
@@ -89,13 +88,13 @@ bool Task::WaitAll(const std::vector<TSharedPtr<TaskHandle>>& handles, std::chro
     }
 }
 
-bool Task::WaitAny(const std::vector<TSharedPtr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime)
+bool Task::WaitAny(const std::vector<std::shared_ptr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime)
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
 
     for (;;)
     {
-        for (const TSharedPtr<TaskHandle>& handle : handles)
+        for (const std::shared_ptr<TaskHandle>& handle : handles)
         {
             if (handle->IsCompleted())
             {
@@ -148,9 +147,9 @@ void ThreadPool::Shutdown()
     }
 }
 
-TSharedPtr<TaskHandle> ThreadPool::Submit(const Task& task)
+std::shared_ptr<TaskHandle> ThreadPool::Submit(const Task& task)
 {
-    TSharedPtr<TaskHandle> handle = MakeShared<TaskHandle>();
+    auto handle = std::make_shared<TaskHandle>();
 
     Task taskCopy = task;
     taskCopy.Handle = handle;
@@ -175,7 +174,7 @@ TSharedPtr<TaskHandle> ThreadPool::Submit(const Task& task)
     return handle;
 }
 
-TSharedPtr<TaskHandle> ThreadPool::Submit(TTaskFunc&& work)
+std::shared_ptr<TaskHandle> ThreadPool::Submit(TTaskFunc&& work)
 {
     return Submit(Task(std::move(work)));
 }
@@ -204,7 +203,7 @@ void ThreadPool::Worker(uint32 workerId)
 #if _WIN32
     wchar_t buf[256];
     size_t len;
-    mbstowcs_s(&len, buf, Id.c_str(), 256);
+    (void)mbstowcs_s(&len, buf, Id.c_str(), 256);
     SetThreadDescription(GetCurrentThread(), buf);
 #endif
 
@@ -260,7 +259,7 @@ void ThreadPool::Worker(uint32 workerId)
     }
 }
 
-std::unordered_map<uint32, TSharedPtr<TaskQueue>> gTaskQueues;
+std::unordered_map<uint32, std::shared_ptr<TaskQueue>> gTaskQueues;
 std::mutex gTaskQueueMutex;
 
 TaskQueue::TaskQueue(uint32 id, Phoenix::ThreadPool* threadPool)
@@ -270,27 +269,23 @@ TaskQueue::TaskQueue(uint32 id, Phoenix::ThreadPool* threadPool)
     Tasks.reserve(32);
 }
 
-TSharedPtr<TaskQueue> TaskQueue::CreateTaskQueue(uint32 id)
+std::shared_ptr<TaskQueue> TaskQueue::CreateTaskQueue(uint32 id)
 {
     std::scoped_lock lock(gTaskQueueMutex);
-
-    TSharedPtr<TaskQueue> taskQueue = MakeShared<TaskQueue>(id);
+    auto taskQueue = std::make_shared<TaskQueue>(id);
     gTaskQueues[id] = taskQueue;
     return taskQueue;
 }
 
-TSharedPtr<TaskQueue> TaskQueue::GetTaskQueue(uint32 id)
+std::shared_ptr<TaskQueue> TaskQueue::GetTaskQueue(uint32 id)
 {
     PHX_PROFILE_ZONE_SCOPED;
-
     std::scoped_lock lock(gTaskQueueMutex);
-
     auto iter = gTaskQueues.find(id);
     if (iter != gTaskQueues.end())
     {
         return iter->second;
     }
-
     return nullptr;
 }
 
@@ -363,7 +358,7 @@ void TaskQueue::Flush()
 
     for (const std::vector<Task>& tasks : Tasks)
     {
-        std::vector<TSharedPtr<TaskHandle>> handles;
+        std::vector<std::shared_ptr<TaskHandle>> handles;
         handles.reserve(tasks.size());
         
         for (const Task& task : tasks)
@@ -384,7 +379,7 @@ void TaskQueue::Complete()
     bIsCompleted.store(true, std::memory_order_release);
 }
 
-TUniquePtr<ThreadPool> gThreadPool;
+std::unique_ptr<ThreadPool> gThreadPool;
 
 bool Phoenix::HasThreadPool()
 {
@@ -398,10 +393,10 @@ ThreadPool* Phoenix::GetThreadPool()
 
 void Phoenix::SetThreadPool(const std::string& id, uint32 numWorkers, uint32 queueCapacity)
 {
-    gThreadPool = MakeUnique<ThreadPool>(id, numWorkers, queueCapacity);
+    gThreadPool = std::make_unique<ThreadPool>(id, numWorkers, queueCapacity);
 }
 
 void Phoenix::DestroyThreadPool()
 {
-    (void)gThreadPool.release();
+    gThreadPool.release();
 }

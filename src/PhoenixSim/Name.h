@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Platform.h"
@@ -17,7 +16,7 @@ namespace Phoenix
 
         constexpr FName() = default;
         constexpr FName(hash32_t hash) : Value(hash) {}
-        constexpr FName(const PHXString& string) : FName(string.data(), string.length()) {}
+        constexpr FName(const std::string& string) : FName(string.data(), string.length()) {}
 
         constexpr FName(const char* chars, size_t len) : Value(Hashing::FNV1A32(chars, len))
         {

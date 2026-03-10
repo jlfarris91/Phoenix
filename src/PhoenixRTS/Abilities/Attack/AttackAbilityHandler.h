@@ -61,7 +61,7 @@ namespace Phoenix::RTS
         static FName StaticGetCommandId();
         FName GetCommandId() const override;
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnWorldInitialize(WorldRef world) override;
@@ -112,6 +112,6 @@ namespace Phoenix::RTS
             const Data::AttackAbilityPtr& attackAbility,
             AttackAbilityComponent& attackComp);
 
-        TSharedPtr<AttackAbilitySystem> System;
+        std::shared_ptr<AttackAbilitySystem> System;
     };
 }

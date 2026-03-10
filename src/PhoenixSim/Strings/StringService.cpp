@@ -28,17 +28,17 @@ public:
     }
 
 private:
-    std::unordered_map<FName, PHXString> Strings;
+    std::unordered_map<FName, std::string> Strings;
 } gDefaultStrings;
 
-TSharedPtr<IStringService> gPrimaryStringService;
+std::shared_ptr<IStringService> gPrimaryStringService;
 
 IStringService& Phoenix::GetStringService()
 {
     return gPrimaryStringService ? *gPrimaryStringService : gDefaultStrings;
 }
 
-void Phoenix::SetStringService(const TSharedPtr<IStringService>& service)
+void Phoenix::SetStringService(const std::shared_ptr<IStringService>& service)
 {
     gPrimaryStringService = service;
 }

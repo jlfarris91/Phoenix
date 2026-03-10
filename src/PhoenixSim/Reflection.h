@@ -45,8 +45,8 @@ namespace Phoenix
     {
         virtual ~DescriptorBase() = default;
 
-        PHXString Name;
-        std::unordered_map<PHXString, PHXString> Metadata;
+        std::string Name;
+        std::unordered_map<std::string, std::string> Metadata;
     };
 
     struct PHOENIX_SIM_API IMethodPointer
@@ -65,7 +65,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API MethodDescriptor : DescriptorBase
     {
-        TSharedPtr<IMethodPointer> MethodPointer;
+        std::shared_ptr<IMethodPointer> MethodPointer;
     };
 
     template <class T>
@@ -320,7 +320,7 @@ namespace Phoenix
     struct PHOENIX_SIM_API PropertyDescriptor : DescriptorBase
     {
         EPropertyValueType ValueType = EPropertyValueType::Unknown;
-        TSharedPtr<IPropertyAccessor> PropertyAccessor;
+        std::shared_ptr<IPropertyAccessor> PropertyAccessor;
     };
 
     template <class T, class TValue>
@@ -690,7 +690,7 @@ namespace Phoenix
             TYPE_TO_ENUM_VALUE(float, Float)
             TYPE_TO_ENUM_VALUE(double, Double)
             TYPE_TO_ENUM_VALUE(bool, Bool)
-            TYPE_TO_ENUM_VALUE(PHXString, String)
+            TYPE_TO_ENUM_VALUE(std::string, String)
             TYPE_TO_ENUM_VALUE(FName, Name)
             TYPE_TO_ENUM_VALUE(Phoenix::Vec2, Vec2)
 
@@ -699,7 +699,7 @@ namespace Phoenix
             return EPropertyValueType::Unknown;
         }
 
-        static std::unordered_map<PHXString, PHXString> GetMetadata()
+        static std::unordered_map<std::string, std::string> GetMetadata()
         {
             return {};
         }
@@ -713,7 +713,7 @@ namespace Phoenix
             return EPropertyValueType::FixedPoint;
         }
 
-        static std::unordered_map<PHXString, PHXString> GetMetadata()
+        static std::unordered_map<std::string, std::string> GetMetadata()
         {
             return { { "FractionalBits", std::format("{}", Tb) } };
         }
@@ -731,7 +731,7 @@ namespace Phoenix
 
         const char* GetCName() const { return CName; }
         FName GetFName() const { return FName; }
-        PHXString GetDisplayName() const { return DisplayName; }
+        std::string GetDisplayName() const { return DisplayName; }
         size_t GetSize() const { return Size; }
 
         template <class T>
@@ -745,7 +745,7 @@ namespace Phoenix
 
         template <class T, class TValue>
         const PropertyDescriptor& RegisterProperty(
-            const PHXString& name,
+            const std::string& name,
             typename PropertyAccessor<T, TValue>::TGetter getter,
             typename PropertyAccessor<T, TValue>::TSetter setter = nullptr)
         {
@@ -753,13 +753,13 @@ namespace Phoenix
             descriptor.Name = name;
             descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
             descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            descriptor.PropertyAccessor = MakeShared<PropertyAccessor<T, TValue>>(getter, setter);
+            descriptor.PropertyAccessor = std::make_shared<PropertyAccessor<T, TValue>>(getter, setter);
             return descriptor;
         }
 
         template <class TValue>
         const PropertyDescriptor& RegisterProperty(
-            const PHXString& name,
+            const std::string& name,
             typename StaticPropertyAccessor<TValue>::TGetter getter,
             typename StaticPropertyAccessor<TValue>::TSetter setter = nullptr)
         {
@@ -767,13 +767,13 @@ namespace Phoenix
             descriptor.Name = name;
             descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
             descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            descriptor.PropertyAccessor = MakeShared<StaticPropertyAccessor<TValue>>(getter, setter);
+            descriptor.PropertyAccessor = std::make_shared<StaticPropertyAccessor<TValue>>(getter, setter);
             return descriptor;
         }
 
         template <class TValue>
         const PropertyDescriptor& RegisterProperty(
-            const PHXString& name,
+            const std::string& name,
             typename StaticWorldPropertyAccessor<TValue>::TGetter getter,
             typename StaticWorldPropertyAccessor<TValue>::TSetter setter = nullptr)
         {
@@ -781,79 +781,79 @@ namespace Phoenix
             descriptor.Name = name;
             descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
             descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            descriptor.PropertyAccessor = MakeShared<StaticWorldPropertyAccessor<TValue>>(getter, setter);
+            descriptor.PropertyAccessor = std::make_shared<StaticWorldPropertyAccessor<TValue>>(getter, setter);
             return descriptor;
         }
 
         template <class T, class TValue>
         const PropertyDescriptor& RegisterProperty(
-            const PHXString& name,
+            const std::string& name,
             typename FieldAccessor<T, TValue>::TFieldPtr fieldPtr)
         {
             PropertyDescriptor& descriptor = Properties[name];
             descriptor.Name = name;
             descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
             descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            descriptor.PropertyAccessor = MakeShared<FieldAccessor<T, TValue>>(fieldPtr);
+            descriptor.PropertyAccessor = std::make_shared<FieldAccessor<T, TValue>>(fieldPtr);
             return descriptor;
         }
 
         template <class TValue>
         const PropertyDescriptor& RegisterProperty(
-            const PHXString& name,
+            const std::string& name,
             typename StaticFieldAccessor<TValue>::TFieldPtr fieldPtr)
         {
             PropertyDescriptor& descriptor = Properties[name];
             descriptor.Name = name;
             descriptor.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
             descriptor.Metadata = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            descriptor.PropertyAccessor = MakeShared<StaticFieldAccessor<TValue>>(fieldPtr);
+            descriptor.PropertyAccessor = std::make_shared<StaticFieldAccessor<TValue>>(fieldPtr);
             return descriptor;
         }
 
         template <class T>
         const MethodDescriptor& RegisterMethod(
-            const PHXString& name,
+            const std::string& name,
             typename MethodPointer<T>::TExecutePtr executePtr,
             typename MethodPointer<T>::TCanExecutePtr canExecutePtr = nullptr)
         {
             MethodDescriptor& descriptor = Methods[name];
             descriptor.Name = name;
-            descriptor.MethodPointer = MakeShared<MethodPointer<T>>(executePtr, canExecutePtr);
+            descriptor.MethodPointer = std::make_shared<MethodPointer<T>>(executePtr, canExecutePtr);
             return descriptor;
         }
 
         template <class T>
         const MethodDescriptor& RegisterConstMethod(
-            const PHXString& name,
+            const std::string& name,
             typename ConstMethodPointer<T>::TExecutePtr executePtr,
             typename ConstMethodPointer<T>::TCanExecutePtr canExecutePtr = nullptr)
         {
             MethodDescriptor& descriptor = Methods[name];
             descriptor.Name = name;
-            descriptor.MethodPointer = MakeShared<ConstMethodPointer<T>>(executePtr, canExecutePtr);
+            descriptor.MethodPointer = std::make_shared<ConstMethodPointer<T>>(executePtr, canExecutePtr);
             return descriptor;
         }
 
         const MethodDescriptor& RegisterStaticMethod(
-            const PHXString& name,
+            const std::string& name,
             StaticFunctionPointer::TExecutePtr executePtr,
             StaticFunctionPointer::TCanExecutePtr canExecutePtr = nullptr)
         {
             MethodDescriptor& descriptor = Methods[name];
             descriptor.Name = name;
-            descriptor.MethodPointer = MakeShared<StaticFunctionPointer>(executePtr, canExecutePtr);
+            descriptor.MethodPointer = std::make_shared<StaticFunctionPointer>(executePtr, canExecutePtr);
             return descriptor;
         }
 
         const MethodDescriptor& RegisterStaticMethod(
-            const PHXString& name,
+            const std::string& name,
             StaticWorldFunctionPointer::TExecutePtr executePtr,
             StaticWorldFunctionPointer::TCanExecutePtr canExecutePtr = nullptr)
         {
             MethodDescriptor& descriptor = Methods[name];
             descriptor.Name = name;
-            descriptor.MethodPointer = MakeShared<StaticWorldFunctionPointer>(executePtr, canExecutePtr);
+            descriptor.MethodPointer = std::make_shared<StaticWorldFunctionPointer>(executePtr, canExecutePtr);
             return descriptor;
         }
 
@@ -911,9 +911,9 @@ namespace Phoenix
             }
         }
 
-        std::unordered_map<PHXString, PropertyDescriptor> Properties;
-        std::unordered_map<PHXString, MethodDescriptor> Methods;
-        std::unordered_map<PHXString, BaseDescriptor> Bases;
+        std::unordered_map<std::string, PropertyDescriptor> Properties;
+        std::unordered_map<std::string, MethodDescriptor> Methods;
+        std::unordered_map<std::string, BaseDescriptor> Bases;
         void (*DefaultConstructFunc)(void*) = nullptr;
         void (*DestructFunc)(void*) = nullptr;
         const char* CName;
@@ -942,7 +942,7 @@ namespace Phoenix
     }
 
     template <class TBase, class TClass>
-    bool IsA(const TSharedPtr<TClass>& ptr)
+    bool IsA(const std::shared_ptr<TClass>& ptr)
     {
         return ptr->GetTypeDescriptor().template IsA<TBase>();
     }
@@ -960,13 +960,13 @@ namespace Phoenix
     }
 
     template <class TBase, class TClass>
-    TSharedPtr<TBase> Cast(const TSharedPtr<TClass>& ptr)
+    std::shared_ptr<TBase> Cast(const std::shared_ptr<TClass>& ptr)
     {
         return IsA<TBase>(ptr) ? std::static_pointer_cast<TBase>(ptr) : nullptr;
     }
 
     template <class TBase, class TClass>
-    TSharedPtr<const TBase> Cast(const TSharedPtr<const TClass>& ptr)
+    std::shared_ptr<const TBase> Cast(const std::shared_ptr<const TClass>& ptr)
     {
         return IsA<TBase>(ptr) ? std::static_pointer_cast<const TBase>(ptr) : nullptr;
     }

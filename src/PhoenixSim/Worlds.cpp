@@ -1,4 +1,5 @@
-﻿
+﻿#pragma once
+
 #include "PhoenixSim/Worlds.h"
 
 #include <algorithm>
@@ -46,7 +47,7 @@ World::World(World&& other) noexcept
 {
 }
 
-TWeakPtr<Session> World::GetSession() const
+std::weak_ptr<Session> World::GetSession() const
 {
     return Session;
 }
@@ -181,7 +182,7 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
 
     // TODO (jfarris): allow filter features for world
     // TODO (jfarris): sort features by dependencies so ie ECS is laid-out before steering
-    for (const TSharedPtr<IFeature>& feature : FeatureSet->GetFeatures())
+    for (const std::shared_ptr<IFeature>& feature : FeatureSet->GetFeatures())
     {
         const FeatureDefinition& featureDef = feature->GetFeatureDefinition();
 
@@ -223,7 +224,7 @@ WorldSharedPtr WorldManager::GetPrimaryWorld() const
 
 void WorldManager::Step(const WorldStepArgs& args)
 {
-    TVector<WorldSharedPtr> worlds;
+    std::vector<WorldSharedPtr> worlds;
 
     if (args.WorldName != FName::None)
     {
@@ -254,7 +255,7 @@ void WorldManager::Step(const WorldStepArgs& args)
 
 void WorldManager::SendAction(const WorldSendActionArgs& args)
 {
-    TVector<WorldSharedPtr> worlds;
+    std::vector<WorldSharedPtr> worlds;
 
     if (args.WorldName != FName::None)
     {
@@ -310,13 +311,13 @@ void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
     }
     world.Random.Seed(randomSeed);
 
-    TVector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldInitialize);
+    std::vector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldInitialize);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldInitialize(world);
     }
 
-    for (const TSharedPtr<IService>& service : Session->GetServices())
+    for (const std::shared_ptr<IService>& service : Session->GetServices())
     {
         if (!IsA<IFeature>(service))
         {
@@ -329,13 +330,13 @@ void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
 
 void WorldManager::ShutdownWorld(WorldRef world) const
 {
-    TVector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldShutdown);
+    std::vector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldShutdown);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
         feature->OnWorldShutdown(world);
     }
 
-    for (const TSharedPtr<IService>& service : Session->GetServices())
+    for (const std::shared_ptr<IService>& service : Session->GetServices())
     {
         if (!IsA<IFeature>(service))
         {
@@ -360,7 +361,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreWorldUpdate");
 
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreWorldUpdate);
+        const std::vector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreWorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreWorldUpdate(world, updateArgs);
@@ -371,7 +372,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("WorldUpdate");
 
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldUpdate);
+        const std::vector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnWorldUpdate(world, updateArgs);
@@ -382,7 +383,7 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostWorldUpdate");
 
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostWorldUpdate);
+        const std::vector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostWorldUpdate);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostWorldUpdate(world, updateArgs);
@@ -403,7 +404,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreHandleWorldAction");
 
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreHandleWorldAction);
+        const std::vector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreHandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreHandleWorldAction(world, actionArgs);
@@ -414,7 +415,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("HandleWorldAction");
 
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::HandleWorldAction);
+        const std::vector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::HandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnHandleWorldAction(world, actionArgs);
@@ -425,7 +426,7 @@ void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostHandleWorldAction");
 
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostHandleWorldAction);
+        const std::vector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostHandleWorldAction);
         for (const FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostHandleWorldAction(world, actionArgs);

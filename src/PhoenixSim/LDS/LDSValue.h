@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Name.h"
@@ -37,8 +36,8 @@ namespace Phoenix::LDS
         Expression  // A reference to code.
     };
 
-    PHOENIX_SIM_API bool TryParse(const PHXString& string, ELDSValueType& outEnum);
-    PHOENIX_SIM_API PHXString ToString(ELDSValueType valueType);
+    PHOENIX_SIM_API bool TryParse(const std::string& string, ELDSValueType& outEnum);
+    PHOENIX_SIM_API std::string ToString(ELDSValueType valueType);
 
     union PHOENIX_SIM_API LDSValue
     {

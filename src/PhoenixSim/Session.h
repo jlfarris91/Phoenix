@@ -19,11 +19,11 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API SessionCtorArgs
     {
-        PHXString DataDirectory;
-        PHXString ConfigName;
+        std::string DataDirectory;
+        std::string ConfigName;
         TOptional<nlohmann::json> CustomConfig;
 
-        TSharedPtr<ServiceContainerBuilder> ServiceContainerBuilder;
+        std::shared_ptr<ServiceContainerBuilder> ServiceContainerBuilder;
 
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };
@@ -41,7 +41,7 @@ namespace Phoenix
         FName WorldName = FName::None;
     };
 
-    class PHOENIX_SIM_API Session : public TSharedAsThis<Session>
+    class PHOENIX_SIM_API Session : public std::enable_shared_from_this<Session>
                                   , public BlockBufferOwner<Session>
                                   , public ServiceLocator<Session>
     {
@@ -50,7 +50,7 @@ namespace Phoenix
         Session() = default;
         ~Session() override;
 
-        static TSharedPtr<Session> Create(const SessionCtorArgs& args);
+        static std::shared_ptr<Session> Create(const SessionCtorArgs& args);
 
         void Initialize();
         void Shutdown();
@@ -63,10 +63,10 @@ namespace Phoenix
         BlockBuffer& GetBuffer();
         const BlockBuffer& GetBuffer() const;
 
-        TSharedPtr<IFeature> GetFeature(const FName& featureId) const;
+        std::shared_ptr<IFeature> GetFeature(const FName& featureId) const;
 
         template <class TFeature>
-        TSharedPtr<TFeature> GetFeature() const
+        std::shared_ptr<TFeature> GetFeature() const
         {
             return FeatureSet->GetFeature<TFeature>();
         }
@@ -82,18 +82,18 @@ namespace Phoenix
         ServiceContainer* GetServiceContainer() const;
 
         // Returns the absolute directory to the session data.
-        PHXString GetDataDirectory() const;
+        std::string GetDataDirectory() const;
 
         // Returns the absolute directory to the Worlds directory.
-        PHXString GetWorldsDirectory() const;
+        std::string GetWorldsDirectory() const;
 
         // Returns the absolute directory for a world.
-        PHXString GetWorldDirectory(const PHXString& worldType) const;
+        std::string GetWorldDirectory(const std::string& worldType) const;
 
         // Begin ServiceLocator implementation
-        TSharedPtr<IService> GetService(const FName& typeId) const override;
-        uint32 GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const override;
-        const TVector<TSharedPtr<IService>>& GetServices() const override;
+        std::shared_ptr<IService> GetService(const FName& typeId) const override;
+        uint32 GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const override;
+        const std::vector<std::shared_ptr<IService>>& GetServices() const override;
         // End ServiceLocator implementation
 
     private:
@@ -107,14 +107,13 @@ namespace Phoenix
 
         std::filesystem::path DataDirectory;
 
-        PHXString ConfigName;
-        TSharedPtr<IConfigService> ConfigService;
+        std::string ConfigName;
+        std::shared_ptr<IConfigService> ConfigService;
+        std::shared_ptr<FeatureSet> FeatureSet;
+        std::shared_ptr<WorldManager> WorldManager;
+        std::shared_ptr<ServiceContainer> ServiceContainer;
 
-        TSharedPtr<FeatureSet> FeatureSet;
-        TSharedPtr<WorldManager> WorldManager;
-        TSharedPtr<ServiceContainer> ServiceContainer;
-
-        TVector<TTuple<simtime_t, Action>> ActionQueue;
+        std::vector<std::tuple<simtime_t, Action>> ActionQueue;
         std::shared_mutex ActionQueueMutex;
 
         sys_clock_t StartTime;
@@ -130,10 +129,9 @@ namespace Phoenix
     };
 
     template <class T>
-    TSharedPtr<T> GetFeature(WorldConstRef world)
+    std::shared_ptr<T> GetFeature(WorldConstRef world)
     {
-        TSharedPtr<Session> session = world.GetSession().lock();
-        return session ? session->GetFeature<T>() : TSharedPtr<T>();
+        std::shared_ptr<Session> session = world.GetSession().lock();
+        return session ? session->GetFeature<T>() : std::shared_ptr<T>();
     }
 }
-

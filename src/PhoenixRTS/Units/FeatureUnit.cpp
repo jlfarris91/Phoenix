@@ -1,4 +1,3 @@
-
 #include "PhoenixRTS/Units/FeatureUnit.h"
 
 #include "PhoenixSim/LDS/FeatureLDS.h"
@@ -276,7 +275,7 @@ uint32 FeatureUnit::QueryUnitsInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TVector<UnitId>& outUnits,
+    std::vector<UnitId>& outUnits,
     const UnitRangeQueryArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -284,7 +283,7 @@ uint32 FeatureUnit::QueryUnitsInRange(
     EntityRangeQueryArgs rangeQueryArgs;
     rangeQueryArgs.Kinds = { "Unit"_n };
 
-    TVector<EntityTransform> entities;
+    std::vector<EntityTransform> entities;
     FeatureECS::QueryEntitiesInRange(world, pos, range, entities);
 
     uint32 numUnits = 0;
@@ -354,19 +353,19 @@ void FeatureUnit::OnUnitKilled(WorldRef world, UnitId unit, EntityId source)
     LogInfo("Unit {0} was killed by {1}", (uint32)unit, (uint32)source);
 }
 
-void FeatureUnit::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureUnit::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    UnitSystem = MakeShared<RTS::UnitSystem>();
+    UnitSystem = std::make_shared<RTS::UnitSystem>();
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->RegisterSystem(UnitSystem);
 }
 
 void FeatureUnit::Shutdown()
 {
-    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    if (auto featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
     {
         featureECS->UnregisterSystem(UnitSystem);
     }

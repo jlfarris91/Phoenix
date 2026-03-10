@@ -12,7 +12,7 @@ namespace Phoenix
     typedef World& WorldRef;
     typedef const World& WorldConstRef;
 
-    typedef TSharedPtr<World> WorldSharedPtr;
+    typedef std::shared_ptr<World> WorldSharedPtr;
 
-    using PostWorldUpdateDelegate = TFunction<void(WorldConstRef world)>;
+    using PostWorldUpdateDelegate = std::function<void(WorldConstRef world)>;
 }

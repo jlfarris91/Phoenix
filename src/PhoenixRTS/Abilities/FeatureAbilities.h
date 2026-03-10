@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include "AbilityHandler.h"
 #include "PhoenixSim/Features.h"
@@ -33,23 +32,23 @@ namespace Phoenix::RTS
         // Ability Handlers
         //
 
-        void RegisterAbilityHandler(const TSharedPtr<IAbilityHandler>& handler);
+        void RegisterAbilityHandler(const std::shared_ptr<IAbilityHandler>& handler);
 
         template <class T, class ...TArgs>
-        TSharedPtr<T> RegisterAbilityHandler(TArgs&&... args)
+        std::shared_ptr<T> RegisterAbilityHandler(TArgs&&... args)
         {
-            TSharedPtr<T> handler = MakeShared<T>(std::forward<TArgs>(args)...);
+            auto handler = std::make_shared<T>(std::forward<TArgs>(args)...);
             RegisterAbilityHandler(handler);
             return handler;
         }
 
         bool UnregisterAbilityHandler(const FName& abilityId);
 
-        TSharedPtr<IAbilityHandler> FindAbilityHandlerCached(WorldConstRef world, const FName& abilityId);
+        std::shared_ptr<IAbilityHandler> FindAbilityHandlerCached(WorldConstRef world, const FName& abilityId);
 
-        TSharedPtr<IAbilityHandler> FindAbilityHandler(WorldConstRef world, const FName& abilityId) const;
+        std::shared_ptr<IAbilityHandler> FindAbilityHandler(WorldConstRef world, const FName& abilityId) const;
 
-        static TSharedPtr<IAbilityHandler> StaticFindAbilityHandler(WorldConstRef world, const FName& abilityId);
+        static std::shared_ptr<IAbilityHandler> StaticFindAbilityHandler(WorldConstRef world, const FName& abilityId);
 
         static bool AddAbility(WorldRef world, const UnitId& unit, const FName& abilityId);
 
@@ -59,13 +58,13 @@ namespace Phoenix::RTS
 
         static bool AddAbilitiesFromData(WorldRef world, const UnitId& unit, const FName& unitData);
 
-        static uint32 GetAbilities(WorldConstRef world, const UnitId& unit, TVector<FName>& outAbilityIds);
+        static uint32 GetAbilities(WorldConstRef world, const UnitId& unit, std::vector<FName>& outAbilityIds);
 
     protected:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        std::unordered_map<FName, TSharedPtr<IAbilityHandler>> AbilityIdToHandlerMap;
+        std::unordered_map<FName, std::shared_ptr<IAbilityHandler>> AbilityIdToHandlerMap;
     };
 }

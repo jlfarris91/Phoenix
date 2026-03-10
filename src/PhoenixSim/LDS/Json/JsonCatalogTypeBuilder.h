@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/LDS/Json/JsonCatalogBuilderBase.h"
@@ -19,61 +18,61 @@ namespace Phoenix::LDS::Json
     private:
 
         bool ProcessJsonObject(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& jsonObject,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
 
         bool ProcessObject(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& jsonObject,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
 
         bool ProcessObjectProperties(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& jsonObject,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
 
         bool ProcessObjectPropertyDefaults(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& defaultsObject,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
 
         bool ProcessObjectRef(
-            const PHXString& rootTypeId,
-            const PHXString& typeStr,
-            const PHXString& propertyPath);
+            const std::string& rootTypeId,
+            const std::string& typeStr,
+            const std::string& propertyPath);
 
         bool ProcessEmbeddedObject(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& jsonObject,
-            const PHXString& typeStr,
-            const PHXString& propertyPath);
+            const std::string& typeStr,
+            const std::string& propertyPath);
 
         bool ProcessArray(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& jsonObject,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
 
         bool ProcessValueProperty(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& propValue,
             ELDSValueType valueType,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
 
         static bool IsValidEnumUnderlyingType(ELDSValueType valueType);
 
-        bool ProcessEnumProperty(const PHXString& rootTypeId, const json& jsonObject, const PHXString& propertyPath);
+        bool ProcessEnumProperty(const std::string& rootTypeId, const json& jsonObject, const std::string& propertyPath);
 
         bool ProcessEnumPropertyItem(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& itemJson,
-            const PHXString& itemPath,
+            const std::string& itemPath,
             uint32 itemIndex,
             TOptional<ELDSValueType> underlyingValueType);
 
         bool ProcessEnumFlagsProperty(
-            const PHXString& rootTypeId,
+            const std::string& rootTypeId,
             const json& jsonObject,
-            const PHXString& propertyPath);
+            const std::string& propertyPath);
     };
 }

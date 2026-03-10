@@ -59,7 +59,7 @@ namespace Phoenix::RTS
 
         FName GetCommandId() const override;
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnWorldInitialize(WorldRef world) override;
@@ -84,6 +84,6 @@ namespace Phoenix::RTS
             const CommandContext& context,
             const Command& command);
 
-        TSharedPtr<MoveAbilitySystem> System;
+        std::shared_ptr<MoveAbilitySystem> System;
     };
 }

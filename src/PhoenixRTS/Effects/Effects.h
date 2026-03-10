@@ -40,7 +40,7 @@ namespace Phoenix::RTS
         EffectComponent* ParentComponent = nullptr;
         FName EffectId;
         ExecuteEffectArgs Overrides;
-        TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
+        std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
     struct PHOENIX_RTS_API EffectFinalizeContext
@@ -48,7 +48,7 @@ namespace Phoenix::RTS
         EffectNodeId EffectNodeId;
         EffectComponent* EffectComponent = nullptr;
         FName EffectId;
-        TSharedPtr<const LDS::ILDSQueryContext> LdsQueryContext;
+        std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
     class PHOENIX_RTS_API IEffectHandler : public IService
@@ -59,7 +59,7 @@ namespace Phoenix::RTS
 
         virtual FName GetEffectTypeId() const;
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         virtual bool Execute(WorldRef world, const EffectExecuteContext& context) const;
@@ -69,6 +69,6 @@ namespace Phoenix::RTS
 
     protected:
 
-        TSharedPtr<FeatureEffects> EffectsFeature;
+        std::shared_ptr<FeatureEffects> EffectsFeature;
     };
 }

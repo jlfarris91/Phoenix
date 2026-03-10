@@ -1,4 +1,3 @@
-
 #include <ranges>
 #include <fstream>
 
@@ -94,10 +93,10 @@ SDL_Renderer* GRenderer;
 FPSCalc GRendererFPS;
 
 Profiling::TracyProfiler GTracyProfiler;
-TSharedPtr<Logger> GLogger;
+std::shared_ptr<Logger> GLogger;
 bool GShowConsoleWindow = true;
 
-TSharedPtr<Session> GSession;
+std::shared_ptr<Session> GSession;
 bool GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
 
@@ -107,9 +106,9 @@ SDLDebugRenderer* GDebugRenderer;
 SDLCamera* GCamera;
 SDLViewport* GViewport;
 
-TVector<TSharedPtr<ISDLTool>> GTools;
-TVector<TSharedPtr<ISDLTool>> GActiveTools;
-TSharedPtr<ISDLTool> GPlayerController;
+std::vector<std::shared_ptr<ISDLTool>> GTools;
+std::vector<std::shared_ptr<ISDLTool>> GActiveTools;
+std::shared_ptr<ISDLTool> GPlayerController;
 
 struct DoubleWorldBuffer
 {
@@ -174,7 +173,7 @@ void OnPostWorldUpdate(WorldConstRef world);
 
 void InitSession()
 {
-    TSharedPtr<ServiceContainerBuilder> serviceContainerBuilder = MakeShared<ServiceContainerBuilder>();
+    std::shared_ptr<ServiceContainerBuilder> serviceContainerBuilder = std::make_shared<ServiceContainerBuilder>();
 
     // Register features
     // ReSharper disable CppExpressionWithoutSideEffects
@@ -310,7 +309,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
 
-    GLogger = MakeShared<Logger>("./Phoenix.log"); 
+    GLogger = std::make_shared<Logger>("./Phoenix.log"); 
     SetLogger(GLogger);
     InitConsole(GLogger);
 
@@ -330,11 +329,11 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     GDebugState = new SDLDebugState(GViewport);
     GDebugRenderer = new SDLDebugRenderer(renderer, GViewport);
 
-    auto cameraTool = MakeShared<CameraTool>(GSession, GCamera, GViewport);
-    auto entityTool = MakeShared<EntityTool>(GSession);
-    auto navMeshTool = MakeShared<NavMeshTool>(GSession);
+    auto cameraTool = std::make_shared<CameraTool>(GSession, GCamera, GViewport);
+    auto entityTool = std::make_shared<EntityTool>(GSession);
+    auto navMeshTool = std::make_shared<NavMeshTool>(GSession);
 
-    GPlayerController = MakeShared<PlayerController>(GSession, GCamera, GViewport);
+    GPlayerController = std::make_shared<PlayerController>(GSession, GCamera, GViewport);
 
     GTools.push_back(cameraTool);
     GTools.push_back(entityTool);
@@ -410,7 +409,7 @@ void OnAppRenderWorld()
 
         const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
 
-        FeatureECS::ForEachEntity(world, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
+        FeatureECS::ForEachEntity(world, query, std::function([&](const EntityComponentSpan<const TransformComponent&, const BodyComponent&>& span)
         {
             for (auto && [entityId, index, transformComp, bodyComp] : span)
             {
@@ -464,7 +463,7 @@ void OnAppRenderWorld()
         builder.RequireAllComponents<const TransformComponent&, const RTS::ProjectileComponent&>();
         query = builder.GetQuery();
 
-        FeatureECS::ForEachEntity(world, query, TFunction([&](const EntityComponentSpan<const TransformComponent&, const RTS::ProjectileComponent&>& span)
+        FeatureECS::ForEachEntity(world, query, std::function([&](const EntityComponentSpan<const TransformComponent&, const RTS::ProjectileComponent&>& span)
         {
             for (auto && [entity, index, transformComp, projectileComp] : span)
             {
@@ -523,13 +522,13 @@ void OnAppRenderWorld()
         }
 
         // Let features draw to the renderer
-        const TVector<FeatureSharedPtr>& channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
+        const std::vector<FeatureSharedPtr>& channelFeatures = GSession->GetFeatureSet()->GetChannelRef(FeatureChannels::DebugRender);
         for (const auto& feature : channelFeatures)
         {
             feature->OnDebugRender(world, *GDebugState, *GDebugRenderer);
         }
 
-        for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
+        for (const std::shared_ptr<ISDLTool>& tool : GActiveTools)
         {
             tool->OnAppRenderWorld(world, *GDebugState, *GDebugRenderer);
         }
@@ -707,9 +706,9 @@ void OnAppRenderUI()
 
             if (ImGui::TreeNode("Systems:"))
             {
-                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+                std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
-                for (const TSharedPtr<ISystem>& system : featureECS->GetSystems())
+                for (const std::shared_ptr<ISystem>& system : featureECS->GetSystems())
                 {
                     const auto& systemDescriptor = system->GetTypeDescriptor();
                     if (ImGui::CollapsingHeader(systemDescriptor.DisplayName))
@@ -863,7 +862,7 @@ void OnAppRenderUI()
 
             if (ImGui::TreeNode("Entities:"))
             {
-                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+                std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
                 if (auto entitiesPtr = FeatureECS::GetEntities(*GCurrWorldView))
                 {
@@ -889,7 +888,7 @@ void OnAppRenderUI()
 
             if (ImGui::TreeNode("Tags:"))
             {
-                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+                std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
                 if (auto tagsPtr = FeatureECS::GetTags(*GCurrWorldView))
                 {
@@ -913,7 +912,7 @@ void OnAppRenderUI()
 
             if (ImGui::TreeNode("Groups:"))
             {
-                TSharedPtr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
+                std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
                 if (auto groupsPtr = FeatureECS::GetGroups(*GCurrWorldView))
                 {
@@ -1044,7 +1043,7 @@ void OnAppEvent(SDL_Event* event)
 
     if (GCurrWorldView)
     {
-        for (const TSharedPtr<ISDLTool>& tool : GActiveTools)
+        for (const std::shared_ptr<ISDLTool>& tool : GActiveTools)
         {
             tool->OnAppEvent(*GCurrWorldView, *GDebugState, event);
         }
@@ -1058,6 +1057,8 @@ void OnAppShutdown()
 
     GLogger.reset();
 }
+
+
 
 
 

@@ -1,4 +1,3 @@
-
 #include "PhoenixRTS/Orders/FeatureOrders.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
@@ -51,7 +50,7 @@ FeatureOrders::FeatureOrders()
     FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
 
-void FeatureOrders::RegisterCommandHandler(const TSharedPtr<ICommandHandler>& handler)
+void FeatureOrders::RegisterCommandHandler(const std::shared_ptr<ICommandHandler>& handler)
 {
     CommandIdToHandlerMap.emplace(handler->GetCommandId(), handler);
 }
@@ -61,9 +60,9 @@ bool FeatureOrders::UnregisterCommandHandler(const FName& commandId)
     return CommandIdToHandlerMap.erase(commandId) > 0;
 }
 
-TSharedPtr<ICommandHandler> FeatureOrders::FindCommandHandlerCached(WorldConstRef world, const FName& commandId)
+std::shared_ptr<ICommandHandler> FeatureOrders::FindCommandHandlerCached(WorldConstRef world, const FName& commandId)
 {
-    TSharedPtr<ICommandHandler> handler = FindCommandHandler(world, commandId);
+    std::shared_ptr<ICommandHandler> handler = FindCommandHandler(world, commandId);
 
     // Cache the handler for this ability id for faster subsequent lookups even if it is null.
     CommandIdToHandlerMap.emplace(commandId, handler);
@@ -71,9 +70,9 @@ TSharedPtr<ICommandHandler> FeatureOrders::FindCommandHandlerCached(WorldConstRe
     return handler;
 }
 
-TSharedPtr<ICommandHandler> FeatureOrders::FindCommandHandler(WorldConstRef world, const FName& commandId) const
+std::shared_ptr<ICommandHandler> FeatureOrders::FindCommandHandler(WorldConstRef world, const FName& commandId) const
 {
-    TSharedPtr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+    std::shared_ptr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
     if (!queryContext)
     {
         return {};
@@ -105,10 +104,10 @@ TSharedPtr<ICommandHandler> FeatureOrders::FindCommandHandler(WorldConstRef worl
     }
 }
 
-TSharedPtr<ICommandHandler> FeatureOrders::StaticFindCommandHandler(WorldConstRef world, const FName& abilityId)
+std::shared_ptr<ICommandHandler> FeatureOrders::StaticFindCommandHandler(WorldConstRef world, const FName& abilityId)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
-    return feature ? feature->FindCommandHandlerCached(world, abilityId) : TSharedPtr<ICommandHandler>{};
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    return feature ? feature->FindCommandHandlerCached(world, abilityId) : std::shared_ptr<ICommandHandler>{};
 }
 
 bool FeatureOrders::EnqueueOrder(WorldRef world, const UnitId& unit, const Order& order)
@@ -193,13 +192,13 @@ TOptional<Vec2> FeatureOrders::GetHeadOrderTargetLocation(WorldConstRef world, c
 
 bool FeatureOrders::StaticHandleCommand(WorldRef world, const Command& command)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
     return feature && feature->HandleCommand(world, command);
 }
 
 bool FeatureOrders::HandleCommand(WorldRef world, const Command& command)
 {
-    TVector<PrioritizedCommandHandler> handlers;
+    std::vector<PrioritizedCommandHandler> handlers;
     if (GetHighestPriorityHandlersForSelection(world, command, handlers) == 0)
     {
         return false;
@@ -222,7 +221,7 @@ bool FeatureOrders::HandleCommand(WorldRef world, const Command& command)
 
 bool FeatureOrders::StaticIssueCommand(WorldRef world, const UnitId& unit, const Command& command)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
     return feature && feature->IssueCommand(world, unit, command);
 }
 
@@ -238,7 +237,7 @@ bool FeatureOrders::IssueCommand(WorldRef world, const UnitId& unit, const Comma
         return false;
     }
 
-    TSharedPtr<ICommandHandler> handler = std::get<2>(prioritizedHandler);
+    std::shared_ptr<ICommandHandler> handler = std::get<2>(prioritizedHandler);
 
     Command unitAbilityCommand = command;
     unitAbilityCommand.CommandId = handler->GetCommandId();
@@ -248,13 +247,13 @@ bool FeatureOrders::IssueCommand(WorldRef world, const UnitId& unit, const Comma
 
 bool FeatureOrders::StaticRequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
     return feature->RequestAcquireOrder(world, unit, request);
 }
 
 bool FeatureOrders::RequestAcquireOrder(WorldRef world, const UnitId& unit, const AcquireRequest& request)
 {
-    TVector<FName> abilityIds;
+    std::vector<FName> abilityIds;
     abilityIds.reserve(8);
 
     // TODO (jfarris): there
@@ -272,7 +271,7 @@ bool FeatureOrders::RequestAcquireOrder(WorldRef world, const UnitId& unit, cons
 
     for (const FName& abilityId : abilityIds)
     {
-        TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, abilityId);
+        std::shared_ptr<ICommandHandler> handler = FindCommandHandlerCached(world, abilityId);
         if (!handler)
         {
             continue;
@@ -300,7 +299,7 @@ bool FeatureOrders::RequestAcquireOrder(WorldRef world, const UnitId& unit, cons
 
 void FeatureOrders::StaticOnActiveOrderCompleted(WorldRef world, const UnitId& unit, bool success)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
     feature->OnActiveOrderCompleted(world, unit, success);
 }
 
@@ -315,19 +314,19 @@ void FeatureOrders::OnActiveOrderCompleted(WorldRef world, const UnitId& unit, b
     ExecuteHeadOrder(world, unit);
 }
 
-void FeatureOrders::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureOrders::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    TVector<TSharedPtr<ICommandHandler>> handlers;
+    std::vector<std::shared_ptr<ICommandHandler>> handlers;
     Session->GetServices2<ICommandHandler>(handlers);
 
-    for (const TSharedPtr<ICommandHandler>& handler : handlers)
+    for (const std::shared_ptr<ICommandHandler>& handler : handlers)
     {
         RegisterCommandHandler(handler);
     }
 
-    TSharedPtr<FeatureECS> featureECS = session->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = session->GetFeature<FeatureECS>();
     PHX_ASSERT(featureECS);
 
     featureECS->OnEntityReleasing().AddStatic(&FeatureOrders::OnEntityReleasing);
@@ -342,7 +341,7 @@ void FeatureOrders::Shutdown()
         UnregisterCommandHandler(CommandIdToHandlerMap.begin()->first);
     }
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = Session->GetFeature<FeatureECS>();
     featureECS->OnEntityReleasing().RemoveAll(this);
 }
 
@@ -403,7 +402,7 @@ bool FeatureOrders::HandleCommandForUnitInternal(
     WorldRef world,
     const UnitId& unit,
     const Command& command,
-    const TSharedPtr<ICommandHandler>& handler)
+    const std::shared_ptr<ICommandHandler>& handler)
 {
     if (!FeatureUnit::UnitCanReceiveCommands(world, unit))
     {
@@ -454,7 +453,7 @@ bool FeatureOrders::HandleCommandForUnitInternal(
 
 bool FeatureOrders::StaticExecuteHeadOrder(WorldRef world, const UnitId& unit)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
     return feature->ExecuteHeadOrder(world, unit);
 }
 
@@ -462,7 +461,7 @@ bool FeatureOrders::ExecuteHeadOrder(WorldRef world, const UnitId& unit)
 {
     if (const Order* headOrder = GetHeadOrder(world, unit))
     {
-        TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, headOrder->OrderId);
+        std::shared_ptr<ICommandHandler> handler = FindCommandHandlerCached(world, headOrder->OrderId);
         if (!handler)
         {
             return false;
@@ -493,14 +492,14 @@ bool FeatureOrders::ExecuteTransientOrder(
     WorldRef world,
     const UnitId& unit,
     const Order& order,
-    const TSharedPtr<ICommandHandler>& handler)
+    const std::shared_ptr<ICommandHandler>& handler)
 {
     return handler->ExecuteOrder(world, unit, order);
 }
 
 bool FeatureOrders::StaticInterruptHeadOrder(WorldRef world, const UnitId& unit)
 {
-    TSharedPtr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
+    std::shared_ptr<FeatureOrders> feature = GetFeature<FeatureOrders>(world);
     return feature->InterruptHeadOrder(world, unit);
 }
 
@@ -512,7 +511,7 @@ bool FeatureOrders::InterruptHeadOrder(WorldRef world, const UnitId& unit)
 
 bool FeatureOrders::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order)
 {
-    TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, order.OrderId);
+    std::shared_ptr<ICommandHandler> handler = FindCommandHandlerCached(world, order.OrderId);
     if (!handler)
     {
         return false;
@@ -582,14 +581,14 @@ uint32 FeatureOrders::GetPrioritizedHandlers(
     const UnitId& unit,
     const CommandContext& context,
     const Command& command,
-    TVector<PrioritizedCommandHandler>& outHandlers)
+    std::vector<PrioritizedCommandHandler>& outHandlers)
 {
     if (!FeatureUnit::UnitCanReceiveCommands(world, unit))
     {
         return 0;
     }
 
-    TVector<FName> abilityIds;
+    std::vector<FName> abilityIds;
     abilityIds.reserve(8);
 
     // TODO (jfarris): there
@@ -605,7 +604,7 @@ uint32 FeatureOrders::GetPrioritizedHandlers(
             continue;
         }
 
-        TSharedPtr<ICommandHandler> handler = FindCommandHandlerCached(world, abilityId);
+        std::shared_ptr<ICommandHandler> handler = FindCommandHandlerCached(world, abilityId);
         if (!handler)
         {
             continue;
@@ -644,7 +643,7 @@ bool FeatureOrders::GetHighestPriorityHandler(
     const Command& command,
     PrioritizedCommandHandler& outHandler)
 {
-    TVector<PrioritizedCommandHandler> handlers;
+    std::vector<PrioritizedCommandHandler> handlers;
     if (GetPrioritizedHandlers(world, unit, context, command, handlers) == 0)
     {
         return false;
@@ -657,7 +656,7 @@ bool FeatureOrders::GetHighestPriorityHandler(
 uint32 FeatureOrders::GetHighestPriorityHandlersForSelection(
     WorldConstRef world,
     const Command& command,
-    TVector<PrioritizedCommandHandler>& outHandlers)
+    std::vector<PrioritizedCommandHandler>& outHandlers)
 {
     EntityId selection = FeatureSelection::GetPlayerSelection(world, command.Sender);
     if (selection == EntityId::Invalid)

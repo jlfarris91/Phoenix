@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/LDS/LDSObjectModel.h"
@@ -9,8 +8,8 @@ namespace Phoenix::RTS::Data
 {
     struct PHOENIX_RTS_API TagFilter
     {
-        TVector<TagPtr> Required;
-        TVector<TagPtr> Excluded;
+        std::vector<TagPtr> Required;
+        std::vector<TagPtr> Excluded;
         static bool Read(const LDS::LDSReadObjectArgs& args, TagFilter& outItem);
     };
 

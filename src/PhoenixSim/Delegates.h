@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Platform.h"
@@ -169,7 +168,7 @@ namespace Phoenix
 
     public:
 
-        using TMethodPtr = typename TMemberFuncPtr<bConst, T, TRet(TArgs..., TVars...)>::type;
+        using TMethodPtr = TMemberFuncPtr<bConst, T, TRet(TArgs..., TVars...)>::type;
 
         template <class ...InVars>
         explicit TSPDelegateInstance(const std::shared_ptr<T>& ptr, TMethodPtr func, InVars&&... vars)
@@ -452,7 +451,7 @@ namespace Phoenix
         using Super::GetHandle;
 
         template <class ...TVars>
-        static TDelegate CreateStatic(typename TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func, TVars&&... vars)
+        static TDelegate CreateStatic(TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func, TVars&&... vars)
         {
             TDelegate result;
             result.BindStatic(func, std::forward<TVars>(vars)...);
@@ -460,7 +459,7 @@ namespace Phoenix
         }
 
         template <class ...TVars>
-        void BindStatic(typename TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func, TVars&&... vars)
+        void BindStatic(TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func, TVars&&... vars)
         {
             Super::template BindInstance<TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>>(func, std::forward<TVars>(vars)...);
         }

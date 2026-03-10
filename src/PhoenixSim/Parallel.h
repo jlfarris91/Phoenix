@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <atomic>
@@ -32,7 +31,7 @@ namespace Phoenix
 
         Task();
         Task(const Task& other) = default;
-        Task(Task&& other);
+        Task(Task&& other) noexcept;
         Task(TTaskFunc&& work);
 
         void operator()() const;
@@ -40,15 +39,15 @@ namespace Phoenix
         Task& operator=(const Task& other) = default;
         Task& operator=(Task&& other) = default;
 
-        static bool WaitAll(const std::vector<TSharedPtr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime = std::chrono::milliseconds(0));
-        static bool WaitAny(const std::vector<TSharedPtr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime = std::chrono::milliseconds(0));
+        static PHOENIX_SIM_API bool WaitAll(const std::vector<std::shared_ptr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime = std::chrono::milliseconds(0));
+        static PHOENIX_SIM_API bool WaitAny(const std::vector<std::shared_ptr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime = std::chrono::milliseconds(0));
 
     private:
 
         friend class ThreadPool;
 
         TTaskFunc WorkFunc;
-        TSharedPtr<TaskHandle> Handle;
+        std::shared_ptr<TaskHandle> Handle;
     };
 
     PHOENIX_SIM_API bool HasThreadPool();
@@ -66,8 +65,8 @@ namespace Phoenix
 
         void Shutdown();
 
-        TSharedPtr<TaskHandle> Submit(const Task& task);
-        TSharedPtr<TaskHandle> Submit(TTaskFunc&& work);
+        std::shared_ptr<TaskHandle> Submit(const Task& task);
+        std::shared_ptr<TaskHandle> Submit(TTaskFunc&& work);
 
         bool IsEmpty() const;
         bool WaitIdle(std::chrono::milliseconds maxWaitTime = std::chrono::milliseconds(0)) const;
@@ -88,11 +87,9 @@ namespace Phoenix
     class PHOENIX_SIM_API TaskQueue
     {
     public:
-
         TaskQueue(uint32 id, ThreadPool* threadPool = Phoenix::GetThreadPool());
-
-        static TSharedPtr<TaskQueue> CreateTaskQueue(uint32 id);
-        static TSharedPtr<TaskQueue> GetTaskQueue(uint32 id);
+        static std::shared_ptr<TaskQueue> CreateTaskQueue(uint32 id);
+        static std::shared_ptr<TaskQueue> GetTaskQueue(uint32 id);
         static bool ReleaseTaskQueue(uint32 id);
 
         uint32 GetId() const;

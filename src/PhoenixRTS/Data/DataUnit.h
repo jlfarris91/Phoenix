@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/LDS/LDSObjectModel.h"
@@ -38,12 +37,12 @@ namespace Phoenix::RTS::Data
     {
         UnitActorPtr Actor;
         UnitArmor Armor;
-        TVector<BuffPtr> Buffs;
+        std::vector<BuffPtr> Buffs;
         UnitBuild BuildStats;
         UnitCargo CargoStats;
         ECollisionFlags CollisionFlags;
-        TVector<Command> Commands;
-        TVector<Component> Components;
+        std::vector<Command> Commands;
+        std::vector<Component> Components;
         UnitDeath DeathStats;
         UnitEffects Effects;
         FactionPtr Faction;
@@ -52,12 +51,12 @@ namespace Phoenix::RTS::Data
         UnitInfo Info;
         UnitMovement Movement;
         UnitPlacement Placement;
-        TVector<TagPtr> Tags;
+        std::vector<TagPtr> Tags;
         Value SelectionCircleScale = 1.0;
         UnitSupply Supply;
         UnitVision Vision;
-        TVector<VitalStatsPair> Vitals;
-        TVector<WeaponPtr> Weapons;
+        std::vector<VitalStatsPair> Vitals;
+        std::vector<WeaponPtr> Weapons;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Unit& outItem);
     };

@@ -108,13 +108,13 @@ RTS::Data::ProjectilePtr FeatureProjectiles::GetData(WorldConstRef world, Projec
     return { GetDataId(world, projectileId) };
 }
 
-void FeatureProjectiles::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureProjectiles::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    ProjectilesSystem = MakeShared<RTS::ProjectilesSystem>();
+    ProjectilesSystem = std::make_shared<RTS::ProjectilesSystem>();
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->RegisterSystem(ProjectilesSystem);
 }
 
@@ -122,7 +122,7 @@ void FeatureProjectiles::Shutdown()
 {
     IFeature::Shutdown();
 
-    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    if (std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
     {
         featureECS->UnregisterSystem(ProjectilesSystem);
     }

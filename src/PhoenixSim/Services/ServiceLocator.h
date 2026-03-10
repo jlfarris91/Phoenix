@@ -12,13 +12,13 @@ namespace Phoenix
         virtual ~IServiceLocator() = default;
 
         // Get a service that was registered with the given type id.
-        virtual TSharedPtr<IService> GetService(const FName& typeId) const = 0;
+        virtual std::shared_ptr<IService> GetService(const FName& typeId) const = 0;
 
         // Get all services that were registered with a given type id.
-        virtual uint32 GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const = 0;
+        virtual uint32 GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const = 0;
 
         // Get the list of all services registered.
-        virtual const TVector<TSharedPtr<IService>>& GetServices() const = 0;
+        virtual const std::vector<std::shared_ptr<IService>>& GetServices() const = 0;
     };
 
     template <class T>
@@ -26,35 +26,35 @@ namespace Phoenix
     {
     public:
 
-        TSharedPtr<IService> GetService(const FName& typeId) const override
+        std::shared_ptr<IService> GetService(const FName& typeId) const override
         {
             return ThisAsT()->GetService(typeId);
         }
 
         template <class TService>
-        TSharedPtr<TService> GetServiceAs(const FName& typeId = TService::StaticTypeName) const
+        std::shared_ptr<TService> GetServiceAs(const FName& typeId = TService::StaticTypeName) const
         {
             return std::static_pointer_cast<TService>(GetService(typeId));
         }
 
-        uint32 GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const override
+        uint32 GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const override
         {
             return ThisAsT()->GetServices(typeId, outServices);
         }
 
         template <class TService>
-        uint32 GetServices2(TVector<TSharedPtr<TService>>& outServices) const
+        uint32 GetServices2(std::vector<std::shared_ptr<TService>>& outServices) const
         {
-            TVector<TSharedPtr<IService>> services;
+            std::vector<std::shared_ptr<IService>> services;
             GetServices(TService::StaticTypeName, services);
-            for (const TSharedPtr<IService>& service : services)
+            for (const std::shared_ptr<IService>& service : services)
             {
                 outServices.push_back(std::static_pointer_cast<TService>(service));
             }
             return static_cast<uint32>(services.size());
         }
 
-        const TVector<TSharedPtr<IService>>& GetServices() const override
+        const std::vector<std::shared_ptr<IService>>& GetServices() const override
         {
             return ThisAsT()->GetServices();
         }

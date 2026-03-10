@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Features.h"
@@ -68,12 +67,12 @@ namespace Phoenix::RTS
         //
 
         // Registers an effect handler with the feature.
-        void RegisterEffectHandler(const TSharedPtr<IEffectHandler>& handler);
+        void RegisterEffectHandler(const std::shared_ptr<IEffectHandler>& handler);
 
         template <class T, class ...TArgs>
-        TSharedPtr<T> RegisterEffectHandler(TArgs&&... args)
+        std::shared_ptr<T> RegisterEffectHandler(TArgs&&... args)
         {
-            TSharedPtr<T> handler = MakeShared<T>(std::forward<TArgs>(args)...);
+            auto handler = std::make_shared<T>(std::forward<TArgs>(args)...);
             RegisterEffectHandler(handler);
             return handler;
         }
@@ -83,22 +82,22 @@ namespace Phoenix::RTS
 
         // Walks the effect object's bases and returns the first matching effect handler.
         // This overload caches the resulting handler for faster subsequent lookups even if it is null.
-        TSharedPtr<IEffectHandler> FindEffectHandlerCached(WorldConstRef world, const FName& effectId);
+        std::shared_ptr<IEffectHandler> FindEffectHandlerCached(WorldConstRef world, const FName& effectId);
 
         // Walks the effect object's bases and returns the first matching effect handler.
-        TSharedPtr<IEffectHandler> FindEffectHandler(WorldConstRef world, const FName& effectId) const;
+        std::shared_ptr<IEffectHandler> FindEffectHandler(WorldConstRef world, const FName& effectId) const;
 
         //
         // Response Handlers
         //
 
         // Registers a response handler with the feature.
-        void RegisterResponseHandler(const TSharedPtr<IResponseHandler>& handler);
+        void RegisterResponseHandler(const std::shared_ptr<IResponseHandler>& handler);
 
         template <class T, class ...TArgs>
-        TSharedPtr<T> RegisterResponseHandler(TArgs&&... args)
+        std::shared_ptr<T> RegisterResponseHandler(TArgs&&... args)
         {
-            TSharedPtr<T> handler = MakeShared<T>(std::forward<TArgs>(args)...);
+            auto handler = std::make_shared<T>(std::forward<TArgs>(args)...);
             RegisterResponseHandler(handler);
             return handler;
         }
@@ -108,10 +107,10 @@ namespace Phoenix::RTS
 
         // Walks the response object's bases and returns the first matching response handler.
         // This overload caches the resulting handler for faster subsequent lookups even if it is null.
-        TSharedPtr<IResponseHandler> FindResponseHandlerCached(WorldConstRef world, const FName& responseId);
+        std::shared_ptr<IResponseHandler> FindResponseHandlerCached(WorldConstRef world, const FName& responseId);
 
         // Walks the response object's bases and returns the first matching response handler.
-        TSharedPtr<IResponseHandler> FindResponseHandler(WorldConstRef world, const FName& responseId) const;
+        std::shared_ptr<IResponseHandler> FindResponseHandler(WorldConstRef world, const FName& responseId) const;
 
         //
         // Effect Scopes
@@ -225,7 +224,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
@@ -235,16 +234,16 @@ namespace Phoenix::RTS
         void RespondToEffect(WorldRef world, EffectNodeId effectNodeId);
         bool FinalizeEffect(WorldRef world, EffectNodeId effectNodeId, EffectComponent& effectComponent);
 
-        using PriorityResponseHandler = TTuple<int32, TSharedPtr<IResponseHandler>, FName>;
+        using PriorityResponseHandler = std::tuple<int32, std::shared_ptr<IResponseHandler>, FName>;
 
         void GetPrioritizedResponseHandlers(
             WorldConstRef world,
             ECS::EntityId entityId,
             const ResponseContext& responseContext,
-            TVector<PriorityResponseHandler>& outResponseHandlers);
+            std::vector<PriorityResponseHandler>& outResponseHandlers);
 
-        TSharedPtr<PeriodicEffectSystem> PeriodicEffectSystem;
-        std::unordered_map<FName, TSharedPtr<IEffectHandler>> EffectIdToHandlerMap;
-        std::unordered_map<FName, TSharedPtr<IResponseHandler>> ResponseIdToHandlerMap;
+        std::shared_ptr<PeriodicEffectSystem> PeriodicEffectSystem;
+        std::unordered_map<FName, std::shared_ptr<IEffectHandler>> EffectIdToHandlerMap;
+        std::unordered_map<FName, std::shared_ptr<IResponseHandler>> ResponseIdToHandlerMap;
     };
 }

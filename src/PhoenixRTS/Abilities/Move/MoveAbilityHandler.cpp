@@ -30,7 +30,7 @@ namespace MoveAbilitySystemDetail
 {
     struct UpdateMoveAbilityComponentJob
     {
-        TSharedPtr<FeatureOrders> OrdersFeature;
+        std::shared_ptr<FeatureOrders> OrdersFeature;
 
         void Begin(WorldRef world)
         {
@@ -108,7 +108,7 @@ void MoveAbilityComponent::Exit(WorldRef world, const UnitId& unit)
 
 MoveAbilityHandler::MoveAbilityHandler()
 {
-    System = MakeShared<MoveAbilitySystem>();
+    System = std::make_shared<MoveAbilitySystem>();
 }
 
 FName MoveAbilityHandler::GetCommandId() const
@@ -116,11 +116,11 @@ FName MoveAbilityHandler::GetCommandId() const
     return "MoveAbility"_n;
 }
 
-void MoveAbilityHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void MoveAbilityHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IAbilityHandler::Initialize(session);
 
-    TSharedPtr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
     ecs->RegisterSystem(System);
 }
 
@@ -128,7 +128,7 @@ void MoveAbilityHandler::Shutdown()
 {
     IAbilityHandler::Shutdown();
 
-    TSharedPtr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
     ecs->UnregisterSystem(System);
 }
 

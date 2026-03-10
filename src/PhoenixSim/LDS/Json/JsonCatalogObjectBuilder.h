@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Containers/Optional.h"
@@ -17,45 +16,45 @@ namespace Phoenix::LDS::Json
         bool RegisterObject(const json& objectJson);
 
         bool ProcessJsonObject(
-            const PHXString& rootObjectId,
+            const std::string& rootObjectId,
             const json& json,
-            const PHXString& jsonPath,
-            const PHXString& typePath);
+            const std::string& jsonPath,
+            const std::string& typePath);
 
         bool ProcessObjectProperties(
-            const PHXString& rootObjectId,
+            const std::string& rootObjectId,
             const json& json,
-            const PHXString& jsonPath,
-            const PHXString& typePath);
+            const std::string& jsonPath,
+            const std::string& typePath);
 
-        bool ProcessObjectRef(const PHXString& rootObjectId, const json& json, const PHXString& jsonPath);
+        bool ProcessObjectRef(const std::string& rootObjectId, const json& json, const std::string& jsonPath);
 
         bool ProcessArray(
-            const PHXString& rootObjectId,
+            const std::string& rootObjectId,
             const json& json,
-            const PHXString& jsonPath,
-            const PHXString& typePath);
+            const std::string& jsonPath,
+            const std::string& typePath);
 
         bool ProcessEnum(
-            const PHXString& rootObjectId,
+            const std::string& rootObjectId,
             const json& json,
-            const PHXString& jsonPath,
-            const PHXString& typePath);
+            const std::string& jsonPath,
+            const std::string& typePath);
 
         bool ProcessEnumFlags(
-            const PHXString& rootObjectId,
+            const std::string& rootObjectId,
             const json& json,
-            const PHXString& jsonPath,
-            const PHXString& typePath);
+            const std::string& jsonPath,
+            const std::string& typePath);
 
-        bool ProcessValueProperty(const PHXString& rootObjectId, const json& json, const PHXString& path);
+        bool ProcessValueProperty(const std::string& rootObjectId, const json& json, const std::string& path);
 
         const LDSRecord* FindTypeRecordForObject(const FName& objectId, const FName& propertyId);
 
         template <class ...TArgs>
-        void EmplaceObjectRecord(const PHXString& rootObjectId, const PHXString& path, TArgs&&... args)
+        void EmplaceObjectRecord(const std::string& rootObjectId, const std::string& path, TArgs&&... args)
         {
-            PHXString finalPath = path;
+            std::string finalPath = path;
             if (PathPostFix.IsSet())
             {
                 finalPath += PathPostFix.Get();
@@ -72,7 +71,7 @@ namespace Phoenix::LDS::Json
         }
 
         TOptional<FName> TypeIdOverride;
-        TOptional<PHXString> PathPostFix;
+        TOptional<std::string> PathPostFix;
         ELDSCatalogRecordStore RecordStore = ELDSCatalogRecordStore::Object;
     };
 }

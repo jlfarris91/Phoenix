@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/LDS/LDSObjectModel.h"
@@ -17,7 +16,7 @@ namespace Phoenix::RTS::Data
         FName Title;
         FName SubTitle;
         FName Body;
-        TVector<TooltipItem> Items;
+        std::vector<TooltipItem> Items;
 
         static bool Read(const LDS::LDSReadObjectArgs& args, Tooltip& outItem);
     };

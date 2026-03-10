@@ -1,5 +1,4 @@
-﻿
-#include "PhoenixSim/Session.h"
+﻿#include "PhoenixSim/Session.h"
 
 #include "PhoenixSim/Config.h"
 #include "PhoenixSim/Features.h"
@@ -23,9 +22,9 @@ Session::~Session()
     ServiceContainer.reset();
 }
 
-TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
+std::shared_ptr<Session> Session::Create(const SessionCtorArgs& args)
 {
-    TSharedPtr<Session> session = MakeShared<Session>();
+    std::shared_ptr<Session> session = std::make_shared<Session>();
 
     session->DataDirectory = std::filesystem::absolute(args.DataDirectory);
     session->ConfigName = args.ConfigName;
@@ -49,14 +48,14 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
 
     FeatureSetCtorArgs featureSetCtorArgs;
     session->ServiceContainer->GetServices2<IFeature>(featureSetCtorArgs.Features);
-    session->FeatureSet = MakeShared<Phoenix::FeatureSet>(featureSetCtorArgs);
+    session->FeatureSet = std::make_shared<Phoenix::FeatureSet>(featureSetCtorArgs);
 
     WorldManagerCtorArgs worldManagerArgs;
     worldManagerArgs.Session = session;
     worldManagerArgs.FeatureSet = session->FeatureSet;
     worldManagerArgs.ConfigService = session->ConfigService;
     worldManagerArgs.OnPostWorldUpdate = args.OnPostWorldUpdate;
-    session->WorldManager = MakeShared<Phoenix::WorldManager>(worldManagerArgs);
+    session->WorldManager = std::make_shared<Phoenix::WorldManager>(worldManagerArgs);
 
     // Construct block buffer
     {
@@ -65,7 +64,7 @@ TSharedPtr<Session> Session::Create(const SessionCtorArgs& args)
         
         BlockBufferLayoutBuilder layoutBuilder;
 
-        for (const TSharedPtr<IFeature>& feature : session->FeatureSet->GetFeatures())
+        for (const std::shared_ptr<IFeature>& feature : session->FeatureSet->GetFeatures())
         {
             const FeatureDefinition& featureDef = feature->GetFeatureDefinition();
 
@@ -87,7 +86,7 @@ void Session::Initialize()
 {
     LoadConfig();
 
-    for (const TSharedPtr<IService>& service : ServiceContainer->GetServices())
+    for (const std::shared_ptr<IService>& service : ServiceContainer->GetServices())
     {
         service->Initialize(shared_from_this());
     }
@@ -101,7 +100,7 @@ void Session::Initialize()
 
 void Session::Shutdown()
 {
-    for (const TSharedPtr<IService>& service : ServiceContainer->GetServices())
+    for (const std::shared_ptr<IService>& service : ServiceContainer->GetServices())
     {
         service->Shutdown();
     }
@@ -181,7 +180,7 @@ const BlockBuffer& Session::GetBuffer() const
     return SessionBuffer;
 }
 
-TSharedPtr<IFeature> Session::GetFeature(const FName& featureId) const
+std::shared_ptr<IFeature> Session::GetFeature(const FName& featureId) const
 {
     return FeatureSet->GetFeature(featureId);
 }
@@ -226,32 +225,32 @@ ServiceContainer* Session::GetServiceContainer() const
     return ServiceContainer.get();
 }
 
-PHXString Session::GetDataDirectory() const
+std::string Session::GetDataDirectory() const
 {
     return DataDirectory.generic_string();
 }
 
-PHXString Session::GetWorldsDirectory() const
+std::string Session::GetWorldsDirectory() const
 {
     return (DataDirectory / "Worlds").generic_string();
 }
 
-PHXString Session::GetWorldDirectory(const PHXString& worldType) const
+std::string Session::GetWorldDirectory(const std::string& worldType) const
 {
     return (DataDirectory / "Worlds" / worldType).generic_string();
 }
 
-TSharedPtr<IService> Session::GetService(const FName& typeId) const
+std::shared_ptr<IService> Session::GetService(const FName& typeId) const
 {
     return ServiceContainer->GetService(typeId);
 }
 
-uint32 Session::GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const
+uint32 Session::GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const
 {
     return ServiceContainer->GetServices(typeId, outServices);
 }
 
-const TVector<TSharedPtr<IService>>& Session::GetServices() const
+const std::vector<std::shared_ptr<IService>>& Session::GetServices() const
 {
     return ServiceContainer->GetServices();
 }
@@ -264,7 +263,7 @@ void Session::LoadConfig() const
 
 void Session::ApplyConfig() const
 {
-    for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
+    for (const Phoenix::FeatureSharedPtr& feature : FeatureSet->GetFeatures())
     {
         const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
 
@@ -288,7 +287,7 @@ void Session::ProcessActions(simtime_t time)
 
         // Sort action queue by sim time
         std::ranges::sort(ActionQueue,
-              [](const TTuple<simtime_t, Action>& a, const TTuple<simtime_t, Action>& b)
+              [](const std::tuple<simtime_t, Action>& a, const std::tuple<simtime_t, Action>& b)
               {
                   return std::get<0>(a) < std::get<0>(b);
               });
@@ -326,8 +325,8 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Pre-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreUpdate");
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreUpdate);
-        for (const FeatureSharedPtr& feature : channelFeatures)
+        const std::vector<Phoenix::FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PreUpdate);
+        for (const Phoenix::FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPreUpdate(updateArgs);
         }
@@ -336,8 +335,8 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Update
     {
         PHX_PROFILE_ZONE_SCOPED_N("Update");
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::Update);
-        for (const FeatureSharedPtr& feature : channelFeatures)
+        const std::vector<Phoenix::FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::Update);
+        for (const Phoenix::FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnUpdate(updateArgs);
         }
@@ -346,8 +345,8 @@ void Session::UpdateSession(simtime_t time, uint32 stepHz) const
     // Post-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PostUpdate");
-        const TVector<FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostUpdate);
-        for (const FeatureSharedPtr& feature : channelFeatures)
+        const std::vector<Phoenix::FeatureSharedPtr>& channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::PostUpdate);
+        for (const Phoenix::FeatureSharedPtr& feature : channelFeatures)
         {
             feature->OnPostUpdate(updateArgs);
         }

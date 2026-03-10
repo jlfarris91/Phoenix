@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Features.h"
@@ -56,7 +55,7 @@ namespace Phoenix::RTS
     {
         EUnitQueryFlags Flags = EUnitQueryFlags::AliveOrDead;
         TeamMask TeamMask = Teams::All;
-        TVector<UnitId> Exclude;
+        std::vector<UnitId> Exclude;
         uint32 MaxNum = 64;
     };
 
@@ -139,7 +138,7 @@ namespace Phoenix::RTS
             WorldConstRef world,
             const Vec2& pos,
             Distance range,
-            TVector<UnitId>& outUnits,
+            std::vector<UnitId>& outUnits,
             const UnitRangeQueryArgs& args);
 
         // TODO (jfarris): make this event-driven?
@@ -147,10 +146,10 @@ namespace Phoenix::RTS
 
     protected:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 
-        TSharedPtr<ECS::ISystem> UnitSystem;
+        std::shared_ptr<ECS::ISystem> UnitSystem;
     };
 }

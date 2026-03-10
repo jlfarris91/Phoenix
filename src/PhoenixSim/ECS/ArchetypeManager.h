@@ -16,10 +16,10 @@ namespace Phoenix
     namespace ECS
     {
         template <class ...TComponents>
-        using TEntityQueryFunc = TFunction<void(EntityId, TComponents...)>;
+        using TEntityQueryFunc = std::function<void(EntityId, TComponents...)>;
 
         template <class ...TComponents>
-        using TEntityQueryBufferFunc = TFunction<void(const EntityComponentSpan<TComponents...>&)>;
+        using TEntityQueryBufferFunc = std::function<void(const EntityComponentSpan<TComponents...>&)>;
 
         template <class TJob>
         struct EntityJobHelper
@@ -54,7 +54,7 @@ namespace Phoenix
             };
 
             using THelper = ExecuteFnTraits<decltype(&TJob::Execute)>;
-            using TEntityComponentSpan = typename THelper::TEntityComponentSpan;
+            using TEntityComponentSpan = THelper::TEntityComponentSpan;
 
             static EntityQuery BuildQuery()
             {
@@ -284,23 +284,23 @@ namespace Phoenix
             TArchetypeList* FindOwningArchetypeList(EntityId entityId);
             const TArchetypeList* FindOwningArchetypeList(EntityId entityId) const;
 
-            void ForEachArchetypeList(const TFunction<void(TArchetypeList&)>& func);
+            void ForEachArchetypeList(const std::function<void(TArchetypeList&)>& func);
 
-            void ForEachArchetypeList(const TFunction<void(const TArchetypeList&)>& func) const;
+            void ForEachArchetypeList(const std::function<void(const TArchetypeList&)>& func) const;
 
-            void ForEachArchetypeList(const FName& archetypeIdOrHash, const TFunction<void(TArchetypeList&)>& func);
+            void ForEachArchetypeList(const FName& archetypeIdOrHash, const std::function<void(TArchetypeList&)>& func);
 
             template <class ...TComponents>
             void ForEachEntity(const EntityQuery& query, const TEntityQueryFunc<TComponents...>& func)
             {
-                for (const TBlockHandle& handle : ArchetypeLists)
+                for (TBlockHandle handle : ArchetypeLists)
                 {
                     TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
                     {
                         list->ForEachEntity<TComponents...>([&](EntityId entityId, TComponents ...components)
                         {
-                            func(entityId, Forward<TComponents>(components)...);
+                            func(entityId, std::forward<TComponents>(components)...);
                         });
                     }
                 }
@@ -309,14 +309,14 @@ namespace Phoenix
             template <class ...TComponents>
             void ForEachEntity(const EntityQuery& query, const TEntityQueryFunc<TComponents...>& func) const
             {
-                for (const TBlockHandle& handle : ArchetypeLists)
+                for (TBlockHandle handle : ArchetypeLists)
                 {
                     const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
                     {
                         list->ForEachEntity<TComponents...>([&](EntityId entityId, TComponents ...components)
                         {
-                            func(entityId, Forward<TComponents>(components)...);
+                            func(entityId, std::forward<TComponents>(components)...);
                         });
                     }
                 }
@@ -326,7 +326,7 @@ namespace Phoenix
             void ForEachEntity(const EntityQuery& query, const TEntityQueryBufferFunc<TComponents...>& func)
             {
                 uint32 startingIndex = 0;
-                for (const TBlockHandle& handle : ArchetypeLists)
+                for (TBlockHandle handle : ArchetypeLists)
                 {
                     TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
@@ -341,7 +341,7 @@ namespace Phoenix
             void ForEachEntity(const EntityQuery& query, const TEntityQueryBufferFunc<TComponents...>& func) const
             {
                 uint32 startingIndex = 0;
-                for (const TBlockHandle& handle : ArchetypeLists)
+                for (TBlockHandle handle : ArchetypeLists)
                 {
                     const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
@@ -360,7 +360,7 @@ namespace Phoenix
                     job.Begin(world);
                 }
                 uint32 startingIndex = 0;
-                for (const TBlockHandle& handle : ArchetypeLists)
+                for (TBlockHandle handle : ArchetypeLists)
                 {
                     TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))
@@ -383,7 +383,7 @@ namespace Phoenix
                     job.Begin(world);
                 }
                 uint32 startingIndex = 0;
-                for (const TBlockHandle& handle : ArchetypeLists)
+                for (TBlockHandle handle : ArchetypeLists)
                 {
                     TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
                     if (list && query.PassesFilter(list->GetDefinition()))

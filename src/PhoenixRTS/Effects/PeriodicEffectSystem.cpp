@@ -23,7 +23,7 @@ namespace PeriodicEffectSystemDetail
             PHX_PROFILE_ZONE_SCOPED_N("PeriodicEffectSystemJob");
 
             WorldRef world = *World;
-            TSharedPtr<FeatureEffects> effectsFeature = GetFeature<FeatureEffects>(world);
+            std::shared_ptr<FeatureEffects> effectsFeature = GetFeature<FeatureEffects>(world);
 
             for (auto && [entityId, index, transformComp, projectileComp] : span)
             {

@@ -6,7 +6,7 @@ namespace Phoenix
 {
     struct ServiceRegistrar
     {
-        ServiceRegistrar(ServiceContainerBuilder* builder, const TSharedPtr<IService>& service);
+        ServiceRegistrar(ServiceContainerBuilder* builder, const std::shared_ptr<IService>& service);
 
         const ServiceRegistrar& As(const FName& typeId) const;
 
@@ -21,30 +21,30 @@ namespace Phoenix
     private:
 
         ServiceContainerBuilder* Builder;
-        TSharedPtr<IService> Service;
+        std::shared_ptr<IService> Service;
     };
 
     class PHOENIX_SIM_API ServiceContainerBuilder
     {
     public:
 
-        ServiceRegistrar RegisterService(const TSharedPtr<IService>& service);
+        ServiceRegistrar RegisterService(const std::shared_ptr<IService>& service);
 
         template <class TService, class ...TArgs>
         ServiceRegistrar RegisterService(TArgs&&... args)
         {
-            TSharedPtr<TService> service = MakeShared<TService>(std::forward<TArgs>(args)...);
+            std::shared_ptr<TService> service = std::make_shared<TService>(std::forward<TArgs>(args)...);
             return RegisterService(service);
         }
 
-        TSharedPtr<ServiceContainer> Build();
+        std::shared_ptr<ServiceContainer> Build();
 
     private:
 
         friend struct ServiceRegistrar;
 
-        void RegisterServiceAs(const TSharedPtr<IService>& service, const FName& typeId);
-        void RegisterServiceAsInterfaces(const TSharedPtr<IService>& service);
+        void RegisterServiceAs(const std::shared_ptr<IService>& service, const FName& typeId);
+        void RegisterServiceAsInterfaces(const std::shared_ptr<IService>& service);
 
         ServiceContainer Container;
     };

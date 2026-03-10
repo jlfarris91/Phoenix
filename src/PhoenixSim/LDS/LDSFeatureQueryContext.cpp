@@ -1,4 +1,3 @@
-
 #include "LDSFeatureQueryContext.h"
 
 #include "PhoenixSim/Session.h"
@@ -10,7 +9,7 @@ LDSFeatureQueryContext LDSFeatureQueryContext::Create(SessionConstRef session, W
 {
     LDSFeatureQueryContext context;
 
-    if (TSharedPtr<FeatureLDS> featureLDS = session.GetFeature<FeatureLDS>())
+    if (std::shared_ptr<FeatureLDS> featureLDS = session.GetFeature<FeatureLDS>())
     {
         context.SessionStaticCatalog = featureLDS->GetStaticSessionCatalog().get();
 

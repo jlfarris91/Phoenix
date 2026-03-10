@@ -12,7 +12,7 @@
 
 using namespace Phoenix;
 
-CameraTool::CameraTool(TSharedPtr<Phoenix::Session> session, SDLCamera* camera, SDLViewport* viewport)
+CameraTool::CameraTool(std::shared_ptr<Phoenix::Session> session, SDLCamera* camera, SDLViewport* viewport)
     : Session(session)
     , Camera(camera)
     , Viewport(viewport)

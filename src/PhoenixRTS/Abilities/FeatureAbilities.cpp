@@ -21,7 +21,7 @@ FeatureAbilities::FeatureAbilities()
     FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
 }
 
-void FeatureAbilities::RegisterAbilityHandler(const TSharedPtr<IAbilityHandler>& handler)
+void FeatureAbilities::RegisterAbilityHandler(const std::shared_ptr<IAbilityHandler>& handler)
 {
     AbilityIdToHandlerMap.emplace(handler->GetCommandId(), handler);
 }
@@ -31,9 +31,9 @@ bool FeatureAbilities::UnregisterAbilityHandler(const FName& abilityId)
     return AbilityIdToHandlerMap.erase(abilityId) > 0;
 }
 
-TSharedPtr<IAbilityHandler> FeatureAbilities::FindAbilityHandlerCached(WorldConstRef world, const FName& abilityId)
+std::shared_ptr<IAbilityHandler> FeatureAbilities::FindAbilityHandlerCached(WorldConstRef world, const FName& abilityId)
 {
-    TSharedPtr<IAbilityHandler> handler = FindAbilityHandler(world, abilityId);
+    std::shared_ptr<IAbilityHandler> handler = FindAbilityHandler(world, abilityId);
 
     // Cache the handler for this ability id for faster subsequent lookups even if it is null.
     AbilityIdToHandlerMap.emplace(abilityId, handler);
@@ -41,9 +41,9 @@ TSharedPtr<IAbilityHandler> FeatureAbilities::FindAbilityHandlerCached(WorldCons
     return handler;
 }
 
-TSharedPtr<IAbilityHandler> FeatureAbilities::FindAbilityHandler(WorldConstRef world, const FName& abilityId) const
+std::shared_ptr<IAbilityHandler> FeatureAbilities::FindAbilityHandler(WorldConstRef world, const FName& abilityId) const
 {
-    TSharedPtr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+    std::shared_ptr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
     if (!queryContext)
     {
         return {};
@@ -75,15 +75,15 @@ TSharedPtr<IAbilityHandler> FeatureAbilities::FindAbilityHandler(WorldConstRef w
     }
 }
 
-TSharedPtr<IAbilityHandler> FeatureAbilities::StaticFindAbilityHandler(WorldConstRef world, const FName& abilityId)
+std::shared_ptr<IAbilityHandler> FeatureAbilities::StaticFindAbilityHandler(WorldConstRef world, const FName& abilityId)
 {
-    TSharedPtr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
-    return feature ? feature->FindAbilityHandlerCached(world, abilityId) : TSharedPtr<IAbilityHandler>{};
+    std::shared_ptr<FeatureAbilities> feature = GetFeature<FeatureAbilities>(world);
+    return feature ? feature->FindAbilityHandlerCached(world, abilityId) : std::shared_ptr<IAbilityHandler>{};
 }
 
 bool FeatureAbilities::AddAbility(WorldRef world, const UnitId& unit, const FName& abilityId)
 {
-    TSharedPtr<IAbilityHandler> ability = StaticFindAbilityHandler(world, abilityId);
+    std::shared_ptr<IAbilityHandler> ability = StaticFindAbilityHandler(world, abilityId);
     if (!ability)
     {
         return false;
@@ -94,7 +94,7 @@ bool FeatureAbilities::AddAbility(WorldRef world, const UnitId& unit, const FNam
 
 bool FeatureAbilities::RemoveAbility(WorldRef world, const UnitId& unit, const FName& abilityId)
 {
-    TSharedPtr<IAbilityHandler> ability = StaticFindAbilityHandler(world, abilityId);
+    std::shared_ptr<IAbilityHandler> ability = StaticFindAbilityHandler(world, abilityId);
     if (!ability)
     {
         return false;
@@ -105,7 +105,7 @@ bool FeatureAbilities::RemoveAbility(WorldRef world, const UnitId& unit, const F
 
 bool FeatureAbilities::HasAbility(WorldConstRef world, const UnitId& unit, const FName& abilityId)
 {
-    TSharedPtr<IAbilityHandler> ability = StaticFindAbilityHandler(world, abilityId);
+    std::shared_ptr<IAbilityHandler> ability = StaticFindAbilityHandler(world, abilityId);
     if (!ability)
     {
         return false;
@@ -118,7 +118,7 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
 {
     bool success = true;
 
-    TVector<FName> abilities;
+    std::vector<FName> abilities;
     GetAbilities(world, unit, abilities);
 
     for (const FName& abilityId : abilities)
@@ -130,7 +130,7 @@ bool FeatureAbilities::AddAbilitiesFromData(WorldRef world, const UnitId& unit, 
     return success;
 }
 
-uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, TVector<FName>& outAbilityIds)
+uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, std::vector<FName>& outAbilityIds)
 {
     const ILDSQueryContext& queryContext = *FeatureLDS::StaticGetWorldQueryContext(world);
 
@@ -153,14 +153,14 @@ uint32 FeatureAbilities::GetAbilities(WorldConstRef world, const UnitId& unit, T
     return static_cast<uint32>(outAbilityIds.size());
 }
 
-void FeatureAbilities::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureAbilities::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    TVector<TSharedPtr<IAbilityHandler>> handlers;
+    std::vector<std::shared_ptr<IAbilityHandler>> handlers;
     Session->GetServices2<IAbilityHandler>(handlers);
 
-    for (const TSharedPtr<IAbilityHandler>& handler : handlers)
+    for (const std::shared_ptr<IAbilityHandler>& handler : handlers)
     {
         RegisterAbilityHandler(handler);
     }

@@ -44,9 +44,9 @@ namespace Phoenix::RTS
 
     protected:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        TSharedPtr<ProjectilesSystem> ProjectilesSystem;
+        std::shared_ptr<ProjectilesSystem> ProjectilesSystem;
     };
 }

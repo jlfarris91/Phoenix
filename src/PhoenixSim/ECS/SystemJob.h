@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include "PhoenixSim/ECS/ArchetypeList.h"
 #include "PhoenixSim/ECS/ArchetypeManager.h"
@@ -74,7 +73,7 @@ namespace Phoenix::ECS
     };
     
     template <class ...TComponents>
-    using TJobFunction = TFunction<void(WorldRef, EntityId, TComponents...)>;
+    using TJobFunction = std::function<void(WorldRef, EntityId, TComponents...)>;
 
     template <class ...TComponents>
     struct FunctionJob : IEntityJob<TComponents...>
@@ -90,7 +89,7 @@ namespace Phoenix::ECS
     };
 
     template <class ...TComponents>
-    using TBufferJobFunction = TFunction<void(WorldRef world, const EntityComponentSpan<TComponents...>&)>;
+    using TBufferJobFunction = std::function<void(WorldRef world, const EntityComponentSpan<TComponents...>&)>;
 
     template <class ...TComponents>
     struct FunctionBufferJob : IBufferJob<TComponents...>

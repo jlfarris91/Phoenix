@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <nlohmann/json.hpp>
@@ -14,10 +13,10 @@ namespace Phoenix::LDS::Json
 
     struct PHOENIX_SIM_API JsonCatalogBuilderLogMessage : LogMessage
     {
-        PHXString Id;
-        PHXString PropertyPath;
+        std::string Id;
+        std::string PropertyPath;
 
-        JsonCatalogBuilderLogMessage& Context(const PHXString& id, const PHXString& path = {})
+        JsonCatalogBuilderLogMessage& Context(const std::string& id, const std::string& path = {})
         {
             Id = id;
             PropertyPath = path;
@@ -43,7 +42,7 @@ namespace Phoenix::LDS::Json
         bool GetPropertyValueFromJson(
             const json& json,
             const FName& objectId,
-            const PHXString& propertyPath,
+            const std::string& propertyPath,
             uint32 pointerFirst,
             uint32 pointerLast,
             LDSTypedValue& outValue);
@@ -51,7 +50,7 @@ namespace Phoenix::LDS::Json
         bool GetPropertyValueFromJson(
             const json& json,
             const FName& objectId,
-            const PHXString& propertyPath,
+            const std::string& propertyPath,
             LDSTypedValue& outValue);
 
         HeapLDSCatalog* Catalog;

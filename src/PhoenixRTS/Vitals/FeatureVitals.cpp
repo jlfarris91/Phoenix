@@ -60,13 +60,13 @@ bool FeatureVitals::ApplyDamage(WorldRef world, EntityId target, const Damage& d
     return true;
 }
 
-void FeatureVitals::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureVitals::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    VitalsSystem = MakeShared<RTS::VitalsSystem>();
+    VitalsSystem = std::make_shared<RTS::VitalsSystem>();
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->RegisterSystem(VitalsSystem);
 }
 
@@ -74,7 +74,7 @@ void FeatureVitals::Shutdown()
 {
     IFeature::Shutdown();
 
-    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    if (std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
     {
         featureECS->UnregisterSystem(VitalsSystem);
     }

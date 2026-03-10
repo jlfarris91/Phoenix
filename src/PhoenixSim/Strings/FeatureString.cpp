@@ -52,7 +52,7 @@ bool Phoenix::FeatureString::Contains(WorldConstRef world, const FName& name)
             return true;
         }
     }
-    if (TSharedPtr<Phoenix::Session> session = world.GetSession().lock())
+    if (std::shared_ptr<Phoenix::Session> session = world.GetSession().lock())
     {
         return Contains(*session, name);
     }
@@ -82,7 +82,7 @@ const char* Phoenix::FeatureString::Get(WorldConstRef world, const FName& name)
             return str;
         }
     }
-    if (TSharedPtr<Phoenix::Session> session = world.GetSession().lock())
+    if (std::shared_ptr<Phoenix::Session> session = world.GetSession().lock())
     {
         return Get(*session, name);
     }

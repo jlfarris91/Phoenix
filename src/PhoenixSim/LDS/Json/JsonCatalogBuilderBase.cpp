@@ -30,7 +30,7 @@ bool JsonCatalogBuilderBase::GetValueFromJson(
             }
             if (json.is_string())
             {
-                const PHXString& str = json.get<PHXString>();
+                const std::string& str = json.get<std::string>();
                 outValue.Int32 = static_cast<int32>(strtoul(str.c_str(), nullptr, 16));
                 return true;
             }
@@ -43,7 +43,7 @@ bool JsonCatalogBuilderBase::GetValueFromJson(
             }
             if (json.is_string())
             {
-                const PHXString& str = json.get<PHXString>();
+                const std::string& str = json.get<std::string>();
                 outValue.UInt32 = static_cast<uint32>(strtoul(str.c_str(), nullptr, 16));
                 return true;
             }
@@ -51,7 +51,7 @@ bool JsonCatalogBuilderBase::GetValueFromJson(
         case ELDSValueType::Name:
             if (json.is_string())
             {
-                outValue.Name = json.get<PHXString>();
+                outValue.Name = json.get<std::string>();
                 return true;
             }
             if (json.is_number_integer())
@@ -108,7 +108,7 @@ bool JsonCatalogBuilderBase::GetValueFromJson(
         case ELDSValueType::EnumFlags:
             if (json.is_string())
             {
-                outValue.Name = json.get<PHXString>();
+                outValue.Name = json.get<std::string>();
                 return true;
             }
             break;
@@ -132,7 +132,7 @@ bool JsonCatalogBuilderBase::GetPropertyValueObjectRefFromJson(const json& json,
         return false;
     }
 
-    const PHXString& valueStr = json.get<PHXString>();
+    const std::string& valueStr = json.get<std::string>();
     FName valueId = FName(valueStr.data(), valueStr.length());
     value.Name = valueId;
 
@@ -142,12 +142,12 @@ bool JsonCatalogBuilderBase::GetPropertyValueObjectRefFromJson(const json& json,
 bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
     const json& json,
     const FName& objectId,
-    const PHXString& propertyPath,
+    const std::string& propertyPath,
     uint32 pointerFirst,
     uint32 pointerLast,
     LDSTypedValue& outValue)
 {
-    PHXString propertyPart = propertyPath.substr( pointerFirst, pointerLast - pointerFirst);
+    std::string propertyPart = propertyPath.substr( pointerFirst, pointerLast - pointerFirst);
     FName propertyId = propertyPart;
 
     FName propertyTypeId = propertyId + "/type";
@@ -174,12 +174,12 @@ bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
 
     if (type == ELDSValueType::Array)
     {
-        PHXString nextPropertyPath;
-        PHXString firstPart = propertyPath.substr(0, pointerLast);
+        std::string nextPropertyPath;
+        std::string firstPart = propertyPath.substr(0, pointerLast);
         pointerLast = static_cast<uint32>(propertyPath.find_first_of('/', pointerLast + 1));
         if (pointerLast != Index<uint32>::None)
         {
-            PHXString lastPart = propertyPath.substr(pointerLast);
+            std::string lastPart = propertyPath.substr(pointerLast);
             nextPropertyPath = std::format("{}/items{}", firstPart, lastPart);
         }
         else
@@ -197,7 +197,7 @@ bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
 bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
     const json& json,
     const FName& objectId,
-    const PHXString& propertyPath,
+    const std::string& propertyPath,
     LDSTypedValue& outValue)
 {
     uint32 end = static_cast<uint32>(propertyPath.find_first_of('/', 1));

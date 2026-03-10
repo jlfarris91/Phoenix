@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Platform.h"
@@ -67,7 +66,7 @@ namespace Phoenix
         template <class ...TFmtArgs>
         PHX_FORCEINLINE void Log(ELogLevel level, const std::format_string<TFmtArgs...>& fmt, TFmtArgs&&... fmtArgs)
         {
-            PHXString message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
+            std::string message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
             Log(level, message);
         }
     };
@@ -75,8 +74,8 @@ namespace Phoenix
     PHOENIX_SIM_API bool HasLogger(const std::string& id);
     PHOENIX_SIM_API ILogger& GetLogger();
     PHOENIX_SIM_API ILogger& GetLogger(const std::string& id);
-    PHOENIX_SIM_API void SetLogger(const TSharedPtr<ILogger>& logger);
-    PHOENIX_SIM_API void SetLogger(const TSharedPtr<ILogger>& logger, const std::string& id);
+    PHOENIX_SIM_API void SetLogger(const std::shared_ptr<ILogger>& logger);
+    PHOENIX_SIM_API void SetLogger(const std::shared_ptr<ILogger>& logger, const std::string& id);
 
     template <class ...TFmtArgs>
     PHX_FORCEINLINE void LogVerbose(
@@ -117,13 +116,13 @@ namespace Phoenix
         TFmtArgs&&... fmtArgs)
     {
         PHX_ASSERT(static_cast<uint8>(level) < static_cast<uint8>(ELogLevel::COUNT));
-        PHXString message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
+        std::string message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
         GetLogger().Log(level, message);
     }
 
     struct PHOENIX_SIM_API LogMessage
     {
-        PHXString Message;
+        std::string Message;
     };
 
     template <class TLog = LogMessage>
@@ -144,7 +143,7 @@ namespace Phoenix
             return Logs;
         }
 
-        const TVector<TLog>& GetLogs(ELogLevel level) const
+        const std::vector<TLog>& GetLogs(ELogLevel level) const
         {
             return Logs[static_cast<uint8>(level)];
         }
@@ -188,7 +187,7 @@ namespace Phoenix
             TFmtArgs&&... fmtArgs)
         {
             PHX_ASSERT(static_cast<uint8>(level) < static_cast<uint8>(ELogLevel::COUNT));
-            PHXString message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
+            std::string message = std::format(fmt, std::forward<TFmtArgs>(fmtArgs)...);
             Logs[static_cast<uint8>(level)].push_back({{message}});
             GetLogger(LoggerId).Log(level, message);
             return Logs[static_cast<uint8>(level)].back();
@@ -197,7 +196,7 @@ namespace Phoenix
     private:
 
         std::string LoggerId = {};
-        TVector<TLog> Logs[static_cast<uint8>(ELogLevel::COUNT)];
+        std::vector<TLog> Logs[static_cast<uint8>(ELogLevel::COUNT)];
     };
 
     template <class TLog = LogMessage>
@@ -225,7 +224,7 @@ namespace Phoenix
             return Logs.GetLogs();
         }
 
-        const TVector<TLog>& GetLogs(ELogLevel level) const
+        const std::vector<TLog>& GetLogs(ELogLevel level) const
         {
             return Logs.GetLogs(level);
         }

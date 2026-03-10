@@ -1,4 +1,3 @@
-
 #include "PhoenixRTS/Units/UnitSystem.h"
 
 #include "PhoenixSim/Profiling.h"
@@ -19,7 +18,7 @@ namespace UnitSystemDetail
 {
     struct UpdateUnitsJob
     {
-        TSharedPtr<const ILDSQueryContext> LDSQueryContext;
+        std::shared_ptr<const ILDSQueryContext> LDSQueryContext;
 
         void Begin(WorldRef world)
         {

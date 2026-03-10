@@ -4,7 +4,7 @@
 
 using namespace Phoenix;
 
-TSharedPtr<IService> ServiceContainer::GetService(const FName& typeId) const
+std::shared_ptr<IService> ServiceContainer::GetService(const FName& typeId) const
 {
     auto iter = ServiceMap.find(typeId);
     if (iter != ServiceMap.end())
@@ -19,12 +19,12 @@ TSharedPtr<IService> ServiceContainer::GetService(const FName& typeId) const
     return nullptr;
 }
 
-uint32 ServiceContainer::GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const
+uint32 ServiceContainer::GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const
 {
     uint32 count = 0;
 
     // Look for direct match first
-    if (TSharedPtr<IService> service = GetService(typeId))
+    if (std::shared_ptr<IService> service = GetService(typeId))
     {
         outServices.push_back(service);
         ++count;
@@ -34,7 +34,7 @@ uint32 ServiceContainer::GetServices(const FName& typeId, TVector<TSharedPtr<ISe
     auto iter = ServiceAsMap.find(typeId);
     if (iter != ServiceAsMap.end())
     {
-        for (const TSharedPtr<IService>& service : iter->second)
+        for (const std::shared_ptr<IService>& service : iter->second)
         {
             outServices.push_back(service);
             ++count;
@@ -44,7 +44,7 @@ uint32 ServiceContainer::GetServices(const FName& typeId, TVector<TSharedPtr<ISe
     return count;
 }
 
-const TVector<TSharedPtr<IService>>& ServiceContainer::GetServices() const
+const std::vector<std::shared_ptr<IService>>& ServiceContainer::GetServices() const
 {
     return Services;
 }
@@ -54,7 +54,7 @@ const std::unordered_map<FName, std::shared_ptr<IService>>& ServiceContainer::Ge
     return ServiceMap;
 }
 
-const std::unordered_map<FName, TVector<TSharedPtr<IService>>>& ServiceContainer::GetServiceAsMap() const
+const std::unordered_map<FName, std::vector<std::shared_ptr<IService>>>& ServiceContainer::GetServiceAsMap() const
 {
     return ServiceAsMap;
 }

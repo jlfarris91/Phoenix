@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <SDL3/SDL_render.h>
@@ -47,6 +46,6 @@ namespace Phoenix
         SDL_Renderer* Renderer;
         SDLViewport* Viewport;
         Color Colors[1024];
-        TVector<float> ScaleStack;
+        std::vector<float> ScaleStack;
     };
 }

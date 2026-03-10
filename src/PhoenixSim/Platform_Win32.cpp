@@ -1,4 +1,3 @@
-
 #if _WIN32
 
 #include <string>
@@ -33,7 +32,7 @@ std::wstring Phoenix::ToWideString(const std::string& str)
     return wstr;
 }
 
-void Phoenix::OSLog(ELogLevel level, const PHXString& msg)
+void Phoenix::OSLog(ELogLevel level, const std::string& msg)
 {
     OSLog(GetLogWStringWithUnixTime(level, msg).c_str());
 }

@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/ECS/FeatureECS.h"
@@ -26,7 +25,7 @@ namespace Phoenix::Steering
         PHX_DECLARE_BLOCK(FeatureSteeringScratchBlock)
 
         TInlineArray<SortedEntity, PHX_ECS_MAX_ENTITIES> SortedEntities;
-        TAtomic<uint32> SortedEntityCount = 0;
+        std::atomic<uint32> SortedEntityCount = 0;
 
         Distance MaxEntityRadius;
     };
@@ -106,16 +105,16 @@ namespace Phoenix::Steering
             WorldConstRef world,
             const Vec2& pos,
             Distance range,
-            TVector<const SortedEntity*>& outEntities,
+            std::vector<const SortedEntity*>& outEntities,
             const SteeringRangeQueryArgs& args = {});
 
     private:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
 
-        TSharedPtr<SteeringSystem> SteeringSystem;
+        std::shared_ptr<SteeringSystem> SteeringSystem;
     };
 }

@@ -34,7 +34,7 @@ uint32 AbilityPriority::Closest(WorldConstRef world, const UnitId& unit, const V
     return (uint32)-2 - Vec2::Distance(transformPtr->Position, target).Value;
 }
 
-void IAbilityHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void IAbilityHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     ICommandHandler::Initialize(session);
     AbilitiesFeature = session->GetFeature<FeatureAbilities>();

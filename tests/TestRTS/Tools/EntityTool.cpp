@@ -13,7 +13,7 @@
 
 using namespace Phoenix;
 
-EntityTool::EntityTool(const TSharedPtr<Phoenix::Session>& session)
+EntityTool::EntityTool(const std::shared_ptr<Phoenix::Session>& session)
     : Session(session)
 {
     UnitLabels = { "Lancer", "Archer", "Tower" };

@@ -6,6 +6,15 @@
 
 namespace Phoenix
 {
+    template <class T>
+    struct Underlying
+    {
+        using type = std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<T>>>;
+    };
+
+    template <class T>
+    using Underlying_T = Underlying<T>::type;
+
     template <size_t I = 0, typename... Ts>
     std::enable_if_t<I == sizeof...(Ts), bool> ContainsNullptr(const std::tuple<Ts...>&)
     {

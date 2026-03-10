@@ -46,7 +46,7 @@ FeatureEffects::FeatureEffects()
     FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
 
-void FeatureEffects::RegisterEffectHandler(const TSharedPtr<IEffectHandler>& handler)
+void FeatureEffects::RegisterEffectHandler(const std::shared_ptr<IEffectHandler>& handler)
 {
     EffectIdToHandlerMap.emplace(handler->GetEffectTypeId(), handler);
 }
@@ -56,9 +56,9 @@ bool FeatureEffects::UnregisterEffectHandler(const FName& baseObjectId)
     return EffectIdToHandlerMap.erase(baseObjectId) > 0;
 }
 
-TSharedPtr<IEffectHandler> FeatureEffects::FindEffectHandlerCached(WorldConstRef world, const FName& effectId)
+std::shared_ptr<IEffectHandler> FeatureEffects::FindEffectHandlerCached(WorldConstRef world, const FName& effectId)
 {
-    TSharedPtr<IEffectHandler> effectHandler = FindEffectHandler(world, effectId);
+    std::shared_ptr<IEffectHandler> effectHandler = FindEffectHandler(world, effectId);
 
     // Cache the handler for this effect id for faster subsequent lookups even if it is null.
     EffectIdToHandlerMap.emplace(effectId, effectHandler);
@@ -66,9 +66,9 @@ TSharedPtr<IEffectHandler> FeatureEffects::FindEffectHandlerCached(WorldConstRef
     return effectHandler;
 }
 
-TSharedPtr<IEffectHandler> FeatureEffects::FindEffectHandler(WorldConstRef world, const FName& effectId) const
+std::shared_ptr<IEffectHandler> FeatureEffects::FindEffectHandler(WorldConstRef world, const FName& effectId) const
 {
-    TSharedPtr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+    std::shared_ptr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
     if (!queryContext)
     {
         return {};
@@ -100,7 +100,7 @@ TSharedPtr<IEffectHandler> FeatureEffects::FindEffectHandler(WorldConstRef world
     }
 }
 
-void FeatureEffects::RegisterResponseHandler(const TSharedPtr<IResponseHandler>& handler)
+void FeatureEffects::RegisterResponseHandler(const std::shared_ptr<IResponseHandler>& handler)
 {
     ResponseIdToHandlerMap.emplace(handler->GetResponseId(), handler);
 }
@@ -110,9 +110,9 @@ bool FeatureEffects::UnregisterResponseHandler(const FName& baseObjectId)
     return ResponseIdToHandlerMap.erase(baseObjectId) > 0;
 }
 
-TSharedPtr<IResponseHandler> FeatureEffects::FindResponseHandlerCached(WorldConstRef world, const FName& responseId)
+std::shared_ptr<IResponseHandler> FeatureEffects::FindResponseHandlerCached(WorldConstRef world, const FName& responseId)
 {
-    TSharedPtr<IResponseHandler> effectHandler = FindResponseHandler(world, responseId);
+    std::shared_ptr<IResponseHandler> effectHandler = FindResponseHandler(world, responseId);
 
     // Cache the handler for this response id for faster subsequent lookups even if it is null.
     ResponseIdToHandlerMap.emplace(responseId, effectHandler);
@@ -120,9 +120,9 @@ TSharedPtr<IResponseHandler> FeatureEffects::FindResponseHandlerCached(WorldCons
     return effectHandler;
 }
 
-TSharedPtr<IResponseHandler> FeatureEffects::FindResponseHandler(WorldConstRef world, const FName& responseId) const
+std::shared_ptr<IResponseHandler> FeatureEffects::FindResponseHandler(WorldConstRef world, const FName& responseId) const
 {
-    TSharedPtr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+    std::shared_ptr<const ILDSQueryContext> queryContext = FeatureLDS::StaticGetWorldQueryContext(world);
     if (!queryContext)
     {
         return {};
@@ -495,7 +495,7 @@ bool FeatureEffects::StaticExecuteEffect(
     const FName& effectId,
     const ExecuteEffectArgs& overrides)
 {
-    TSharedPtr<FeatureEffects> feature = GetFeature<FeatureEffects>(world);
+    std::shared_ptr<FeatureEffects> feature = GetFeature<FeatureEffects>(world);
     return feature && feature->ExecuteEffect(world, parentNode, effectId, overrides);
 }
 
@@ -505,7 +505,7 @@ bool FeatureEffects::ExecuteEffect(
     const FName& effectId,
     const ExecuteEffectArgs& overrides)
 {
-    TSharedPtr<IEffectHandler> effectHandler = FindEffectHandlerCached(world, effectId);
+    std::shared_ptr<IEffectHandler> effectHandler = FindEffectHandlerCached(world, effectId);
     if (!effectHandler)
     {
         return false;
@@ -568,14 +568,14 @@ bool FeatureEffects::SetEffectDamage(WorldRef world, EffectNodeId id, Value dama
     return FeatureECS::SetBlackboardValue<Value>(world, id, "damage"_n, damage);
 }
 
-void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureEffects::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
     // Register default handlers
     RegisterEffectHandler<EffectSetHandler>();
 
-    TVector<TSharedPtr<IEffectHandler>> effectHandlers;
+    std::vector<std::shared_ptr<IEffectHandler>> effectHandlers;
     Session->GetServices2<IEffectHandler>(effectHandlers);
 
     for (const auto& effectHandler : effectHandlers)
@@ -583,7 +583,7 @@ void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
         RegisterEffectHandler(effectHandler);
     }
 
-    TVector<TSharedPtr<IResponseHandler>> responseHandlers;
+    std::vector<std::shared_ptr<IResponseHandler>> responseHandlers;
     Session->GetServices2<IResponseHandler>(responseHandlers);
 
     for (const auto& responseHandler : responseHandlers)
@@ -591,8 +591,8 @@ void FeatureEffects::Initialize(const TSharedPtr<Phoenix::Session>& session)
         RegisterResponseHandler(responseHandler);
     }
 
-    PeriodicEffectSystem = MakeShared<RTS::PeriodicEffectSystem>();
-    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    PeriodicEffectSystem = std::make_shared<RTS::PeriodicEffectSystem>();
+    if (auto featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
     {
         featureECS->RegisterSystem(PeriodicEffectSystem);
     }
@@ -612,7 +612,7 @@ void FeatureEffects::Shutdown()
         UnregisterEffectHandler(EffectIdToHandlerMap.begin()->first);
     }
 
-    if (TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
+    if (auto featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
     {
         featureECS->UnregisterSystem(PeriodicEffectSystem);
     }
@@ -677,7 +677,7 @@ void FeatureEffects::RespondToEffect(WorldRef world, EffectNodeId effectNodeId)
     responseContext.EffectComponent = effectComponent;
     responseContext.LdsQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
 
-    TVector<PriorityResponseHandler> prioritizedHandlers;
+    std::vector<PriorityResponseHandler> prioritizedHandlers;
     prioritizedHandlers.reserve(8);
 
     if (effectComponent->SourceId != EntityId::Invalid)
@@ -717,7 +717,7 @@ bool FeatureEffects::FinalizeEffect(WorldRef world, EffectNodeId effectNodeId, E
         return false;
     }
 
-    TSharedPtr<IEffectHandler> handler = FindEffectHandlerCached(world, effectObjectId);
+    std::shared_ptr<IEffectHandler> handler = FindEffectHandlerCached(world, effectObjectId);
     if (!handler)
     {
         return false;
@@ -736,12 +736,12 @@ void FeatureEffects::GetPrioritizedResponseHandlers(
     WorldConstRef world,
     EntityId entityId,
     const ResponseContext& responseContext,
-    TVector<PriorityResponseHandler>& outResponseHandlers)
+    std::vector<PriorityResponseHandler>& outResponseHandlers)
 {
     const FeatureEffectsDynamicBlock* dynamicBlock = world.GetBlock<FeatureEffectsDynamicBlock>();
     dynamicBlock->Responses.ForEachResponse(entityId, [&](const FName& responseId)
     {
-        TSharedPtr<IResponseHandler> handler = FindResponseHandlerCached(world, responseId);
+        std::shared_ptr<IResponseHandler> handler = FindResponseHandlerCached(world, responseId);
         if (!handler)
         {
             return;

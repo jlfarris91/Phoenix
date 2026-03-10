@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <PhoenixSim/Color.h>
@@ -26,7 +25,7 @@ namespace Phoenix
             PHX_REGISTER_FIELD(bool, bDrawPathPortals)
             PHX_REGISTER_FIELD(float, SnapRadius)
             PHX_REGISTER_FIELD(float, AgentRadius)
-            PHX_REGISTER_FIELD(PHXString, MapDir)
+            PHX_REGISTER_FIELD(std::string, MapDir)
             PHX_REGISTER_METHOD(LoadMeshFromFile)
             PHX_REGISTER_METHOD(Step)
             PHX_REGISTER_METHOD(Step10)
@@ -34,7 +33,7 @@ namespace Phoenix
             PHX_REGISTER_PROPERTY(bool, FixDelaunayTriangulation)
         PHX_DECLARE_TYPE_END()
 
-        NavMeshTool(TSharedPtr<Session> session);
+        NavMeshTool(std::shared_ptr<Session> session);
 
         void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
         void OnAppRenderUI(ImGuiIO& io) override;
@@ -61,7 +60,7 @@ namespace Phoenix
         bool GetFixDelaunayTriangulation() const;
         void SetFixDelaunayTriangulation(const bool& v);
 
-        TSharedPtr<Session> Session;
+        std::shared_ptr<Session> Session;
 
         float BrushSize = 10.0f;
         bool bDrawVertCircles = false;
@@ -83,7 +82,7 @@ namespace Phoenix
         using SGDistance = TFixed<14>;
         using SGVec2 = TVec2<SGDistance>;
 
-        PHXString MapDir = "C:\\Pegasus\\pegasus-main-1\\PegasusGame\\Pegasus\\Content\\data\\maps\\TitansCausewayV2";
+        std::string MapDir = "C:\\Pegasus\\pegasus-main-1\\PegasusGame\\Pegasus\\Content\\data\\maps\\TitansCausewayV2";
         std::vector<SGVec2> LoadedVerts;
         uint32 LoadedVertIndex = 0;
     };

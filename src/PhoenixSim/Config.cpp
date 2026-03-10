@@ -145,7 +145,7 @@ bool SessionJsonConfig::LoadConfig()
             }
 
             std::filesystem::path parentPath = FilePath.parent_path();
-            std::filesystem::path configFilePath = absolute(parentPath / configIter->get<PHXString>());
+            std::filesystem::path configFilePath = absolute(parentPath / configIter->get<std::string>());
 
             WorldJsonConfig worldJsonConfig;
             if (WorldJsonConfig::LoadConfig(worldTypeStr, configFilePath, worldJsonConfig))
@@ -170,7 +170,7 @@ const FeatureJsonConfig* SessionJsonConfig::GetFeatureConfig(const FName& featur
     return configIter != FeatureConfigs.end() ? &configIter->second : nullptr;
 }
 
-bool DefaultConfigService::LoadConfig(const std::filesystem::path& dataDir, const PHXString& configName)
+bool DefaultConfigService::LoadConfig(const std::filesystem::path& dataDir, const std::string& configName)
 {
     std::filesystem::path sessionConfigPath = absolute(dataDir / (configName + ".json"));
     return SessionJsonConfig::LoadConfig(configName, sessionConfigPath, SessionConfig);

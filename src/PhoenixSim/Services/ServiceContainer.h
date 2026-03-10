@@ -10,22 +10,22 @@ namespace Phoenix
     {
     public:
 
-        TSharedPtr<IService> GetService(const FName& typeId) const override;
+        std::shared_ptr<IService> GetService(const FName& typeId) const override;
 
-        uint32 GetServices(const FName& typeId, TVector<TSharedPtr<IService>>& outServices) const override;
+        uint32 GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const override;
 
-        const TVector<TSharedPtr<IService>>& GetServices() const override;
+        const std::vector<std::shared_ptr<IService>>& GetServices() const override;
 
-        const std::unordered_map<FName, TSharedPtr<IService>>& GetServiceMap() const;
+        const std::unordered_map<FName, std::shared_ptr<IService>>& GetServiceMap() const;
 
-        const std::unordered_map<FName, TVector<TSharedPtr<IService>>>& GetServiceAsMap() const;
+        const std::unordered_map<FName, std::vector<std::shared_ptr<IService>>>& GetServiceAsMap() const;
 
     private:
 
         friend class ServiceContainerBuilder;
 
-        TVector<TSharedPtr<IService>> Services;
-        std::unordered_map<FName, TSharedPtr<IService>> ServiceMap;
-        std::unordered_map<FName, TVector<TSharedPtr<IService>>> ServiceAsMap;
+        std::vector<std::shared_ptr<IService>> Services;
+        std::unordered_map<FName, std::shared_ptr<IService>> ServiceMap;
+        std::unordered_map<FName, std::vector<std::shared_ptr<IService>>> ServiceAsMap;
     };
 }

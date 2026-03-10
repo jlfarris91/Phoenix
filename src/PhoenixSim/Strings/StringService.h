@@ -23,5 +23,5 @@ namespace Phoenix
     };
 
     PHOENIX_SIM_API IStringService& GetStringService();
-    PHOENIX_SIM_API void SetStringService(const TSharedPtr<IStringService>& service);
+    PHOENIX_SIM_API void SetStringService(const std::shared_ptr<IStringService>& service);
 }

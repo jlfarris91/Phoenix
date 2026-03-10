@@ -193,7 +193,7 @@ uint32 FixedArchetypeList::GetComponentLocalOffset(const FName& componentId) con
     return Definition[index].Offset;
 }
 
-void FixedArchetypeList::ForEachInstance(const TFunction<void(const Handle&)>& func) const
+void FixedArchetypeList::ForEachInstance(const std::function<void(const Handle&)>& func) const
 {
     for (uint32 i = 0; i < NumInstances; ++i)
     {
@@ -250,7 +250,7 @@ FixedArchetypeList::EntityComponentIter<TComponents...>::EntityComponentIter(Fix
 }
 
 template <class ... TComponents>
-TTuple<EntityId, TComponents...> FixedArchetypeList::EntityComponentIter<TComponents...>::operator*() const
+std::tuple<EntityId, TComponents...> FixedArchetypeList::EntityComponentIter<TComponents...>::operator*() const
 {
     return std::make_tuple(Curr.EntityId, ComponentAccessor<TComponents>::template GetComponentRef(*this, Curr.Id)...);
 }

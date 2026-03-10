@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Features.h"
@@ -57,17 +56,17 @@ namespace Phoenix::LDS
         FeatureLDS();
 
         // Gets the static session-level catalog.
-        TSharedPtr<HeapLDSCatalog> GetStaticSessionCatalog();
-        TSharedPtr<const HeapLDSCatalog> GetStaticSessionCatalog() const;
+        std::shared_ptr<HeapLDSCatalog> GetStaticSessionCatalog();
+        std::shared_ptr<const HeapLDSCatalog> GetStaticSessionCatalog() const;
 
         // Gets the static catalog for a given world.
-        TSharedPtr<const HeapLDSCatalog> GetStaticWorldCatalog(WorldConstRef world) const;
+        std::shared_ptr<const HeapLDSCatalog> GetStaticWorldCatalog(WorldConstRef world) const;
 
-        TSharedPtr<const ILDSQueryContext> GetSessionQueryContext() const;
-        TSharedPtr<const ILDSQueryContext> GetWorldQueryContext(WorldConstRef world) const;
+        std::shared_ptr<const ILDSQueryContext> GetSessionQueryContext() const;
+        std::shared_ptr<const ILDSQueryContext> GetWorldQueryContext(WorldConstRef world) const;
 
-        static TSharedPtr<const ILDSQueryContext> StaticGetSessionQueryContext(SessionConstRef session);
-        static TSharedPtr<const ILDSQueryContext> StaticGetWorldQueryContext(WorldConstRef world);
+        static std::shared_ptr<const ILDSQueryContext> StaticGetSessionQueryContext(SessionConstRef session);
+        static std::shared_ptr<const ILDSQueryContext> StaticGetWorldQueryContext(WorldConstRef world);
 
         static const LDSRecord* QueryObjectRecord(
             WorldConstRef world,
@@ -99,20 +98,20 @@ namespace Phoenix::LDS
 
     protected:
 
-        void Initialize(const TSharedPtr<Phoenix::Session>& session) override;
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
         void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
 
-        static bool LoadCatalog(const PHXString& catalogAbsolutePath, HeapLDSCatalog& catalog);
+        static bool LoadCatalog(const std::string& catalogAbsolutePath, HeapLDSCatalog& catalog);
 
-        TSharedPtr<HeapLDSCatalog> StaticSessionCatalog;
-        std::unordered_map<FName, TSharedPtr<HeapLDSCatalog>> StaticWorldCatalogs;
+        std::shared_ptr<HeapLDSCatalog> StaticSessionCatalog;
+        std::unordered_map<FName, std::shared_ptr<HeapLDSCatalog>> StaticWorldCatalogs;
 
-        TSharedPtr<ILDSQueryContext> SessionQueryContext;
-        std::unordered_map<FName, TSharedPtr<ILDSQueryContext>> WorldQueryContexts;
+        std::shared_ptr<ILDSQueryContext> SessionQueryContext;
+        std::unordered_map<FName, std::shared_ptr<ILDSQueryContext>> WorldQueryContexts;
     };
 }
 

@@ -1,4 +1,3 @@
-
 #include "PhoenixSteering/FeatureSteering.h"
 
 #include "PhoenixSim/Flags.h"
@@ -235,7 +234,7 @@ uint32 FeatureSteering::QueryEntitiesInRange(
     WorldConstRef world,
     const Vec2& pos,
     Distance range,
-    TVector<const SortedEntity*>& outEntities,
+    std::vector<const SortedEntity*>& outEntities,
     const SteeringRangeQueryArgs& args)
 {
     const FeatureSteeringScratchBlock& block = world.GetBlockRef<FeatureSteeringScratchBlock>();
@@ -269,13 +268,13 @@ uint32 FeatureSteering::QueryEntitiesInRange(
     return num;
 }
 
-void FeatureSteering::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void FeatureSteering::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    SteeringSystem = MakeShared<Steering::SteeringSystem>();
+    SteeringSystem = std::make_shared<Steering::SteeringSystem>();
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->RegisterSystem(SteeringSystem);
 }
 
@@ -283,7 +282,7 @@ void FeatureSteering::Shutdown()
 {
     IFeature::Shutdown();
 
-    TSharedPtr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->UnregisterSystem(SteeringSystem);
 }
 

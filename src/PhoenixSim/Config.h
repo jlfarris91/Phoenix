@@ -80,7 +80,7 @@ namespace Phoenix
     {
         PHX_DECLARE_INTERFACE_WITH_BASE(IConfigService, IService)
 
-        virtual bool LoadConfig(const std::filesystem::path& dataDir, const PHXString& configName) = 0;
+        virtual bool LoadConfig(const std::filesystem::path& dataDir, const std::string& configName) = 0;
         virtual const SessionJsonConfig& GetSessionConfig() const = 0;
         virtual const WorldJsonConfig* GetWorldConfig(const FName& worldType) const = 0;
         virtual const FeatureJsonConfig* GetSessionFeatureConfig(const FName& featureId) const = 0;
@@ -93,7 +93,7 @@ namespace Phoenix
 
     public:
 
-        bool LoadConfig(const std::filesystem::path& dataDir, const PHXString& configName) override;
+        bool LoadConfig(const std::filesystem::path& dataDir, const std::string& configName) override;
 
         const SessionJsonConfig& GetSessionConfig() const override;
 

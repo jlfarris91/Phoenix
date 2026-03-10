@@ -28,7 +28,7 @@ namespace AttackAbilitySystemDetail
 {
     struct UpdateAttackAbilityComponentJob
     {
-        TSharedPtr<FeatureOrders> OrdersFeature;
+        std::shared_ptr<FeatureOrders> OrdersFeature;
 
         void Begin(WorldRef world)
         {
@@ -112,7 +112,7 @@ void AttackAbilityComponent::Exit(WorldRef world, const UnitId& unit)
 
 AttackAbilityHandler::AttackAbilityHandler()
 {
-    System = MakeShared<AttackAbilitySystem>();
+    System = std::make_shared<AttackAbilitySystem>();
 }
 
 FName AttackAbilityHandler::StaticGetCommandId()
@@ -125,11 +125,11 @@ FName AttackAbilityHandler::GetCommandId() const
     return StaticGetCommandId();
 }
 
-void AttackAbilityHandler::Initialize(const TSharedPtr<Phoenix::Session>& session)
+void AttackAbilityHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IAbilityHandler::Initialize(session);
 
-    TSharedPtr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
     ecs->RegisterSystem(System);
 }
 
@@ -137,7 +137,7 @@ void AttackAbilityHandler::Shutdown()
 {
     IAbilityHandler::Shutdown();
 
-    TSharedPtr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
+    std::shared_ptr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
     ecs->UnregisterSystem(System);
 }
 

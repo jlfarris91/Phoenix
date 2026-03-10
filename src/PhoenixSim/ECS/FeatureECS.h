@@ -77,12 +77,12 @@ namespace Phoenix::ECS
         };
 
         TFixedArray<EntityTransform> SortedEntities;
-        TAtomic<uint32> SortedEntityCount = 0;
+        std::atomic<uint32> SortedEntityCount = 0;
     };
 
     struct PHOENIX_SIM_API FeatureECSCtorArgs
     {
-        TVector<TSharedPtr<ISystem>> Systems;
+        std::vector<std::shared_ptr<ISystem>> Systems;
     };
 
     struct EntityRangeQueryArgs
@@ -142,12 +142,12 @@ namespace Phoenix::ECS
         //
 
         // Registers a new ECS system.
-        void RegisterSystem(const TSharedPtr<ISystem>& system);
+        void RegisterSystem(const std::shared_ptr<ISystem>& system);
 
         // Unregisters an existing ECS system. Returns true if the system was removed.
-        bool UnregisterSystem(const TSharedPtr<ISystem>& system);
+        bool UnregisterSystem(const std::shared_ptr<ISystem>& system);
 
-        const TVector<TSharedPtr<ISystem>>& GetSystems() const;
+        const std::vector<std::shared_ptr<ISystem>>& GetSystems() const;
 
         //
         // Entity Management
@@ -622,7 +622,7 @@ namespace Phoenix::ECS
         template <class TJob>
         static void Schedule(WorldRef world, const TJob& job)
         {
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
+            std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
             FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
             WorldPtr worldPtr = &world;
@@ -651,7 +651,7 @@ namespace Phoenix::ECS
         {
             PHX_PROFILE_ZONE_SCOPED;
 
-            TSharedPtr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
+            std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
             FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
             WorldPtr worldPtr = &world;
@@ -706,14 +706,14 @@ namespace Phoenix::ECS
             WorldConstRef world,
             const Vec2& pos,
             Distance range,
-            TVector<EntityTransform>& outEntities,
+            std::vector<EntityTransform>& outEntities,
             const EntityRangeQueryArgs& args = {});
 
         static void QueryEntitiesInRect(
             WorldConstRef world,
             const Vec2& min,
             const Vec2& max,
-            TVector<EntityTransform>& outEntities,
+            std::vector<EntityTransform>& outEntities,
             const EntityRangeQueryArgs& args = {});
 
         bool bDebugDrawMortonCodeBoundaries = false;
@@ -727,8 +727,8 @@ namespace Phoenix::ECS
 
         void OnReclaimEntity(WorldRef world, const EntityId& entityId) const;
 
-        TVector<TSharedPtr<ISystem>> Systems;
-        TSharedPtr<ThreadPool> JobThreadPool;
+        std::vector<std::shared_ptr<ISystem>> Systems;
+        std::shared_ptr<ThreadPool> JobThreadPool;
 
         FOnEntityAcquired EntityAcquiredEvent;
         FOnEntityReleasing EntityReleasedEvent;

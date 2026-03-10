@@ -56,7 +56,7 @@ namespace Phoenix::ECS
 
         bool Release(EntityId entityId);
 
-        using FOnEntityReclaimed = TFunction<void(const EntityId& entityId)>;
+        using FOnEntityReclaimed = std::function<void(const EntityId& entityId)>;
         uint32 ReclaimEntities(const FOnEntityReclaimed& callback);
 
         template <class TCallback>

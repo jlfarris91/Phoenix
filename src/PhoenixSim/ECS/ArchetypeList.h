@@ -1,5 +1,4 @@
-﻿
-#pragma once
+﻿#pragma once
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
@@ -130,10 +129,10 @@ namespace Phoenix
             // Returns -1 if a component with the given id could not be found.
             uint32 GetComponentLocalOffset(const FName& componentId) const;
 
-            void ForEachInstance(const TFunction<void(const Handle&)>& func) const;
+            void ForEachInstance(const std::function<void(const Handle&)>& func) const;
 
             template <class ...TComponents>
-            void ForEachEntity(const TFunction<void(EntityId, TComponents...)>& func)
+            void ForEachEntity(const std::function<void(EntityId, TComponents...)>& func)
             {
                 for (uint32 i = 0; i < NumInstances; ++i)
                 {
@@ -152,7 +151,7 @@ namespace Phoenix
             }
 
             template <class ...TComponents>
-            void ForEachEntity(const TFunction<void(EntityId, TComponents...)>& func) const
+            void ForEachEntity(const std::function<void(EntityId, TComponents...)>& func) const
             {
                 for (uint32 i = 0; i < NumInstances; ++i)
                 {
@@ -207,7 +206,7 @@ namespace Phoenix
             {
                 EntityComponentIter(FixedArchetypeList* list, const Handle& handle);
 
-                TTuple<EntityId, TComponents...> operator*() const;
+                std::tuple<EntityId, TComponents...> operator*() const;
 
                 EntityComponentIter& operator++();
 
@@ -283,14 +282,14 @@ namespace Phoenix
             template <class T>
             T GetComponentRef(uint32 index)
             {
-                auto ptr = GetEntityComponentPtr<Underlying_T<T>>(index);
+                auto ptr = GetEntityComponentPtr<typename std::remove_cv_t<typename std::remove_pointer_t<typename std::remove_reference_t<T>>>>(index);
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 
             template <class T>
             T GetComponentRef(uint32 index) const
             {
-                auto ptr = const_cast<Underlying_T<T>*>(GetEntityComponentPtr<Underlying_T<T>>(index));
+                auto ptr = const_cast<typename std::remove_cv_t<typename std::remove_pointer_t<typename std::remove_reference_t<T>>>*>(GetEntityComponentPtr<typename std::remove_cv_t<typename std::remove_pointer_t<typename std::remove_reference_t<T>>>>(index));
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 
@@ -316,7 +315,7 @@ namespace Phoenix
                 span.InstanceCount = list.GetNumInstances();
                 span.Step = list.GetEntityTotalSize();
 
-                uint32 offsets[sizeof...(TComponents)] = { list.GetComponentLocalOffset(Underlying_T<TComponents>::StaticTypeName)... };
+                uint32 offsets[sizeof...(TComponents)] = { list.GetComponentLocalOffset(std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<TComponents>>>::StaticTypeName)... };
                 memcpy(span.Offsets, offsets, sizeof...(TComponents) * sizeof(uint32));
 
                 span.CheckRawData();
@@ -348,7 +347,7 @@ namespace Phoenix
                 return StartingIndex + localIndex;
             }
 
-            TTuple<EntityId, uint32, TComponents...> operator[](uint32 index) const
+            std::tuple<EntityId, uint32, TComponents...> operator[](uint32 index) const
             {
                 CheckRawData();
                 uint32 entityOffset = index * Step;
@@ -367,7 +366,7 @@ namespace Phoenix
                     Index = Span->FindNextActiveEntity(index);
                 }
 
-                TTuple<EntityId, uint32, TComponents...> operator*() const
+                std::tuple<EntityId, uint32, TComponents...> operator*() const
                 {
                     Span->CheckRawData();
                     return Span->operator[](Index);
@@ -417,7 +416,7 @@ namespace Phoenix
             T GetComponentRef(void* data) const
             {
                 CheckRawData();
-                auto ptr = reinterpret_cast<Underlying_T<T>*>(static_cast<uint8*>(data) + Offsets[I]);
+                auto ptr = reinterpret_cast<std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<T>>>*>(static_cast<uint8*>(data) + Offsets[I]);
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 

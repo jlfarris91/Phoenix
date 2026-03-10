@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "PhoenixSim/Platform.h"
@@ -125,7 +124,7 @@ namespace Phoenix
             return registration;
         }
 
-        TVector<BufferBlockDefinition> Definitions;
+        std::vector<BufferBlockDefinition> Definitions;
     };
 
     // A builder for a block buffer configuration, which provides a fluent interface for registering blocks and building the final layout.
@@ -189,7 +188,7 @@ namespace Phoenix
 
         uint32 GetSize() const;
 
-        const TVector<Block>& GetBlocks() const;
+        const std::vector<Block>& GetBlocks() const;
 
         const BufferBlockDefinition* GetBlockDefinition(const FName& name) const;
 
@@ -242,7 +241,7 @@ namespace Phoenix
 
         void AllocateMemory(uint32 size);
 
-        TVector<Block> Blocks;
+        std::vector<Block> Blocks;
         BlockBufferMemoryPtr Data = nullptr;
         uint32 Size = 0;
         uint32 BlockSize = 0;

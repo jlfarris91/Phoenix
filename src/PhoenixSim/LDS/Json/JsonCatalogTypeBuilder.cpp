@@ -31,7 +31,7 @@ bool JsonCatalogTypeBuilder::RegisterType(const json& typeJson)
         return false;
     }
 
-    PHXString typeId = idIter->get<PHXString>();
+    std::string typeId = idIter->get<std::string>();
 
     if (Catalog->HasType(typeId))
     {
@@ -42,7 +42,7 @@ bool JsonCatalogTypeBuilder::RegisterType(const json& typeJson)
     auto baseIter = typeJson.find("base");
     if (baseIter != typeJson.end())
     {
-        PHXString baseId = baseIter->get<PHXString>();
+        std::string baseId = baseIter->get<std::string>();
 
         const LDSRecord* baseTypeRecord = Catalog->FindTypeRecord(baseId, "/type"_n);
         if (!baseTypeRecord && DataSource)
@@ -71,7 +71,7 @@ bool JsonCatalogTypeBuilder::RegisterType(const json& typeJson)
         {
             Catalog->EmplaceTypeRecord(typeId, "/implements/size"_n, LDSTypedValue((uint32)implements.size()));
             uint32 index = 0;
-            for (const PHXString& implementId : implements)
+            for (const std::string& implementId : implements)
             {
                 char buffer[16];
                 size_t len = snprintf(buffer, 16, "/implements/%u", index++);
@@ -91,9 +91,9 @@ bool JsonCatalogTypeBuilder::RegisterType(const json& typeJson)
 }
 
 bool JsonCatalogTypeBuilder::ProcessJsonObject(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     auto typeIter = jsonObject.find("type");
     if (typeIter == jsonObject.end())
@@ -102,7 +102,7 @@ bool JsonCatalogTypeBuilder::ProcessJsonObject(
         return false;
     }
 
-    PHXString typeStr = typeIter->get<PHXString>();
+    std::string typeStr = typeIter->get<std::string>();
 
     // Defining a new object inline
     if (typeStr == "Object")
@@ -155,7 +155,7 @@ bool JsonCatalogTypeBuilder::ProcessJsonObject(
     if (TryParse(typeStr, valueType))
     {
         // Record the type
-        PHXString typePropertyPath = propertyPath + "/type";
+        std::string typePropertyPath = propertyPath + "/type";
         Catalog->EmplaceTypeRecord(rootTypeId, typePropertyPath, LDSTypedValue(valueType));
 
         return ProcessValueProperty(rootTypeId, jsonObject, valueType, propertyPath);
@@ -166,12 +166,12 @@ bool JsonCatalogTypeBuilder::ProcessJsonObject(
 }
 
 bool JsonCatalogTypeBuilder::ProcessObject(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     // Record the type
-    PHXString typePropertyPath = propertyPath + "/type";
+    std::string typePropertyPath = propertyPath + "/type";
     Catalog->EmplaceTypeRecord(rootTypeId, typePropertyPath, LDSTypedValue(ELDSValueType::Object));
 
     if (!ProcessObjectProperties(rootTypeId, jsonObject, propertyPath))
@@ -190,9 +190,9 @@ bool JsonCatalogTypeBuilder::ProcessObject(
 }
 
 bool JsonCatalogTypeBuilder::ProcessObjectProperties(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     auto propsIter = jsonObject.find("properties");
     if (propsIter == jsonObject.end())
@@ -220,9 +220,9 @@ bool JsonCatalogTypeBuilder::ProcessObjectProperties(
 }
 
 bool JsonCatalogTypeBuilder::ProcessObjectPropertyDefaults(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& defaultsObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     if (!defaultsObject.is_object())
     {
@@ -238,9 +238,9 @@ bool JsonCatalogTypeBuilder::ProcessObjectPropertyDefaults(
 }
 
 bool JsonCatalogTypeBuilder::ProcessObjectRef(
-    const PHXString& rootTypeId,
-    const PHXString& typeStr,
-    const PHXString& propertyPath)
+    const std::string& rootTypeId,
+    const std::string& typeStr,
+    const std::string& propertyPath)
 {
     if (!DataSource)
     {
@@ -255,7 +255,7 @@ bool JsonCatalogTypeBuilder::ProcessObjectRef(
         return false;
     }
 
-    PHXString refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
+    std::string refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
 
     if (!DataSource->HasTypeOrInterface(refTypeStr))
     {
@@ -265,7 +265,7 @@ bool JsonCatalogTypeBuilder::ProcessObjectRef(
 
     // Record the type
     {
-        PHXString typePropertyPath = propertyPath + "/type";
+        std::string typePropertyPath = propertyPath + "/type";
         LDSTypedValue typeValue = { { .Name = refTypeStr }, ELDSValueType::ObjectRef };
         Catalog->EmplaceTypeRecord(rootTypeId, typePropertyPath, typeValue);
     }
@@ -279,10 +279,10 @@ bool JsonCatalogTypeBuilder::ProcessObjectRef(
 }
 
 bool JsonCatalogTypeBuilder::ProcessEmbeddedObject(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& typeStr,
-    const PHXString& propertyPath)
+    const std::string& typeStr,
+    const std::string& propertyPath)
 {
     if (!DataSource)
     {
@@ -297,7 +297,7 @@ bool JsonCatalogTypeBuilder::ProcessEmbeddedObject(
         return false;
     }
 
-    PHXString refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
+    std::string refTypeStr = typeStr.substr(indexOfHash + 1, typeStr.length());
 
     const nlohmann::json* typeJson = DataSource->FindType(refTypeStr);
     if (!typeJson)
@@ -315,9 +315,9 @@ bool JsonCatalogTypeBuilder::ProcessEmbeddedObject(
 }
 
 bool JsonCatalogTypeBuilder::ProcessArray(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     auto itemsIter = jsonObject.find("items");
     if (itemsIter == jsonObject.end())
@@ -356,10 +356,10 @@ bool JsonCatalogTypeBuilder::ProcessArray(
 }
 
 bool JsonCatalogTypeBuilder::ProcessValueProperty(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& propValue,
     ELDSValueType valueType,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     switch (valueType)
     {
@@ -385,7 +385,7 @@ bool JsonCatalogTypeBuilder::ProcessValueProperty(
 
     for (auto && [metaName, metaValue] : propValue.items())
     {
-        PHXString fieldId = propertyPath + "/" + metaName;
+        std::string fieldId = propertyPath + "/" + metaName;
 
         if (metaName == "min")
         {
@@ -444,9 +444,9 @@ bool JsonCatalogTypeBuilder::IsValidEnumUnderlyingType(ELDSValueType valueType)
 }
 
 bool JsonCatalogTypeBuilder::ProcessEnumProperty(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     auto itemsIter = jsonObject.find("items");
     if (itemsIter == jsonObject.end())
@@ -455,7 +455,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumProperty(
         return false;
     }
 
-    PHXString itemsPropertyPath = propertyPath + "/items";
+    std::string itemsPropertyPath = propertyPath + "/items";
     const json& items = *itemsIter;
 
     if (!items.is_array())
@@ -481,7 +481,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumProperty(
         auto underlyingValueTypeIter = jsonObject.find("underlying_type");
         if (underlyingValueTypeIter != jsonObject.end())
         {
-            PHXString underlyingValueTypeStr = underlyingValueTypeIter->get<PHXString>();
+            std::string underlyingValueTypeStr = underlyingValueTypeIter->get<std::string>();
             if (!TryParse(underlyingValueTypeStr, underlyingValueType))
             {
                 LogError("Failed to parse underlying type.").Context(rootTypeId, propertyPath + "/underlying_type");
@@ -506,7 +506,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumProperty(
     // Record each enum item value
     for (auto && [key, item] : items.items())
     {
-        PHXString itemPropertyPath = itemsPropertyPath + '/' + key;
+        std::string itemPropertyPath = itemsPropertyPath + '/' + key;
         uint32 index = atoi(key.c_str());
         if (!ProcessEnumPropertyItem(rootTypeId, item, itemPropertyPath, index, customUnderlyingValueType))
         {
@@ -518,9 +518,9 @@ bool JsonCatalogTypeBuilder::ProcessEnumProperty(
 }
 
 bool JsonCatalogTypeBuilder::ProcessEnumPropertyItem(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& itemJson,
-    const PHXString& itemPath,
+    const std::string& itemPath,
     uint32 itemIndex,
     TOptional<ELDSValueType> underlyingValueType)
 {
@@ -548,7 +548,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumPropertyItem(
     }
     else if (itemJson.is_string())
     {
-        itemKey = itemJson.get<PHXString>();
+        itemKey = itemJson.get<std::string>();
         itemValue = LDSTypedValue(itemIndex);
     }
     else
@@ -563,9 +563,9 @@ bool JsonCatalogTypeBuilder::ProcessEnumPropertyItem(
 }
 
 bool JsonCatalogTypeBuilder::ProcessEnumFlagsProperty(
-    const PHXString& rootTypeId,
+    const std::string& rootTypeId,
     const json& jsonObject,
-    const PHXString& propertyPath)
+    const std::string& propertyPath)
 {
     auto itemsIter = jsonObject.find("items");
     if (itemsIter == jsonObject.end())
@@ -574,7 +574,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumFlagsProperty(
         return false;
     }
 
-    PHXString itemsPropertyPath = propertyPath + "/items";
+    std::string itemsPropertyPath = propertyPath + "/items";
     const json& items = *itemsIter;
 
     if (!items.is_array())
@@ -600,7 +600,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumFlagsProperty(
         auto underlyingValueTypeIter = jsonObject.find("underlying_type");
         if (underlyingValueTypeIter != jsonObject.end())
         {
-            PHXString underlyingValueTypeStr = underlyingValueTypeIter->get<PHXString>();
+            std::string underlyingValueTypeStr = underlyingValueTypeIter->get<std::string>();
             if (!TryParse(underlyingValueTypeStr, underlyingValueType))
             {
                 LogError("Failed to parse underlying type.").Context(rootTypeId, propertyPath + "/underlying_type");
@@ -625,7 +625,7 @@ bool JsonCatalogTypeBuilder::ProcessEnumFlagsProperty(
     // Record each enum item value
     for (auto && [key, item] : items.items())
     {
-        PHXString itemPropertyPath = itemsPropertyPath + '/' + key;
+        std::string itemPropertyPath = itemsPropertyPath + '/' + key;
         uint32 index = atoi(key.c_str());
         if (!ProcessEnumPropertyItem(rootTypeId, item, itemPropertyPath, index, customUnderlyingValueType))
         {
