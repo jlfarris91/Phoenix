@@ -1,15 +1,15 @@
 
 // Tracy
-#include <tracy/Tracy.hpp>
+#include <tracy/tracy/Tracy.hpp>
 
 // SDL3
 #include <SDL3/SDL.h>
 
 // ImGui
-#include "imgui.h"
-#include "imgui_impl_sdl3.h"
-#include "imgui_impl_sdlrenderer3.h"
-#include "imgui_internal.h"
+#include <imgui.h>
+#include <imgui_impl_sdl3.h>
+#include <imgui_impl_sdlrenderer3.h>
+#include <imgui_internal.h>
 
 #ifdef __EMSCRIPTEN__
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
@@ -66,7 +66,9 @@ int main(int, char**)
     // Setup scaling
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(main_scale);        // Bake a fixed style scale. (until we have a solution for dynamic style scaling, changing this requires resetting Style + calling this again)
-    style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
+
+    // Not available?
+    // style.FontScaleDpi = main_scale;        // Set initial font scale. (using io.ConfigDpiScaleFonts=true makes this unnecessary. We leave both here for documentation purpose)
 
     // Setup Platform/Renderer backends
     ImGui_ImplSDL3_InitForSDLRenderer(window, renderer);

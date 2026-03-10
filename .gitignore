@@ -1,7 +1,10 @@
-/.build/
+.claude/
+.idea/
+.vscode/
+build/
+build_unity/
+vcpkg/
+vcpkg_installed/
 *.user
-/.idea/
-/.venv/
-Phoenix.sln
+*.sln
 *.log
-/.claude

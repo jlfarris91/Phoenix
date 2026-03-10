@@ -231,7 +231,6 @@ namespace Phoenix
             {
                 static_assert(0);
             }
-            return {};
         }
 
         int32 RandomRange32(int32 inclusiveMin, int32 exclusiveMax)

@@ -1,0 +1,15 @@
+{
+  "name": "phoenixsim",
+  "version-string": "1.0.0",
+  "dependencies": [
+    {
+      "name": "imgui",
+      "features": ["sdl3-binding", "sdl3-renderer-binding", "freetype", "freetype-svg", "docking-experimental"]
+    },
+    "sdl3",
+    "nlohmann-json",
+    "sol2",
+    "tracy",
+    "lua"
+  ]
+}

@@ -53,7 +53,7 @@ namespace Phoenix::LDS
         FName PropertyId;
         LDSTypedValue Value;
 
-#if DEBUG
+#ifdef DEBUG
         hash64_t RecordId = 0;
 #endif
     };

@@ -1,4 +1,5 @@
 
+
 #pragma once
 
 #include <algorithm>
@@ -1204,7 +1205,7 @@ namespace Phoenix
             // Otherwise, queries will break until the list is sorted again.
             if (index <= SortedNum)
             {
-                T test(std::forward<TArgs>(args...));
+                T test{std::forward<TArgs>(args)...};
                 if (GetKey(test) > GetKey(Storage[index]))
                 {
                     return false;

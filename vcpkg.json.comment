@@ -1,0 +1,3 @@
+# PhoenixSim vcpkg manifest dependencies
+# imgui, SDL3, nlohmann-json, sol2, tracy, lua
+# These will be auto-installed by vcpkg manifest mode.

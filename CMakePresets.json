@@ -1,0 +1,59 @@
+{
+  "version": 4,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 19,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "default",
+      "displayName": "Default",
+      "description": "Default configuration",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "unity",
+      "displayName": "Unity",
+      "description": "Unity Build Enabled",
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build_unity",
+      "cacheVariables": {
+        "CMAKE_UNITY_BUILD": "ON"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Build Debug",
+      "configurePreset": "default",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Build Debug (Unity)",
+      "configurePreset": "unity",
+      "configuration": "Debug"
+    },
+    {
+      "name": "Build Release",
+      "configurePreset": "default",
+      "configuration": "Release"
+    },
+    {
+      "name": "Build Release (Unity)",
+      "configurePreset": "unity",
+      "configuration": "Release"
+    },
+    {
+      "name": "Build Release With Symbols",
+      "configurePreset": "default",
+      "configuration": "ReleaseWithSymbols"
+    },
+    {
+      "name": "Build Release With Symbols (Unity)",
+      "configurePreset": "unity",
+      "configuration": "ReleaseWithSymbols"
+    }
+  ]
+}
