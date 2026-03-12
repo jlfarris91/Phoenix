@@ -17,6 +17,8 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
+        with:
+          submodules: true # Ensure vcpkg directory is actually populated
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
