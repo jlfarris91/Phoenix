@@ -15,5 +15,5 @@ jobs:
   build:
     uses: ./.github/workflows/build.yml
     with:
-      generate_artifact: false
+      generate_artifact: true
     secrets: inherit
