@@ -35,6 +35,14 @@ set(CMAKE_MAP_IMPORTED_CONFIG_RELEASEWITHSYMBOLS RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_CXX_FLAGS_RELEASE} /Zi" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG" CACHE STRING "" FORCE)
 
+if(MSVC)
+    # This is ONLY for the Visual Studio compiler
+    add_compile_options(/MP)
+else()
+    # For GCC/MinGW/Clang, Ninja handles parallelism automatically.
+    add_compile_options(-Wall -Wextra) 
+endif()
+
 # Set natvis visualizer for all targets
 set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.natvis")
 

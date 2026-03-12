@@ -6,7 +6,6 @@ target_include_directories(PhoenixSim PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installe
 target_link_libraries(PhoenixSim PUBLIC nlohmann_json)
 target_precompile_headers(PhoenixSim PRIVATE pch.h)
 target_compile_definitions(PhoenixSim PUBLIC PHX_PROFILE_ENABLE)
-target_compile_options(PhoenixSim PRIVATE "/MP")
 
 # Install rules
 install(TARGETS PhoenixSim

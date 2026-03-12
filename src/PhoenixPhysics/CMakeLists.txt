@@ -4,7 +4,6 @@ set_property(TARGET PhoenixPhysics PROPERTY FOLDER "Libraries")
 target_include_directories(PhoenixPhysics PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include" ../../src)
 target_precompile_headers(PhoenixPhysics PRIVATE ../PhoenixSim/pch.h)
 target_compile_definitions(PhoenixPhysics PUBLIC PHX_PROFILE_ENABLE)
-target_compile_options(PhoenixPhysics PRIVATE "/MP")
 target_link_libraries(PhoenixPhysics PUBLIC PhoenixSim)
 
 # Install rules

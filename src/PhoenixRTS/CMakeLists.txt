@@ -4,7 +4,6 @@ set_property(TARGET PhoenixRTS PROPERTY FOLDER "Libraries")
 target_include_directories(PhoenixRTS PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include" ../../src)
 target_precompile_headers(PhoenixRTS PRIVATE ../PhoenixSim/pch.h)
 target_compile_definitions(PhoenixRTS PUBLIC PHX_PROFILE_ENABLE)
-target_compile_options(PhoenixRTS PRIVATE "/MP")
 target_link_libraries(PhoenixRTS PUBLIC PhoenixSim PhoenixPhysics PhoenixSteering)
 
 # Install rules
