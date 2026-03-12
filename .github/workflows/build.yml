@@ -24,24 +24,25 @@ jobs:
         with:
           submodules: true # Ensure vcpkg directory is actually populated
 
-      - name: Configure NuGet for vcpkg
-        shell: bash
-        run: |
-          # Fetch the NuGet executable provided by vcpkg
-          NUGET_EXE=$(./vcpkg/vcpkg fetch nuget | tail -n 1)
-          # Add your GitHub Packages feed as a source
-          $NUGET_EXE sources add \
-            -Name "GitHub" \
-            -Source "https://nuget.pkg.github.com{{ github.repository_owner }}/index.json" \
-            -UserName "${{ github.repository_owner }}" \
-            -Password "${{ secrets.GITHUB_TOKEN }}" \
-            -StorePasswordInClearText
-
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         env:
           # 'clear' removes defaults, 'nuget' points to the source we just added
           VCPKG_BINARY_SOURCES: "clear;nuget,GitHub,readwrite"
+
+      - name: Configure NuGet for vcpkg
+        shell: pwsh
+        run: |
+          $VCPKG_EXE = "${{ github.workspace }}/vcpkg/vcpkg.exe"
+          # Get the nuget.exe that vcpkg manages internally
+          $NUGET_EXE = & $VCPKG_EXE fetch nuget | Select-Object -Last 1
+          
+          & $NUGET_EXE sources add `
+            -Name "GitHub" `
+            -Source "https://nuget.pkg.github.com{{ github.repository_owner }}/index.json" `
+            -UserName "${{ github.repository_owner }}" `
+            -Password "${{ secrets.GITHUB_TOKEN }}" `
+            -StorePasswordInClearText
       
       - name: Set up CMake
         uses: jwlawson/actions-setup-cmake@v2
