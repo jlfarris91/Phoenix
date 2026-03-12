@@ -25,10 +25,15 @@
     },
     {
       "name": "ci",
-      "displayName": "CI",
+      "displayName": "Continuous Integration Build",
       "description": "Continuous Integration Build",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/.build_ci"
+      "binaryDir": "${sourceDir}/.build_ci",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang-cl",
+        "CMAKE_CXX_COMPILER": "clang-cl",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/vcpkg/scripts/buildsystems/vcpkg.cmake"
+      }
     }
   ],
   "buildPresets": [
@@ -63,7 +68,7 @@
       "configuration": "ReleaseWithSymbols"
     },
     {
-      "name": "CI",
+      "name": "ReleaseCI",
       "configurePreset": "ci",
       "configuration": "Release"
     }
