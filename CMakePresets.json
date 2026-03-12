@@ -10,14 +10,14 @@
       "name": "default",
       "displayName": "Default",
       "description": "Default configuration",
-      "generator": "Visual Studio 18 2026",
+      "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/.build"
     },
     {
       "name": "unity",
       "displayName": "Unity",
       "description": "Unity Build Enabled",
-      "generator": "Visual Studio 18 2026",
+      "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/.build_unity",
       "cacheVariables": {
         "CMAKE_UNITY_BUILD": "ON"
