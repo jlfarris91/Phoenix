@@ -1,0 +1,62 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        config: [Release]
+    steps:
+
+      - uses: actions/checkout@v4
+      
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Set up vcpkg
+        uses: microsoft/vcpkg-action@v1
+        with:
+          vcpkg-root: ${{ github.workspace }}/vcpkg
+
+      - name: Build and Install
+        shell: pwsh
+        run: ./build/build.ps1 -Preset default -Config ${{ matrix.config }}
+
+      - name: Get version
+        if: github.event_name == 'release'
+        id: get_version
+        shell: pwsh
+        run: |
+          $manifest = Get-Content release-please-manifest.json | ConvertFrom-Json
+          $version = $manifest.version
+          echo "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Package Artifact
+        if: github.event_name == 'release'
+        shell: pwsh
+        run: |
+          Compress-Archive -Path ".artifact/${{ matrix.config }}" -DestinationPath "PhoenixSim-${{ steps.get_version.outputs.version }}.zip"
+          Write-Host "Artifact created: PhoenixSim-${{ steps.get_version.outputs.version }}.zip"
+
+      - name: Upload artifact
+        if: github.event_name == 'release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: PhoenixSim-${{ steps.get_version.outputs.version }}.zip
+          path: ./PhoenixSim-${{ steps.get_version.outputs.version }}.zip
+
+      - name: Create GitHub Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: PhoenixSim-${{ steps.get_version.outputs.version }}.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
