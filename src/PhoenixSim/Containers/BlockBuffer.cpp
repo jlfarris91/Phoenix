@@ -1,6 +1,7 @@
 #include "PhoenixSim/Containers/BlockBuffer.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <malloc.h>
 
 #include "FixedArray.h"
@@ -237,7 +238,12 @@ void BlockBuffer::AllocateMemory(uint32 size)
     pageSize = sysInfo.dwPageSize;
 #endif
 
+#ifdef _WIN32
     uint8* data = static_cast<uint8*>(_aligned_malloc(size, pageSize));
+#else
+    uint8* data = static_cast<uint8*>(std::aligned_alloc(pageSize, ((size + pageSize - 1) / pageSize) * pageSize));
+#endif
+
     if (!data)
     {
         throw std::bad_alloc();

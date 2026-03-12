@@ -129,7 +129,7 @@ EntityId FixedEntityList::Acquire(const FName& kind)
     //PHX_ASSERT(IsValid(entityId));
     if (!IsValid(entity.Id))
     {
-        __debugbreak();
+        PHX_DEBUGBREAK()
     }
 #endif
 

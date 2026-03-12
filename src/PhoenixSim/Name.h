@@ -164,6 +164,6 @@ struct std::hash<Phoenix::FName>
 {
     std::size_t operator()(const Phoenix::FName& value) const noexcept
     {
-        return std::hash<Phoenix::hash32_t>::operator()((Phoenix::hash32_t)value);
+        return std::hash<Phoenix::hash32_t>{}(static_cast<Phoenix::hash32_t>(value));
     }
 };

@@ -347,7 +347,7 @@ namespace Phoenix::Blackboard
 
         uint32 RemoveAll(const BlackboardQuery& query);
 
-        BlackboardValues Enumerate(uint32 keyHi) const;
+        struct BlackboardValues Enumerate(uint32 keyHi) const;
 
     private:
 
