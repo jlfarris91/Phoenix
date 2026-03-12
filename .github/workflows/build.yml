@@ -70,14 +70,19 @@ jobs:
           Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item $docsDir $artifactDir -Recurse -Force -ErrorAction SilentlyContinue
 
-      - name: List Artifact Files
+      - name: Enumerate artifact files
+        if: inputs.generate_artifact == true
+        id: enumerate_artifact_files
         shell: pwsh
-        run: Get-ChildItem "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}" -Recurse -File -Name
+        run: |
+          $files = Get-ChildItem "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}" -File -Recurse | ForEach-Object { $_.FullName }
+          $fileList = $files -join "\n"
+          echo "file_list=$fileList" | Out-File -FilePath "$env:GITHUB_OUTPUT" -Append
 
       - name: Upload artifact
         if: inputs.generate_artifact == true
         uses: actions/upload-artifact@v4
         with:
-          name: PhoenixSim-${{ github.sha }}.zip
-          path: ${{ github.workspace }}/${{ inputs.artifact_dir }}/**
-          if-no-files-found: error
+            name: PhoenixSim-${{ github.sha }}
+            path: ${{ steps.enumerate_artifact_files.outputs.file_list }}
+            if-no-files-found: error
