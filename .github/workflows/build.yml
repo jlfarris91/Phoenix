@@ -39,6 +39,8 @@ jobs:
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
@@ -51,7 +53,7 @@ jobs:
 
       - name: Configure CMake
         shell: pwsh
-        run: cmake --preset ${{ inputs.preset }} -A x64
+        run: cmake --preset ${{ inputs.preset }} -A x64 -T host=x64
 
       - name: Build CMake targets
         shell: pwsh
