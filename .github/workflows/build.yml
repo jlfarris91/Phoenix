@@ -19,9 +19,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Set up vcpkg
-        uses: lukka/run-vcpkg@v4
-        with:
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
+        uses: lukka/run-vcpkg@v11
       
       - name: Set up CMake
         uses: jwlawson/actions-setup-cmake@v2
