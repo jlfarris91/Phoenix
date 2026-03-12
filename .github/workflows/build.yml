@@ -56,7 +56,7 @@ jobs:
         id: get_version
         shell: pwsh
         run: |
-          $manifest = Get-Content release-please-manifest.json | ConvertFrom-Json
+          $manifest = Get-Content .release-please-manifest.json | ConvertFrom-Json
           $version = $manifest.version
           echo "version=$version" >> $env:GITHUB_OUTPUT
 
