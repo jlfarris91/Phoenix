@@ -34,12 +34,12 @@ jobs:
         shell: pwsh
         run: |
           $VCPKG_EXE = "${{ github.workspace }}/vcpkg/vcpkg.exe"
-          # Get the nuget.exe that vcpkg manages internally
+          # vcpkg fetch nuget outputs the path to the internal nuget.exe
           $NUGET_EXE = & $VCPKG_EXE fetch nuget | Select-Object -Last 1
           
           & $NUGET_EXE sources add `
             -Name "GitHub" `
-            -Source "https://nuget.pkg.github.com{{ github.repository_owner }}/index.json" `
+            -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
             -UserName "${{ github.repository_owner }}" `
             -Password "${{ secrets.GITHUB_TOKEN }}" `
             -StorePasswordInClearText
