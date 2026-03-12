@@ -75,4 +75,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PhoenixSim-${{ github.sha }}.zip
-          path: ${{ inputs.artifact_dir }}/*
+          path: $env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}/*
