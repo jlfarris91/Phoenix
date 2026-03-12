@@ -64,19 +64,15 @@ jobs:
         shell: pwsh
         run: |
           $artifactDir = "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
-          $artifactDocsDir = "$artifactDir/docs"
           $docsDir = "$env:GITHUB_WORKSPACE/docs"
           Copy-Item "LICENSE" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item "README.md" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
-          Copy-Item $docsDir $artifactDocsDir -Recurse -Force -ErrorAction SilentlyContinue
-          $artifactName = "PhoenixSim-${{ github.sha }}.zip"
-          Compress-Archive -Path $artifactDir -DestinationPath $artifactName
-          Write-Host "Artifact created: $artifactName"
+          Copy-Item $docsDir $artifactDir -Recurse -Force -ErrorAction SilentlyContinue
 
       - name: Upload artifact
         if: inputs.generate_artifact == true
         uses: actions/upload-artifact@v4
         with:
           name: PhoenixSim-${{ github.sha }}.zip
-          path: ./PhoenixSim-${{ github.sha }}.zip
+          path: $env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}/*
