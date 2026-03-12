@@ -111,7 +111,7 @@ struct Console
             std::lock_guard lock(LogMutex);
             for (const std::string& log : LogFlush)
             {
-                AddLog(log.c_str());
+                AddLog("%s", log.c_str());
             }
             LogFlush.clear();
         }
@@ -232,7 +232,7 @@ struct Console
             Strtrim(s);
             if (s[0])
                 ExecCommand(s);
-            strcpy(s, "");
+            strcpy_s(s, IM_ARRAYSIZE(InputBuf), "");
             reclaim_focus = true;
         }
 

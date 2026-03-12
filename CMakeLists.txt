@@ -20,13 +20,28 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;ReleaseWithSymbols" CACHE STRING "Configs" FORCE)
 
-# Apply global settings for custom configs
-foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
-	if(config MATCHES "ReleaseWithSymbols")
-		set(CMAKE_CXX_FLAGS_${config} "${CMAKE_CXX_FLAGS_${config}} /Zi /O2")
-		add_compile_definitions($<$<CONFIG:${config}>:NDEBUG>)
-	endif()
-endforeach()
+# The Runtime Library (/MD vs /MDd)
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+
+# Definitions
+add_compile_definitions(
+    $<$<CONFIG:Debug>:DEBUG>
+    $<$<CONFIG:Release,ReleaseWithSymbols>:NDEBUG>
+)
+
+# Tells CMake that for the project's 'ReleaseWithSymbols' configuration,
+# it should use the 'Release' version of any imported targets.
+set(CMAKE_MAP_IMPORTED_CONFIG_RELEASEWITHSYMBOLS RELEASE)
+set(CMAKE_CXX_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_CXX_FLAGS_RELEASE} /Zi" CACHE STRING "" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG" CACHE STRING "" FORCE)
+
+add_compile_options(
+    $<$<CXX_COMPILER_ID:MSVC>:/MP>
+    $<$<CXX_COMPILER_ID:MSVC>:/Zm200>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4100>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4101>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>
+)
 
 # Set natvis visualizer for all targets
 set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.natvis")

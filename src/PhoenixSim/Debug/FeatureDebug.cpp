@@ -140,8 +140,11 @@ void Phoenix::FeatureDebug::OnDebugRender(WorldConstRef world, const IDebugState
                     const char* text = FeatureString::Get(world, shape.Data.Text.Name);
                     uint32 len = (uint32)strlen(text);
                     renderer.DrawDebugText(shape.Data.Text.Pos, text, len, shape.Color);
-                    break;
                 }
+                break;
+            case DebugShape::Type::Invalid:
+                // Handle invalid shape type
+                break;
         }
     }
 }

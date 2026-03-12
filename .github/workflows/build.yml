@@ -1,0 +1,93 @@
+name: Build
+
+permissions:
+  contents: read
+  packages: read
+  actions: write
+
+on:
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        default: default
+        type: string
+      config:
+        required: false
+        default: Release
+        type: string
+      generate_artifact:
+        required: false
+        default: false
+        type: boolean
+      artifact_dir:
+        required: false
+        default: .artifact
+        type: string
+ 
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        config: [ReleaseWithSymbols]
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true # Ensure vcpkg directory is actually populated
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        env:
+          # 'clear' removes defaults, 'nuget' points to the source we just added
+          VCPKG_BINARY_SOURCES: "clear;nuget,GitHub,readwrite"
+      
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Configure CMake
+        shell: pwsh
+        run: cmake --preset ${{ inputs.preset }} -A x64 -T host=x64
+
+      - name: Build CMake targets
+        shell: pwsh
+        run: cmake --build --preset ${{ inputs.config }}
+
+      # TODO: figure out how to determine the buildDir by the configurePreset. For now assume it's always .build
+      - name: Install
+        shell: pwsh
+        run: cmake --install "$env:GITHUB_WORKSPACE/.build/" --config ${{ inputs.config }} --prefix "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
+
+      - name: Bundle Artifact
+        if: inputs.generate_artifact == true
+        shell: pwsh
+        run: |
+          $artifactDir = "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
+          $docsDir = "$env:GITHUB_WORKSPACE/docs"
+          Copy-Item "LICENSE" $artifactDir -ErrorAction SilentlyContinue
+          Copy-Item "README.md" $artifactDir -ErrorAction SilentlyContinue
+          Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
+          Copy-Item $docsDir $artifactDir -Recurse -Force -ErrorAction SilentlyContinue
+
+      - name: Enumerate artifact files
+        if: inputs.generate_artifact == true
+        id: enumerate_artifact_files
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}" -File -Recurse | ForEach-Object { $_.FullName }
+          $fileList = $files -join "\n"
+          echo "file_list=$fileList" | Out-File -FilePath "$env:GITHUB_OUTPUT" -Append
+
+      - name: Upload artifact
+        if: inputs.generate_artifact == true
+        uses: actions/upload-artifact@v4
+        with:
+            name: PhoenixSim-${{ github.sha }}
+            path: ${{ steps.enumerate_artifact_files.outputs.file_list }}
+            if-no-files-found: error

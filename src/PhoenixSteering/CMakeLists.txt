@@ -1,19 +1,15 @@
 file(GLOB_RECURSE PHOENIXSTEERING_SRC "*.cpp" "*.h")
-add_library(PhoenixSteering STATIC ${PHOENIXSTEERING_SRC})
+add_library(PhoenixSteering ${PHOENIXSTEERING_SRC})
 set_property(TARGET PhoenixSteering PROPERTY FOLDER "Libraries")
 target_include_directories(PhoenixSteering PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include" ../../src)
 target_precompile_headers(PhoenixSteering PRIVATE ../PhoenixSim/pch.h)
 target_compile_definitions(PhoenixSteering PUBLIC PHX_PROFILE_ENABLE)
-target_compile_options(PhoenixSteering PRIVATE "/MP")
 target_link_libraries(PhoenixSteering PUBLIC PhoenixSim PhoenixPhysics)
 
-
-foreach(config IN ITEMS Debug Release ReleaseWithSymbols)
-    if(config STREQUAL "Debug")
-        target_compile_definitions(PhoenixSteering PUBLIC DEBUG)
-        target_compile_options(PhoenixSteering PRIVATE $<$<CONFIG:Debug>:/Zi>)
-    else()
-        target_compile_definitions(PhoenixSteering PUBLIC NDEBUG)
-        target_compile_options(PhoenixSteering PRIVATE $<$<CONFIG:${config}>:/O2>)
-    endif()
-endforeach()
+# Install rules
+install(TARGETS PhoenixSteering
+    RUNTIME DESTINATION bin      # .exe and .dll (Windows)
+    LIBRARY DESTINATION lib      # .so (Unix)
+    ARCHIVE DESTINATION lib      # .lib (Windows static)
+)
+install(DIRECTORY . DESTINATION include/PhoenixSteering FILES_MATCHING PATTERN "*.h")

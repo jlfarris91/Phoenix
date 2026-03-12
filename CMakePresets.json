@@ -10,15 +10,19 @@
       "name": "default",
       "displayName": "Default",
       "description": "Default configuration",
-      "generator": "Visual Studio 18 2026",
-      "binaryDir": "${sourceDir}/build"
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/.build",
+      "architecture": "x64",
+      "toolset": "host=x64"
     },
     {
       "name": "unity",
       "displayName": "Unity",
       "description": "Unity Build Enabled",
-      "generator": "Visual Studio 18 2026",
-      "binaryDir": "${sourceDir}/build_unity",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/.build_unity",
+      "architecture": "x64",
+      "toolset": "host=x64",
       "cacheVariables": {
         "CMAKE_UNITY_BUILD": "ON"
       }
@@ -26,32 +30,32 @@
   ],
   "buildPresets": [
     {
-      "name": "Build Debug",
+      "name": "Debug",
       "configurePreset": "default",
       "configuration": "Debug"
     },
     {
-      "name": "Build Debug (Unity)",
+      "name": "DebugUnity",
       "configurePreset": "unity",
       "configuration": "Debug"
     },
     {
-      "name": "Build Release",
+      "name": "Release",
       "configurePreset": "default",
       "configuration": "Release"
     },
     {
-      "name": "Build Release (Unity)",
+      "name": "ReleaseUnity",
       "configurePreset": "unity",
       "configuration": "Release"
     },
     {
-      "name": "Build Release With Symbols",
+      "name": "ReleaseWithSymbols",
       "configurePreset": "default",
       "configuration": "ReleaseWithSymbols"
     },
     {
-      "name": "Build Release With Symbols (Unity)",
+      "name": "ReleaseWithSymbolsUnity",
       "configurePreset": "unity",
       "configuration": "ReleaseWithSymbols"
     }
