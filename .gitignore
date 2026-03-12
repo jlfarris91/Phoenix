@@ -4,7 +4,6 @@
 /.artifact/
 /.build/
 /.build_unity/
-/vcpkg/
 /vcpkg_installed/
 *.user
 *.sln
