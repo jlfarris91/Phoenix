@@ -2,15 +2,23 @@ name: Build
 
 permissions:
   packages: write
-  contents: read
+  contents: write
 
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
-  release:
-    types: [published]
+  workflow_call:
+    inputs:
+      preset:
+        required: false
+        default: ci
+        type: string
+      config:
+        required: false
+        default: ReleaseCI
+        type: string
+      generate_artifact:
+        required: false
+        default: false
+        type: boolean
  
 jobs:
   build:
@@ -29,55 +37,37 @@ jobs:
         env:
           # 'clear' removes defaults, 'nuget' points to the source we just added
           VCPKG_BINARY_SOURCES: "clear;nuget,GitHub,readwrite"
-
-      - name: Configure NuGet for vcpkg
-        shell: pwsh
-        run: |
-          $VCPKG_EXE = "${{ github.workspace }}/vcpkg/vcpkg.exe"
-          # vcpkg fetch nuget outputs the path to the internal nuget.exe
-          $NUGET_EXE = & $VCPKG_EXE fetch nuget | Select-Object -Last 1
-          
-          & $NUGET_EXE sources add `
-            -Name "GitHub" `
-            -Source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" `
-            -UserName "${{ github.repository_owner }}" `
-            -Password "${{ secrets.GITHUB_TOKEN }}" `
-            -StorePasswordInClearText
       
       - name: Set up CMake
         uses: jwlawson/actions-setup-cmake@v2
 
-      - name: Build and Install
+      - name: Configure CMake
         shell: pwsh
-        run: ./build/build.ps1 -Preset ci -Config ${{ matrix.config }}
+        run: cmake --preset ${{ inputs.preset }}
 
-      - name: Get version
-        if: github.event_name == 'release'
-        id: get_version
+      - name: Build CMake targets
+        shell: pwsh
+        run: cmake --build --preset ${{ inputs.config }}
+
+      - name: Install
+        shell: pwsh
+        run: cmake --install --preset ${{ inputs.preset }} --config ${{ inputs.config }} --prefix ./.artifact
+
+      - name: Bundle Artifact
+        if: inputs.generate_artifact == true
         shell: pwsh
         run: |
-          $manifest = Get-Content .release-please-manifest.json | ConvertFrom-Json
-          $version = $manifest.version
-          echo "version=$version" >> $env:GITHUB_OUTPUT
-
-      - name: Package Artifact
-        if: github.event_name == 'release'
-        shell: pwsh
-        run: |
-          Compress-Archive -Path ".artifact/${{ matrix.config }}" -DestinationPath "PhoenixSim-${{ steps.get_version.outputs.version }}.zip"
-          Write-Host "Artifact created: PhoenixSim-${{ steps.get_version.outputs.version }}.zip" 
+          Copy-Item "LICENSE" $artifactDir -ErrorAction SilentlyContinue
+          Copy-Item "README.md" $artifactDir -ErrorAction SilentlyContinue
+          Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
+          Copy-Item $docsDir $artifactDocsDir -Recurse -Force -ErrorAction SilentlyContinue
+          $artifactName = "PhoenixSim-${{ github.sha }}.zip"
+          Compress-Archive -Path ./.artifact/ -DestinationPath $artifactName
+          Write-Host "Artifact created: $artifactName"
 
       - name: Upload artifact
-        if: github.event_name == 'release'
+        if: inputs.generate_artifact == true
         uses: actions/upload-artifact@v4
         with:
-          name: PhoenixSim-${{ steps.get_version.outputs.version }}.zip
-          path: ./PhoenixSim-${{ steps.get_version.outputs.version }}.zip
-
-      - name: Create GitHub Release
-        if: github.event_name == 'release'
-        uses: softprops/action-gh-release@v1
-        with:
-          files: PhoenixSim-${{ steps.get_version.outputs.version }}.zip
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: PhoenixSim-${{ github.sha }}.zip
+          path: ./PhoenixSim-${{ github.sha }}.zip
