@@ -17,15 +17,14 @@ jobs:
     steps:
 
       - uses: actions/checkout@v4
+        with:
+          submodules: true # Ensure vcpkg directory is actually populated
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
       
       - name: Set up CMake
         uses: jwlawson/actions-setup-cmake@v2
-
-      - name: Set up vcpkg
-        uses: lukka/run-vcpkg@v4
-        with:
-          vcpkgArguments: 'install'
-          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
       - name: Build and Install
         shell: pwsh
