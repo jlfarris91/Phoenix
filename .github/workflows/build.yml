@@ -28,7 +28,7 @@ jobs:
 
       - name: Build and Install
         shell: pwsh
-        run: ./build/build.ps1 -Preset default -Config ${{ matrix.config }}
+        run: ./build/build.ps1 -Preset ci -Config ${{ matrix.config }}
 
       - name: Get version
         if: github.event_name == 'release'
