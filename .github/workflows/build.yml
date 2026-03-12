@@ -27,7 +27,7 @@ on:
  
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         config: [ReleaseCI]
@@ -47,32 +47,27 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v2
 
       - name: Configure CMake
-        shell: pwsh
         run: cmake --preset ${{ inputs.preset }}
 
       - name: Build CMake targets
-        shell: pwsh
         run: cmake --build --preset ${{ inputs.config }}
 
       # TODO: figure out how to determine the buildDir by the configurePreset. For now assume it's always .build_ci.
       - name: Install
-        shell: pwsh
-        run: cmake --install "$env:GITHUB_WORKSPACE/.build_ci/" --config ${{ inputs.config }} --prefix "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
+        run: cmake --install "$GITHUB_WORKSPACE/.build_ci/" --config ${{ inputs.config }} --prefix "$GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
 
       - name: Bundle Artifact
         if: inputs.generate_artifact == true
-        shell: pwsh
         run: |
-          $artifactDir = "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
-          $docsDir = "$env:GITHUB_WORKSPACE/docs"
-          Copy-Item "LICENSE" $artifactDir -ErrorAction SilentlyContinue
-          Copy-Item "README.md" $artifactDir -ErrorAction SilentlyContinue
-          Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
-          Copy-Item $docsDir $artifactDir -Recurse -Force -ErrorAction SilentlyContinue
+          artifactDir="$GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
+          docsDir="$GITHUB_WORKSPACE/docs"
+          cp LICENSE "$artifactDir" || true
+          cp README.md "$artifactDir" || true
+          cp CHANGELOG.md "$artifactDir" || true
+          cp -r "$docsDir" "$artifactDir" || true
 
       - name: List Artifact Files
-        shell: pwsh
-        run: Get-ChildItem "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}" -Recurse -File -Name
+        run: find "$GITHUB_WORKSPACE/${{ inputs.artifact_dir }}" -type f
 
       - name: Upload artifact
         if: inputs.generate_artifact == true
