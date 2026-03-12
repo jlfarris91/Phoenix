@@ -57,7 +57,7 @@ jobs:
 
       - name: Build CMake targets
         shell: pwsh
-        run: cmake --build --preset ${{ inputs.config }}
+        run: cmake --build --preset ${{ inputs.config }} --parallel 2
 
       # TODO: figure out how to determine the buildDir by the configurePreset. For now assume it's always .build
       - name: Install
