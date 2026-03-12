@@ -1,6 +1,6 @@
 file(GLOB_RECURSE PHOENIXSIM_SRC "*.cpp" "*.h")
 find_package(nlohmann_json CONFIG REQUIRED)
-add_library(PhoenixSim STATIC ${PHOENIXSIM_SRC})
+add_library(PhoenixSim ${PHOENIXSIM_SRC})
 set_property(TARGET PhoenixSim PROPERTY FOLDER "Libraries")
 target_include_directories(PhoenixSim PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include" ../../src)
 target_link_libraries(PhoenixSim PUBLIC nlohmann_json)
@@ -8,13 +8,10 @@ target_precompile_headers(PhoenixSim PRIVATE pch.h)
 target_compile_definitions(PhoenixSim PUBLIC PHX_PROFILE_ENABLE)
 target_compile_options(PhoenixSim PRIVATE "/MP")
 
-
-foreach(config IN ITEMS Debug Release ReleaseWithSymbols)
-    if(config STREQUAL "Debug")
-        target_compile_definitions(PhoenixSim PUBLIC DEBUG)
-        target_compile_options(PhoenixSim PRIVATE $<$<CONFIG:Debug>:/Zi>)
-    else()
-        target_compile_definitions(PhoenixSim PUBLIC NDEBUG)
-        target_compile_options(PhoenixSim PRIVATE $<$<CONFIG:${config}>:/O2>)
-    endif()
-endforeach()
+# Install rules
+install(TARGETS PhoenixSim
+    RUNTIME DESTINATION bin      # .exe and .dll (Windows)
+    LIBRARY DESTINATION lib      # .so (Unix)
+    ARCHIVE DESTINATION lib      # .lib (Windows static)
+)
+install(DIRECTORY . DESTINATION include/PhoenixSim FILES_MATCHING PATTERN "*.h")
