@@ -35,14 +35,12 @@ set(CMAKE_MAP_IMPORTED_CONFIG_RELEASEWITHSYMBOLS RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_CXX_FLAGS_RELEASE} /Zi" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG" CACHE STRING "" FORCE)
 
-if(MSVC)
-    # This is ONLY for the Visual Studio compiler
-    add_compile_options(/MP /wd4100 /wd4101)
-    # /wd4100: unreferenced formal parameter
-    # /wd4101: unreferenced local variable
-else()
-    add_compile_options(-Wno-unused-parameter)
-endif()
+add_compile_options(
+    $<$<CXX_COMPILER_ID:MSVC>:/MP>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4100>
+    $<$<CXX_COMPILER_ID:MSVC>:/wd4101>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>
+)
 
 # Set natvis visualizer for all targets
 set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.natvis")
