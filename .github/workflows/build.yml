@@ -57,15 +57,15 @@ jobs:
       # TODO: figure out how to determine the buildDir by the configurePreset. For now assume it's always .build_ci.
       - name: Install
         shell: pwsh
-        run: cmake --install /.build_ci/ --config ${{ inputs.config }} --prefix ${{ inputs.artifact_dir }}
+        run: cmake --install "$env:GITHUB_WORKSPACE/.build_ci/" --config ${{ inputs.config }} --prefix "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
 
       - name: Bundle Artifact
         if: inputs.generate_artifact == true
         shell: pwsh
         run: |
-          $artifactDir = "${{ inputs.artifact_dir }}"
+          $artifactDir = "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
           $artifactDocsDir = "$artifactDir/docs"
-          $docsDir = "/docs"
+          $docsDir = "$env:GITHUB_WORKSPACE/docs"
           Copy-Item "LICENSE" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item "README.md" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
