@@ -20,6 +20,10 @@ on:
         required: false
         default: false
         type: boolean
+      artifact_dir:
+        required: false
+        default: ./.artifact
+        type: string
  
 jobs:
   build:
@@ -50,20 +54,24 @@ jobs:
         shell: pwsh
         run: cmake --build --preset ${{ inputs.config }}
 
+      # TODO: figure out how to determine the buildDir by the configurePreset. For now assume it's always .build_ci.
       - name: Install
         shell: pwsh
-        run: cmake --install --preset ${{ inputs.preset }} --config ${{ inputs.config }} --prefix ./.artifact
+        run: cmake --install /.build_ci/ --config ${{ inputs.config }} --prefix ${{ inputs.artifact_dir }}
 
       - name: Bundle Artifact
         if: inputs.generate_artifact == true
         shell: pwsh
         run: |
+          $artifactDir = "${{ inputs.artifact_dir }}"
+          $artifactDocsDir = "$artifactDir/docs"
+          $docsDir = "/docs"
           Copy-Item "LICENSE" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item "README.md" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item "CHANGELOG.md" $artifactDir -ErrorAction SilentlyContinue
           Copy-Item $docsDir $artifactDocsDir -Recurse -Force -ErrorAction SilentlyContinue
           $artifactName = "PhoenixSim-${{ github.sha }}.zip"
-          Compress-Archive -Path ./.artifact/ -DestinationPath $artifactName
+          Compress-Archive -Path $artifactDir -DestinationPath $artifactName
           Write-Host "Artifact created: $artifactName"
 
       - name: Upload artifact
