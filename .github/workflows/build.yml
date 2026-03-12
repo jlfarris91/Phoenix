@@ -23,6 +23,9 @@ jobs:
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v4
+        with:
+          vcpkgArguments: 'install'
+          vcpkgDirectory: '${{ github.workspace }}/vcpkg'
 
       - name: Build and Install
         shell: pwsh
