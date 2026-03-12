@@ -65,7 +65,7 @@ jobs:
         shell: pwsh
         run: |
           Compress-Archive -Path ".artifact/${{ matrix.config }}" -DestinationPath "PhoenixSim-${{ steps.get_version.outputs.version }}.zip"
-          Write-Host "Artifact created: PhoenixSim-${{ steps.get_version.outputs.version }}.zip"
+          Write-Host "Artifact created: PhoenixSim-${{ steps.get_version.outputs.version }}.zip" 
 
       - name: Upload artifact
         if: github.event_name == 'release'
