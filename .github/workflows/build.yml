@@ -17,7 +17,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        config: [CI]
+        config: [ReleaseCI]
     steps:
 
       - uses: actions/checkout@v4
