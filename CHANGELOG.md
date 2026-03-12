@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/jlfarris91/PhoenixSim/compare/v1.0.1...v1.0.2) (2026-03-12)
+
+
+### Bug Fixes
+
+* touching to force re-release ([4e47be5](https://github.com/jlfarris91/PhoenixSim/commit/4e47be5c558f57a08c22a4c1f1f59788a9dd7504))
+
 ## [1.0.1](https://github.com/jlfarris91/PhoenixSim/compare/v1.0.0...v1.0.1) (2026-03-12)
 
 
