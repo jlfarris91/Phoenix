@@ -1,8 +1,9 @@
 name: Build
 
 permissions:
-  packages: write
-  contents: write
+  contents: read
+  packages: read
+  actions: write
 
 on:
   workflow_call:
