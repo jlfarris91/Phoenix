@@ -1,8 +1,6 @@
 ﻿
 #include "PhoenixSim/ECS/FeatureECS.h"
 
-#include <execution>
-
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/Session.h"
@@ -45,7 +43,6 @@ namespace FeatureECSDetail
         scratchBlock.SortedEntities.SetSize(scratchBlock.SortedEntityCount);
 
         std::sort(
-            std::execution::par,
             scratchBlock.SortedEntities.begin(),
             scratchBlock.SortedEntities.end(),
             [](const EntityTransform& a, const EntityTransform& b)

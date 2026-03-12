@@ -33,7 +33,11 @@ void* BlockBufferAllocator::Allocate(uint32 size)
 
 void BlockBufferMemoryDeleter::operator()(void* p) const
 {
+#ifdef _WIN32
     _aligned_free(p);
+#else
+    std::free(p);
+#endif
 }
 
 BlockBuffer::Block::Block(const BufferBlockDefinition& definition)

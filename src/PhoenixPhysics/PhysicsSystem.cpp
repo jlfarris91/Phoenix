@@ -1,8 +1,6 @@
 ﻿
 #include "PhoenixPhysics/PhysicsSystem.h"
 
-#include <execution>
-
 #include "PhoenixSim/Color.h"
 #include "PhoenixSim/Debug/Debug.h"
 #include "PhoenixSim/Flags.h"
@@ -47,7 +45,6 @@ namespace PhysicsSystemDetail
 
         // Sort entities by their zcodes
         std::sort(
-            std::execution::par,
             scratchBlock.SortedEntities.begin(),
             scratchBlock.SortedEntities.end(),
             [](const EntityBody& a, const EntityBody& b)
@@ -224,7 +221,6 @@ namespace PhysicsSystemDetail
 
             // Sort contact pairs
             std::sort(
-                std::execution::par,
                 scratchBlock.ContactPairs.begin(),
                 scratchBlock.ContactPairs.end(),
                 [](const ContactPair& a, const ContactPair& b)
