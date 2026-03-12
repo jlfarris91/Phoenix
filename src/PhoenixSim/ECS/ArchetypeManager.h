@@ -89,7 +89,7 @@ namespace Phoenix
             ArchetypeManager(TAllocator& allocator, const Config& config)
                 : ComponentDefinitions(allocator, config.MaxComponentDefs)
                 , ArchetypeDefinitions(allocator, config.MaxArchetypeDefs)
-                , ArchetypeLists(allocator, { config.ArchetypeListSize + sizeof(TArchetypeList), config.MaxArchetypeLists })
+                , ArchetypeLists(allocator, { static_cast<uint32>(config.ArchetypeListSize + sizeof(TArchetypeList)), config.MaxArchetypeLists })
                 , EntityHandles(allocator, config.MaxEntities)
                 , Configuration(config)
             {

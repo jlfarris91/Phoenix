@@ -28,10 +28,7 @@
       "displayName": "CI",
       "description": "Continuous Integration Build",
       "generator": "Ninja",
-      "binaryDir": "${sourceDir}/.build_ci",
-      "cacheVariables": {
-        "CMAKE_UNITY_BUILD": "ON"
-      }
+      "binaryDir": "${sourceDir}/.build_ci"
     }
   ],
   "buildPresets": [

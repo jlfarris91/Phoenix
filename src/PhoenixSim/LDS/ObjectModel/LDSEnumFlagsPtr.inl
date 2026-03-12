@@ -88,41 +88,41 @@ namespace Phoenix::LDS
     template <class U>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAnyFlags(const ILDSQueryContext& context, U value) const
     {
-        return LDSEnumFlagsPtr::HasAnyFlags<TUnderlyingType>(context, value);
+        return this->HasAnyFlags<TUnderlyingType>(context, value);
     }
 
     template <class TUnderlyingType>
     template <class ... Us>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAnyFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return LDSEnumFlagsPtr::HasAnyFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
+        return this->HasAnyFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
     }
 
     template <class TUnderlyingType>
     template <class U>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAllFlags(const ILDSQueryContext& context, U value)
     {
-        return LDSEnumFlagsPtr::HasAllFlags<TUnderlyingType>(context, value);
+        return this->HasAllFlags<TUnderlyingType>(context, value);
     }
 
     template <class TUnderlyingType>
     template <class ... Us>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::HasAllFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return LDSEnumFlagsPtr::HasAllFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
+        return this->HasAllFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
     }
 
     template <class TUnderlyingType>
     template <class U>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::HasNoneFlags(const ILDSQueryContext& context, U value)
     {
-        return LDSEnumFlagsPtr::HasNoneFlags<TUnderlyingType>(context, value);
+        return this->HasNoneFlags<TUnderlyingType>(context, value);
     }
 
     template <class TUnderlyingType>
     template <class ... Us>
     bool TLDSEnumFlagsPtr<TUnderlyingType>::HasNoneFlags(const ILDSQueryContext& context, Us&&... args)
     {
-        return LDSEnumFlagsPtr::HasNoneFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
+        return this->HasNoneFlags<TUnderlyingType>(context, std::forward<Us>(args)...);
     }
 }

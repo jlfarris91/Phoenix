@@ -1,5 +1,4 @@
-﻿#pragma once
-
+﻿
 #include "PhoenixSim/Worlds.h"
 
 #include <algorithm>

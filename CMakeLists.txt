@@ -37,10 +37,11 @@ set(CMAKE_EXE_LINKER_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_EXE_LINKER_FLAGS_RELEASE}
 
 if(MSVC)
     # This is ONLY for the Visual Studio compiler
-    add_compile_options(/MP)
+    add_compile_options(/MP /wd4100 /wd4101)
+    # /wd4100: unreferenced formal parameter
+    # /wd4101: unreferenced local variable
 else()
-    # For GCC/MinGW/Clang, Ninja handles parallelism automatically.
-    add_compile_options(-Wall -Wextra) 
+    add_compile_options(-Wno-unused-parameter)
 endif()
 
 # Set natvis visualizer for all targets

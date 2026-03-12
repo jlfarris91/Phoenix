@@ -378,6 +378,14 @@ bool JsonCatalogTypeBuilder::ProcessValueProperty(
         case ELDSValueType::Object:
         case ELDSValueType::ObjectRef:
         case ELDSValueType::Unknown:
+            break;
+        case ELDSValueType::Time:
+        case ELDSValueType::Enum:
+        case ELDSValueType::EnumFlags:
+            // Handle missing cases
+            break;
+        default:
+            break;
             // Error: unexpected type
             PHX_ASSERT(0);
             break;

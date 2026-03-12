@@ -252,7 +252,7 @@ FixedArchetypeList::EntityComponentIter<TComponents...>::EntityComponentIter(Fix
 template <class ... TComponents>
 std::tuple<EntityId, TComponents...> FixedArchetypeList::EntityComponentIter<TComponents...>::operator*() const
 {
-    return std::make_tuple(Curr.EntityId, ComponentAccessor<TComponents>::template GetComponentRef(*this, Curr.Id)...);
+    return std::make_tuple(Curr.EntityId, ComponentAccessor<TComponents>::GetComponentRef(*this, Curr.Id)...);
 }
 
 template <class ... TComponents>
