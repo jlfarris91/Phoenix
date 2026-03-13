@@ -17,6 +17,7 @@
 #include <functional>
 #include <unordered_set>
 #include <chrono>
+#include <cstring>
 #include <cstdlib>
 
 #pragma warning( disable : 4251 )
