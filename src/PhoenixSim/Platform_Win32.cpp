@@ -71,4 +71,70 @@ size_t Phoenix::GetNowUnixTimeString(char* buffer, size_t sizeInBytes)
     return strftime(buffer, sizeInBytes, "%Y-%m-%d %H:%M:%S", &localTime);
 }
 
+#else
+
+#include <cstdio>
+#include <ctime>
+
+#include "PhoenixSim/Platform.h"
+#include "PhoenixSim/Logging.h"
+
+std::wstring Phoenix::ToWideString(const std::string& str)
+{
+    return std::wstring(str.begin(), str.end());
+}
+
+void Phoenix::OSLog(ELogLevel level, const std::string& msg)
+{
+    const std::string logLine = GetLogStringWithUnixTime(level, msg);
+    std::fputs(logLine.c_str(), stderr);
+    std::fputc('\n', stderr);
+}
+
+void Phoenix::OSLog(const wchar_t* wstr)
+{
+    if (!wstr)
+    {
+        return;
+    }
+
+    std::fwprintf(stderr, L"%ls\n", wstr);
+}
+
+std::string Phoenix::GetLogStringWithUnixTime(ELogLevel level, const std::string& msg)
+{
+    char timeStr[64];
+    GetNowUnixTimeString(timeStr, _countof(timeStr));
+    return std::string("[") + timeStr + "] [" + ToString(level) + "]: " + msg;
+}
+
+std::wstring Phoenix::GetLogWStringWithUnixTime(ELogLevel level, const std::string& msg)
+{
+    return ToWideString(GetLogStringWithUnixTime(level, msg));
+}
+
+size_t Phoenix::GetNowLocalTimeString(char* buffer, size_t sizeInBytes)
+{
+    std::time_t currTime = std::time(nullptr);
+    std::tm localTime;
+    if (localtime_r(&currTime, &localTime) == nullptr)
+    {
+        return 0;
+    }
+
+    return strftime(buffer, sizeInBytes, "%Y-%m-%d %H:%M:%S", &localTime);
+}
+
+size_t Phoenix::GetNowUnixTimeString(char* buffer, size_t sizeInBytes)
+{
+    std::time_t currTime = std::time(nullptr);
+    std::tm localTime;
+    if (gmtime_r(&currTime, &localTime) == nullptr)
+    {
+        return 0;
+    }
+
+    return strftime(buffer, sizeInBytes, "%Y-%m-%d %H:%M:%S", &localTime);
+}
+
 #endif
