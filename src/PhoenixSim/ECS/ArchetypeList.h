@@ -394,7 +394,7 @@ namespace Phoenix
                 uint64 d = reinterpret_cast<uint64>(RawData);
                 if ((d & 0x000000FF00000000) == d)
                 {
-                    __debugbreak();
+                    PHX_DEBUGBREAK();
                 }
             }
 

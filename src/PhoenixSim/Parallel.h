@@ -11,6 +11,8 @@
 
 namespace Phoenix
 {
+    class ThreadPool;
+
     struct PHOENIX_SIM_API TaskHandle
     {
         bool IsCompleted() const;

@@ -4,6 +4,8 @@
 
 namespace Phoenix
 {
+    class ServiceContainerBuilder;
+
     struct ServiceRegistrar
     {
         ServiceRegistrar(ServiceContainerBuilder* builder, const std::shared_ptr<IService>& service);

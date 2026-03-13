@@ -1,6 +1,7 @@
 #include "PhoenixSim/Containers/BlockBuffer.h"
 
 #include <algorithm>
+#include <cstdlib>
 #include <malloc.h>
 
 #include "FixedArray.h"
@@ -32,7 +33,11 @@ void* BlockBufferAllocator::Allocate(uint32 size)
 
 void BlockBufferMemoryDeleter::operator()(void* p) const
 {
+#ifdef _WIN32
     _aligned_free(p);
+#else
+    std::free(p);
+#endif
 }
 
 BlockBuffer::Block::Block(const BufferBlockDefinition& definition)
@@ -237,7 +242,12 @@ void BlockBuffer::AllocateMemory(uint32 size)
     pageSize = sysInfo.dwPageSize;
 #endif
 
+#ifdef _WIN32
     uint8* data = static_cast<uint8*>(_aligned_malloc(size, pageSize));
+#else
+    uint8* data = static_cast<uint8*>(std::aligned_alloc(pageSize, ((size + pageSize - 1) / pageSize) * pageSize));
+#endif
+
     if (!data)
     {
         throw std::bad_alloc();

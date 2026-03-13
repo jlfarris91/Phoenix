@@ -17,8 +17,24 @@
 #include <functional>
 #include <unordered_set>
 #include <chrono>
+#include <cstring>
+#include <cstdlib>
 
 #pragma warning( disable : 4251 )
+
+#ifndef __has_builtin
+#define __has_builtin(x) 0
+#endif
+
+#if defined(_MSC_VER)
+#define PHX_DEBUGBREAK() __debugbreak()
+#elif __has_builtin(__builtin_debugtrap)
+#define PHX_DEBUGBREAK() __builtin_debugtrap()
+#elif __has_builtin(__builtin_trap)
+#define PHX_DEBUGBREAK() __builtin_trap()
+#else
+#define PHX_DEBUGBREAK() std::abort()
+#endif
 
 #ifdef PHOENIX_DLL
     #ifdef _WIN32
@@ -53,7 +69,7 @@
 
 #if _WIN32 && NDEBUG
 
-#define PHX_ASSERT(expression) if (!(expression)) __debugbreak()
+#define PHX_ASSERT(expression) if (!(expression)) PHX_DEBUGBREAK()
 
 #else
 
