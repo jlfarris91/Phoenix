@@ -164,7 +164,7 @@ bool FixedEntityList::Release(EntityId entityId)
     // PHX_ASSERT(!IsMarkedForDeath(entity.Id, currIdx));
     if (!IsMarkedForDeath(entity.Id, currIdx))
     {
-        __debugbreak();
+        PHX_DEBUGBREAK();
     }
 #endif
 
