@@ -32,7 +32,11 @@ void* BlockBufferAllocator::Allocate(uint32 size)
 
 void BlockBufferMemoryDeleter::operator()(void* p) const
 {
+#ifdef _WIN32
     _aligned_free(p);
+#else
+    free(p);
+#endif
 }
 
 BlockBuffer::Block::Block(const BufferBlockDefinition& definition)
@@ -237,7 +241,13 @@ void BlockBuffer::AllocateMemory(uint32 size)
     pageSize = sysInfo.dwPageSize;
 #endif
 
+#ifdef _WIN32
     uint8* data = static_cast<uint8*>(_aligned_malloc(size, pageSize));
+#else
+    void* rawPtr = nullptr;
+    posix_memalign(&rawPtr, pageSize, size);
+    uint8* data = static_cast<uint8*>(rawPtr);
+#endif
     if (!data)
     {
         throw std::bad_alloc();

@@ -10,7 +10,7 @@ on:
     inputs:
       preset:
         required: false
-        default: default
+        default: windows
         type: string
       config:
         required: false
@@ -59,10 +59,9 @@ jobs:
         shell: pwsh
         run: cmake --build --preset ${{ inputs.config }} --parallel 1
 
-      # TODO: figure out how to determine the buildDir by the configurePreset. For now assume it's always .build
       - name: Install
         shell: pwsh
-        run: cmake --install "$env:GITHUB_WORKSPACE/.build/" --config ${{ inputs.config }} --prefix "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
+        run: cmake --install "$env:GITHUB_WORKSPACE/.build/${{ inputs.preset }}" --config ${{ inputs.config }} --prefix "$env:GITHUB_WORKSPACE/${{ inputs.artifact_dir }}"
 
       - name: Bundle Artifact
         if: inputs.generate_artifact == true

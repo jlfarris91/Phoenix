@@ -50,7 +50,7 @@ UnitId FeatureUnit::SpawnUnit(
     UnitComponent* unitComponent = FeatureECS::GetOrAddComponent<UnitComponent>(world, unitId);
     if (!unitComponent)
     {
-        __debugbreak();
+        PHX_DEBUG_BREAK();
     }
     unitComponent->OwningPlayer = owner;
     unitComponent->UnitData = unitData;

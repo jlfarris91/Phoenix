@@ -3,8 +3,6 @@
 /.vscode/
 /.artifact/
 /.build/
-/.build_unity/
-/.build_ci
 /vcpkg_installed/
 *.user
 *.sln

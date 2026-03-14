@@ -50,6 +50,8 @@ namespace Phoenix
         std::shared_ptr<TaskHandle> Handle;
     };
 
+    class ThreadPool;
+
     PHOENIX_SIM_API bool HasThreadPool();
     PHOENIX_SIM_API ThreadPool* GetThreadPool();
     PHOENIX_SIM_API void SetThreadPool(const std::string& id, uint32 numWorkers, uint32 queueCapacity = 1024);

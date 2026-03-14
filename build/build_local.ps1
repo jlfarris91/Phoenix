@@ -1,7 +1,7 @@
 
 param(
     [string]$Config = "Release",
-    [string]$Preset = "default"
+    [string]$Preset = "windows"
 )
 
 # CMake must be installed and available in PATH

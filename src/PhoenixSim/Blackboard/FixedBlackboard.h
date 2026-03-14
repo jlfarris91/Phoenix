@@ -10,6 +10,7 @@
 
 namespace Phoenix::Blackboard
 {
+    struct BlackboardValues;
     using blackboard_key_t = uint64;
     using blackboard_value_t = int64;
     using blackboard_type_t = uint8;

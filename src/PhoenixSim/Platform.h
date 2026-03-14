@@ -44,11 +44,13 @@
 #ifdef _WIN32
     #define PHX_FORCEINLINE __forceinline
     #define PHX_THREAD_PAUSE() _mm_pause()
+    #define PHX_DEBUG_BREAK() __debugbreak()
 #else
-    // Linux/GCC
     #define PHX_FORCEINLINE inline __attribute__((always_inline))
     #define _countof(arr) (sizeof(arr) / sizeof((arr)[0]))
+    #define sprintf_s(buf, size, ...) snprintf(buf, size, __VA_ARGS__)
     #define PHX_THREAD_PAUSE() { do {} while(0); }
+    #define PHX_DEBUG_BREAK() __builtin_trap()
 #endif
 
 #if _WIN32 && NDEBUG
@@ -103,7 +105,9 @@ namespace Phoenix
 
     constexpr int32 INDEX_NONE = Index<int32>::None;
 
+#ifdef _WIN32
     std::wstring ToWideString(const std::string& str);
+#endif
 
     size_t PHOENIX_SIM_API GetNowLocalTimeString(char* buffer, size_t sizeInBytes);
     size_t PHOENIX_SIM_API GetNowUnixTimeString(char* buffer, size_t sizeInBytes);

@@ -26,10 +26,11 @@ namespace Phoenix
     }
 
     void PHOENIX_SIM_API OSLog(ELogLevel level, const std::string& msg);
-    void PHOENIX_SIM_API OSLog(const wchar_t* msg);
-
     std::string PHOENIX_SIM_API GetLogStringWithUnixTime(ELogLevel level, const std::string& msg);
+#ifdef _WIN32
+    void PHOENIX_SIM_API OSLog(const wchar_t* msg);
     std::wstring PHOENIX_SIM_API GetLogWStringWithUnixTime(ELogLevel level, const std::string& msg);
+#endif
 
     class PHOENIX_SIM_API ILogger
     {

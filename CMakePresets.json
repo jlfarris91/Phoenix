@@ -7,57 +7,47 @@
   },
   "configurePresets": [
     {
-      "name": "default",
-      "displayName": "Default",
-      "description": "Default configuration",
+      "name": "windows",
+      "displayName": "Windows",
       "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/.build",
-      "architecture": "x64",
-      "toolset": "host=x64"
-    },
-    {
-      "name": "unity",
-      "displayName": "Unity",
-      "description": "Unity Build Enabled",
-      "generator": "Visual Studio 17 2022",
-      "binaryDir": "${sourceDir}/.build_unity",
+      "binaryDir": "${sourceDir}/.build/windows",
       "architecture": "x64",
       "toolset": "host=x64",
       "cacheVariables": {
-        "CMAKE_UNITY_BUILD": "ON"
+        "VCPKG_MANIFEST_FEATURES": "testapp"
+      }
+    },
+    {
+      "name": "emscripten",
+      "displayName": "Emscripten (WebAssembly)",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/.build/wasm",
+      "cacheVariables": {
+        "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
       }
     }
   ],
   "buildPresets": [
     {
       "name": "Debug",
-      "configurePreset": "default",
-      "configuration": "Debug"
-    },
-    {
-      "name": "DebugUnity",
-      "configurePreset": "unity",
+      "configurePreset": "windows",
       "configuration": "Debug"
     },
     {
       "name": "Release",
-      "configurePreset": "default",
-      "configuration": "Release"
-    },
-    {
-      "name": "ReleaseUnity",
-      "configurePreset": "unity",
+      "configurePreset": "windows",
       "configuration": "Release"
     },
     {
       "name": "ReleaseWithSymbols",
-      "configurePreset": "default",
+      "configurePreset": "windows",
       "configuration": "ReleaseWithSymbols"
     },
     {
-      "name": "ReleaseWithSymbolsUnity",
-      "configurePreset": "unity",
-      "configuration": "ReleaseWithSymbols"
+      "name": "EmscriptenRelease",
+      "configurePreset": "emscripten",
+      "configuration": "Release"
     }
   ]
 }
