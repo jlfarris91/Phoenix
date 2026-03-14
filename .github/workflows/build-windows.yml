@@ -1,0 +1,72 @@
+name: Build (Windows)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+    inputs:
+      config:
+        required: false
+        default: ReleaseWithSymbols
+        type: string
+      upload_artifact:
+        required: false
+        default: false
+        type: boolean
+      artifact_name:
+        required: false
+        default: PhoenixSim-windows
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+        with:
+          msbuild-architecture: x64
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        env:
+          VCPKG_BINARY_SOURCES: "clear;nuget,GitHub,readwrite"
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Configure
+        shell: pwsh
+        run: cmake --preset windows -A x64 -T host=x64
+
+      - name: Build
+        shell: pwsh
+        run: cmake --build --preset ${{ inputs.config }} --parallel 1
+
+      - name: Install
+        if: inputs.upload_artifact
+        shell: pwsh
+        run: |
+          cmake --install .build/windows --config ${{ inputs.config }} --prefix .artifact/windows
+          Copy-Item "LICENSE"    .artifact/windows -ErrorAction SilentlyContinue
+          Copy-Item "README.md"  .artifact/windows -ErrorAction SilentlyContinue
+          Copy-Item "CHANGELOG.md" .artifact/windows -ErrorAction SilentlyContinue
+
+      - name: Upload artifact
+        if: inputs.upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: .artifact/windows/
+          if-no-files-found: error

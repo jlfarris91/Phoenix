@@ -1,5 +1,8 @@
 # PhoenixSim
 
+[![Build (Windows)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-windows.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-windows.yml)
+[![Build (Emscripten)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-emscripten.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-emscripten.yml)
+
 PhoenixSim is a high-performance, modular simulation engine. This repository includes the core engine, sample apps, and all dependencies.
 
 ---

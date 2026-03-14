@@ -1,0 +1,61 @@
+name: Build (Emscripten)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+    inputs:
+      upload_artifact:
+        required: false
+        default: false
+        type: boolean
+      artifact_name:
+        required: false
+        default: PhoenixSim-wasm
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up EMSDK
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+        env:
+          VCPKG_BINARY_SOURCES: "clear;nuget,GitHub,readwrite"
+
+      - name: Set up CMake and Ninja
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Configure
+        run: cmake --preset emscripten
+
+      - name: Build
+        run: cmake --build --preset EmscriptenRelease
+
+      - name: Install
+        if: inputs.upload_artifact
+        run: cmake --install .build/wasm --config Release --prefix .artifact/wasm
+
+      - name: Upload artifact
+        if: inputs.upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: .artifact/wasm/
+          if-no-files-found: error
