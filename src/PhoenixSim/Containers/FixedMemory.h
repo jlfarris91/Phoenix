@@ -105,7 +105,7 @@ namespace Phoenix
 
     protected:
 
-        std::array<T, N> Data{};
+        std::array<T, N> Data;
     };
 
     template <class T, uint32 N>

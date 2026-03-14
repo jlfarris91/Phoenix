@@ -29,7 +29,7 @@ jobs:
       - name: Set up EMSDK
         uses: mymindstorm/setup-emsdk@v14
         with:
-          version: latest
+          version: 4.0.18
 
       - name: Cache vcpkg packages
         uses: actions/cache@v4
@@ -42,9 +42,6 @@ jobs:
         uses: lukka/run-vcpkg@v11
         env:
           VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
-
-      - name: Set up CMake and Ninja
-        uses: jwlawson/actions-setup-cmake@v2
 
       - name: Configure
         run: cmake --preset emscripten

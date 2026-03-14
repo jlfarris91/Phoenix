@@ -26,11 +26,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-        with:
-          msbuild-architecture: x64
-
       - name: Cache vcpkg packages
         uses: actions/cache@v4
         with:
@@ -43,20 +38,14 @@ jobs:
         env:
           VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
 
-      - name: Set up CMake
-        uses: jwlawson/actions-setup-cmake@v2
-
       - name: Configure
-        shell: pwsh
         run: cmake --preset windows -A x64 -T host=x64
 
       - name: Build
-        shell: pwsh
-        run: cmake --build --preset Release --parallel 1
+        run: cmake --build --preset Release --parallel
 
       - name: Install
         if: inputs.upload_artifact
-        shell: pwsh
         run: |
           cmake --install .build/windows --config Release --prefix .artifact/windows
           Copy-Item "LICENSE"      .artifact/windows -ErrorAction SilentlyContinue
