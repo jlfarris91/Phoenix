@@ -1,8 +1,6 @@
 ﻿
 #pragma once
 
-#include <execution>
-
 #include "LDSRecord.h"
 #include "PhoenixSim/Containers/FixedSortedList.h"
 
