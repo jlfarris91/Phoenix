@@ -54,12 +54,16 @@ jobs:
 
       - name: Install
         if: inputs.upload_artifact
-        run: cmake --install .build/wasm --config Release --prefix .artifact/wasm
+        run: |
+          cmake --install .build/wasm --config Release --prefix .artifact
+          cp README.md    .artifact/ 2>/dev/null || true
+          cp CHANGELOG.md .artifact/ 2>/dev/null || true
+          cp -r docs      .artifact/
 
       - name: Upload artifact
         if: inputs.upload_artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artifact_name }}
-          path: .artifact/wasm/
+          path: .artifact/
           if-no-files-found: error
