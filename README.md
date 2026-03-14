@@ -3,72 +3,80 @@
 [![Build (Windows)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-windows.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-windows.yml)
 [![Build (Emscripten)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-emscripten.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-emscripten.yml)
 
-PhoenixSim is a high-performance, modular simulation engine. This repository includes the core engine, sample apps, and all dependencies.
+PhoenixSim is a high-performance, modular simulation engine for real-time strategy games. It provides an archetype-based ECS, a data-driven game layer (LDS), pluggable Feature systems, and a full RTS gameplay stack (units, abilities, orders, effects, physics, steering).
 
 ---
 
-## Quickstart: Build & Run TestRTS
+## Quickstart
 
 ### Prerequisites
-- Windows (x64)
-- Visual Studio 2022 (C++20 toolchain)
-- Premake5 (project generation)
-- All dependencies included in `ext/` (SDL3, imgui, lua, tracy, nlohmann/json)
 
-### Clone the Repository
+- Windows 10/11 x64
+- Visual Studio 2022 with the **Desktop development with C++** workload
+- Git
+
+### Clone and bootstrap
+
 ```sh
-git clone <repo-url>
+git clone --recurse-submodules https://github.com/jlfarris91/PhoenixSim.git
 cd PhoenixSim
+.\build\bootstrap.ps1
 ```
 
-### Generate Project Files
-Run the batch script:
+The bootstrap script installs CMake and Ninja (via winget) and compiles the vcpkg binary. Run it once after cloning.
+
+### Build
+
 ```sh
-.\make.bat
+cmake --preset windows
+cmake --build .build/windows --config Release
 ```
-This runs: `premake5 vs2022 --verbose` and generates `Phoenix.sln`.
-
-### Build the Solution
-- Open `Phoenix.sln` in Visual Studio 2022.
-- Select `x64` platform and desired configuration (`Debug`, `Release`, `ReleaseWithSymbols`).
-- Build the solution (F7).
 
 ### Run TestRTS
-- Set `TestRTS` as startup project.
-- Run (F5).
-- Executable: `.build/vs2022/bin/x64/<config>/TestRTS`
 
-### Troubleshooting
-- SDL3 DLLs are copied automatically to output directory.
-- All dependencies are included; no external package manager required.
-- If you encounter build errors, ensure you have the correct Visual Studio version and C++20 support.
+```sh
+.build\windows\tests\TestRTS\Release\TestRTS.exe
+```
 
-### Project Structure
-- `src/`: Core engine and features
-- `ext/`: External dependencies
-- `tests/TestRTS/`: Test application source
-- `docs/`: Detailed documentation
+See [docs/BuildAndRunTestRTS.md](docs/BuildAndRunTestRTS.md) for Visual Studio setup, VS Code setup, Emscripten builds, and troubleshooting.
+
+---
+
+## Project Structure
+
+```
+src/
+  PhoenixSim/       Core engine: ECS, Session, Features, LDS, memory, threading
+  PhoenixPhysics/   2D rigid-body physics
+  PhoenixSteering/  Pathfinding and unit steering
+  PhoenixRTS/       RTS gameplay: units, abilities, orders, effects, vitals
+  PhoenixLua/       Lua scripting bridge
+tests/
+  TestRTS/          Interactive RTS sandbox (SDL3 + Dear ImGui)
+vcpkg/              Package manager (submodule)
+build/              Build scripts (bootstrap.ps1)
+docs/               Documentation
+```
 
 ---
 
 ## Documentation
 
-For in-depth guides, see the docs folder:
-- [docs/BuildAndRunTestRTS.md](docs/BuildAndRunTestRTS.md): Step-by-step build/run instructions
-- [docs/PhoenixSimDeepDive.md](docs/PhoenixSimDeepDive.md): Engine architecture and design
-- [docs/FeatureDevelopmentWorkflow.md](docs/FeatureDevelopmentWorkflow.md): How to add new features
-- [docs/WorldAndSessionBuffers.md](docs/WorldAndSessionBuffers.md): Buffer architecture and cache coherency
+| Doc | What it covers |
+|---|---|
+| [BuildAndRunTestRTS.md](docs/BuildAndRunTestRTS.md) | Build setup, running TestRTS, Emscripten builds |
+| [FeatureDevelopmentWorkflow.md](docs/FeatureDevelopmentWorkflow.md) | How to write a Feature — the main extension point |
+| [ECS.md](docs/ECS.md) | Entities, components, queries, systems |
+| [WorldAndSessionBuffers.md](docs/WorldAndSessionBuffers.md) | Block buffer architecture and memory management |
+| [PhoenixSimDeepDive.md](docs/PhoenixSimDeepDive.md) | PhoenixSim core: Session, World, LDS, threading, FName |
+| [PhoenixPhysics.md](docs/PhoenixPhysics.md) | 2D physics: BodyComponent, PhysicsSystem, force API |
+| [PhoenixSteering.md](docs/PhoenixSteering.md) | Pathfinding, movement, rotation, spatial queries |
+| [PhoenixRTS.md](docs/PhoenixRTS.md) | Units, abilities, orders, effects, vitals, projectiles |
 
 ---
 
 ## Contributing
 
-- Fork the repository and create a feature branch.
-- See [docs/FeatureDevelopmentWorkflow.md](docs/FeatureDevelopmentWorkflow.md) for guidance on adding new features.
-- Open a pull request with a clear description of your changes.
-
----
-
-## Support
-
-If you have questions or issues, check the docs folder first. For additional help, open an issue or contact the maintainers.
+1. Fork the repo and create a feature branch off `main`.
+2. Read [FeatureDevelopmentWorkflow.md](docs/FeatureDevelopmentWorkflow.md) — Features are the primary way to extend the engine.
+3. Open a pull request. CI will run Windows and Emscripten builds automatically.
