@@ -45,19 +45,17 @@ jobs:
 
   build-windows:
     needs: release-please
-    if: needs.release-please.outputs.release_created == 'true'
     uses: ./.github/workflows/build-windows.yml
     with:
-      upload_artifact: true
+      upload_artifact: ${{ needs.release-please.outputs.release_created == 'true' }}
       artifact_name: PhoenixSim-windows
     secrets: inherit
 
   build-emscripten:
     needs: release-please
-    if: needs.release-please.outputs.release_created == 'true'
     uses: ./.github/workflows/build-emscripten.yml
     with:
-      upload_artifact: true
+      upload_artifact: ${{ needs.release-please.outputs.release_created == 'true' }}
       artifact_name: PhoenixSim-wasm
     secrets: inherit
 
