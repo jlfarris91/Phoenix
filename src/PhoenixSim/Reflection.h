@@ -1063,7 +1063,7 @@ namespace Phoenix
 #define PHX_DECLARE_TYPE_BEGIN(type) PHX_DECLARE_TYPE_BEGIN_(type, void, Phoenix::ETypeDescriptorFlags::None)
 #define PHX_DECLARE_TYPE_END() \
     PHX_DECLARE_TYPE_END_() \
-    virtual const Phoenix::TypeDescriptor& GetTypeDescriptor() const override { return GetStaticTypeDescriptor(); } \
+    virtual const Phoenix::TypeDescriptor& GetTypeDescriptor() const { return GetStaticTypeDescriptor(); } \
 
 #define PHX_DECLARE_TYPE(type) \
     PHX_DECLARE_TYPE_BEGIN(type) \
