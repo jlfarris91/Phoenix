@@ -36,7 +36,7 @@ set_property(TARGET TestRTS PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOUR
 # Post-build step: copy TracyClient.dll to output directory
 add_custom_command(TARGET TestRTS POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/vcpkg/packages/tracy_x64-windows/bin/TracyClient.dll"
+        $<TARGET_FILE:Tracy::TracyClient>
         $<TARGET_FILE_DIR:TestRTS>
     COMMENT "Copying TracyClient.dll to output directory"
 )
