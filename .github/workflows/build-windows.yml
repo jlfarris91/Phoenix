@@ -26,28 +26,32 @@ jobs:
         with:
           submodules: true
 
-      - name: Cache vcpkg packages
+      - name: Cache vcpkg binary packages
         uses: actions/cache@v4
         with:
-          path: .vcpkg-cache
+          path: .vcpkg-binary-cache
           key: vcpkg-windows-${{ hashFiles('vcpkg.json') }}
           restore-keys: vcpkg-windows-
+
+      - name: Create vcpkg binary cache dir
+        run: mkdir -p .vcpkg-binary-cache
+        shell: bash
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         env:
-          VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
+          VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
 
       - name: Configure
-        run: cmake --preset windows -A x64 -T host=x64
+        run: cmake --preset windows-ci
 
       - name: Build
-        run: cmake --build --preset Release --parallel
+        run: cmake --build .build/windows-ci --config Release --parallel
 
       - name: Install
         if: inputs.upload_artifact
         run: |
-          cmake --install .build/windows --config Release --prefix .artifact/windows
+          cmake --install .build/windows-ci --config Release --prefix .artifact/windows
           Copy-Item "LICENSE"      .artifact/windows -ErrorAction SilentlyContinue
           Copy-Item "README.md"    .artifact/windows -ErrorAction SilentlyContinue
           Copy-Item "CHANGELOG.md" .artifact/windows -ErrorAction SilentlyContinue

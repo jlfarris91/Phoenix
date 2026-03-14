@@ -31,17 +31,20 @@ jobs:
         with:
           version: 4.0.18
 
-      - name: Cache vcpkg packages
+      - name: Cache vcpkg binary packages
         uses: actions/cache@v4
         with:
-          path: .vcpkg-cache
+          path: .vcpkg-binary-cache
           key: vcpkg-wasm-${{ hashFiles('vcpkg.json') }}
           restore-keys: vcpkg-wasm-
+
+      - name: Create vcpkg binary cache dir
+        run: mkdir -p .vcpkg-binary-cache
 
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
         env:
-          VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/.vcpkg-cache,readwrite"
+          VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
 
       - name: Configure
         run: cmake --preset emscripten

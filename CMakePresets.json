@@ -18,6 +18,17 @@
       }
     },
     {
+      "name": "windows-ci",
+      "displayName": "Windows CI",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/.build/windows-ci",
+      "architecture": "x64",
+      "toolset": "host=x64",
+      "cacheVariables": {
+        "PHX_BUILD_TESTAPP": "OFF"
+      }
+    },
+    {
       "name": "emscripten",
       "displayName": "Emscripten (WebAssembly)",
       "generator": "Ninja",
