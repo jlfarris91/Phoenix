@@ -354,6 +354,21 @@ void TaskQueue::Flush()
 {
     PHX_PROFILE_ZONE_SCOPED;
 
+    // Run tasks on the current thread if no thread pool is available.
+    // This allows using TaskQueue for simple task grouping even without a thread pool.
+    if (ThreadPool == nullptr)
+    {
+        for (const std::vector<Task>& tasks : Tasks)
+        {
+            for (const Task& task : tasks)
+            {
+                task();
+            }
+        }
+        Complete();
+        return;
+    }
+
     bIsCompleted.store(false, std::memory_order_release);
 
     for (const std::vector<Task>& tasks : Tasks)

@@ -1,5 +1,6 @@
 
 #include "PhoenixLua/FeatureLua.h"
+#include "PhoenixSim/Platform.h"
 
 #include <iostream>
 #include <lua.h>
@@ -160,11 +161,7 @@ void FeatureLua::Initialize(const std::shared_ptr<Phoenix::Session>& session)
     {
         sol::error err = script;
         std::cerr << "Error loading script: " << err.what() << std::endl;
-#ifdef _WIN32
-        __debugbreak();
-#else
-        __builtin_trap();  // GCC/Clang equivalent
-#endif
+        PHX_DEBUG_BREAK();
     }
 }
 

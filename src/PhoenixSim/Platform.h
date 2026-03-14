@@ -55,7 +55,7 @@
 
 #if _WIN32 && NDEBUG
 
-#define PHX_ASSERT(expression) if (!(expression)) __debugbreak()
+#define PHX_ASSERT(expression) if (!(expression)) PHX_DEBUG_BREAK()
 
 #else
 

@@ -129,7 +129,7 @@ EntityId FixedEntityList::Acquire(const FName& kind)
     //PHX_ASSERT(IsValid(entityId));
     if (!IsValid(entity.Id))
     {
-        __debugbreak();
+        PHX_DEBUG_BREAK();
     }
 #endif
 
@@ -164,7 +164,7 @@ bool FixedEntityList::Release(EntityId entityId)
     // PHX_ASSERT(!IsMarkedForDeath(entity.Id, currIdx));
     if (!IsMarkedForDeath(entity.Id, currIdx))
     {
-        __debugbreak();
+        PHX_DEBUG_BREAK();
     }
 #endif
 

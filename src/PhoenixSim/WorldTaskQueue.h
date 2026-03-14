@@ -38,20 +38,6 @@ namespace Phoenix
             Schedule(world, std::move(wrapper));
         }
 
-        static void dfsdf(WorldRef, int)
-        {
-        }
-
-        void asdf()
-        {
-            auto a = [](WorldRef, int)
-            {
-                
-            };
-            TWorldTaskFunc b = std::bind(a, std::placeholders::_1, 123);
-            TWorldTaskFunc c = std::bind(std::forward<void(*)(WorldRef, int)>(&dfsdf), std::placeholders::_1, 123);
-        }
-
         template <class ...TArgs>
         static void Schedule(WorldRef world, const std::function<void(WorldRef, TArgs...)>& func, TArgs&& ...args)
         {
@@ -67,6 +53,13 @@ namespace Phoenix
         {
             auto worldPtr = &world;
             std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
+
+            // No thread pool? Just run synchronously.
+            if (taskQueue->GetNumWorkers() == 0)
+            {
+                func(*worldPtr, 0, total);
+                return;
+            }
 
             std::vector<Task>& taskGroup = taskQueue->BeginGroup();
 
