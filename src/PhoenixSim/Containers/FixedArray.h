@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+#include <cstring>
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Containers/FixedMemory.h"

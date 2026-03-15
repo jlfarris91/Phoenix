@@ -29,6 +29,24 @@
       }
     },
     {
+      "name": "linux",
+      "displayName": "Linux",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/.build/linux",
+      "cacheVariables": {
+        "VCPKG_MANIFEST_FEATURES": "testapp"
+      }
+    },
+    {
+      "name": "linux-ci",
+      "displayName": "Linux CI",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/.build/linux-ci",
+      "cacheVariables": {
+        "PHX_BUILD_TESTAPP": "OFF"
+      }
+    },
+    {
       "name": "emscripten",
       "displayName": "Emscripten (WebAssembly)",
       "generator": "Ninja",

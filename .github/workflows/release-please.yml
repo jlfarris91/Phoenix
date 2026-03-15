@@ -58,8 +58,16 @@ jobs:
       artifact_name: PhoenixSim-wasm
     secrets: inherit
 
+  build-linux:
+    needs: release-please
+    uses: ./.github/workflows/build-linux.yml
+    with:
+      upload_artifact: ${{ needs.release-please.outputs.release_created == 'true' }}
+      artifact_name: PhoenixSim-linux
+    secrets: inherit
+
   attach-release-assets:
-    needs: [release-please, build-windows, build-emscripten]
+    needs: [release-please, build-windows, build-emscripten, build-linux]
     if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     permissions:
@@ -77,11 +85,18 @@ jobs:
           name: PhoenixSim-wasm
           path: release-assets/wasm
 
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PhoenixSim-linux
+          path: release-assets/linux
+
       - name: Create zip archives
         run: |
           cd release-assets
           zip -r PhoenixSim-${{ needs.release-please.outputs.tag_name }}-windows.zip windows/
           zip -r PhoenixSim-${{ needs.release-please.outputs.tag_name }}-wasm.zip wasm/
+          zip -r PhoenixSim-${{ needs.release-please.outputs.tag_name }}-linux.zip linux/
 
       - name: Attach to release
         uses: softprops/action-gh-release@v2
@@ -90,3 +105,4 @@ jobs:
           files: |
             release-assets/PhoenixSim-${{ needs.release-please.outputs.tag_name }}-windows.zip
             release-assets/PhoenixSim-${{ needs.release-please.outputs.tag_name }}-wasm.zip
+            release-assets/PhoenixSim-${{ needs.release-please.outputs.tag_name }}-linux.zip

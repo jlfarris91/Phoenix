@@ -1,6 +1,7 @@
 #include "PhoenixSim/Containers/BlockBuffer.h"
 
 #include <algorithm>
+#include <cstring>
 #include <malloc.h>
 
 #include "FixedArray.h"

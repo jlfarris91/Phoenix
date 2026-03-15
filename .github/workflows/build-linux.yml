@@ -1,0 +1,68 @@
+name: Build (Linux)
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_call:
+    inputs:
+      upload_artifact:
+        required: false
+        default: false
+        type: boolean
+      artifact_name:
+        required: false
+        default: PhoenixSim-linux
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: "!startsWith(github.head_ref, 'release-please--')"
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: sudo apt-get install -y ninja-build
+
+      - name: Cache vcpkg binary packages
+        uses: actions/cache@v4
+        with:
+          path: .vcpkg-binary-cache
+          key: vcpkg-linux-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-linux-
+
+      - name: Create vcpkg binary cache dir
+        run: mkdir -p .vcpkg-binary-cache
+
+      - name: Set up vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Configure
+        run: cmake --preset linux-ci
+
+      - name: Build
+        run: cmake --build .build/linux-ci --parallel
+
+      - name: Install
+        if: inputs.upload_artifact
+        run: |
+          cmake --install .build/linux-ci --prefix .artifact
+          cp README.md    .artifact/ 2>/dev/null || true
+          cp CHANGELOG.md .artifact/ 2>/dev/null || true
+          cp -r docs      .artifact/
+
+      - name: Upload artifact
+        if: inputs.upload_artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.artifact_name }}
+          path: .artifact/
+          if-no-files-found: error

@@ -1,6 +1,7 @@
 # PhoenixSim
 
 [![Build (Windows)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-windows.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-windows.yml)
+[![Build (Linux)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-linux.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-linux.yml)
 [![Build (Emscripten)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-emscripten.yml/badge.svg)](https://github.com/jlfarris91/PhoenixSim/actions/workflows/build-emscripten.yml)
 
 PhoenixSim is a high-performance, modular simulation engine for real-time strategy games. It provides an archetype-based ECS, a data-driven game layer (LDS), pluggable Feature systems, and a full RTS gameplay stack (units, abilities, orders, effects, physics, steering).
