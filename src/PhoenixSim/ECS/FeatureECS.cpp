@@ -372,8 +372,8 @@ bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& ac
 
     if (action.Action.Verb == "release_entities_in_range"_n)
     {
-        Vec2 pos = { action.Action.Data[0].Distance, action.Action.Data[1].Distance };
-        Distance range = action.Action.Data[2].Distance;
+        Vec2 pos = { action.Action.Args[0].AsDistance, action.Action.Args[1].AsDistance };
+        Distance range = action.Action.Args[2].AsDistance;
 
         std::vector<EntityTransform> outEntities;
         QueryEntitiesInRange(world, pos, range, outEntities);

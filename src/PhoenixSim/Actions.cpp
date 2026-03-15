@@ -13,9 +13,9 @@ bool Action::operator==(const Action& other) const
     {
         return false;
     }
-    for (uint32 i = 0; i < _countof(Data); ++i)
+    for (uint32 i = 0; i < _countof(Args); ++i)
     {
-        if (Data[i] != other.Data[i])
+        if (Args[i] != other.Args[i])
             return false;
     }
     return true;

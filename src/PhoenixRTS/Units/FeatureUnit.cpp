@@ -377,12 +377,12 @@ bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& a
 {
     if (args.Action.Verb == "spawn_entity"_n)
     {
-        FName unitData = args.Action.Data[0].Name;
-        Distance x = args.Action.Data[1].Distance;
-        Distance y = args.Action.Data[2].Distance;
-        Angle facing = args.Action.Data[3].Degrees;
-        uint32 num = args.Action.Data[4].UInt32;
-        uint8 owner = args.Action.Data[5].UInt32;
+        FName unitData = args.Action.Args[0].Name;
+        Distance x = args.Action.Args[1].AsDistance;
+        Distance y = args.Action.Args[2].AsDistance;
+        Angle facing = args.Action.Args[3].Degrees;
+        uint32 num = args.Action.Args[4].UInt32;
+        uint8 owner = args.Action.Args[5].UInt32;
 
         SpawnUnits(world, num, unitData, owner, { x, y }, facing);
         return true;

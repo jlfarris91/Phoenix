@@ -65,8 +65,8 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "set_nav_mesh_size"_n)
     {
-        auto mapWidth = action.Action.Data[0].Distance;
-        auto mapHeight = action.Action.Data[1].Distance;
+        auto mapWidth = action.Action.Args[0].AsDistance;
+        auto mapHeight = action.Action.Args[1].AsDistance;
         dynamicBlock.MapSize = { mapWidth, mapHeight };
         dynamicBlock.DynamicPoints.Reset();
         dynamicBlock.DynamicEdges.Reset();
@@ -77,8 +77,8 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "insert_point"_n)
     {
-        auto ptx = action.Action.Data[0].Distance;
-        auto pty = action.Action.Data[1].Distance;
+        auto ptx = action.Action.Args[0].AsDistance;
+        auto pty = action.Action.Args[1].AsDistance;
         dynamicBlock.DynamicPoints.EmplaceBack(ptx, pty);
         dynamicBlock.bDirty = true;
 
@@ -87,10 +87,10 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "insert_edge"_n)
     {
-        auto pt0x = action.Action.Data[0].Distance;
-        auto pt0y = action.Action.Data[1].Distance;
-        auto pt1x = action.Action.Data[2].Distance;
-        auto pt1y = action.Action.Data[3].Distance;
+        auto pt0x = action.Action.Args[0].AsDistance;
+        auto pt0y = action.Action.Args[1].AsDistance;
+        auto pt1x = action.Action.Args[2].AsDistance;
+        auto pt1y = action.Action.Args[3].AsDistance;
         dynamicBlock.DynamicEdges.EmplaceBack(Vec2{ pt0x, pt0y }, Vec2{ pt1x, pt1y });
         dynamicBlock.bDirty = true;
 
@@ -99,11 +99,11 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "find_path"_n)
     {
-        auto pt0x = action.Action.Data[0].Distance;
-        auto pt0y = action.Action.Data[1].Distance;
-        auto pt1x = action.Action.Data[2].Distance;
-        auto pt1y = action.Action.Data[3].Distance;
-        auto r = action.Action.Data[4].Distance;
+        auto pt0x = action.Action.Args[0].AsDistance;
+        auto pt0y = action.Action.Args[1].AsDistance;
+        auto pt1x = action.Action.Args[2].AsDistance;
+        auto pt1y = action.Action.Args[3].AsDistance;
+        auto r = action.Action.Args[4].AsDistance;
         scratchBlock.MeshPath.FindPath(dynamicBlock.DynamicNavMesh, { pt0x, pt0y }, { pt1x, pt1y }, r, dynamicBlock.bStepping);
         if (scratchBlock.MeshPath.LastStepResult == TMeshPath<>::EStepResult::FoundPath)
         {
@@ -115,8 +115,8 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "delete_edges_and_points"_n)
     {
-        Vec2 pos = {action.Action.Data[0].Distance, action.Action.Data[1].Distance};
-        Distance radius = action.Action.Data[2].Distance;
+        Vec2 pos = {action.Action.Args[0].AsDistance, action.Action.Args[1].AsDistance};
+        Distance radius = action.Action.Args[2].AsDistance;
 
         bool removedAny = false;
 
@@ -153,19 +153,19 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "mesh_set_fix_delaunay_triangulations"_n)
     {
-        dynamicBlock.bFixDelaunayTriangulation = action.Action.Data[0].Bool;
+        dynamicBlock.bFixDelaunayTriangulation = action.Action.Args[0].Bool;
         RebuildNavMesh(world);
     }
 
     if (action.Action.Verb == "path_set_stepping"_n)
     {
-        dynamicBlock.bStepping = action.Action.Data[0].Bool;
+        dynamicBlock.bStepping = action.Action.Args[0].Bool;
     }
 
     if (action.Action.Verb == "path_step"_n && dynamicBlock.bStepping)
     {
-        auto r = action.Action.Data[0].Distance;
-        auto s = action.Action.Data[1].UInt32;
+        auto r = action.Action.Args[0].AsDistance;
+        auto s = action.Action.Args[1].UInt32;
         for (uint32 i = 0; i < s; ++i)
         {
             if (scratchBlock.MeshPath.LastStepResult == TMeshPath<>::EStepResult::Continue)

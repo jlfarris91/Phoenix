@@ -22,10 +22,10 @@ namespace Phoenix
         uint32 UInt32;
         int32 Int32;
         FName Name;
-        Value Value;
-        Distance Distance;
+        Value AsValue;
+        Distance AsDistance;
         Angle Degrees;
-        Speed Speed;
+        Speed AsSpeed;
         bool Bool;
     };
 
@@ -41,7 +41,7 @@ namespace Phoenix
     {
         FName Verb = FName::None;
         FName Sender = FName::None;
-        Data Data[6] = {};
+        Data Args[6] = {};
 
         bool operator==(const Action& other) const;
         bool operator!=(const Action& other) const;
