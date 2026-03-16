@@ -40,6 +40,7 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/wd4100>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4101>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>
+    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-changes-meaning>
 )
 
 # Set natvis visualizer for all targets

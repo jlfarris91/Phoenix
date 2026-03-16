@@ -426,7 +426,7 @@ Action sol_lua_get(sol::types<Action>, lua_State* L, int index, sol::stack::reco
     Action action;
     action.Verb = sol::stack::get<FName>(L, absolute_index + count++);
     action.Sender = sol::stack::get<FName>(L, absolute_index + count++);
-    for (Data& data : action.Data)
+    for (Data& data : action.Args)
     {
         data = sol::stack::get<Data>(L, absolute_index + count++);
     }
@@ -440,7 +440,7 @@ int sol_lua_push(lua_State* L, const Action& v)
     int count = 0;
     count += sol::stack::push(L, v.Verb);
     count += sol::stack::push(L, v.Sender);
-    for (const Data& data : v.Data)
+    for (const Data& data : v.Args)
     {
         count += sol::stack::push(L, data);
     }
