@@ -40,7 +40,8 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/wd4100>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4101>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-changes-meaning>
+    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-changes-meaning>
+    $<$<CXX_COMPILER_ID:GNU>:-fpermissive>
 )
 
 # Set natvis visualizer for all targets
@@ -54,6 +55,7 @@ add_subdirectory(src/PhoenixSteering)
 add_subdirectory(src/PhoenixLua)
 add_subdirectory(src/PhoenixRTS)
 option(PHX_BUILD_TESTAPP "Build TestRTS test application" ON)
+option(PHX_USE_PCH "Use precompiled headers" ON)
 if(NOT EMSCRIPTEN AND PHX_BUILD_TESTAPP)
     add_subdirectory(tests/TestRTS)
 endif()

@@ -25,7 +25,8 @@
       "architecture": "x64",
       "toolset": "host=x64",
       "cacheVariables": {
-        "PHX_BUILD_TESTAPP": "OFF"
+        "PHX_BUILD_TESTAPP": "OFF",
+        "PHX_USE_PCH": "OFF"
       }
     },
     {
@@ -43,7 +44,8 @@
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/.build/linux-ci",
       "cacheVariables": {
-        "PHX_BUILD_TESTAPP": "OFF"
+        "PHX_BUILD_TESTAPP": "OFF",
+        "PHX_USE_PCH": "OFF"
       }
     },
     {
@@ -53,7 +55,8 @@
       "binaryDir": "${sourceDir}/.build/wasm",
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
-        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake"
+        "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",
+        "PHX_USE_PCH": "OFF"
       }
     }
   ],

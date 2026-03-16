@@ -4,7 +4,9 @@ add_library(PhoenixSim ${PHOENIXSIM_SRC})
 set_property(TARGET PhoenixSim PROPERTY FOLDER "Libraries")
 target_include_directories(PhoenixSim PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include" ../../src)
 target_link_libraries(PhoenixSim PUBLIC nlohmann_json)
-target_precompile_headers(PhoenixSim PRIVATE pch.h)
+if(PHX_USE_PCH)
+    target_precompile_headers(PhoenixSim PRIVATE pch.h)
+endif()
 target_compile_definitions(PhoenixSim PUBLIC PHX_PROFILE_ENABLE)
 
 # Install rules
