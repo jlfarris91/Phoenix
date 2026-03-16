@@ -1,0 +1,76 @@
+{
+    "id": "Lancer",
+    "base": "Unit",
+    "actor": "LancerActor",
+    "armor": {
+        "value": 10
+    },
+    "collision": "Ground|Air",
+    "commands": [
+        {
+            "ability": "MoveAbility",
+            "button": "MoveAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 0
+            }
+        },
+        {
+            "ability": "StopAbility",
+            "button": "StopAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 1
+            }
+        },
+        {
+            "ability": "HoldPositionAbility",
+            "button": "HoldPositionAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 2
+            }
+        },
+        {
+            "ability": "AttackAbility",
+            "button": "AttackAbilityButton",
+            "command_index": 0,
+            "grid_slot": {
+                "grid_row": 0,
+                "grid_col": 3
+            }
+        },
+        {
+            "ability": "MoveAbility",
+            "button": "PatrolAbilityButton",
+            "command_index": 1,
+            "grid_slot": {
+                "grid_row": 1,
+                "grid_col": 0
+            }
+        }
+    ],
+    "movement": {
+        "acceleration_time": 1.0,
+        "deceleration_time": 1.0,
+        "speed": 5.5,
+        "turn_rate_moving": 0.35
+    },
+    "placement": {
+        "outer_radius": 0.6
+    },
+    "vitals": [
+        {
+            "vital": "HealthVital",
+            "stats": {
+                "starting": 100,
+                "max": 100,
+                "regen": 1
+            }
+        }
+    ],
+    "weapons": [ "LancerWeapon" ]
+}

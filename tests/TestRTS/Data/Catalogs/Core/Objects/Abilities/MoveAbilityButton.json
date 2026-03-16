@@ -1,0 +1,13 @@
+{
+    "id": "MoveAbilityButton",
+    "base": "CommandButton",
+    "icon": {
+        "asset": "Texture2D'/Game/UI/Assets/Icons/BasicCommands/UI_Icons_BasicCommands_Move.UI_Icons_BasicCommands_Move'",
+        "display_name": "Move",
+        "tooltip": {
+            "title": "Move",
+            "body": "Orders selected units to move to a target location or follow a target unit."
+        }
+    },
+    "repeatable": false
+}

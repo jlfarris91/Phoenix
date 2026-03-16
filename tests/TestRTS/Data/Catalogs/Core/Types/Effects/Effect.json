@@ -1,0 +1,15 @@
+{
+    "id": "Effect",
+    "type": "Object",
+    "properties": {
+        "target": {
+            "type": "Object#EffectTarget"
+        },
+        "target_filter": {
+            "type": "Object#TargetFilter"
+        },
+        "validator": {
+            "type": "ObjectRef#Validator"
+        }
+    }
+}

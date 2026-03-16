@@ -1,0 +1,12 @@
+{
+    "id": "Ability",
+    "type": "Object",
+    "properties": {
+        "smart_cast": {
+            "type": "Object#SmartCast",
+            "default": {
+                "priority": 0
+            }
+        }
+    }
+}

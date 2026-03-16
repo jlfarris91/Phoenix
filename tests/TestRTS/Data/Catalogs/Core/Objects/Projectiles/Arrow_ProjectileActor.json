@@ -1,0 +1,6 @@
+{
+    "id": "Arrow_ProjectileActor",
+    "base": "ProjectileActor",
+    "asset": "Abilities/Weapons/Arrow/ArrowMissile.json",
+    "scale": 0.5
+}

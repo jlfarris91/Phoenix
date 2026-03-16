@@ -1,0 +1,6 @@
+{
+    "id": "Tower_Weapon_EffectLaunchProjectile",
+    "base": "EffectLaunchProjectile",
+    "impact_effect": "Tower_Weapon_EffectDamage",
+    "projectile": "Arrow_Projectile"
+}
