@@ -1,5 +1,6 @@
 #include "Utils.h"
 
+#include <cstring>
 #include "Name.h"
 #include "Parallel.h"
 

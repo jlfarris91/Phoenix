@@ -1,5 +1,7 @@
 #include "ArchetypeManager.h"
 
+#include <cstring>
+
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 

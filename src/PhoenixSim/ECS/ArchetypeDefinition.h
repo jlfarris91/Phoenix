@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstring>
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"

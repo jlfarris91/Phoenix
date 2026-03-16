@@ -4,6 +4,7 @@
 #include "PhoenixSim/Platform.h"
 
 #include <array>
+#include <cstring>
 
 namespace Phoenix
 {

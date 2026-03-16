@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstring>
 
 #include "FixedMemory.h"
 #include "PhoenixSim/Platform.h"

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <algorithm>
+#include <cstring>
 #include <limits>
 
 #include "PhoenixSim/Platform.h"

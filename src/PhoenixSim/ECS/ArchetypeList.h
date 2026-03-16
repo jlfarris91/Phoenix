@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <cstring>
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/ECS/ArchetypeHandle.h"

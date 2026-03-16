@@ -1,5 +1,7 @@
 #include "PhoenixSim/Containers/FixedBlockAllocator.h"
 
+#include <cstring>
+
 Phoenix::uint32 Phoenix::FixedBlockAllocator::GetAllocSizeBytes(const Config& config)
 {
     uint32 allocSize = 0;
