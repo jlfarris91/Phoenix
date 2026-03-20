@@ -4,7 +4,7 @@ using namespace Phoenix;
 
 bool Phoenix::operator==(const Data& a, const Data& b)
 {
-    return a.UInt32 == b.UInt32;
+    return a.AsUInt32 == b.AsUInt32;
 }
 
 bool Action::operator==(const Action& other) const

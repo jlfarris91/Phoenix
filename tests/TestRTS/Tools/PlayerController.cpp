@@ -219,8 +219,8 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             {
                 Action clearAction;
                 clearAction.Verb = "player_selection_clear"_n;
-                clearAction.Data[0].UInt32 = playerId;
-                clearAction.Data[1].UInt32 = (uint32)groupId;
+                clearAction.Args[0].AsUInt32 = playerId;
+                clearAction.Args[1].AsUInt32 = (uint32)groupId;
                 Session->EnqueueAction(clearAction);
             }
 
@@ -232,9 +232,9 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
                 Action clearAction;
                 clearAction.Verb = verb;
-                clearAction.Data[0].UInt32 = playerId;
-                clearAction.Data[1].UInt32 = (uint32)groupId;
-                clearAction.Data[2].UInt32 = entity.EntityId;
+                clearAction.Args[0].AsUInt32 = playerId;
+                clearAction.Args[1].AsUInt32 = (uint32)groupId;
+                clearAction.Args[2].AsUInt32 = entity.EntityId;
                 Session->EnqueueAction(clearAction);
             }
         }
@@ -247,8 +247,8 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             {
                 Action clearAction;
                 clearAction.Verb = "player_selection_clear"_n;
-                clearAction.Data[0].UInt32 = playerId;
-                clearAction.Data[1].UInt32 = (uint32)groupId;
+                clearAction.Args[0].AsUInt32 = playerId;
+                clearAction.Args[1].AsUInt32 = (uint32)groupId;
                 Session->EnqueueAction(clearAction);
             }
 
@@ -260,9 +260,9 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
                 Action clearAction;
                 clearAction.Verb = verb;
-                clearAction.Data[0].UInt32 = playerId;
-                clearAction.Data[1].UInt32 = (uint32)groupId;
-                clearAction.Data[2].UInt32 = entity.EntityId;
+                clearAction.Args[0].AsUInt32 = playerId;
+                clearAction.Args[1].AsUInt32 = (uint32)groupId;
+                clearAction.Args[2].AsUInt32 = entity.EntityId;
                 Session->EnqueueAction(clearAction);
                 break;
             }

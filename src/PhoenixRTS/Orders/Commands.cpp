@@ -49,10 +49,10 @@ Phoenix::FName Phoenix::RTS::ToVerb(ECommandFlags flags)
 
 Phoenix::RTS::Command::Command(const Action& action)
     : Sender(action.Sender)
-    , Kind(action.Args[0].UInt32)
-    , CommandId(action.Args[1].Name)
-    , CommandIndex(action.Args[2].UInt32)
-    , TargetEntity(action.Args[3].UInt32)
+    , Kind(action.Args[0].AsUInt32)
+    , CommandId(action.Args[1].AsName)
+    , CommandIndex(action.Args[2].AsUInt32)
+    , TargetEntity(action.Args[3].AsUInt32)
     , TargetLocation(action.Args[4].AsDistance, action.Args[5].AsDistance)
 {
     FromVerb(action.Verb, Flags);
@@ -68,10 +68,10 @@ Phoenix::RTS::Command::operator Phoenix::Action() const
     Action command;
     command.Sender = Sender;
     command.Verb = ToVerb(Flags);
-    command.Args[0].UInt32 = Kind;
-    command.Args[1].Name = CommandId;
-    command.Args[2].UInt32 = CommandIndex;
-    command.Args[3].UInt32 = TargetEntity;
+    command.Args[0].AsUInt32 = Kind;
+    command.Args[1].AsName = CommandId;
+    command.Args[2].AsUInt32 = CommandIndex;
+    command.Args[3].AsUInt32 = TargetEntity;
     command.Args[4].AsDistance = TargetLocation.X;
     command.Args[5].AsDistance = TargetLocation.Y;
     return command;

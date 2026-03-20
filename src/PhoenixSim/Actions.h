@@ -19,14 +19,14 @@ namespace Phoenix
 
     union PHOENIX_SIM_API Data
     {
-        uint32 UInt32;
-        int32 Int32;
-        FName Name;
+        uint32 AsUInt32;
+        int32 AsInt32;
+        FName AsName;
         Value AsValue;
         Distance AsDistance;
-        Angle Degrees;
+        Angle AsDegrees;
         Speed AsSpeed;
-        bool Bool;
+        bool AsBool;
     };
 
     bool operator==(const Data& a, const Data& b);

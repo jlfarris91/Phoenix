@@ -115,24 +115,24 @@ bool FeatureSelection::OnHandleWorldAction(WorldRef world, const FeatureActionAr
 {
     if (args.Action.Verb == "player_selection_clear"_n)
     {
-        uint32 player = args.Action.Args[0].UInt32;
-        FName groupId = args.Action.Args[1].Name;
+        uint32 player = args.Action.Args[0].AsUInt32;
+        FName groupId = args.Action.Args[1].AsName;
         ClearPlayerSelection(world, player, groupId);
     }
 
     if (args.Action.Verb == "player_selection_add"_n)
     {
-        uint32 player = args.Action.Args[0].UInt32;
-        FName groupId = args.Action.Args[1].Name;
-        EntityId entity = args.Action.Args[2].UInt32;
+        uint32 player = args.Action.Args[0].AsUInt32;
+        FName groupId = args.Action.Args[1].AsName;
+        EntityId entity = args.Action.Args[2].AsUInt32;
         AddToPlayerSelection(world, player, entity, groupId);
     }
 
     if (args.Action.Verb == "player_selection_remove"_n)
     {
-        uint32 player = args.Action.Args[0].UInt32;
-        FName groupId = args.Action.Args[1].Name;
-        EntityId entity = args.Action.Args[2].UInt32;
+        uint32 player = args.Action.Args[0].AsUInt32;
+        FName groupId = args.Action.Args[1].AsName;
+        EntityId entity = args.Action.Args[2].AsUInt32;
         RemoveFromPlayerSelection(world, player, entity, groupId);
     }
 

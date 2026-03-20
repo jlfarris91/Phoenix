@@ -75,9 +75,9 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SD
     {
         Action action;
         action.Verb = "delete_edges_and_points"_n;
-        action.Data[0].Distance = CursorPos.X;
-        action.Data[1].Distance = CursorPos.Y;
-        action.Data[2].Distance = BrushSize;
+        action.Args[0].AsDistance = CursorPos.X;
+        action.Args[1].AsDistance = CursorPos.Y;
+        action.Args[2].AsDistance = BrushSize;
         Session->EnqueueAction(action);
 
         renderer.DrawCircle(CursorPos, BrushSize, Color::White);
@@ -89,18 +89,18 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SD
         {
             Action action;
             action.Verb = "insert_edge"_n;
-            action.Data[0].Distance = LineStart->X;
-            action.Data[1].Distance = LineStart->Y;
-            action.Data[2].Distance = LineEnd->X;
-            action.Data[3].Distance = LineEnd->Y;
+            action.Args[0].AsDistance = LineStart->X;
+            action.Args[1].AsDistance = LineStart->Y;
+            action.Args[2].AsDistance = LineEnd->X;
+            action.Args[3].AsDistance = LineEnd->Y;
             Session->EnqueueAction(action);
         }
         else if (LineStart.IsSet())
         {
             Action action;
             action.Verb = "insert_point"_n;
-            action.Data[0].Distance = LineStart->X;
-            action.Data[1].Distance = LineStart->Y;
+            action.Args[0].AsDistance = LineStart->X;
+            action.Args[1].AsDistance = LineStart->Y;
             Session->EnqueueAction(action);
         }
 
@@ -112,8 +112,8 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SD
     {
         Action action;
         action.Verb = "insert_point"_n;
-        action.Data[0].Distance = LoadedVerts[LoadedVertIndex].X;
-        action.Data[1].Distance = LoadedVerts[LoadedVertIndex].Y;
+        action.Args[0].AsDistance = LoadedVerts[LoadedVertIndex].X;
+        action.Args[1].AsDistance = LoadedVerts[LoadedVertIndex].Y;
         Session->EnqueueAction(action);
         LoadedVertIndex++;
     }
@@ -145,11 +145,11 @@ void NavMeshTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Even
 
             Action action;
             action.Verb = "find_path"_n;
-            action.Data[0].Distance = PathStart->X;
-            action.Data[1].Distance = PathStart->Y;
-            action.Data[2].Distance = PathGoal->X;
-            action.Data[3].Distance = PathGoal->Y;
-            action.Data[4].Distance = AgentRadius;
+            action.Args[0].AsDistance = PathStart->X;
+            action.Args[1].AsDistance = PathStart->Y;
+            action.Args[2].AsDistance = PathGoal->X;
+            action.Args[3].AsDistance = PathGoal->Y;
+            action.Args[4].AsDistance = AgentRadius;
             Session->EnqueueAction(action);
         }
     }
@@ -440,8 +440,8 @@ void NavMeshTool::LoadMeshFromFile()
     {
         Action action;
         action.Verb = "set_nav_mesh_size"_n;
-        action.Data[0].Distance = mapSize.X;
-        action.Data[1].Distance = mapSize.Y;
+        action.Args[0].AsDistance = mapSize.X;
+        action.Args[1].AsDistance = mapSize.Y;
         Session->EnqueueAction(action);
     }
 
@@ -449,8 +449,8 @@ void NavMeshTool::LoadMeshFromFile()
     {
         Action action;
         action.Verb = "insert_point"_n;
-        action.Data[0].Distance = vert.X;
-        action.Data[1].Distance = vert.Y;
+        action.Args[0].AsDistance = vert.X;
+        action.Args[1].AsDistance = vert.Y;
         Session->EnqueueAction(action);
     }
 
@@ -464,10 +464,10 @@ void NavMeshTool::LoadMeshFromFile()
     
         Action action;
         action.Verb = "insert_edge"_n;
-        action.Data[0].Distance = vertA.X;
-        action.Data[1].Distance = vertA.Y;
-        action.Data[2].Distance = vertB.X;
-        action.Data[3].Distance = vertB.Y;
+        action.Args[0].AsDistance = vertA.X;
+        action.Args[1].AsDistance = vertA.Y;
+        action.Args[2].AsDistance = vertB.X;
+        action.Args[3].AsDistance = vertB.Y;
         Session->EnqueueAction(action);
     }
 }
@@ -476,8 +476,8 @@ void NavMeshTool::Step()
 {
     Action action;
     action.Verb = "path_step"_n;
-    action.Data[0].Distance = AgentRadius;
-    action.Data[1].UInt32 = 1;
+    action.Args[0].AsDistance = AgentRadius;
+    action.Args[1].AsUInt32 = 1;
     Session->EnqueueAction(action);
 }
 
@@ -485,8 +485,8 @@ void NavMeshTool::Step10()
 {
     Action action;
     action.Verb = "path_step"_n;
-    action.Data[0].Distance = AgentRadius;
-    action.Data[1].UInt32 = 10;
+    action.Args[0].AsDistance = AgentRadius;
+    action.Args[1].AsUInt32 = 10;
     Session->EnqueueAction(action);
 }
 
@@ -501,7 +501,7 @@ void NavMeshTool::SetIsStepping(const bool& v)
 {
     Action action;
     action.Verb = "path_set_stepping"_n;
-    action.Data[0].Bool = v;
+    action.Args[0].AsBool = v;
     Session->EnqueueAction(action);
 }
 
@@ -516,6 +516,6 @@ void NavMeshTool::SetFixDelaunayTriangulation(const bool& v)
 {
     Action action;
     action.Verb = "mesh_set_fix_delaunay_triangulations"_n;
-    action.Data[0].Bool = v;
+    action.Args[0].AsBool = v;
     Session->EnqueueAction(action);
 }

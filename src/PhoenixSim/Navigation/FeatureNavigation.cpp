@@ -153,19 +153,19 @@ bool FeatureNavigation::OnHandleWorldAction(WorldRef world, const FeatureActionA
 
     if (action.Action.Verb == "mesh_set_fix_delaunay_triangulations"_n)
     {
-        dynamicBlock.bFixDelaunayTriangulation = action.Action.Args[0].Bool;
+        dynamicBlock.bFixDelaunayTriangulation = action.Action.Args[0].AsBool;
         RebuildNavMesh(world);
     }
 
     if (action.Action.Verb == "path_set_stepping"_n)
     {
-        dynamicBlock.bStepping = action.Action.Args[0].Bool;
+        dynamicBlock.bStepping = action.Action.Args[0].AsBool;
     }
 
     if (action.Action.Verb == "path_step"_n && dynamicBlock.bStepping)
     {
         auto r = action.Action.Args[0].AsDistance;
-        auto s = action.Action.Args[1].UInt32;
+        auto s = action.Action.Args[1].AsUInt32;
         for (uint32 i = 0; i < s; ++i)
         {
             if (scratchBlock.MeshPath.LastStepResult == TMeshPath<>::EStepResult::Continue)

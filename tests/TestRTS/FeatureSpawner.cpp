@@ -76,7 +76,7 @@ bool FeatureSpawner::OnHandleWorldAction(WorldRef world, const FeatureActionArgs
 {
     if (args.Action.Verb == "enable_spawning"_n)
     {
-        SetIsEnabled(world, args.Action.Data[0].Bool);
+        SetIsEnabled(world, args.Action.Args[0].AsBool);
         return true;
     }
 

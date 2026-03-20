@@ -48,12 +48,12 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
     {
         Action action;
         action.Verb = "spawn_entity"_n;
-        action.Data[0].Name = UnitLabels[SelectedUnitIndex];
-        action.Data[1].Distance = mouseWorldPos.X;
-        action.Data[2].Distance = mouseWorldPos.Y;
-        action.Data[3].Degrees = Vec2::RandUnitVector().AsRadians();
-        action.Data[4].UInt32 = SpawnCount;
-        action.Data[5].UInt32 = Player;
+        action.Args[0].AsName = UnitLabels[SelectedUnitIndex];
+        action.Args[1].AsDistance = mouseWorldPos.X;
+        action.Args[2].AsDistance = mouseWorldPos.Y;
+        action.Args[3].AsDegrees = Vec2::RandUnitVector().AsRadians();
+        action.Args[4].AsUInt32 = SpawnCount;
+        action.Args[5].AsUInt32 = Player;
         Session->EnqueueAction(action);
     }
 
@@ -62,9 +62,9 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
     {
         Action action;
         action.Verb = "release_entities_in_range"_n;
-        action.Data[0].Distance = mouseWorldPos.X;
-        action.Data[1].Distance = mouseWorldPos.Y;
-        action.Data[2].Distance = BrushSize;
+        action.Args[0].AsDistance = mouseWorldPos.X;
+        action.Args[1].AsDistance = mouseWorldPos.Y;
+        action.Args[2].AsDistance = BrushSize;
         Session->EnqueueAction(action);
     }
 
@@ -73,10 +73,10 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
     {
         Action action;
         action.Verb = "push_entities_in_range"_n;
-        action.Data[0].Distance = mouseWorldPos.X;
-        action.Data[1].Distance = mouseWorldPos.Y;
-        action.Data[2].Distance = BrushSize;
-        action.Data[3].Value = PushForce;
+        action.Args[0].AsDistance = mouseWorldPos.X;
+        action.Args[1].AsDistance = mouseWorldPos.Y;
+        action.Args[2].AsDistance = BrushSize;
+        action.Args[3].AsValue = PushForce;
         Session->EnqueueAction(action);
     }
 }
