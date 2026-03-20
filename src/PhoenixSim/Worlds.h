@@ -71,6 +71,7 @@ namespace Phoenix
         World& operator=(World&& other) noexcept;
 
         void CopyTo(World& other) const;
+        void SyncTo(World& view) const;
 
         BlockBuffer& GetBuffer();
         const BlockBuffer& GetBuffer() const;

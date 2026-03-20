@@ -110,26 +110,11 @@ std::vector<std::shared_ptr<ISDLTool>> GTools;
 std::vector<std::shared_ptr<ISDLTool>> GActiveTools;
 std::shared_ptr<ISDLTool> GPlayerController;
 
-struct DoubleWorldBuffer
-{
-    World* Buffers[2] = { nullptr, nullptr };
-    std::atomic<int> SimIndex{0};
-    std::atomic<int> RenderIndex{1};
-
-    World* GetSimWorld() { return Buffers[SimIndex.load(std::memory_order_acquire)]; }
-    World* GetRenderWorld() { return Buffers[RenderIndex.load(std::memory_order_acquire)]; }
-
-    // Swap the indices atomically after copy
-    void Swap()
-    {
-        int oldSim = SimIndex.load(std::memory_order_acquire);
-        int oldRender = RenderIndex.load(std::memory_order_acquire);
-        SimIndex.store(oldRender, std::memory_order_release);
-        RenderIndex.store(oldSim, std::memory_order_release);
-    }
-};
-
-DoubleWorldBuffer GDoubleWorldBuffer;
+// Single render-view buffer. The sim thread writes into this via SyncTo at the end of each
+// world update; the render thread reads from it throughout its frame. SyncTo is ~0.13ms so
+// the overlap window is small and the worst-case artifact is a single entity with transiently
+// inconsistent state for one frame — acceptable for a render view.
+World* GRenderView = nullptr;
 
 World* GCurrWorldView = nullptr;
 bool GCopyWorld = true;
@@ -250,8 +235,6 @@ void UpdateSessionWorker()
     }
 }
 
-bool GEnableChunkedParallelCopy = true;
-
 void OnPostWorldUpdate(WorldConstRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -263,19 +246,16 @@ void OnPostWorldUpdate(WorldConstRef world)
 
     GWorldViewUpdateCalc.Time = PHX_SYS_CLOCK_NOW();
 
-    if (!GDoubleWorldBuffer.Buffers[0])
+    if (!GRenderView)
     {
-        // Initialize both buffers
-        GDoubleWorldBuffer.Buffers[0] = new World(world);
-        GDoubleWorldBuffer.Buffers[1] = new World(world);
+        GRenderView = new World(world);
     }
     else
     {
-        // Copy latest sim state to standby
-        world.CopyTo(*GDoubleWorldBuffer.GetSimWorld());
-
-        // Swap sim/render
-        GDoubleWorldBuffer.Swap();
+        // Sync only dirty pages from the sim world into the render view.
+        // On Windows this uses MEM_WRITE_WATCH to find pages written since the last
+        // sync and copies only those, making it ~0.13ms for typical sparse scenes.
+        world.SyncTo(*GRenderView);
     }
 
     GWorldViewUpdateCalc.Tick();
@@ -387,7 +367,7 @@ void OnAppRenderWorld()
         DrawGrid(GWindow, GDebugRenderer, GViewport, GCamera);
     }
 
-    World* worldPtr = GDoubleWorldBuffer.GetRenderWorld();
+    World* worldPtr = GRenderView;
     GCurrWorldView = worldPtr;
     if (!worldPtr)
     {

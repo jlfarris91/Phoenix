@@ -34,7 +34,7 @@ void* BlockBufferAllocator::Allocate(uint32 size)
 void BlockBufferMemoryDeleter::operator()(void* p) const
 {
 #ifdef _WIN32
-    _aligned_free(p);
+    VirtualFree(p, 0, MEM_RELEASE);
 #else
     free(p);
 #endif
@@ -226,6 +226,60 @@ void BlockBuffer::CopyTo(BlockBuffer& other) const
     ChunkedParallelCopy(other.Data.get(), Data.get(), Size, pageSize * 256);
 }
 
+void BlockBuffer::SyncTo(BlockBuffer& view) const
+{
+    PHX_PROFILE_ZONE_SCOPED_N("BlockBufferSyncTo");
+
+    // First sync, or buffer was reallocated with a different size: fall back to a full copy
+    // to establish the layout and initial data in the view.
+    if (view.Size != Size)
+    {
+        CopyTo(view);
+
+#ifdef _WIN32
+        // Discard the dirty list accumulated during construction and CopyTo so that
+        // the next SyncTo only sees pages written by the sim after this point.
+        ResetWriteWatch(Data.get(), Size);
+#endif
+        return;
+    }
+
+#ifdef _WIN32
+    static const DWORD sPageSize = []() -> DWORD
+    {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        return info.dwPageSize;
+    }();
+
+    // GetWriteWatch returns page addresses written since the last reset.
+    // WRITE_WATCH_FLAG_RESET atomically clears the dirty list as we read it,
+    // so no writes are lost between a separate get and reset.
+    ULONG_PTR pageCount = (Size / sPageSize) + 1;
+    thread_local std::vector<void*> sDirtyPages;
+    sDirtyPages.resize(pageCount);
+
+    DWORD pageSize;
+    GetWriteWatch(
+        WRITE_WATCH_FLAG_RESET,
+        Data.get(), Size,
+        sDirtyPages.data(), &pageCount,
+        &pageSize);
+
+    const uint8* src = Data.get();
+    uint8* dst = view.Data.get();
+
+    for (ULONG_PTR i = 0; i < pageCount; ++i)
+    {
+        const size_t offset = static_cast<const uint8*>(sDirtyPages[i]) - src;
+        memcpy(dst + offset, src + offset, pageSize);
+    }
+#else
+    // Non-Windows fallback: full copy.
+    memcpy(view.Data.get(), Data.get(), Size);
+#endif
+}
+
 void BlockBuffer::AllocateMemory(uint32 size)
 {
     // The size of the current buffer is already larger.
@@ -243,7 +297,10 @@ void BlockBuffer::AllocateMemory(uint32 size)
 #endif
 
 #ifdef _WIN32
-    uint8* data = static_cast<uint8*>(_aligned_malloc(size, pageSize));
+    uint8* data = static_cast<uint8*>(VirtualAlloc(
+        nullptr, size,
+        MEM_RESERVE | MEM_COMMIT | MEM_WRITE_WATCH,
+        PAGE_READWRITE));
 #else
     void* rawPtr = nullptr;
     posix_memalign(&rawPtr, pageSize, size);

@@ -236,6 +236,7 @@ namespace Phoenix
         }
 
         void CopyTo(BlockBuffer& other) const;
+        void SyncTo(BlockBuffer& view) const;
 
     private:
 

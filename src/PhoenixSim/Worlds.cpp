@@ -128,6 +128,16 @@ void World::CopyTo(World& other) const
     Buffer.CopyTo(other.Buffer);
 }
 
+void World::SyncTo(World& view) const
+{
+    view.Id = Id;
+    view.Type = Type;
+    view.Config = Config;
+    view.SimTime = SimTime;
+    view.Random = Random;
+    Buffer.SyncTo(view.Buffer);
+}
+
 BlockBuffer& World::GetBuffer()
 {
     return Buffer;
