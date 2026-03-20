@@ -27,3 +27,4 @@ A high-performance, modular simulation engine for real-time strategy games.
 - [PhoenixSteering](PhoenixSteering) — pathfinding and unit movement
 - [PhoenixRTS](PhoenixRTS) — units, abilities, orders, effects, vitals, projectiles
 - [Block Buffers](WorldAndSessionBuffers) — memory model and pre-allocated storage
+- [World View Sync](WorldViewSync) — sim→render snapshot strategy and dirty-page tracking
