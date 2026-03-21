@@ -8,7 +8,7 @@ if(PHX_USE_PCH)
     target_precompile_headers(PhoenixLua PRIVATE ../PhoenixSim/pch.h)
 endif()
 target_compile_definitions(PhoenixLua PUBLIC PHX_PROFILE_ENABLE)
-target_link_libraries(PhoenixLua PUBLIC PhoenixSim PhoenixPhysics)
+target_link_libraries(PhoenixLua PUBLIC PhoenixSim)
 
 # Install rules
 install(TARGETS PhoenixLua
