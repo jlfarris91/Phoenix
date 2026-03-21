@@ -34,6 +34,12 @@
 #include <PhoenixPhysics/FeaturePhysics.h>
 #include <PhoenixSteering/FeatureSteering.h>
 
+// Lua scripting
+#include <PhoenixLua/FeatureLua.h>
+
+// RTS Script Registrations (force-link)
+#include <PhoenixRTS/Scripting/RTSScriptRegistration.h>
+
 // RTS Features
 #include <PhoenixRTS/Units/FeatureUnit.h>
 #include <PhoenixRTS/Abilities/FeatureAbilities.h>
@@ -76,6 +82,7 @@
 #include "Tools/ImGuiPropertyGrid.h"
 #include "Tools/NavMeshTool.h"
 #include "Tools/PlayerController.h"
+#include "GameStateServer.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -110,26 +117,11 @@ std::vector<std::shared_ptr<ISDLTool>> GTools;
 std::vector<std::shared_ptr<ISDLTool>> GActiveTools;
 std::shared_ptr<ISDLTool> GPlayerController;
 
-struct DoubleWorldBuffer
-{
-    World* Buffers[2] = { nullptr, nullptr };
-    std::atomic<int> SimIndex{0};
-    std::atomic<int> RenderIndex{1};
-
-    World* GetSimWorld() { return Buffers[SimIndex.load(std::memory_order_acquire)]; }
-    World* GetRenderWorld() { return Buffers[RenderIndex.load(std::memory_order_acquire)]; }
-
-    // Swap the indices atomically after copy
-    void Swap()
-    {
-        int oldSim = SimIndex.load(std::memory_order_acquire);
-        int oldRender = RenderIndex.load(std::memory_order_acquire);
-        SimIndex.store(oldRender, std::memory_order_release);
-        RenderIndex.store(oldSim, std::memory_order_release);
-    }
-};
-
-DoubleWorldBuffer GDoubleWorldBuffer;
+// Single render-view buffer. The sim thread writes into this via SyncTo at the end of each
+// world update; the render thread reads from it throughout its frame. SyncTo is ~0.13ms so
+// the overlap window is small and the worst-case artifact is a single entity with transiently
+// inconsistent state for one frame — acceptable for a render view.
+World* GRenderView = nullptr;
 
 World* GCurrWorldView = nullptr;
 bool GCopyWorld = true;
@@ -166,6 +158,8 @@ LineModel GDefaultUnitModel;
 
 bool GDrawGrid = false;
 
+GameStateServer GGameStateServer;
+
 uint32 GSimStepHz = Time::D;
 
 void UpdateSessionWorker();
@@ -173,6 +167,9 @@ void OnPostWorldUpdate(WorldConstRef world);
 
 void InitSession()
 {
+    // Ensure static script registrations are linked in from static libraries.
+    RTS::EnsureScriptRegistrations();
+
     std::shared_ptr<ServiceContainerBuilder> serviceContainerBuilder = std::make_shared<ServiceContainerBuilder>();
 
     // Register features
@@ -185,7 +182,11 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
-    //serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    {
+        auto lua = std::make_shared<FeatureLua>();
+        lua->SetScriptPath("./Data/Maps/TestMap/test_script.lua");
+        serviceContainerBuilder->RegisterService(lua).AsInterfaces();
+    }
     serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
@@ -250,8 +251,6 @@ void UpdateSessionWorker()
     }
 }
 
-bool GEnableChunkedParallelCopy = true;
-
 void OnPostWorldUpdate(WorldConstRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -263,22 +262,20 @@ void OnPostWorldUpdate(WorldConstRef world)
 
     GWorldViewUpdateCalc.Time = PHX_SYS_CLOCK_NOW();
 
-    if (!GDoubleWorldBuffer.Buffers[0])
+    if (!GRenderView)
     {
-        // Initialize both buffers
-        GDoubleWorldBuffer.Buffers[0] = new World(world);
-        GDoubleWorldBuffer.Buffers[1] = new World(world);
+        GRenderView = new World(world);
     }
     else
     {
-        // Copy latest sim state to standby
-        world.CopyTo(*GDoubleWorldBuffer.GetSimWorld());
-
-        // Swap sim/render
-        GDoubleWorldBuffer.Swap();
+        // Sync only dirty pages from the sim world into the render view.
+        // On Windows this uses MEM_WRITE_WATCH to find pages written since the last
+        // sync and copies only those, making it ~0.13ms for typical sparse scenes.
+        world.SyncTo(*GRenderView);
     }
 
     GWorldViewUpdateCalc.Tick();
+    GGameStateServer.SetRenderView(GRenderView);
 }
 
 bool LoadLineModel(
@@ -317,6 +314,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     Json::RunLDSJsonTests();
 
     InitSession();
+    GGameStateServer.Start(GSession.get());
 
     GWindow = window;
     GRenderer = renderer;
@@ -387,7 +385,7 @@ void OnAppRenderWorld()
         DrawGrid(GWindow, GDebugRenderer, GViewport, GCamera);
     }
 
-    World* worldPtr = GDoubleWorldBuffer.GetRenderWorld();
+    World* worldPtr = GRenderView;
     GCurrWorldView = worldPtr;
     if (!worldPtr)
     {
@@ -596,7 +594,7 @@ void OnAppRenderUI()
                 const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
                 const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
 
-                if (ImGui::CollapsingHeader(typeDescriptor.DisplayName))
+                if (ImGui::CollapsingHeader(typeDescriptor.GetDisplayName()))
                 {
                     if (ImGui::TreeNode("Properties:"))
                     {
@@ -615,7 +613,7 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            if (ImGui::TreeNode(blockDef.Type->GetCName()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
@@ -635,7 +633,7 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            if (ImGui::TreeNode(blockDef.Type->GetCName()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
@@ -658,7 +656,7 @@ void OnAppRenderUI()
         {
             const auto& descriptor = tool->GetTypeDescriptor();
 
-            if (ImGui::CollapsingHeader(descriptor.DisplayName))
+            if (ImGui::CollapsingHeader(descriptor.GetDisplayName()))
             {
                 GActiveTools.push_back(tool);
                 DrawPropertyGrid(tool.get(), descriptor);
@@ -711,7 +709,7 @@ void OnAppRenderUI()
                 for (const std::shared_ptr<ISystem>& system : featureECS->GetSystems())
                 {
                     const auto& systemDescriptor = system->GetTypeDescriptor();
-                    if (ImGui::CollapsingHeader(systemDescriptor.DisplayName))
+                    if (ImGui::CollapsingHeader(systemDescriptor.GetDisplayName()))
                     {
                         DrawPropertyGrid(system.get(), systemDescriptor);
                     }
@@ -771,7 +769,7 @@ void OnAppRenderUI()
                                 {
                                     const ComponentDefinition& compDef = archDef[i];
                                     
-                                    if (ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                                    if (ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
                                     {
                                         if (ImGui::BeginTable("Props", 2, ImGuiTableFlags_SizingFixedFit))
                                         {                                
@@ -832,7 +830,7 @@ void OnAppRenderUI()
                                     {
                                         list.ForEachComponent(handle, [](const ComponentDefinition& compDef, const void* comp)
                                         {
-                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
                                             {
                                                 DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                                                 ImGui::TreePop();
@@ -992,7 +990,7 @@ void OnAppRenderUI()
                 {
                     FeatureECS::ForEachComponent(world, selectedEntityId, [&](const ComponentDefinition& compDef, const void* comp)
                     {
-                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
                         {
                             DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                             ImGui::TreePop();
@@ -1052,6 +1050,8 @@ void OnAppEvent(SDL_Event* event)
 
 void OnAppShutdown()
 {
+    GGameStateServer.Stop();
+
     GSessionThreadWantsExit = true;
     GSessionThread->join();
 

@@ -1,5 +1,13 @@
 {
   "mcpServers": {
+    "testrts": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["tsx", "mcp/server.ts"],
+      "env": {
+        "TESTRTS_URL": "http://127.0.0.1:8765"
+      }
+    },
     "github": {
       "type": "stdio",
       "command": "npx",

@@ -7,3 +7,4 @@
 *.user
 *.sln
 *.log
+/mcp/node_modules

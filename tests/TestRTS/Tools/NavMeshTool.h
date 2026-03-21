@@ -3,7 +3,7 @@
 #include <PhoenixSim/Color.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 #include <PhoenixSim/Containers/Optional.h>
-#include <PhoenixSim/Reflection.h>
+#include <PhoenixSim/Reflection/Reflection.h>
 #include <PhoenixSim/Navigation/FeatureNavigation.h>
 
 #include "../SDL/SDLTool.h"
@@ -14,24 +14,7 @@ namespace Phoenix
 
     struct NavMeshTool : ISDLTool
     {
-        PHX_DECLARE_TYPE_BEGIN(NavMeshTool)
-            PHX_REGISTER_FIELD(float, BrushSize)
-            PHX_REGISTER_FIELD(bool, bDrawVertCircles)
-            PHX_REGISTER_FIELD(bool, bDrawOpenSet)
-            PHX_REGISTER_FIELD(bool, bDrawVertIds)
-            PHX_REGISTER_FIELD(bool, bDrawHalfEdgeIds)
-            PHX_REGISTER_FIELD(bool, bDrawFaceIds)
-            PHX_REGISTER_FIELD(bool, bDrawFaceCircumcircles)
-            PHX_REGISTER_FIELD(bool, bDrawPathPortals)
-            PHX_REGISTER_FIELD(float, SnapRadius)
-            PHX_REGISTER_FIELD(float, AgentRadius)
-            PHX_REGISTER_FIELD(std::string, MapDir)
-            PHX_REGISTER_METHOD(LoadMeshFromFile)
-            PHX_REGISTER_METHOD(Step)
-            PHX_REGISTER_METHOD(Step10)
-            PHX_REGISTER_PROPERTY(bool, IsStepping)
-            PHX_REGISTER_PROPERTY(bool, FixDelaunayTriangulation)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_TYPE(NavMeshTool)
 
         NavMeshTool(std::shared_ptr<Session> session);
 

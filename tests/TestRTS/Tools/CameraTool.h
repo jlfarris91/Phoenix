@@ -4,7 +4,7 @@
 #include <SDL3/SDL_rect.h>
 
 #include <PhoenixSim/Containers/Optional.h>
-#include <PhoenixSim/Reflection.h>
+#include <PhoenixSim/Reflection/Reflection.h>
 
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLTool.h"
@@ -17,10 +17,7 @@ namespace Phoenix
 
     struct CameraTool : ISDLTool
     {
-        PHX_DECLARE_TYPE_BEGIN(CameraTool)
-            PHX_REGISTER_FIELD(float, PanSpeed)
-            PHX_REGISTER_FIELD(float, ZoomSpeed)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_TYPE(CameraTool)
 
         CameraTool(std::shared_ptr<Session> session, SDLCamera* camera, SDLViewport* viewport);
 

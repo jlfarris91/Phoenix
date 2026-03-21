@@ -22,6 +22,9 @@ target_link_libraries(TestRTS PRIVATE Tracy::TracyClient)
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(TestRTS PRIVATE nlohmann_json::nlohmann_json)
 
+find_package(httplib CONFIG REQUIRED)
+target_link_libraries(TestRTS PRIVATE httplib::httplib)
+
 target_compile_definitions(TestRTS PUBLIC TRACY_ENABLE PHX_PROFILE_ENABLE IMGUI_DEFINE_MATH_OPERATORS)
 target_include_directories(TestRTS PUBLIC ../../src)
 target_include_directories(TestRTS PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include")
