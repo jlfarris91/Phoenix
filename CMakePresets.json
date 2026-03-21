@@ -26,7 +26,9 @@
       "toolset": "host=x64",
       "cacheVariables": {
         "PHX_BUILD_TESTAPP": "OFF",
-        "PHX_USE_PCH": "OFF"
+        "PHX_BUILD_TESTS": "ON",
+        "PHX_USE_PCH": "OFF",
+        "VCPKG_MANIFEST_FEATURES": "tests"
       }
     },
     {
@@ -45,7 +47,9 @@
       "binaryDir": "${sourceDir}/.build/linux-ci",
       "cacheVariables": {
         "PHX_BUILD_TESTAPP": "OFF",
-        "PHX_USE_PCH": "OFF"
+        "PHX_BUILD_TESTS": "ON",
+        "PHX_USE_PCH": "OFF",
+        "VCPKG_MANIFEST_FEATURES": "tests"
       }
     },
     {
