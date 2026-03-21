@@ -9,19 +9,7 @@ namespace Phoenix::Steering
     class PHOENIX_STEERING_API SteeringSystem : public ECS::ISystem
     {
     public:
-        PHX_ECS_DECLARE_SYSTEM_BEGIN(SteeringSystem)
-            PHX_REGISTER_FIELD(bool, MoveTowardsGoal)
-            PHX_REGISTER_FIELD(double, DensityScalar)
-            PHX_REGISTER_FIELD(double, DensityRadiusScalar)
-            PHX_REGISTER_FIELD(double, AvoidanceScalar)
-            PHX_REGISTER_FIELD(double, AvoidanceRadiusScalar)
-            PHX_REGISTER_FIELD(double, ArrivalThreshold)
-            PHX_REGISTER_FIELD(double, SlackIncreaseRate)
-            PHX_REGISTER_FIELD(double, SlackIncreaseRateFast)
-            PHX_REGISTER_FIELD(double, SlackRateDivisor)
-            PHX_REGISTER_FIELD(double, SlackRateDivisorSlow)
-            PHX_REGISTER_FIELD(double, MaxSlack)
-        PHX_ECS_DECLARE_SYSTEM_END()
+        PHX_DECLARE_TYPE(SteeringSystem, Phoenix::ECS::ISystem)
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;

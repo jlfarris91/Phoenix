@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Reflection/Reflection.h"
 
 namespace Phoenix
 {
@@ -29,6 +30,13 @@ namespace Phoenix
     };
 
     typedef TTransform<Vec2, Angle, Value> Transform2D;
+
+    template <>
+    struct PropertyDescriptorBuilder<Transform2D>
+    {
+        static EPropertyValueType GetPropertyValueType() { return EPropertyValueType::Transform2D; }
+        static std::unordered_map<std::string, std::string> GetMetadata() { return {}; }
+    };
 
     template <>
     inline Vec2 TTransform<Vec2, Angle, Value>::RotateVector(const Vec2& vec) const

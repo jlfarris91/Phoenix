@@ -10,8 +10,7 @@ namespace Phoenix::RTS
 {
     class PHOENIX_RTS_API MoveAbilitySystem : public ECS::ISystem
     {
-        PHX_ECS_DECLARE_SYSTEM_BEGIN(MoveAbilitySystem)
-        PHX_ECS_DECLARE_SYSTEM_END()
+        PHX_ECS_DECLARE_SYSTEM(MoveAbilitySystem)
 
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
     };
@@ -25,8 +24,7 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API MoveAbilityComponent : IAbilityComponent
     {
-        PHX_ECS_DECLARE_COMPONENT_BEGIN(MoveAbilityComponent)
-        PHX_ECS_DECLARE_COMPONENT_END()
+        PHX_ECS_DECLARE_COMPONENT(MoveAbilityComponent)
 
         MoveAbilityComponent();
 
@@ -45,7 +43,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API MoveAbilityHandler : public IAbilityHandler
     {
-        PHX_DECLARE_TYPE_WITH_BASE(MoveAbilityHandler, IAbilityHandler)
+        PHX_ENABLE_TYPE(MoveAbilityHandler, IAbilityHandler)
 
     public:
 

@@ -1,5 +1,6 @@
 
 #include "EntityTool.h"
+#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
 
 #include <SDL3/SDL_events.h>
 
@@ -79,4 +80,18 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
         action.Args[3].AsValue = PushForce;
         Session->EnqueueAction(action);
     }
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+using namespace Phoenix;
+
+PHX_TYPE_REGISTRATION(EntityTool)
+{
+    registration
+        .Field("BrushSize",  &EntityTool::BrushSize)
+        .Field("SpawnCount", &EntityTool::SpawnCount)
+        .Field("Player",     &EntityTool::Player)
+        .Field("MoveSpeed",  &EntityTool::MoveSpeed)
+        .Field("PushForce",  &EntityTool::PushForce);
 }

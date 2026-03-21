@@ -10,7 +10,11 @@ const FName FName::Empty = ""_n;
 
 namespace
 {
-    std::unordered_map<hash32_t, std::string> g_nameToString;
+    std::unordered_map<hash32_t, std::string>& NameToString()
+    {
+        static std::unordered_map<hash32_t, std::string> s_map;
+        return s_map;
+    }
 }
 
 #ifdef _WIN32
@@ -67,7 +71,7 @@ struct Foo
         for (const char* s : strings)
         {
             FName name(s, strlen(s));
-            g_nameToString[name] = s;
+            NameToString()[name] = s;
         }
     }
 } g_Foo;
@@ -78,8 +82,8 @@ struct Foo
 const char* FName::GetNameEntry(hash32_t hash)
 {
 #if PHOENIX_SIM_NAME_ENTRIES
-    auto iter = g_nameToString.find(hash);
-    if (iter == g_nameToString.end())
+    auto iter = NameToString().find(hash);
+    if (iter == NameToString().end())
     {
         std::string string = std::to_string(hash);
         return RecordNameEntryAs(string.c_str(), string.size(), hash);
@@ -94,25 +98,25 @@ const char* FName::GetNameEntry(hash32_t hash)
 
 const char* FName::RecordNameEntryAs(const char* chars, size_t len, hash32_t value)
 {
-    std::string& string = g_nameToString[value];
+    std::string& string = NameToString()[value];
     string.assign(chars, len);
     return string.c_str();
 }
 
 const char* FName::AppendNameEntryAs(hash32_t base, const char* chars, size_t len, hash32_t value)
 {
-    auto iter = g_nameToString.find(base);
-    std::string string = iter != g_nameToString.end() ? iter->second.c_str() : "?";
+    auto iter = NameToString().find(base);
+    std::string string = iter != NameToString().end() ? iter->second.c_str() : "?";
     string.append(chars, len);
     return RecordNameEntryAs(string.c_str(), string.size(), value);
 }
 
 const char* FName::CombineNameEntryAs(hash32_t base, hash32_t other, hash32_t value)
 {
-    auto baseIter = g_nameToString.find(base);
-    auto otherIter = g_nameToString.find(other);
-    std::string baseString = baseIter != g_nameToString.end() ? baseIter->second.c_str() : "?";
-    std::string otherString = otherIter != g_nameToString.end() ? otherIter->second.c_str() : "?";
+    auto baseIter = NameToString().find(base);
+    auto otherIter = NameToString().find(other);
+    std::string baseString = baseIter != NameToString().end() ? baseIter->second.c_str() : "?";
+    std::string otherString = otherIter != NameToString().end() ? otherIter->second.c_str() : "?";
     std::string string = baseString + "+" + otherString;
     return RecordNameEntryAs(string.c_str(), string.size(), value);
 }

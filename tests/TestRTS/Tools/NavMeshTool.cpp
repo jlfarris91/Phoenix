@@ -1,4 +1,5 @@
 #include "NavMeshTool.h"
+#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
 
 #include <fstream>
 #include <SDL3/SDL_events.h>
@@ -518,4 +519,29 @@ void NavMeshTool::SetFixDelaunayTriangulation(const bool& v)
     action.Verb = "mesh_set_fix_delaunay_triangulations"_n;
     action.Args[0].AsBool = v;
     Session->EnqueueAction(action);
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+using namespace Phoenix;
+
+PHX_TYPE_REGISTRATION(NavMeshTool)
+{
+    registration
+        .Field("BrushSize",                   &NavMeshTool::BrushSize)
+        .Field("bDrawVertCircles",             &NavMeshTool::bDrawVertCircles)
+        .Field("bDrawOpenSet",                 &NavMeshTool::bDrawOpenSet)
+        .Field("bDrawVertIds",                 &NavMeshTool::bDrawVertIds)
+        .Field("bDrawHalfEdgeIds",             &NavMeshTool::bDrawHalfEdgeIds)
+        .Field("bDrawFaceIds",                 &NavMeshTool::bDrawFaceIds)
+        .Field("bDrawFaceCircumcircles",       &NavMeshTool::bDrawFaceCircumcircles)
+        .Field("bDrawPathPortals",             &NavMeshTool::bDrawPathPortals)
+        .Field("SnapRadius",                   &NavMeshTool::SnapRadius)
+        .Field("AgentRadius",                  &NavMeshTool::AgentRadius)
+        .Field("MapDir",                       &NavMeshTool::MapDir)
+        .Method("LoadMeshFromFile",            &NavMeshTool::LoadMeshFromFile)
+        .Method("Step",                        &NavMeshTool::Step)
+        .Method("Step10",                      &NavMeshTool::Step10)
+        .Property("IsStepping",                &NavMeshTool::GetIsStepping,                &NavMeshTool::SetIsStepping)
+        .Property("FixDelaunayTriangulation",  &NavMeshTool::GetFixDelaunayTriangulation,  &NavMeshTool::SetFixDelaunayTriangulation);
 }

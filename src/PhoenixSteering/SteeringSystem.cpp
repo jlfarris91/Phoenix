@@ -1,5 +1,6 @@
 ﻿
 #include "PhoenixSteering/SteeringSystem.h"
+#include "PhoenixSim/Reflection/TypeRegistrationBuilder.h"
 
 #include "PhoenixSim/Debug/Debug.h"
 #include "PhoenixSim/Flags.h"
@@ -703,4 +704,22 @@ void SteeringSystem::OnDebugRender(
     //         renderer.DrawRay(start, dir, Color::Yellow);
     //     }
     // }));
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+PHX_TYPE_REGISTRATION(SteeringSystem)
+{
+    registration
+        .Field("MoveTowardsGoal",       &SteeringSystem::MoveTowardsGoal)
+        .Field("DensityScalar",         &SteeringSystem::DensityScalar)
+        .Field("DensityRadiusScalar",   &SteeringSystem::DensityRadiusScalar)
+        .Field("AvoidanceScalar",       &SteeringSystem::AvoidanceScalar)
+        .Field("AvoidanceRadiusScalar", &SteeringSystem::AvoidanceRadiusScalar)
+        .Field("ArrivalThreshold",      &SteeringSystem::ArrivalThreshold)
+        .Field("SlackIncreaseRate",     &SteeringSystem::SlackIncreaseRate)
+        .Field("SlackIncreaseRateFast", &SteeringSystem::SlackIncreaseRateFast)
+        .Field("SlackRateDivisor",      &SteeringSystem::SlackRateDivisor)
+        .Field("SlackRateDivisorSlow",  &SteeringSystem::SlackRateDivisorSlow)
+        .Field("MaxSlack",              &SteeringSystem::MaxSlack);
 }

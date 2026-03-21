@@ -1,5 +1,6 @@
 ﻿
 #include "PhoenixPhysics/PhysicsSystem.h"
+#include "PhoenixSim/Reflection/TypeRegistrationBuilder.h"
 
 #include "PhoenixSim/Color.h"
 #include "PhoenixSim/Debug/Debug.h"
@@ -512,4 +513,18 @@ void PhysicsSystem::OnDebugRender(WorldConstRef world, const IDebugState& state,
             renderer.DrawLine(s, e, Color(255, 255, 255));
         }
     }
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+PHX_TYPE_REGISTRATION(PhysicsSystem)
+{
+    registration
+        .Field("DebugDrawContacts",    &PhysicsSystem::DebugDrawContacts)
+        .Field("AllowSleep",           &PhysicsSystem::AllowSleep)
+        .Field("NumIterations",        &PhysicsSystem::NumIterations)
+        .Field("NumSolverSteps",       &PhysicsSystem::NumSolverSteps)
+        .Field("NumSeparationSteps",   &PhysicsSystem::NumSeparationSteps)
+        .Field("PenetrationThreshold", &PhysicsSystem::PenetrationThreshold)
+        .Field("PenetrationCorrection",&PhysicsSystem::PenetrationCorrection);
 }

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <PhoenixSim/Reflection.h>
+#include <PhoenixSim/Reflection/Reflection.h>
 
 #include "../SDL/SDLTool.h"
 
@@ -11,13 +11,7 @@ namespace Phoenix
 
     struct EntityTool : ISDLTool
     {
-        PHX_DECLARE_TYPE_BEGIN(EntityTool)
-            PHX_REGISTER_FIELD(float, BrushSize)
-            PHX_REGISTER_FIELD(uint32, SpawnCount)
-            PHX_REGISTER_FIELD(uint8, Player)
-            PHX_REGISTER_FIELD(float, MoveSpeed)
-            PHX_REGISTER_FIELD(float, PushForce)
-        PHX_DECLARE_TYPE_END()
+        PHX_DECLARE_TYPE(EntityTool)
 
         EntityTool(const std::shared_ptr<Session>& session);
 

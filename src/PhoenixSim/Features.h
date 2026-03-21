@@ -4,7 +4,7 @@
 
 #include "PhoenixSim/Actions.h"
 #include "PhoenixSim/Containers/BlockBuffer.h"
-#include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Reflection/Reflection.h"
 #include "PhoenixSim/Services/Service.h"
 
 namespace Phoenix
@@ -108,7 +108,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IFeature : public IService
     {
-        PHX_DECLARE_INTERFACE_WITH_BASE(IFeature, IService)
+        PHX_ENABLE_TYPE(IFeature, IService)
 
     public:
 
@@ -228,12 +228,7 @@ namespace Phoenix
 }
 
 
-#define PHX_DECLARE_FEATURE_TYPE_BEGIN(feature) PHX_DECLARE_TYPE_WITH_BASE_BEGIN(feature, Phoenix::IFeature)
-#define PHX_DECLARE_FEATURE_TYPE_END() PHX_DECLARE_TYPE_WITH_BASE_END()
-
-#define PHX_DECLARE_FEATURE_TYPE(feature) \
-    PHX_DECLARE_FEATURE_TYPE_BEGIN(feature) \
-    PHX_DECLARE_FEATURE_TYPE_END()
+#define PHX_DECLARE_FEATURE_TYPE(feature) PHX_ENABLE_TYPE(feature, Phoenix::IFeature)
 
 #define FEATURE_SESSION_BLOCK(block, type) Definition.RegisterSessionBlock<block>(type);
 #define FEATURE_WORLD_BLOCK(block, type) Definition.RegisterWorldBlock<block>(type);

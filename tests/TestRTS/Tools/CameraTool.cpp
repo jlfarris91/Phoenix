@@ -1,5 +1,6 @@
 
 #include "CameraTool.h"
+#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
 
 #include <SDL3/SDL_events.h>
 
@@ -93,4 +94,15 @@ void CameraTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
         float zoomScale = 1.0f + (float)event->wheel.integer_y * ZoomSpeed;
         Camera->Zoom = Max(Camera->Zoom * zoomScale, 0.001f);
     }
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+using namespace Phoenix;
+
+PHX_TYPE_REGISTRATION(CameraTool)
+{
+    registration
+        .Field("PanSpeed",  &CameraTool::PanSpeed)
+        .Field("ZoomSpeed", &CameraTool::ZoomSpeed);
 }

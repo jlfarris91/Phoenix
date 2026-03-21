@@ -6,7 +6,7 @@ namespace Phoenix::RTS
 {
     class PHOENIX_RTS_API ResponseDamageHandler final : public ResponseHandlerBase
     {
-        PHX_DECLARE_TYPE_WITH_BASE(ResponseDamageHandler, ResponseHandlerBase)
+        PHX_ENABLE_TYPE(ResponseDamageHandler, ResponseHandlerBase)
     public:
         ResponseDamageHandler();
         bool Execute(WorldRef world, const ResponseContext& context) const override;

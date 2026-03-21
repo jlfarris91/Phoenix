@@ -145,7 +145,7 @@ void DrawPropertyGrid(void* obj, const TypeDescriptor& descriptor)
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 2.0f); // Default twice larger
 
-        for (const auto& methodDesc : descriptor.Methods | std::views::values)
+        for (const auto& methodDesc : descriptor.GetMethods() | std::views::values)
         {
             ImGui::TableNextRow();
             ImGui::PushID(methodDesc.Name.c_str());
@@ -154,19 +154,19 @@ void DrawPropertyGrid(void* obj, const TypeDescriptor& descriptor)
             ImGui::TextUnformatted(methodDesc.Name.c_str());
             ImGui::TableNextColumn();
 
-            void* actualObj = methodDesc.MethodPointer->IsStatic() ? nullptr : obj;
+            void* actualObj = methodDesc.IsStatic() ? nullptr : obj;
 
-            ImGui::BeginDisabled(!methodDesc.MethodPointer->CanExecute(actualObj));
+            ImGui::BeginDisabled(!methodDesc.CanExecute(actualObj));
             if (ImGui::Button(methodDesc.Name.c_str()))
             {
-                methodDesc.MethodPointer->Execute(actualObj);
+                methodDesc.Execute(actualObj);
             }
             ImGui::EndDisabled();
 
             ImGui::PopID();
         }
 
-        for (const auto& propertyDesc : descriptor.Properties | std::views::values)
+        for (const auto& propertyDesc : descriptor.GetProperties() | std::views::values)
         {
             ImGui::TableNextRow();
             ImGui::PushID(propertyDesc.Name.c_str());
@@ -192,7 +192,7 @@ void DrawPropertyGrid(const void* obj, const TypeDescriptor& descriptor)
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed);
         ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthStretch, 2.0f); // Default twice larger
 
-        for (const auto& propertyDesc : descriptor.Properties | std::views::values)
+        for (const auto& propertyDesc : descriptor.GetProperties() | std::views::values)
         {
             ImGui::TableNextRow();
             ImGui::PushID(propertyDesc.Name.c_str());

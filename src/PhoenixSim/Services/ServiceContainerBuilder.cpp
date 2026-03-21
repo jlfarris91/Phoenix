@@ -42,8 +42,8 @@ void ServiceContainerBuilder::RegisterServiceAs(const std::shared_ptr<IService>&
 
 void ServiceContainerBuilder::RegisterServiceAsInterfaces(const std::shared_ptr<IService>& service)
 {
-    service->GetTypeDescriptor().ForEachInterface([&](const TypeDescriptor& interface)
+    service->GetTypeDescriptor().ForEachBaseClass([&](const TypeDescriptor& interface)
     {
-        RegisterServiceAs(service, interface.FName);
+        RegisterServiceAs(service, interface.GetFName());
     });
 }
