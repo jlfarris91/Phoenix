@@ -48,6 +48,9 @@ jobs:
       - name: Build
         run: cmake --build .build/windows-ci --config Release --parallel
 
+      - name: Test
+        run: ctest --test-dir .build/windows-ci --build-config Release --output-on-failure
+
       - name: Install
         if: inputs.upload_artifact
         run: |
