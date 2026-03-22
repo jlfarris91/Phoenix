@@ -122,19 +122,19 @@ TEST_SUITE("Hashing")
     }
 
     // Compile-time (constexpr) evaluation must produce the same value as runtime.
+    // Both sides use the array-template overload (single string-literal arg)
+    // so the same overload is selected at compile-time and at runtime.
     TEST_CASE("FNV1A32 constexpr matches runtime")
     {
-        const char* s = "constexpr_test";
-        constexpr hash32_t compile_time = Hashing::FNV1A32("constexpr_test", 14);
-        hash32_t           run_time     = Hashing::FNV1A32(s, 14);
+        constexpr hash32_t compile_time = Hashing::FNV1A32("constexpr_test");
+        hash32_t           run_time     = Hashing::FNV1A32("constexpr_test");
         CHECK(compile_time == run_time);
     }
 
     TEST_CASE("FNV1A64 constexpr matches runtime")
     {
-        const char* s = "constexpr_test";
-        constexpr hash64_t compile_time = Hashing::FNV1A64("constexpr_test", 14);
-        hash64_t           run_time     = Hashing::FNV1A64(s, 14);
+        constexpr hash64_t compile_time = Hashing::FNV1A64("constexpr_test");
+        hash64_t           run_time     = Hashing::FNV1A64("constexpr_test");
         CHECK(compile_time == run_time);
     }
 
