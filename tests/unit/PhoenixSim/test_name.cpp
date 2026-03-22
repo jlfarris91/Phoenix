@@ -80,11 +80,17 @@ TEST_SUITE("FName")
         FName a("alpha");
         FName b("beta");
 
-        // Either a < b or b < a, but not both, and not equal.
-        bool lt = (a <=> b) < 0;
-        bool gt = (a <=> b) > 0;
+        // Capture comparisons as bools to avoid doctest expression-decomposer
+        // attempting to bind std::strong_ordering as an rvalue reference.
+        auto cmp_ab = (a <=> b);
+        auto cmp_aa = (a <=> a);
+        bool lt = cmp_ab < 0;
+        bool gt = cmp_ab > 0;
+        bool eq = cmp_aa == 0;
+
+        // Exactly one of lt/gt must be true, and a == a.
         CHECK(lt != gt);
-        CHECK((a <=> a) == 0);
+        CHECK(eq);
     }
 
     // -------------------------------------------------------------------------
