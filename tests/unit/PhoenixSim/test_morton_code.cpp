@@ -165,7 +165,10 @@ TEST_SUITE("MortonCode")
     TEST_CASE("ScaleToMortonCode negative values preserve sign")
     {
         int32 shift = MortonCodeGridBits;
-        int32 val = -(1 << shift);
+        // Need |val| - 1 >= (1 << shift) so the shifted result is non-zero.
+        // -(1 << shift) gives xu = (1<<shift)-1, which shifts to 0.
+        // -(4 << shift) gives xu = (4<<shift)-1, which shifts to a positive value.
+        int32 val = -(4 << shift);
         CHECK(ScaleToMortonCode(val) < 0);
     }
 
