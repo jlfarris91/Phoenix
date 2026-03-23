@@ -97,10 +97,7 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE_BEGIN(FeatureECS)
-            PHX_REGISTER_FIELD(bool, bDebugDrawMortonCodeBoundaries)
-            PHX_REGISTER_FIELD(bool, bDebugDrawEntityZCodes)
-        PHX_DECLARE_FEATURE_TYPE_END()
+        PHX_DECLARE_TYPE(FeatureECS, Phoenix::IFeature)
 
     public:
 

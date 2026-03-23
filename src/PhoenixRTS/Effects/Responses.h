@@ -29,7 +29,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API IResponseHandler : public IService
     {
-        PHX_DECLARE_INTERFACE_WITH_BASE(IResponseHandler, IService)
+        PHX_ENABLE_TYPE(IResponseHandler, IService)
         
     public:
 
@@ -50,7 +50,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API ResponseHandlerBase : public IResponseHandler
     {
-        PHX_DECLARE_TYPE_WITH_BASE(ResponseHandlerBase, IResponseHandler)
+        PHX_ENABLE_TYPE(ResponseHandlerBase, IResponseHandler)
 
     public:
 

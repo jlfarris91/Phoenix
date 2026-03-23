@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <PhoenixSim/Reflection.h>
+#include <PhoenixSim/Reflection/Reflection.h>
 
 void DrawPropertyEditor(void* obj, const Phoenix::PropertyDescriptor& propertyDesc);
 void DrawPropertyEditor(const void* obj, const Phoenix::PropertyDescriptor& propertyDesc);

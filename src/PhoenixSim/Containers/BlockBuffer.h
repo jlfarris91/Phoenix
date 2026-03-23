@@ -2,7 +2,7 @@
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Delegates.h"
-#include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Reflection/Reflection.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/OffsetRef.h"
 
@@ -323,27 +323,13 @@ namespace Phoenix
     void BlockBufferRunTests();
 }
 
-#define PHX_DECLARE_BLOCK_BEGIN(block) \
-    PHX_DECLARE_TYPE_WITH_BASE_BEGIN(block, BufferBlockBase)
-
-#define PHX_DECLARE_BLOCK_END() \
-    PHX_DECLARE_TYPE_WITH_BASE_END()
-
 #define PHX_DECLARE_BLOCK(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block) \
-    PHX_DECLARE_BLOCK_END()
+    PHX_ENABLE_TYPE(block)
 
-#define PHX_DECLARE_BLOCK_WITH_ALLOC_BEGIN(block) \
+#define PHX_DECLARE_BLOCK_WITH_ALLOC(block) \
     struct Config; \
     block(BlockBufferAllocator& allocator, const Config& config); \
     block(BlockBufferAllocator& allocator, const Config& config, const block& other); \
     static BufferBlockLayout Layout(Config config); \
     static void Construct(void* dest, BlockBufferAllocator& allocator, Config config); \
-    PHX_DECLARE_BLOCK_BEGIN(block)
-
-#define PHX_DECLARE_BLOCK_WITH_ALLOC_END() \
-    PHX_DECLARE_BLOCK_END()
-
-#define PHX_DECLARE_BLOCK_WITH_ALLOC(block) \
-    PHX_DECLARE_BLOCK_WITH_ALLOC_BEGIN(block) \
-    PHX_DECLARE_BLOCK_WITH_ALLOC_END()
+    PHX_ENABLE_TYPE(block)

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Reflection/Reflection.h"
 #include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
@@ -12,7 +12,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IService : public std::enable_shared_from_this<IService>
     {
-        PHX_DECLARE_INTERFACE(IService)
+        PHX_ENABLE_TYPE(IService)
 
     public:
 

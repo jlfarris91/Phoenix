@@ -27,7 +27,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API ICommandHandler : public IService
     {
-        PHX_DECLARE_INTERFACE_WITH_BASE(ICommandHandler, IService)
+        PHX_ENABLE_TYPE(ICommandHandler, IService)
 
     public:
 
