@@ -1,49 +1,59 @@
 # Reflection System
 
-PhoenixSim has a single, unified reflection system. One `TypeDescriptor` per C++ class carries:
+PhoenixSim has a single unified reflection system. One `TypeDescriptor` per C++ type carries:
 
-- **Properties** — fields and getter/setter pairs, readable at runtime.
+- **Properties** — fields and getter/setter pairs, readable/writable at runtime.
 - **Methods** — execute/can-execute pointers, invocable at runtime.
-- **Script bindings** — namespace and type-erased function invokers consumed by any `IScriptRuntime`.
+- **Metadata** — arbitrary string key/value pairs (e.g. `FractionalBits`, `MinValue`, `MaxValue`).
+- **Constructors / Destructor** — type-erased lifecycle functions registered automatically.
 
-All of this is declared once, in a `.cpp` file, using the macros documented below.
+Registration is declared in a `.cpp` file using `PHX_TYPE_REGISTRATION` and the `TypeDescriptorBuilder` fluent API.
 
 ---
 
 ## TypeDescriptor
 
-`src/PhoenixSim/Reflection.h`
+`src/PhoenixSim/Reflection/Reflection.h`
+
+The central descriptor object. Owned by `TypeRegistry` (Meyers singleton map). Read via the public accessor methods:
 
 ```cpp
 struct TypeDescriptor {
-    const char*           CName;
-    FName                 FName;        // FNV1A hash of CName
-    const char*           DisplayName;
-    size_t                Size;
-    ETypeDescriptorFlags  Flags;
+    // Identity
+    const char*  GetCName()       const;
+    FName        GetFName()       const;
+    const char*  GetDisplayName() const;
+    size_t       GetSize()        const;
 
-    std::unordered_map<std::string, PropertyDescriptor> Properties;
-    std::unordered_map<std::string, MethodDescriptor>   Methods;
-    std::unordered_map<std::string, BaseDescriptor>     Bases;
+    // Contents
+    const std::unordered_map<std::string, PropertyDescriptor>& GetProperties()   const;
+    const std::unordered_map<std::string, MethodDescriptor>&   GetMethods()      const;
+    const std::unordered_map<std::string, std::string>&        GetMetadata()     const;
+    const std::vector<MethodDescriptor>&                       GetConstructors() const;
+    const MethodDescriptor&                                    GetDestructor()   const;
 
-    void (*DefaultConstructFunc)(void*);
-    void (*DestructFunc)(void*);
+    // Type checks
+    bool IsInterface() const;
+    bool IsA(FName baseTypeId) const;
+    template <class TBase> bool IsA() const;
 
-    // Script metadata — populated by PHX_SCRIPT_REGISTRATION blocks.
-    mutable std::string                                          ScriptNamespace;
-    mutable std::unordered_map<std::string, ScriptFunctionDescriptor> ScriptFunctions;
+    // Dynamic allocation helpers
+    void DefaultConstruct(void* memory) const;
+    void Destruct(void* memory) const;
 };
 ```
 
-`Properties` and `Methods` are populated inside `PHX_DECLARE_TYPE_BEGIN` / `PHX_DECLARE_TYPE_END` macro bodies. `ScriptNamespace` and `ScriptFunctions` are populated later, at static-init time, by `PHX_SCRIPT_REGISTRATION` blocks. Both paths write to the same object.
+`Properties`, `Methods`, and `Metadata` are all populated at static-init time (before `main`) by `PHX_TYPE_REGISTRATION` blocks and `TypeDescriptorMetadataProvider` specializations.
 
 ---
 
-## EPropertyValueType
+## EGenericValueType
 
-Maps C++ types to a runtime-queryable enum:
+`src/PhoenixSim/Reflection/GenericValue.h`
 
-| C++ type | EPropertyValueType |
+Identifies the runtime kind of a property value or function argument:
+
+| C++ type | `EGenericValueType` |
 |---|---|
 | `int8` … `int64` | `Int8` … `Int64` |
 | `uint8` … `uint64` | `UInt8` … `UInt64` |
@@ -52,11 +62,61 @@ Maps C++ types to a runtime-queryable enum:
 | `bool` | `Bool` |
 | `std::string` | `String` |
 | `FName` | `Name` |
-| `Vec2` | `Vec2` |
-| `TFixed<Tb,T>` | `FixedPoint` (+ `FractionalBits` metadata) |
+| `TFixed<Tb,T>` | `FixedPoint` |
+| any registered struct | `Struct` |
 | anything else | `Unknown` |
 
-Used by serialization and tooling to read/write properties without knowing the C++ type.
+`GenericValueTypeBuilder<T>` is the template that maps `T` to its enum value. It is specialised for `TFixed<Tb,T>` to return `FixedPoint`.
+
+---
+
+## GenericValue
+
+`src/PhoenixSim/Reflection/GenericValue.h`
+
+A type-erased value passed to/from `IPropertyAccessor` and `GenericFunction`:
+
+```cpp
+// Create:
+GenericValue gv = GenericValue::Borrow(3.14f);
+GenericValue gv = GenericValue::Borrow(myVec2);
+GenericValue gv = GenericValue::Void();
+
+// Read:
+float f = gv.As<float>();
+Vec2  v = gv.As<Vec2>();
+
+// Type query:
+gv.Type.Primitive          // EGenericValueType
+gv.Type.Descriptor         // const TypeDescriptor* (non-null for Struct and FixedPoint)
+gv.Type.IsStruct()         // Primitive == Unknown && Descriptor != nullptr
+gv.Type.IsPrimitive()      // everything else
+gv.Type.IsVoid()
+```
+
+For `FixedPoint` values, `gv.Type.Descriptor` points at the type's `TypeDescriptor` so consumers can read `FractionalBits` from `GetMetadata()`.
+
+---
+
+## PropertyDescriptor
+
+`src/PhoenixSim/Reflection/Reflection.h`
+
+Describes one registered property:
+
+```cpp
+struct PropertyDescriptor : DescriptorBase {
+    EGenericValueType         ValueType;         // enum kind
+    const TypeDescriptor*     StructDescriptor;  // non-null when ValueType == Struct
+    shared_ptr<IPropertyAccessor> PropertyAccessor;
+
+    // From DescriptorBase:
+    std::string Name;
+    std::unordered_map<std::string, std::string> Metadata;  // MinValue, MaxValue, etc.
+};
+```
+
+`StructDescriptor` lets consumers traverse nested registered types without a separate lookup.
 
 ---
 
@@ -65,182 +125,235 @@ Used by serialization and tooling to read/write properties without knowing the C
 Abstracts property I/O. All variants implement:
 
 ```cpp
-void Get(const void* obj, void* value, size_t len) const;
-void Set(void* obj,       const void* value, size_t len) const;
-void Get(const World& world, const void* obj, void* value, size_t len) const;
-void Set(World& world, void* obj, const void* value, size_t len) const;
-void Initialize(void* memory) const;
-bool IsReadOnly()    const;
-bool IsStatic()      const;
-bool RequiresWorld() const;
+struct IPropertyAccessor {
+    template <class T> T    Get(const void* obj) const;
+    template <class T> void Set(void* obj, const T& value) const;
+    template <class T> T    Get(const World& world, const void* obj) const;
+    template <class T> void Set(World& world, void* obj, const T& value) const;
+
+    bool IsReadOnly()    const;
+    bool IsStatic()      const;
+    bool RequiresWorld() const;
+};
 ```
 
-Concrete variants:
+Concrete variants registered by `TypeDescriptorBuilder`:
 
 | Class | Use case |
 |---|---|
-| `FieldAccessor<T, TValue>` | Direct member pointer (`TValue T::*`) |
-| `PropertyAccessor<T, TValue>` | Getter/setter pair (`Get##Name` / `Set##Name`) |
+| `FieldAccessor<T, TValue>` | Direct member pointer `TValue T::*` |
+| `PropertyAccessor<T, TValue>` | Getter `TValue(T::*)() const` + optional setter |
 | `StaticPropertyAccessor<TValue>` | Static getter/setter (no `this`) |
-| `StaticWorldPropertyAccessor<TValue>` | Static getter/setter that takes a `World&` |
-| `StaticFieldAccessor<TValue>` | Raw pointer to a static field |
+| `StaticWorldPropertyAccessor<TValue>` | Static getter/setter that takes `const World&` / `World&` |
+| `StaticFieldAccessor<TValue>` | Raw pointer to a static variable |
 
 ---
 
-## IMethodPointer
-
-Abstracts execute/can-execute for actions:
+## MethodDescriptor
 
 ```cpp
-void Execute(void* obj) const;
-bool CanExecute(void* obj) const;
-void Execute(World& world, void* obj) const;
-bool CanExecute(const World& world, void* obj) const;
-bool IsStatic()       const;
-bool RequiresWorld()  const;
+struct MethodDescriptor : DescriptorBase {
+    std::vector<ParamDescriptor>    Params;
+    ParamDescriptor                 Return;
+    GenericFunction                 Function;
+    std::function<bool(void* self)> CanExecutePredicate;
+
+    bool IsStatic()   const;
+    bool CanExecute(void* self) const;
+    GenericValue Execute(void* self, std::span<const GenericValue> args = {}) const;
+};
 ```
 
-Concrete variants:
+`ParamDescriptor` holds a `Name` and `GenericValueTypeRef Type`. `Execute` dispatches through `GenericFunction::Invoke`.
 
-| Class | Use case |
-|---|---|
-| `MethodPointer<T>` | Non-const member function `void(T::*)()` |
-| `ConstMethodPointer<T>` | Const member function `void(T::*)() const` |
-| `StaticFunctionPointer` | Free function `void(*)()` |
-| `StaticWorldFunctionPointer` | Free function `void(*)(World&)` |
+Use `MakeMethodDescriptor(name, fn)` to build a standalone descriptor from any function pointer without registering it on a type.
 
 ---
 
-## Macros — Type Declaration (Header)
+## Macros — in-class declaration
 
-The header macro declares type identity only — no property or method registration.
+Two macros add type-identity members to a class body:
 
-```cpp
-// No base:
-class MyType {
-    PHX_DECLARE_TYPE(MyType)
-    float Speed = 0.f;
-    FName UnitDataId;
-};
+### `PHX_DECLARE_TYPE(Type, ...Bases)`
 
-// With base:
-class Derived : public Base {
-    PHX_DECLARE_TYPE_WITH_BASE(Derived, Base)
-    float ExtraField = 0.f;
-};
-
-// Interface:
-class IMyService {
-    PHX_DECLARE_INTERFACE(IMyService)
-};
-
-// Interface with base:
-class IMySubservice : public IMyService {
-    PHX_DECLARE_INTERFACE_WITH_BASE(IMySubservice, IMyService)
-};
-```
-
-Convenience wrappers for ECS types:
+Use when a `.cpp` will contain a `PHX_TYPE_REGISTRATION` block.
 
 ```cpp
-struct MyComponent : ECS::IComponent {
-    PHX_ECS_DECLARE_COMPONENT(MyComponent)
-    // fields ...
-};
-
-class MySystem : public ECS::ISystem {
-    PHX_ECS_DECLARE_SYSTEM(MySystem)
-    // ...
-};
-
-class MyFeature : public IFeature {
-    PHX_DECLARE_FEATURE_TYPE(MyFeature)
+class FeatureUnit : public IFeature {
+    PHX_DECLARE_TYPE(FeatureUnit, IFeature)
     // ...
 };
 ```
 
-**How it works**: Each macro expands to a nested `STypeDescriptor` struct with a `StaticGet()` Meyers singleton. On first call, `StaticGet()` constructs a `TypeDescriptor` (name, size, flags, primary base) and registers it in `TypeRegistry`. `GetStaticTypeDescriptor()` delegates to `STypeDescriptor::StaticGet()`.
+`GetStaticTypeDescriptor()` is **declared** here and **defined** by `PHX_TYPE_REGISTRATION`. That non-inline definition is an exported symbol — the linker must include the registration TU whenever `FeatureUnit::GetStaticTypeDescriptor()` is referenced.
 
-## PHX_TYPE_REGISTRATION (cpp)
+### `PHX_ENABLE_TYPE(Type, ...Bases)`
 
-Properties and methods are registered in a `.cpp` file using the `PHX_TYPE_REGISTRATION` macro. This is where all field/method metadata lives — nothing in headers.
+Use when no `.cpp` registration block is needed (interfaces, simple inline types).
 
 ```cpp
-// In MyType.cpp
-#include "MyType.h"
-#include "PhoenixSim/TypeRegistrationBuilder.h"
+class IFeature : public IService {
+    PHX_ENABLE_TYPE(IFeature, IService)
+};
+```
+
+`GetStaticTypeDescriptor()` is **inline** — no `.cpp` required. Because it is inline, the linker can dead-strip TUs that only contain static initializers for this type.
+
+Both macros add:
+- `using ThisType = Type;`
+- `static constexpr FName StaticTypeName = "Type"_n;`
+- `static constexpr const char* StaticTypeCName = "Type";`
+- `static const TypeDescriptor& GetStaticTypeDescriptor();`
+- `virtual const TypeDescriptor& GetTypeDescriptor() const;`
+
+---
+
+## External type registration
+
+For types you don't own (typedefs, template instantiations, third-party types):
+
+```cpp
+// In the type's primary header, after the namespace close:
+#include "PhoenixSim/Reflection/TypeTraits.h"
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Vec2, "Vec2")
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Distance, "Distance")
+```
+
+This specialises `TypeTraits<T>` so `TypeRegistry::GetOrCreate<T>()` can name the type and `GenericValueTypeBuilder<T>` can return `Struct` (for `Vec2`) or `FixedPoint` (for `TFixed` types).
+
+### TypeDescriptorMetadataProvider
+
+To inject metadata into `TypeDescriptor::Metadata` automatically on first `GetOrCreate<T>()`:
+
+```cpp
+// TFixed specialisation — pre-defined in Reflection.h:
+template <uint8 Tb, class T>
+struct TypeDescriptorMetadataProvider<TFixed<Tb, T>> {
+    static std::unordered_map<std::string, std::string> GetMetadata() {
+        return { { "FractionalBits", std::format("{}", Tb) } };
+    }
+};
+```
+
+The primary template returns `{}`. Specialise it for any type that needs type-level metadata.
+
+---
+
+## Registration.h — TypeDescriptorBuilder
+
+`src/PhoenixSim/Reflection/Registration.h`
+
+The fluent builder used inside `PHX_TYPE_REGISTRATION` blocks (and standalone static initializers for external types).
+
+### PHX_TYPE_REGISTRATION
+
+```cpp
+// In MyComponent.cpp
+#include "MyComponent.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 using namespace Phoenix;
 
-PHX_TYPE_REGISTRATION(MyType)
+PHX_TYPE_REGISTRATION(MyComponent)
 {
     registration
-        .field("Speed",     &MyType::Speed)
-        .field("UnitDataId",&MyType::UnitDataId)
-        .property("Active", &MyType::GetActive, &MyType::SetActive)
-        .method("Fire",     &MyType::Fire);
+        .Field("Speed",    &MyComponent::Speed)
+        .Field("OwnerId",  &MyComponent::OwnerId)
+        .Property("Active", &MyComponent::GetActive, &MyComponent::SetActive)
+        .Method("Fire",    &MyComponent::Fire, &MyComponent::CanFire)
+        .Base<IMyBase>();
 }
 ```
 
-For types in nested namespaces, use `using namespace`:
+The macro also defines `MyComponent::GetStaticTypeDescriptor()`, the non-inline symbol that pulls the TU into the final binary.
+
+### TypeDescriptorBuilder methods
+
+| Method | What it registers |
+|---|---|
+| `.Field("Name", &T::member)` | `FieldAccessor<T, TValue>` — direct member pointer |
+| `.Field("Name", &T::member, builderFn)` | Same, then calls `builderFn(PropertyDescriptorBuilder<TValue>&)` to set metadata |
+| `.Property("Name", getter, setter)` | `PropertyAccessor<T, TValue>` — getter + optional setter |
+| `.Property("Name", getter)` | Read-only `PropertyAccessor` |
+| `.Method("Name", &T::fn)` | `void(T::*)()` or `void(T::*)() const` |
+| `.Method("Name", &T::fn, &T::canFn)` | Same with `CanExecute` predicate |
+| `.StaticMethod("Name", &fn)` | Free function `void(*)()` |
+| `.StaticMethod("Name", &fn, &canFn)` | Same with `CanExecute` predicate |
+| `.Base<TBase>()` | Records an additional base for `IsA` traversal |
+| `.Bases<TBase1, TBase2>()` | Registers multiple bases at once |
+| `.Metadata("Key", value)` | Sets a type-level metadata entry |
+
+All pointer types are deduced — no explicit template arguments needed.
+
+### PropertyDescriptorBuilder — numeric metadata
+
+When a field's type satisfies `IsNumerical` (`int*`, `uint*`, `float`, `double`, not `bool`), the callback receives a `PropertyDescriptorBuilder<TValue>` with additional helpers:
 
 ```cpp
-using namespace Phoenix::ECS;
+registration.Field("Speed", &MyComponent::Speed,
+    [](PropertyDescriptorBuilder<float>& b) {
+        b.MinValue(0.0f).MaxValue(200.0f).Step(1.0f);
+    });
 
-PHX_TYPE_REGISTRATION(TransformComponent)
-{
-    registration
-        .field("AttachParent", &TransformComponent::AttachParent)
-        .field("Transform",    &TransformComponent::Transform)
-        .field("ZCode",        &TransformComponent::ZCode);
-}
+registration.Field("Count", &MyComponent::Count,
+    [](PropertyDescriptorBuilder<int32_t>& b) {
+        b.MinValue(0).MaxValue(99);
+    });
 ```
 
-### TypeRegistrationBuilder methods
+These are stored in `PropertyDescriptor::Metadata` as `"MinValue"`, `"MaxValue"`, `"Step"` string entries.
 
-`src/PhoenixSim/TypeRegistrationBuilder.h`
+All builder types inherit from `DescriptorBaseBuilder`, which provides `.Metadata(key, value)`, `.Category(name)`, `.DisplayName(name)`, and `.SortOrder(n)` for both properties and methods.
 
-| Method | Accessor type |
-|---|---|
-| `.field("Name", &T::member)` | `FieldAccessor<T, TValue>` — direct member pointer |
-| `.property("Name", getter, setter)` | `PropertyAccessor<T, TValue>` — getter/setter pair |
-| `.method("Name", &T::Fn)` | `MethodPointer<T>` — non-const member function |
-| `.method("Name", &T::Fn)` | `ConstMethodPointer<T>` — const member function (overload resolution) |
-| `.static_method("Name", &T::Fn)` | `StaticFunctionPointer` or `StaticWorldFunctionPointer` |
-| `.base<TBase>()` | Records an additional base for multi-inheritance `IsA` |
+### External type registration with TypeDescriptorBuilder
 
-All member types are deduced from the pointer — no explicit template arguments needed.
+For types registered via `PHX_REGISTER_EXTERNAL_TYPE`, use a static initializer directly:
+
+```cpp
+// FixedTypeRegistrations.cpp
+static const bool s_Vec2Registered = []() {
+    TypeDescriptorBuilder<Vec2>()
+        .Field("X", &Vec2::X)
+        .Field("Y", &Vec2::Y);
+    return true;
+}();
+```
 
 ---
 
 ## TypeRegistry
 
-`src/PhoenixSim/TypeRegistry.h`
+`src/PhoenixSim/Reflection/TypeRegistry.h`
 
 ```cpp
 class TypeRegistry {
 public:
-    static void Register(FName name, const TypeDescriptor* descriptor);
+    // Create (first call) or retrieve (subsequent calls) the TypeDescriptor for T.
+    // Registers TBases as base classes and calls TypeDescriptorMetadataProvider<T>.
+    template <class T, class... TBases>
+    static TypeDescriptor& GetOrCreate();
+
+    // Lookup by FName. Returns nullptr if not registered.
     static const TypeDescriptor* Get(FName name);
-    static const std::unordered_map<hash32_t, const TypeDescriptor*>& GetAll();
+
+    // Read-only view of all registered descriptors.
+    static const std::unordered_map<hash32_t, unique_ptr<TypeDescriptor>>& GetAll();
 };
 ```
 
-Registration happens automatically at static-init time (before `main`) whenever `GetStaticTypeDescriptor()` is first called on a type. You can force early registration by calling `MyType::GetStaticTypeDescriptor()` anywhere.
+All registrations happen at static-init time (before `main`). `GetOrCreate` is idempotent.
 
 ---
 
 ## Serialization
 
-`src/PhoenixSim/Serialization.h`
-
-Two utility functions serialize registered properties to JSON:
+`src/PhoenixSim/Reflection/Serialization.h`
 
 ```cpp
-// Serialise all non-world-context properties of a type to { "field": value }.
+// Serialise all non-world-context properties of obj to { "fieldName": value }.
 nlohmann::json TypeToJson(const void* obj, const TypeDescriptor& desc);
 
-// Serialise a single property to a JSON value (null for unsupported/world types).
+// Serialise a single property to a JSON value (null for world-context or unknown types).
 nlohmann::json PropertyToJson(const void* obj, const PropertyDescriptor& prop);
 ```
 
@@ -248,123 +361,44 @@ World-context properties (`RequiresWorld() == true`) are skipped by `PropertyToJ
 
 ---
 
-## Script Bindings
+## IsA / Cast
 
-Script metadata is added to an existing `TypeDescriptor` from a `.cpp` file using `PHX_SCRIPT_REGISTRATION`. No header changes are needed.
-
-### PHX_SCRIPT_REGISTRATION
+Runtime type checks using the registered base chain:
 
 ```cpp
-// In PhoenixRTS/Scripting/RTSScriptRegistration.cpp
-#include "PhoenixSim/Scripting/ScriptRegistrationBuilder.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-
-PHX_SCRIPT_REGISTRATION(FeatureUnit)
-{
-    registration
-        .namespace_("Phoenix.Unit")
-        .world_function("SpawnUnit",   Script_Unit_Spawn)
-        .world_function("IsAlive",     Script_Unit_IsAlive)
-        .world_function("GetOwner",    Script_Unit_GetOwner)
-        .world_function("GetUnitData", Script_Unit_GetUnitData);
-}
-```
-
-The macro creates a static-init object that:
-1. Calls `FeatureUnit::GetStaticTypeDescriptor()` (registers the TypeDescriptor if needed).
-2. Fetches the `const TypeDescriptor*` from `TypeRegistry`.
-3. Calls the body, which writes to `m_desc->ScriptNamespace` and `m_desc->ScriptFunctions` (both `mutable`).
-
-### ScriptRegistrationBuilder methods
-
-| Method | Description |
-|---|---|
-| `.namespace_("Dot.Separated.Path")` | Sets the Lua table path |
-| `.function("Name", fn)` | Registers `TRet(*fn)(TArgs...)` — all args come from Lua |
-| `.world_function("Name", fn)` | Registers `TRet(*fn)(WorldRef, TArgs...)` — world is implicit, args come from Lua |
-| `.world_function("Name", fn)` | Same for `WorldConstRef` |
-
-### ScriptValue
-
-`src/PhoenixSim/Scripting/ScriptValue.h`
-
-A tagged union covering every type that can cross the C++/script boundary:
-
-```
-EScriptValueKind::Nil      — no value
-                ::Bool     — bool (field B)
-                ::Integer  — int64_t (field I) — covers FName, EntityId, all integers
-                ::Number   — double  (field N) — covers float, Distance, Angle
-                ::String   — std::string (field Str)
-```
-
-`ScriptConverter<T>` specializations in `ScriptFunctionDescriptor.h` handle the mapping for all built-in types. Add a new specialization in your module's header to support additional types.
-
-### ScriptFunctionDescriptor
-
-```cpp
-struct ScriptFunctionDescriptor {
-    std::string Name;
-    std::vector<EScriptValueKind> ParamTypes;  // args visible to scripts (no WorldRef)
-    EScriptValueKind ReturnType;
-    bool HasWorldParam;                         // first C++ arg is WorldRef (implicit)
-    std::function<ScriptValue(ScriptCallContext&)> Invoke;
-};
-```
-
-### ScriptCallContext
-
-```cpp
-struct ScriptCallContext {
-    Session* session;
-    World*   currentWorld;   // set by LuaRuntime::SetCurrentWorld before each callback
-    std::span<const ScriptValue> args;
-};
-```
-
-`world_function` registrations read `ctx.currentWorld` automatically — scripts never pass a world ID.
-
-### IScriptBindings — manual escape hatch
-
-For bindings that can't be expressed as plain static functions (e.g. lambdas capturing state):
-
-```cpp
-class MyBindings : public IScriptBindings {
-    PHX_DECLARE_INTERFACE_WITH_BASE(MyBindings, IScriptBindings)
-public:
-    const char* GetNamespace() const override { return "Phoenix.MyModule"; }
-    void Register(IScriptRuntime& runtime) override {
-        runtime.RegisterFunction(MakeScriptFunction("Foo", &MyFreeFunction,
-            std::index_sequence_for<TArgs...>{}));
-    }
-};
-```
-
-Register as an `IService` on the session. `FeatureLua` discovers all `IScriptBindings` services during `Initialize()` and calls `Register` for each.
-
-### Linker note (MSVC)
-
-Static-init objects in anonymous namespaces in a `.lib` export no symbols. MSVC may dead-strip the entire translation unit. To prevent this, export a no-op symbol from the registration `.cpp` and call it from the application entry point:
-
-```cpp
-// RTSScriptRegistration.cpp
-namespace Phoenix::RTS {
-    void EnsureScriptRegistrations() {}
-}
-
-// app.cpp
-#include <PhoenixRTS/Scripting/RTSScriptRegistration.h>
-RTS::EnsureScriptRegistrations();
+IsA<IMyBase>(ptr)          // bool — walks registered Bases recursively
+Cast<IMyBase>(ptr)         // T* or nullptr
+Cast<IMyBase>(sharedPtr)   // shared_ptr<T> or nullptr
 ```
 
 ---
 
-## IsA / Cast
+## Linker considerations
 
-Runtime type checks using `TypeDescriptor::IsA`:
+### PHX_DECLARE_TYPE — safe in static libraries
 
-```cpp
-IsA<IMyInterface>(ptr)        // bool — walks base chain
-Cast<IMyInterface>(ptr)       // T* or nullptr
-Cast<IMyInterface>(sharedPtr) // shared_ptr<T> or nullptr
+`PHX_DECLARE_TYPE` declares `GetStaticTypeDescriptor()` as a non-inline extern. `PHX_TYPE_REGISTRATION` defines it. Any reference to `GetStaticTypeDescriptor()` (e.g. from ECS queries, `IsA`, script bindings) forces the linker to include the registration TU, so static initializers always run.
+
+### PHX_ENABLE_TYPE — may be stripped from static libraries
+
+`PHX_ENABLE_TYPE` generates an inline `GetStaticTypeDescriptor()`. If the only content in a TU is static initializers with internal linkage (e.g. external-type registrations in `FixedTypeRegistrations.cpp`), MSVC may dead-strip the entire TU from the final binary.
+
+For test executables that link `PhoenixSim.lib`, use `/WHOLEARCHIVE` to force all object files:
+
+```cmake
+if(MSVC)
+    target_link_options(PhoenixTests PRIVATE
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>)
+elseif(APPLE)
+    target_link_options(PhoenixTests PRIVATE -Wl,-force_load,$<TARGET_FILE:PhoenixSim>)
+else()
+    target_link_options(PhoenixTests PRIVATE
+        -Wl,--whole-archive $<TARGET_FILE:PhoenixSim> -Wl,--no-whole-archive)
+endif()
 ```
+
+---
+
+## Script Bindings
+
+Script registration (namespace, function descriptors) is a separate layer on top of the reflection system. See [ScriptingBindings.md](ScriptingBindings.md).

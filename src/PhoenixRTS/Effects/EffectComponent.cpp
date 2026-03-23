@@ -1,5 +1,5 @@
 #include "PhoenixRTS/Effects/EffectComponent.h"
-#include "PhoenixSim/Reflection/TypeRegistrationBuilder.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

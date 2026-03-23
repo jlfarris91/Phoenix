@@ -1,5 +1,5 @@
 #include "FeatureSpawner.h"
-#include "PhoenixSim/Reflection/TypeRegistrationBuilder.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
 #include "PhoenixRTS/Orders/FeatureOrders.h"

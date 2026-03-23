@@ -1,5 +1,5 @@
 #include "NavMeshTool.h"
-#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include <fstream>
 #include <SDL3/SDL_events.h>

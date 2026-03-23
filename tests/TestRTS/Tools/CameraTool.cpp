@@ -1,6 +1,6 @@
 
 #include "CameraTool.h"
-#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include <SDL3/SDL_events.h>
 

@@ -6,7 +6,6 @@
 
 #include "PhoenixSim/Flags.h"
 #include "PhoenixSim/Utils.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Reflection/TypeRegistry.h"
@@ -31,16 +30,16 @@ namespace Phoenix
         std::unordered_map<std::string, std::string> Metadata;
     };
 
-    // ── GenericParam ──────────────────────────────────────────────────────────
+    // ── ParamDescriptor ───────────────────────────────────────────────────────
     //
     // Describes one parameter (or the return value) of a MethodDescriptor.
     // Belongs to the reflection layer — GenericFunction itself carries no names.
 
-    struct PHOENIX_SIM_API GenericParam
+    struct PHOENIX_SIM_API ParamDescriptor
     {
-        std::string  Name;
-        ParamTypeRef Type;
-        bool         IsOptional = false;
+        std::string         Name;
+        GenericValueTypeRef Type;
+        bool                IsOptional = false;
     };
 
     // ── MethodDescriptor ──────────────────────────────────────────────────────
@@ -62,11 +61,11 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API MethodDescriptor : DescriptorBase
     {
-        std::vector<GenericParam> Params;
-        GenericParam              Return;
-        GenericFunction           Function;
+        std::vector<ParamDescriptor>    Params;
+        ParamDescriptor                 Return;
+        GenericFunction                 Function;
         std::function<bool(void* self)> CanExecutePredicate;
-        std::string               ScriptNamespace;
+        std::string                     ScriptNamespace;
 
         bool IsStatic()   const { return !Function.HasSelfParam; }
         bool CanExecute(void* self) const { return !CanExecutePredicate || CanExecutePredicate(self); }
@@ -84,8 +83,8 @@ namespace Phoenix
         template <class TRet, class... TArgs, size_t... I>
         void FillMethodParams(MethodDescriptor& d, std::index_sequence<I...>)
         {
-            d.Params     = { GenericParam{ std::to_string(I), MakeParamTypeRef<TArgs>() }... };
-            d.Return.Type = MakeParamTypeRef<TRet>();
+            d.Params     = { ParamDescriptor{ std::to_string(I), MakeGenericValueTypeRef<TArgs>() }... };
+            d.Return.Type = MakeGenericValueTypeRef<TRet>();
         }
     }
 
@@ -166,8 +165,30 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API PropertyDescriptor : DescriptorBase
     {
-        EPropertyValueType ValueType = EPropertyValueType::Unknown;
+        EGenericValueType         ValueType        = EGenericValueType::Unknown;
+        const TypeDescriptor*     StructDescriptor = nullptr; // non-null when ValueType == Struct
         std::shared_ptr<IPropertyAccessor> PropertyAccessor;
+    };
+
+    // An extension point for users to provide custom metadata for specific types.
+    template <class T>
+    struct TypeDescriptorMetadataProvider
+    {
+        static std::unordered_map<std::string, std::string> GetMetadata()
+        {
+            return {};
+        }
+    };
+
+    // A specialization for TFixed to provide the number of fractional bits as metadata, which is useful for UI to
+    // display the fixed-point value correctly.
+    template <uint8 Tb, class T>
+    struct TypeDescriptorMetadataProvider<TFixed<Tb, T>>
+    {
+        static std::unordered_map<std::string, std::string> GetMetadata()
+        {
+            return { { "FractionalBits", std::format("{}", Tb) } };
+        }
     };
 
     template <class T, class TValue>
@@ -527,46 +548,24 @@ namespace Phoenix
 
         // ── Public read-only interface ────────────────────────────────────────
 
-        const char* GetCName() const { return CName; }
-        Phoenix::FName GetFName() const { return FName; }
-        const char* GetDisplayName() const { return DisplayName; }
-        size_t GetSize() const { return Size; }
+        const char* GetCName() const;
+        Phoenix::FName GetFName() const;
+        const char* GetDisplayName() const;
+        size_t GetSize() const;
 
-        const std::unordered_map<std::string, PropertyDescriptor>& GetProperties() const { return Properties; }
-        const std::unordered_map<std::string, MethodDescriptor>&  GetMethods()    const { return Methods; }
-        const std::vector<MethodDescriptor>&                       GetConstructors() const { return Constructors; }
-        const MethodDescriptor&                                    GetDestructor()   const { return Destructor; }
+        const std::unordered_map<std::string, PropertyDescriptor>&  GetProperties() const;
+        const std::unordered_map<std::string, MethodDescriptor>&    GetMethods()    const;
+        const std::unordered_map<std::string, std::string>&         GetMetadata()   const;
+        const std::vector<MethodDescriptor>&                        GetConstructors() const;
+        const MethodDescriptor&                                     GetDestructor()   const;
 
-        bool IsInterface() const { return HasAnyFlags(Flags, ETypeDescriptorFlags::Interface); }
+        bool IsInterface() const;
 
-        void DefaultConstruct(void* data) const
-        {
-            for (const auto& ctor : Constructors)
-            {
-                if (ctor.Params.empty())
-                {
-                    ctor.Execute(data);
-                    return;
-                }
-            }
-        }
+        void DefaultConstruct(void* data) const;
 
-        void Destruct(void* data) const
-        {
-            if (Destructor.Function.Invoke)
-                Destructor.Execute(data);
-        }
+        void Destruct(void* data) const;
 
-        bool IsA(const Phoenix::FName& baseTypeId) const
-        {
-            for (const BaseDescriptor& base : Bases | std::ranges::views::values)
-            {
-                if (base.Descriptor->FName == baseTypeId)
-                    return true;
-                return base.Descriptor->IsA(baseTypeId);
-            }
-            return false;
-        }
+        bool IsA(const Phoenix::FName& baseTypeId) const;
 
         template <class TBase>
         bool IsA() const { return IsA(TBase::StaticTypeName); }
@@ -586,75 +585,87 @@ namespace Phoenix
         // ── Mutation — accessible only to friends ─────────────────────────────
 
         template <class T>
-        void RegisterBase()
+        BaseDescriptor& RegisterBase()
         {
-            const TypeDescriptor& baseDesc = T::GetStaticTypeDescriptor();
-            BaseDescriptor& entry = Bases[baseDesc.GetCName()];
-            entry.CName       = baseDesc.GetCName();
-            entry.Descriptor  = &baseDesc;
+            const TypeDescriptor& baseTypeDescriptor = T::GetStaticTypeDescriptor();
+            BaseDescriptor& baseDescriptor = Bases[baseTypeDescriptor.GetCName()];
+            baseDescriptor.CName       = baseTypeDescriptor.GetCName();
+            baseDescriptor.Descriptor  = &baseTypeDescriptor;
+            return baseDescriptor;
+        }
+
+        template <class TValue>
+        static void FillPropertyType(PropertyDescriptor& d)
+        {
+            d.ValueType = GenericValueTypeBuilder<TValue>::GetPropertyValueType();
+            d.Metadata  = TypeDescriptorMetadataProvider<TValue>::GetMetadata();
+            if constexpr (detail::IsRegisteredType_v<TValue>)
+            {
+                d.StructDescriptor = &TypeRegistry::GetOrCreate<TValue>();
+            }
         }
 
         template <class T, class TValue>
-        void RegisterProperty(
+        PropertyDescriptor& RegisterProperty(
             const std::string& name,
             TValue (T::* getter)() const,
             void (T::* setter)(const TValue&) = nullptr)
         {
-            PropertyDescriptor& d = Properties[name];
-            d.Name = name;
-            d.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
-            d.Metadata  = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            d.PropertyAccessor = std::make_shared<PropertyAccessor<T, TValue>>(getter, setter);
+            PropertyDescriptor& descriptor = Properties[name];
+            descriptor.Name = name;
+            FillPropertyType<TValue>(descriptor);
+            descriptor.PropertyAccessor = std::make_shared<PropertyAccessor<T, TValue>>(getter, setter);
+            return descriptor;
         }
 
         template <class TValue>
-        void RegisterProperty(
+        PropertyDescriptor& RegisterProperty(
             const std::string& name,
-            typename StaticPropertyAccessor<TValue>::TGetter getter,
-            typename StaticPropertyAccessor<TValue>::TSetter setter = nullptr)
+            StaticPropertyAccessor<TValue>::TGetter getter,
+            StaticPropertyAccessor<TValue>::TSetter setter = nullptr)
         {
-            PropertyDescriptor& d = Properties[name];
-            d.Name = name;
-            d.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
-            d.Metadata  = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            d.PropertyAccessor = std::make_shared<StaticPropertyAccessor<TValue>>(getter, setter);
+            PropertyDescriptor& descriptor = Properties[name];
+            descriptor.Name = name;
+            FillPropertyType<TValue>(descriptor);
+            descriptor.PropertyAccessor = std::make_shared<StaticPropertyAccessor<TValue>>(getter, setter);
+            return descriptor;
         }
 
         template <class TValue>
-        void RegisterProperty(
+        PropertyDescriptor& RegisterProperty(
             const std::string& name,
-            typename StaticWorldPropertyAccessor<TValue>::TGetter getter,
-            typename StaticWorldPropertyAccessor<TValue>::TSetter setter = nullptr)
+            StaticWorldPropertyAccessor<TValue>::TGetter getter,
+            StaticWorldPropertyAccessor<TValue>::TSetter setter = nullptr)
         {
-            PropertyDescriptor& d = Properties[name];
-            d.Name = name;
-            d.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
-            d.Metadata  = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            d.PropertyAccessor = std::make_shared<StaticWorldPropertyAccessor<TValue>>(getter, setter);
+            PropertyDescriptor& descriptor = Properties[name];
+            descriptor.Name = name;
+            FillPropertyType<TValue>(descriptor);
+            descriptor.PropertyAccessor = std::make_shared<StaticWorldPropertyAccessor<TValue>>(getter, setter);
+            return descriptor;
         }
 
         template <class T, class TValue>
-        void RegisterProperty(const std::string& name, TValue T::* fieldPtr)
+        PropertyDescriptor& RegisterProperty(const std::string& name, TValue T::* fieldPtr)
         {
-            PropertyDescriptor& d = Properties[name];
-            d.Name = name;
-            d.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
-            d.Metadata  = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            d.PropertyAccessor = std::make_shared<FieldAccessor<T, TValue>>(fieldPtr);
+            PropertyDescriptor& descriptor = Properties[name];
+            descriptor.Name = name;
+            FillPropertyType<TValue>(descriptor);
+            descriptor.PropertyAccessor = std::make_shared<FieldAccessor<T, TValue>>(fieldPtr);
+            return descriptor;
         }
 
         template <class TValue>
-        void RegisterProperty(const std::string& name, TValue* fieldPtr)
+        PropertyDescriptor& RegisterProperty(const std::string& name, TValue* fieldPtr)
         {
-            PropertyDescriptor& d = Properties[name];
-            d.Name = name;
-            d.ValueType = PropertyDescriptorBuilder<TValue>::GetPropertyValueType();
-            d.Metadata  = PropertyDescriptorBuilder<TValue>::GetMetadata();
-            d.PropertyAccessor = std::make_shared<StaticFieldAccessor<TValue>>(fieldPtr);
+            PropertyDescriptor& descriptor = Properties[name];
+            descriptor.Name = name;
+            FillPropertyType<TValue>(descriptor);
+            descriptor.PropertyAccessor = std::make_shared<StaticFieldAccessor<TValue>>(fieldPtr);
+            return descriptor;
         }
 
         template <class T>
-        void RegisterMethod(
+        MethodDescriptor& RegisterMethod(
             const std::string& name,
             void(T::* executePtr)(),
             bool(T::* canExecutePtr)() const = nullptr)
@@ -665,10 +676,11 @@ namespace Phoenix
                     return (static_cast<const T*>(self)->*canExecutePtr)();
                 };
             Methods[name] = std::move(d);
+            return Methods[name];
         }
 
         template <class T>
-        void RegisterConstMethod(
+        MethodDescriptor& RegisterConstMethod(
             const std::string& name,
             void(T::* executePtr)() const,
             bool(T::* canExecutePtr)() const = nullptr)
@@ -679,20 +691,13 @@ namespace Phoenix
                     return (static_cast<const T*>(self)->*canExecutePtr)();
                 };
             Methods[name] = std::move(d);
+            return Methods[name];
         }
 
-        void RegisterStaticMethod(
+        MethodDescriptor& RegisterStaticMethod(
             const std::string& name,
             void(*executePtr)(),
-            bool(*canExecutePtr)() = nullptr)
-        {
-            MethodDescriptor d = MakeMethodDescriptor(name.c_str(), executePtr);
-            if (canExecutePtr)
-                d.CanExecutePredicate = [canExecutePtr](void*) { return canExecutePtr(); };
-            Methods[name] = std::move(d);
-        }
-
-        // ── Data ─────────────────────────────────────────────────────────────
+            bool(*canExecutePtr)() = nullptr);
 
         std::unordered_map<std::string, PropertyDescriptor> Properties;
         std::unordered_map<std::string, MethodDescriptor>   Methods;
@@ -704,14 +709,15 @@ namespace Phoenix
         MethodDescriptor              Destructor;
 
         const char*             CName       = nullptr;
-        Phoenix::FName          FName       = {};
+        FName                   FName       = {};
         const char*             DisplayName = nullptr;
         size_t                  Size        = 0;
         ETypeDescriptorFlags    Flags       = ETypeDescriptorFlags::None;
+        std::unordered_map<std::string, std::string> Metadata;
 
         // ── Friends ───────────────────────────────────────────────────────────
         friend class TypeRegistry;
-        template <class T> friend class TypeRegistrationBuilder;
+        template <class T> friend class TypeDescriptorBuilder;
         template <class T> friend class ScriptRegistrationBuilder;
     };
 
@@ -771,17 +777,23 @@ namespace Phoenix
     template <class T, class... TBases>
     TypeDescriptor& TypeRegistry::GetOrCreate()
     {
+        constexpr FName   typeName  = detail::TypeFName<T>();
+        constexpr auto    typeCName = detail::TypeCName<T>();
+
         auto& map = GetMap();
-        constexpr auto key = static_cast<hash32_t>(T::StaticTypeName);
+        const auto key = static_cast<hash32_t>(typeName);
         auto [it, inserted] = map.emplace(key, nullptr);
         if (inserted)
         {
             it->second = std::make_unique<TypeDescriptor>();
             TypeDescriptor& desc = *it->second;
             desc.Size        = sizeof(T);
-            desc.CName       = T::StaticTypeCName;
-            desc.FName       = T::StaticTypeName;
-            desc.DisplayName = T::StaticTypeCName;
+            desc.CName       = typeCName;
+            desc.FName       = typeName;
+            desc.DisplayName = typeCName;
+
+            // Register bases
+            (desc.RegisterBase<TBases>(), ...);   // idempotent (map key prevents duplicates)
 
             // Default constructor — only registered if T is default-constructible.
             // HasSelfParam=true: 'self' is pre-allocated memory to construct into.
@@ -789,7 +801,7 @@ namespace Phoenix
             {
                 MethodDescriptor ctor;
                 ctor.Name = "__construct__";
-                ctor.Return.Type = MakeParamTypeRef<void>();
+                ctor.Return.Type = MakeGenericValueTypeRef<void>();
                 ctor.Function.HasSelfParam = true;
                 ctor.Function.Invoke = [](void* mem, std::span<const GenericValue>) {
                     new(mem) T();
@@ -802,7 +814,7 @@ namespace Phoenix
             {
                 MethodDescriptor dtor;
                 dtor.Name = "__destruct__";
-                dtor.Return.Type = MakeParamTypeRef<void>();
+                dtor.Return.Type = MakeGenericValueTypeRef<void>();
                 dtor.Function.HasSelfParam = true;
                 dtor.Function.Invoke = [](void* obj, std::span<const GenericValue>) {
                     static_cast<T*>(obj)->~T();
@@ -810,10 +822,11 @@ namespace Phoenix
                 };
                 desc.Destructor = std::move(dtor);
             }
+
+            desc.Metadata = TypeDescriptorMetadataProvider<T>::GetMetadata();
         }
-        TypeDescriptor& desc = *it->second;
-        (desc.RegisterBase<TBases>(), ...);   // idempotent (map key prevents duplicates)
-        return desc;
+
+        return *it->second;
     }
 
     // ── PHX_TYPE_BODY_ ────────────────────────────────────────────────────────

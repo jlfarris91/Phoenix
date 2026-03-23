@@ -1,6 +1,6 @@
 ﻿
 #include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/Reflection/TypeRegistrationBuilder.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/Profiling.h"

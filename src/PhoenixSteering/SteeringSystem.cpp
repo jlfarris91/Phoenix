@@ -1,6 +1,6 @@
 ﻿
 #include "PhoenixSteering/SteeringSystem.h"
-#include "PhoenixSim/Reflection/TypeRegistrationBuilder.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/Debug/Debug.h"
 #include "PhoenixSim/Flags.h"

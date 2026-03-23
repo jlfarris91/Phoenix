@@ -5,7 +5,6 @@
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Reflection/Reflection.h"
 #include "PhoenixSim/FixedPoint/FixedPoint.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/FixedPoint/FixedTransform.h"
 
 namespace Phoenix
@@ -20,22 +19,22 @@ namespace Phoenix
 
         switch (prop.ValueType)
         {
-            case EPropertyValueType::Int8:   return prop.PropertyAccessor->Get<int8>(accessObj);
-            case EPropertyValueType::UInt8:  return prop.PropertyAccessor->Get<uint8>(accessObj);
-            case EPropertyValueType::Int16:  return prop.PropertyAccessor->Get<int16>(accessObj);
-            case EPropertyValueType::UInt16: return prop.PropertyAccessor->Get<uint16>(accessObj);
-            case EPropertyValueType::Int32:  return prop.PropertyAccessor->Get<int32>(accessObj);
-            case EPropertyValueType::UInt32: return prop.PropertyAccessor->Get<uint32>(accessObj);
-            case EPropertyValueType::Int64:  return prop.PropertyAccessor->Get<int64>(accessObj);
-            case EPropertyValueType::UInt64: return prop.PropertyAccessor->Get<uint64>(accessObj);
-            case EPropertyValueType::Float:  return prop.PropertyAccessor->Get<float>(accessObj);
-            case EPropertyValueType::Double: return prop.PropertyAccessor->Get<double>(accessObj);
-            case EPropertyValueType::Bool:   return prop.PropertyAccessor->Get<bool>(accessObj);
+            case EGenericValueType::Int8:   return prop.PropertyAccessor->Get<int8>(accessObj);
+            case EGenericValueType::UInt8:  return prop.PropertyAccessor->Get<uint8>(accessObj);
+            case EGenericValueType::Int16:  return prop.PropertyAccessor->Get<int16>(accessObj);
+            case EGenericValueType::UInt16: return prop.PropertyAccessor->Get<uint16>(accessObj);
+            case EGenericValueType::Int32:  return prop.PropertyAccessor->Get<int32>(accessObj);
+            case EGenericValueType::UInt32: return prop.PropertyAccessor->Get<uint32>(accessObj);
+            case EGenericValueType::Int64:  return prop.PropertyAccessor->Get<int64>(accessObj);
+            case EGenericValueType::UInt64: return prop.PropertyAccessor->Get<uint64>(accessObj);
+            case EGenericValueType::Float:  return prop.PropertyAccessor->Get<float>(accessObj);
+            case EGenericValueType::Double: return prop.PropertyAccessor->Get<double>(accessObj);
+            case EGenericValueType::Bool:   return prop.PropertyAccessor->Get<bool>(accessObj);
 
-            case EPropertyValueType::String:
+            case EGenericValueType::String:
                 return prop.PropertyAccessor->Get<std::string>(accessObj);
 
-            case EPropertyValueType::Name:
+            case EGenericValueType::Name:
             {
                 const FName name = prop.PropertyAccessor->Get<FName>(accessObj);
                 if (const char* str = FName::GetNameEntry((hash32_t)name))
@@ -43,7 +42,7 @@ namespace Phoenix
                 return static_cast<uint32_t>((hash32_t)name);
             }
 
-            case EPropertyValueType::FixedPoint:
+            case EGenericValueType::FixedPoint:
             {
                 // Read the raw Q-format integer using TFixed<1> (same layout as all TFixed<N>),
                 // then convert to double using the fractional-bit count stored in metadata.
@@ -58,21 +57,15 @@ namespace Phoenix
                 return nullptr;
             }
 
-            case EPropertyValueType::Vec2:
+            case EGenericValueType::Struct:
             {
-                const Vec2 v = prop.PropertyAccessor->Get<Vec2>(accessObj);
-                return nlohmann::json::array({ static_cast<double>(v.X), static_cast<double>(v.Y) });
-            }
-
-            case EPropertyValueType::Transform2D:
-            {
-                const Transform2D t = prop.PropertyAccessor->Get<Transform2D>(accessObj);
-                return nlohmann::json{
-                    { "x",        static_cast<double>(t.Position.X) },
-                    { "y",        static_cast<double>(t.Position.Y) },
-                    { "rotation", static_cast<double>(t.Rotation)   },
-                    { "scale",    static_cast<double>(t.Scale)       },
-                };
+                if (prop.StructDescriptor)
+                {
+                    std::vector<std::byte> tmp(prop.StructDescriptor->GetSize());
+                    prop.PropertyAccessor->Get(accessObj, tmp.data(), tmp.size());
+                    return TypeToJson(tmp.data(), *prop.StructDescriptor);
+                }
+                return nullptr;
             }
 
             default:

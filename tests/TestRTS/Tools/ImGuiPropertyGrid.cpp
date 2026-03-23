@@ -1,7 +1,9 @@
 #include "ImGuiPropertyGrid.h"
 
 #include "imgui.h"
+#include <cstddef>
 #include <ranges>
+#include <vector>
 
 using namespace Phoenix;
 
@@ -20,17 +22,17 @@ void DrawPropertyEditor(void* obj, const PropertyDescriptor& propertyDesc)
 
     switch (propertyDesc.ValueType)
     {
-        case EPropertyValueType::Int8:      NUMERIC_EDITOR(int8, ImGuiDataType_S8) break;
-        case EPropertyValueType::UInt8:     NUMERIC_EDITOR(uint8, ImGuiDataType_U8) break;
-        case EPropertyValueType::Int16:     NUMERIC_EDITOR(int16, ImGuiDataType_S16) break;
-        case EPropertyValueType::UInt16:    NUMERIC_EDITOR(uint16, ImGuiDataType_U16) break;
-        case EPropertyValueType::Int32:     NUMERIC_EDITOR(int32, ImGuiDataType_S32) break;
-        case EPropertyValueType::UInt32:    NUMERIC_EDITOR(uint32, ImGuiDataType_U32) break;
-        case EPropertyValueType::Int64:     NUMERIC_EDITOR(int64, ImGuiDataType_S64) break;
-        case EPropertyValueType::UInt64:    NUMERIC_EDITOR(uint64, ImGuiDataType_U64) break;
-        case EPropertyValueType::Float:     NUMERIC_EDITOR(float, ImGuiDataType_Float) break;
-        case EPropertyValueType::Double:    NUMERIC_EDITOR(double, ImGuiDataType_Double) break;
-        case EPropertyValueType::Bool:
+        case EGenericValueType::Int8:      NUMERIC_EDITOR(int8, ImGuiDataType_S8) break;
+        case EGenericValueType::UInt8:     NUMERIC_EDITOR(uint8, ImGuiDataType_U8) break;
+        case EGenericValueType::Int16:     NUMERIC_EDITOR(int16, ImGuiDataType_S16) break;
+        case EGenericValueType::UInt16:    NUMERIC_EDITOR(uint16, ImGuiDataType_U16) break;
+        case EGenericValueType::Int32:     NUMERIC_EDITOR(int32, ImGuiDataType_S32) break;
+        case EGenericValueType::UInt32:    NUMERIC_EDITOR(uint32, ImGuiDataType_U32) break;
+        case EGenericValueType::Int64:     NUMERIC_EDITOR(int64, ImGuiDataType_S64) break;
+        case EGenericValueType::UInt64:    NUMERIC_EDITOR(uint64, ImGuiDataType_U64) break;
+        case EGenericValueType::Float:     NUMERIC_EDITOR(float, ImGuiDataType_Float) break;
+        case EGenericValueType::Double:    NUMERIC_EDITOR(double, ImGuiDataType_Double) break;
+        case EGenericValueType::Bool:
             {
                 bool v = propertyDesc.PropertyAccessor->Get<bool>(obj);
                 if (ImGui::Checkbox("##Editor", &v))
@@ -39,7 +41,7 @@ void DrawPropertyEditor(void* obj, const PropertyDescriptor& propertyDesc)
                 }
                 break;
             }
-        case EPropertyValueType::String:
+        case EGenericValueType::String:
             {
                 std::string v = propertyDesc.PropertyAccessor->Get<std::string>(obj);
                 
@@ -53,8 +55,8 @@ void DrawPropertyEditor(void* obj, const PropertyDescriptor& propertyDesc)
                 }
                 break;
             }
-        case EPropertyValueType::Name:          break;
-        case EPropertyValueType::FixedPoint:    break;
+        case EGenericValueType::Name:          break;
+        case EGenericValueType::FixedPoint:    break;
         default: break;
     }
 
@@ -75,23 +77,23 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
 
     switch (propertyDesc.ValueType)
     {
-        case EPropertyValueType::Int8:      NUMERIC_EDITOR(int8, ImGuiDataType_S8) break;
-        case EPropertyValueType::UInt8:     NUMERIC_EDITOR(uint8, ImGuiDataType_U8) break;
-        case EPropertyValueType::Int16:     NUMERIC_EDITOR(int16, ImGuiDataType_S16) break;
-        case EPropertyValueType::UInt16:    NUMERIC_EDITOR(uint16, ImGuiDataType_U16) break;
-        case EPropertyValueType::Int32:     NUMERIC_EDITOR(int32, ImGuiDataType_S32) break;
-        case EPropertyValueType::UInt32:    NUMERIC_EDITOR(uint32, ImGuiDataType_U32) break;
-        case EPropertyValueType::Int64:     NUMERIC_EDITOR(int64, ImGuiDataType_S64) break;
-        case EPropertyValueType::UInt64:    NUMERIC_EDITOR(uint64, ImGuiDataType_U64) break;
-        case EPropertyValueType::Float:     NUMERIC_EDITOR(float, ImGuiDataType_Float) break;
-        case EPropertyValueType::Double:    NUMERIC_EDITOR(double, ImGuiDataType_Double) break;
-        case EPropertyValueType::Bool:
+        case EGenericValueType::Int8:      NUMERIC_EDITOR(int8, ImGuiDataType_S8) break;
+        case EGenericValueType::UInt8:     NUMERIC_EDITOR(uint8, ImGuiDataType_U8) break;
+        case EGenericValueType::Int16:     NUMERIC_EDITOR(int16, ImGuiDataType_S16) break;
+        case EGenericValueType::UInt16:    NUMERIC_EDITOR(uint16, ImGuiDataType_U16) break;
+        case EGenericValueType::Int32:     NUMERIC_EDITOR(int32, ImGuiDataType_S32) break;
+        case EGenericValueType::UInt32:    NUMERIC_EDITOR(uint32, ImGuiDataType_U32) break;
+        case EGenericValueType::Int64:     NUMERIC_EDITOR(int64, ImGuiDataType_S64) break;
+        case EGenericValueType::UInt64:    NUMERIC_EDITOR(uint64, ImGuiDataType_U64) break;
+        case EGenericValueType::Float:     NUMERIC_EDITOR(float, ImGuiDataType_Float) break;
+        case EGenericValueType::Double:    NUMERIC_EDITOR(double, ImGuiDataType_Double) break;
+        case EGenericValueType::Bool:
             {
                 bool v = propertyDesc.PropertyAccessor->Get<bool>(obj);
                 ImGui::Checkbox("##Editor", &v);
                 break;
             }
-        case EPropertyValueType::String:
+        case EGenericValueType::String:
             {
                 std::string v = propertyDesc.PropertyAccessor->Get<std::string>(obj);
                 
@@ -101,7 +103,7 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
                 ImGui::InputText("##Editor", buff, MAX_PATH);
                 break;
             }
-        case EPropertyValueType::Name:
+        case EGenericValueType::Name:
             {
                 FName v = propertyDesc.PropertyAccessor->Get<FName>(obj);
                 // TODO (jfarris): this won't work for release builds but whatever
@@ -111,7 +113,7 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
                 }
                 break;
             }
-        case EPropertyValueType::FixedPoint:
+        case EGenericValueType::FixedPoint:
             {
                 auto iter = propertyDesc.Metadata.find("FractionalBits");
                 if (iter != propertyDesc.Metadata.end())
@@ -123,11 +125,20 @@ void DrawPropertyEditor(const void* obj, const PropertyDescriptor& propertyDesc)
                 }
                 break;
             }
-        case EPropertyValueType::Vec2:
+        case EGenericValueType::Struct:
             {
-                Vec2 val = propertyDesc.PropertyAccessor->Get<Vec2>(obj);
-                double components[2] = { (double)val.X, (double)val.Y };
-                ImGui::DragScalarN("##Editor", ImGuiDataType_Double, components, 2);
+                // Nested struct: show sub-properties inline (read-only for now)
+                if (propertyDesc.StructDescriptor)
+                {
+                    std::vector<std::byte> tmp(propertyDesc.StructDescriptor->GetSize());
+                    propertyDesc.PropertyAccessor->Get(obj, tmp.data(), tmp.size());
+                    for (const auto& subProp : propertyDesc.StructDescriptor->GetProperties() | std::views::values)
+                    {
+                        ImGui::TextUnformatted(subProp.Name.c_str());
+                        ImGui::SameLine();
+                        DrawPropertyEditor(tmp.data(), subProp);
+                    }
+                }
                 break;
             }
         default: break;

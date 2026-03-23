@@ -42,15 +42,11 @@ namespace Phoenix
     namespace detail
     {
         // Builds a GenericValue from a function return value.
-        // For struct types, moves the value into OwnedData (safe for temporaries).
-        // For primitives, stores inline in the union.
+        // All types use Borrow — the buffer-based GenericValue copies bytes inline.
         template <class TRet>
         GenericValue MakeReturnValue(TRet&& v)
         {
-            if constexpr (HasStaticTypeName<std::decay_t<TRet>>::value)
-                return GenericConverter<std::decay_t<TRet>>::Own(std::forward<TRet>(v));
-            else
-                return GenericConverter<std::decay_t<TRet>>::Borrow(v);
+            return GenericConverter<std::decay_t<TRet>>::Borrow(v);
         }
 
         // ── Free static function ──────────────────────────────────────────────

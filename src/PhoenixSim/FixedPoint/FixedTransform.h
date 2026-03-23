@@ -32,13 +32,6 @@ namespace Phoenix
     typedef TTransform<Vec2, Angle, Value> Transform2D;
 
     template <>
-    struct PropertyDescriptorBuilder<Transform2D>
-    {
-        static EPropertyValueType GetPropertyValueType() { return EPropertyValueType::Transform2D; }
-        static std::unordered_map<std::string, std::string> GetMetadata() { return {}; }
-    };
-
-    template <>
     inline Vec2 TTransform<Vec2, Angle, Value>::RotateVector(const Vec2& vec) const
     {
         return vec.Rotate(Rotation);
@@ -82,3 +75,11 @@ namespace Phoenix
         return Result;
     }
 }
+
+// ── External type registration ────────────────────────────────────────────────
+//
+// Register Transform2D with the Phoenix reflection system.
+// Any translation unit that needs to reflect on these types must include
+// this header (or another header that includes it).
+
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Transform2D,  "Transform2D")
