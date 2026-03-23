@@ -596,7 +596,7 @@ void OnAppRenderUI()
                 const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
                 const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
 
-                if (ImGui::CollapsingHeader(typeDescriptor.DisplayName))
+                if (ImGui::CollapsingHeader(typeDescriptor.GetDisplayName()))
                 {
                     if (ImGui::TreeNode("Properties:"))
                     {
@@ -615,7 +615,7 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            if (ImGui::TreeNode(blockDef.Type->GetCName()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
@@ -635,7 +635,7 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            if (ImGui::TreeNode(blockDef.Type->GetCName()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
@@ -658,7 +658,7 @@ void OnAppRenderUI()
         {
             const auto& descriptor = tool->GetTypeDescriptor();
 
-            if (ImGui::CollapsingHeader(descriptor.DisplayName))
+            if (ImGui::CollapsingHeader(descriptor.GetDisplayName()))
             {
                 GActiveTools.push_back(tool);
                 DrawPropertyGrid(tool.get(), descriptor);
@@ -711,7 +711,7 @@ void OnAppRenderUI()
                 for (const std::shared_ptr<ISystem>& system : featureECS->GetSystems())
                 {
                     const auto& systemDescriptor = system->GetTypeDescriptor();
-                    if (ImGui::CollapsingHeader(systemDescriptor.DisplayName))
+                    if (ImGui::CollapsingHeader(systemDescriptor.GetDisplayName()))
                     {
                         DrawPropertyGrid(system.get(), systemDescriptor);
                     }
@@ -771,7 +771,7 @@ void OnAppRenderUI()
                                 {
                                     const ComponentDefinition& compDef = archDef[i];
                                     
-                                    if (ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                                    if (ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
                                     {
                                         if (ImGui::BeginTable("Props", 2, ImGuiTableFlags_SizingFixedFit))
                                         {                                
@@ -832,7 +832,7 @@ void OnAppRenderUI()
                                     {
                                         list.ForEachComponent(handle, [](const ComponentDefinition& compDef, const void* comp)
                                         {
-                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
                                             {
                                                 DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                                                 ImGui::TreePop();
@@ -992,7 +992,7 @@ void OnAppRenderUI()
                 {
                     FeatureECS::ForEachComponent(world, selectedEntityId, [&](const ComponentDefinition& compDef, const void* comp)
                     {
-                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
                         {
                             DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                             ImGui::TreePop();

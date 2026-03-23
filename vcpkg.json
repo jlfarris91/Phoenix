@@ -7,6 +7,12 @@
     "lua"
   ],
   "features": {
+    "tests": {
+      "description": "Dependencies for unit tests",
+      "dependencies": [
+        "doctest"
+      ]
+    },
     "testapp": {
       "description": "Dependencies for the TestRTS demo app",
       "dependencies": [

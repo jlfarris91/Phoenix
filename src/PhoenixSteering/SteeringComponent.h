@@ -28,30 +28,7 @@ namespace Phoenix::Steering
 
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
     {
-        PHX_ECS_DECLARE_COMPONENT_BEGIN(SteeringComponent)
-            PHX_REGISTER_FIELD(ESteerMode, Mode)
-            PHX_REGISTER_FIELD(ESteerFlags, Flags)
-            PHX_REGISTER_FIELD(uint32, CollisionMask)
-            PHX_REGISTER_FIELD(ECS::EntityId, GoalEntity)
-            PHX_REGISTER_FIELD(Vec2, GoalPos)
-            PHX_REGISTER_FIELD(Distance, Slack)
-            PHX_REGISTER_FIELD(Vec2, Velocity)
-            PHX_REGISTER_FIELD(Vec2, PreviousPos)
-            PHX_REGISTER_FIELD(Vec2, BestPos)
-            PHX_REGISTER_FIELD(Distance, InnerRadius)
-            PHX_REGISTER_FIELD(Distance, OuterRadius)
-            PHX_REGISTER_FIELD(Distance, ArrivalRange)
-            PHX_REGISTER_FIELD(Distance, ArrivalRange)
-            PHX_REGISTER_FIELD(Distance, MaxSpeed)
-            PHX_REGISTER_FIELD(Time, TurnRateIdle)
-            PHX_REGISTER_FIELD(Time, TurnRateMoving)
-            PHX_REGISTER_FIELD(Time, AccelerationTime)
-            PHX_REGISTER_FIELD(Time, DecelerationTime)
-            PHX_REGISTER_FIELD(Distance, AvoidanceRadius)
-            PHX_REGISTER_FIELD(Time, SeparationDelay)
-            PHX_REGISTER_FIELD(Distance, SeparationRadius)
-            PHX_REGISTER_FIELD(Value, SeparationStrength)
-        PHX_ECS_DECLARE_COMPONENT_END()
+        PHX_DECLARE_TYPE(SteeringComponent, Phoenix::ECS::IComponent)
 
         ESteerMode Mode = ESteerMode::Idle;
         ESteerFlags Flags = ESteerFlags::Active;

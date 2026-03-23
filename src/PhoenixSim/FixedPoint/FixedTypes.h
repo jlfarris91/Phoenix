@@ -55,3 +55,16 @@ namespace Phoenix
         return Q64(v2);
     }
 }
+
+// ── Reflection type traits for TFixed domain types ───────────────────────────
+//
+// Register canonical names so TypeRegistry and GenericConverter can identify
+// these types.  Value == Distance (same TFixed<12,int32> type) — Distance is
+// the canonical name.  InvValue / DeltaTime are inverse types, not registered.
+
+#include "PhoenixSim/Reflection/TypeTraits.h"
+
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Distance, "Distance")
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Time,     "Time")
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Speed,    "Speed")
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Angle,    "Angle")

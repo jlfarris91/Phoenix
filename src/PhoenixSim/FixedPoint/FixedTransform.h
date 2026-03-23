@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Reflection/Reflection.h"
 
 namespace Phoenix
 {
@@ -74,3 +75,11 @@ namespace Phoenix
         return Result;
     }
 }
+
+// ── External type registration ────────────────────────────────────────────────
+//
+// Register Transform2D with the Phoenix reflection system.
+// Any translation unit that needs to reflect on these types must include
+// this header (or another header that includes it).
+
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Transform2D,  "Transform2D")

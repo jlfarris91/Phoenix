@@ -1,5 +1,6 @@
 ﻿
 #include "PhoenixSim/ECS/FeatureECS.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/Profiling.h"
@@ -1116,4 +1117,13 @@ void FeatureECS::OnReclaimEntity(WorldRef world, const EntityId& entityId) const
     FeatureBlackboard::GetBlackboard(world).RemoveAll(query);
 
     EntityDestroyedEvent.Broadcast(world, entityId);
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+PHX_TYPE_REGISTRATION(FeatureECS)
+{
+    registration
+        .Field("bDebugDrawMortonCodeBoundaries", &FeatureECS::bDebugDrawMortonCodeBoundaries)
+        .Field("bDebugDrawEntityZCodes",         &FeatureECS::bDebugDrawEntityZCodes);
 }

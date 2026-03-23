@@ -15,15 +15,7 @@ namespace Phoenix::Physics
     class PHOENIX_PHYSICS_API PhysicsSystem : public ECS::ISystem
     {
     public:
-        PHX_ECS_DECLARE_SYSTEM_BEGIN(PhysicsSystem)
-            PHX_REGISTER_FIELD(bool, DebugDrawContacts)
-            PHX_REGISTER_FIELD(bool, AllowSleep)
-            PHX_REGISTER_FIELD(uint8, NumIterations)
-            PHX_REGISTER_FIELD(uint8, NumSolverSteps)
-            PHX_REGISTER_FIELD(uint8, NumSeparationSteps)
-            PHX_REGISTER_FIELD(double, PenetrationThreshold)
-            PHX_REGISTER_FIELD(double, PenetrationCorrection)
-        PHX_ECS_DECLARE_SYSTEM_END()
+        PHX_DECLARE_TYPE(PhysicsSystem, Phoenix::ECS::ISystem)
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;

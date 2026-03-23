@@ -6,7 +6,7 @@
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
-#include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Reflection/Reflection.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 
 #ifndef PHX_ECS_ARCHETYPE_MAX_COMPS

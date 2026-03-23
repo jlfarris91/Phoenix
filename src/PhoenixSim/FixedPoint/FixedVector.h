@@ -328,3 +328,11 @@ namespace Phoenix
     template <uint8 Td, class T> struct TOne<TFixed<Td, T>> { static constexpr TFixed<Td, T> Value = 1; };
     template <class T> struct TOne<TVec2<T>> { static constexpr TVec2<T> Value = TVec2<T>(1, 1); };
 }
+
+// ── External type registration ────────────────────────────────────────────────
+//
+// Register Vec2 with the Phoenix reflection system.
+// Any translation unit that needs to reflect on these types must include
+// this header (or another header that includes it).
+
+PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Vec2,  "Vec2")
