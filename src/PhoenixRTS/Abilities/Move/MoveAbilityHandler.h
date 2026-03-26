@@ -43,7 +43,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API MoveAbilityHandler : public IAbilityHandler
     {
-        PHX_ENABLE_TYPE(MoveAbilityHandler, IAbilityHandler)
+        PHX_DECLARE_TYPE(MoveAbilityHandler, IAbilityHandler)
 
     public:
 

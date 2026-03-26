@@ -25,7 +25,7 @@ namespace Phoenix
 
     class IScriptBindings : public IService
     {
-        PHX_ENABLE_TYPE(IScriptBindings, IService)
+        PHX_DECLARE_TYPE(IScriptBindings, IService)
 
     public:
         // Dot-separated namespace this class registers into (e.g. "Phoenix.Unit").

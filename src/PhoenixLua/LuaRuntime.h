@@ -19,9 +19,8 @@ namespace Phoenix
     // Owns no sol::state — it operates on the sol::state stored in
     // FeatureLuaDynamicBlock, passed in at construction.
     //
-    // World params (ParamTypeRef::Descriptor == &World::GetStaticTypeDescriptor())
-    // are detected at binding time and injected from m_currentWorld rather than
-    // read from the Lua argument list.
+    // World functions use HasSelfParam=true on GenericFunction with self=World*.
+    // LuaRuntime injects m_currentWorld as 'self' and reads only Params from Lua.
 
     class LuaRuntime : public IScriptRuntime
     {
@@ -53,8 +52,8 @@ namespace Phoenix
         // Registers a single MethodDescriptor into the given table.
         void RegisterFunctionInTable(sol::table& tbl, const MethodDescriptor& fn);
 
-        // Convert a sol::object to GenericValue given the expected param type.
-        static GenericValue SolToGenericValue(const sol::object& obj, const ParamTypeRef& type);
+        // Convert a sol::object to GenericValue given the expected parameter type.
+        static GenericValue SolToGenericValue(const sol::object& obj, const GenericValueTypeRef& type);
 
         // Convert a GenericValue to a sol::object for return to Lua.
         sol::object GenericValueToSol(const GenericValue& val) const;

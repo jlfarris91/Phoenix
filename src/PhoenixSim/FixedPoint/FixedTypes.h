@@ -64,7 +64,7 @@ namespace Phoenix
 
 #include "PhoenixSim/Reflection/TypeTraits.h"
 
-PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Distance, "Distance")
-PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Time,     "Time")
-PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Speed,    "Speed")
-PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Angle,    "Angle")
+PHX_REGISTER_EXTERNAL_TYPE(Distance)
+PHX_REGISTER_EXTERNAL_TYPE(Time)
+PHX_REGISTER_EXTERNAL_TYPE(Speed)
+PHX_REGISTER_EXTERNAL_TYPE(Angle)

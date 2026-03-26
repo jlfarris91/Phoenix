@@ -7,6 +7,11 @@ const char* TypeDescriptor::GetCName() const
     return CName;
 }
 
+const char* TypeDescriptor::GetQualifiedCName() const
+{
+    return QualifiedCName ? QualifiedCName : CName;
+}
+
 FName TypeDescriptor::GetFName() const
 {
     return FName;
@@ -91,9 +96,11 @@ bool TypeDescriptor::IsA(const Phoenix::FName& baseTypeId) const
 MethodDescriptor& TypeDescriptor::RegisterStaticMethod(
     const std::string& name,
     void(*executePtr)(),
-    bool(*canExecutePtr)())
+    bool(*canExecutePtr)(),
+    EMemberDescriptorFlags flags)
 {
     MethodDescriptor d = MakeMethodDescriptor(name.c_str(), executePtr);
+    d.Flags = flags;
     if (canExecutePtr)
     {
         d.CanExecutePredicate = [canExecutePtr](void*) { return canExecutePtr(); };

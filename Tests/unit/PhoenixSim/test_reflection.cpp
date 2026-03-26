@@ -9,7 +9,7 @@ using namespace Phoenix;
 
 // ── Test types ────────────────────────────────────────────────────────────────
 //
-// Using PHX_ENABLE_TYPE so registration stays inline (no separate .cpp needed).
+// Using PHX_DECLARE_TYPE so registration stays inline (no separate .cpp needed).
 // Each type has a unique name to avoid cross-test descriptor pollution.
 
 struct ReflPoint
@@ -19,19 +19,19 @@ struct ReflPoint
     float LengthSq() const { return X * X + Y * Y; }
     void  Normalize() { float l = std::sqrt(X*X + Y*Y); if (l > 0) { X /= l; Y /= l; } }
     bool  CanNormalize() const { return (X*X + Y*Y) > 0.0f; }
-    PHX_ENABLE_TYPE(ReflPoint)
+    PHX_DECLARE_TYPE(ReflPoint)
 };
 
 struct ReflBase
 {
     int BaseValue = 0;
-    PHX_ENABLE_TYPE(ReflBase)
+    PHX_DECLARE_TYPE(ReflBase)
 };
 
 struct ReflDerived : ReflBase
 {
     int DerivedValue = 0;
-    PHX_ENABLE_TYPE(ReflDerived, ReflBase)
+    PHX_DECLARE_TYPE(ReflDerived, ReflBase)
 };
 
 // Register fields/methods once at static-init time
@@ -56,6 +56,16 @@ static bool s_ReflDerivedRegistered = []() {
     return true;
 }();
 
+// Type inside a namespace — used to verify qualified name extraction.
+namespace ReflTestNs
+{
+    struct ReflNamed
+    {
+        int Value = 0;
+        PHX_DECLARE_TYPE(ReflNamed)
+    };
+}
+
 // ── TypeRegistry ──────────────────────────────────────────────────────────────
 
 TEST_SUITE("TypeRegistry")
@@ -78,10 +88,23 @@ TEST_SUITE("TypeRegistry")
         CHECK(&a == &b);
     }
 
-    TEST_CASE("CName matches struct name")
+    TEST_CASE("CName returns unqualified type name")
     {
         const TypeDescriptor& desc = TypeRegistry::GetOrCreate<ReflPoint>();
         CHECK(std::string(desc.GetCName()) == "ReflPoint");
+    }
+
+    TEST_CASE("GetQualifiedCName returns fully qualified name for namespaced type")
+    {
+        const TypeDescriptor& desc = TypeRegistry::GetOrCreate<ReflTestNs::ReflNamed>();
+        CHECK(std::string(desc.GetQualifiedCName()) == "ReflTestNs::ReflNamed");
+    }
+
+    TEST_CASE("GetQualifiedCName falls back to CName for file-scope type")
+    {
+        // ReflPoint is at file scope — qualified name has no namespace prefix.
+        const TypeDescriptor& desc = TypeRegistry::GetOrCreate<ReflPoint>();
+        CHECK(std::string(desc.GetQualifiedCName()) == "ReflPoint");
     }
 }
 
@@ -247,7 +270,7 @@ TEST_SUITE("TypeDescriptor DefaultConstruct")
 
 // ── External type registration ────────────────────────────────────────────────
 //
-// Vec2 is registered via PHX_REGISTER_EXTERNAL_TYPE (no in-class PHX_ENABLE_TYPE).
+// Vec2 is registered via PHX_REGISTER_EXTERNAL_TYPE (no in-class PHX_DECLARE_TYPE).
 // Its fields are registered in FixedTypeRegistrations.cpp.
 
 TEST_SUITE("External type registration")
@@ -276,7 +299,7 @@ TEST_SUITE("External type registration")
 struct ReflWithNested
 {
     ReflPoint Origin;
-    PHX_ENABLE_TYPE(ReflWithNested)
+    PHX_DECLARE_TYPE(ReflWithNested)
 };
 
 static bool s_ReflWithNestedRegistered = []() {
@@ -323,7 +346,7 @@ struct ReflNumeric
 {
     float Speed = 0.0f;
     int32_t Count = 0;
-    PHX_ENABLE_TYPE(ReflNumeric)
+    PHX_DECLARE_TYPE(ReflNumeric)
 };
 
 static bool s_ReflNumericRegistered = []() {
@@ -365,7 +388,7 @@ TEST_SUITE("PropertyDescriptorBuilder numeric metadata")
     }
 }
 
-struct ReflDistanceHolder { Distance D; PHX_ENABLE_TYPE(ReflDistanceHolder) };
+struct ReflDistanceHolder { Distance D; PHX_DECLARE_TYPE(ReflDistanceHolder) };
 static bool s_ReflDistanceHolderRegistered = []() {
     TypeDescriptorBuilder<ReflDistanceHolder>().Field("D", &ReflDistanceHolder::D);
     return true;

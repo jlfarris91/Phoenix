@@ -335,4 +335,4 @@ namespace Phoenix
 // Any translation unit that needs to reflect on these types must include
 // this header (or another header that includes it).
 
-PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Vec2,  "Vec2")
+PHX_REGISTER_EXTERNAL_TYPE(Vec2)

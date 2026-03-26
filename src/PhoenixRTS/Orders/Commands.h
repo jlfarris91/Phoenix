@@ -4,6 +4,7 @@
 #include "PhoenixSim/Actions.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/ECS/EntityId.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixRTS/DLLExport.h"
 
@@ -28,6 +29,7 @@ namespace Phoenix::RTS
     // A command issued by a player to a selection of units.
     struct PHOENIX_RTS_API Command
     {
+        PHX_DECLARE_TYPE(Command)
         Command() = default;
         Command(const Action& action);
 

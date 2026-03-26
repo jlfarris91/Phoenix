@@ -67,6 +67,8 @@
 // Test App Tools
 #include "Console.h"
 #include "Logger.h"
+#include "PhoenixLua/FeatureLua.h"
+#include "PhoenixScript/FeatureScript.h"
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "SDL/SDLLineModel.h"
@@ -185,7 +187,8 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
-    //serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
@@ -194,7 +197,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
 
     // Register game-specific features
-    serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
+    // serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
 
     // Register ability handlers
     serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
@@ -1055,6 +1058,7 @@ void OnAppShutdown()
     GSessionThreadWantsExit = true;
     GSessionThread->join();
 
+    LogInfo("App shutdown complete.");
     GLogger.reset();
 }
 

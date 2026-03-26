@@ -42,6 +42,7 @@ PhoenixSim          (core: ECS, Session, Features, LDS, memory, threading)
 | [BuildAndRunTestRTS.md](docs/BuildAndRunTestRTS.md) | Build setup and running TestRTS |
 | [ScriptingBindings.md](docs/ScriptingBindings.md) | Runtime-agnostic scripting binding architecture (IScriptRuntime / IScriptBindings) |
 | [Reflection.md](docs/Reflection.md) | TypeDescriptor, properties, methods, macros, TypeRegistry, serialization, script bindings |
+| [WasmScriptingInternals.md](docs/WasmScriptingInternals.md) | wasm3 stack convention, Emscripten STANDALONE_WASM, invoke_* dispatch, file-based Lua loading, diagnostics |
 
 ## Key Files
 

@@ -1,4 +1,5 @@
 #include "PlayerController.h"
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include <SDL3/SDL_events.h>
 
@@ -333,4 +334,15 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
         CursorDragStart.Reset();
         CameraDragPos.Reset();
     }
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+using namespace Phoenix;
+
+PHX_DEFINE_TYPE(PlayerController)
+{
+    registration
+        .Field("PanSpeed",  &PlayerController::PanSpeed)
+        .Field("ZoomSpeed", &PlayerController::ZoomSpeed);
 }

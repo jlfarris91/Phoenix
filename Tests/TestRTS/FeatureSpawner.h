@@ -11,15 +11,7 @@ struct SpawnWave
 
 struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 {
-    PHX_DECLARE_BLOCK_BEGIN(FeatureSpawnerWorldBlock)
-        PHX_REGISTER_FIELD(Phoenix::Time, SpawnCooldownMin)
-        PHX_REGISTER_FIELD(Phoenix::Time, SpawnCooldownMax)
-        PHX_REGISTER_FIELD(Phoenix::Time, NextSpawnTime)
-        PHX_REGISTER_FIELD(Phoenix::Time, WaveDuration)
-        PHX_REGISTER_FIELD(Phoenix::Time, NextWaveTime)
-        PHX_REGISTER_FIELD(Phoenix::uint32, WaveNum)
-        PHX_REGISTER_FIELD(bool, SpawningEnabled)
-    PHX_DECLARE_BLOCK_END()
+    PHX_REFLECT_TYPE(FeatureSpawnerWorldBlock)
 
     Phoenix::Time SpawnCooldownMin;
     Phoenix::Time SpawnCooldownMax;
@@ -38,8 +30,7 @@ struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 
 class FeatureSpawner : public Phoenix::IFeature
 {
-    PHX_DECLARE_FEATURE_TYPE_BEGIN(FeatureSpawner)
-    PHX_DECLARE_FEATURE_TYPE_END()
+    PHX_DECLARE_FEATURE_TYPE(FeatureSpawner)
 
 public:
 

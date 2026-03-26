@@ -28,7 +28,7 @@ namespace Phoenix::Steering
 
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
     {
-        PHX_DECLARE_TYPE(SteeringComponent, Phoenix::ECS::IComponent)
+        PHX_REFLECT_TYPE(SteeringComponent, Phoenix::ECS::IComponent)
 
         ESteerMode Mode = ESteerMode::Idle;
         ESteerFlags Flags = ESteerFlags::Active;

@@ -8,7 +8,7 @@ namespace Phoenix::ECS
 {
     struct PHOENIX_SIM_API TransformComponent : IComponent
     {
-        PHX_DECLARE_TYPE(TransformComponent, Phoenix::ECS::IComponent)
+        PHX_REFLECT_TYPE(TransformComponent, Phoenix::ECS::IComponent)
 
     public:
 

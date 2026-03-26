@@ -4,7 +4,7 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
-PHX_TYPE_REGISTRATION(EffectComponent)
+PHX_DEFINE_TYPE(EffectComponent)
 {
     registration
         .Field("Name",            &EffectComponent::Name)

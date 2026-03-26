@@ -36,3 +36,5 @@ namespace Phoenix
         static Color FromHex(const char* hex);
     };
 }
+
+PHX_REGISTER_EXTERNAL_TYPE(Color);

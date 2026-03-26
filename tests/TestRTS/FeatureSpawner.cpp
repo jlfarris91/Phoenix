@@ -176,7 +176,7 @@ UnitId FeatureSpawner::SpawnTowerForPlayer(WorldRef world, uint8_t player)
 
 // ── Type registration ──────────────────────────────────────────────────────────
 
-PHX_TYPE_REGISTRATION(FeatureSpawnerWorldBlock)
+PHX_DEFINE_TYPE(FeatureSpawnerWorldBlock)
 {
     registration
         .Field("SpawnCooldownMin", &FeatureSpawnerWorldBlock::SpawnCooldownMin)

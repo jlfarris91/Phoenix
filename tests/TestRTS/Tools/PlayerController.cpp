@@ -340,7 +340,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
 using namespace Phoenix;
 
-PHX_TYPE_REGISTRATION(PlayerController)
+PHX_DEFINE_TYPE(PlayerController)
 {
     registration
         .Field("PanSpeed",  &PlayerController::PanSpeed)

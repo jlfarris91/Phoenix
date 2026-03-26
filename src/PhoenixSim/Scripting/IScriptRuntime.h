@@ -12,7 +12,6 @@ namespace Phoenix
     // ── IScriptRuntime ────────────────────────────────────────────────────────
     //
     // VM-agnostic interface for a script runtime (Lua, QuickJS, Wren, …).
-    // No sol2 or lua.h headers appear here.
     //
     // Used by:
     //  • FeatureLua, which owns the concrete implementation (LuaRuntime).
@@ -25,9 +24,9 @@ namespace Phoenix
 
         // ── Declarative registration ──────────────────────────────────────────
 
-        // Registers all script functions in a TypeDescriptor under its ScriptNamespace.
-        // Called once per type during session init. Types with empty ScriptNamespace
-        // are skipped.
+        // Registers all methods in a TypeDescriptor into the type's Namespace table.
+        // Called once per registered type during session init.
+        // Types without a "Namespace" metadata entry are skipped.
         virtual void RegisterType(const TypeDescriptor& desc) = 0;
 
         // ── Manual registration (used by IScriptBindings) ─────────────────────

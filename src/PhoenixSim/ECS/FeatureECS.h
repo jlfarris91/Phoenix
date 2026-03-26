@@ -97,7 +97,7 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
-        PHX_DECLARE_TYPE(FeatureECS, Phoenix::IFeature)
+        PHX_REFLECT_TYPE(FeatureECS, Phoenix::IFeature)
 
     public:
 

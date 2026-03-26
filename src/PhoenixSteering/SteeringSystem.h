@@ -9,7 +9,7 @@ namespace Phoenix::Steering
     class PHOENIX_STEERING_API SteeringSystem : public ECS::ISystem
     {
     public:
-        PHX_DECLARE_TYPE(SteeringSystem, Phoenix::ECS::ISystem)
+        PHX_REFLECT_TYPE(SteeringSystem, Phoenix::ECS::ISystem)
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;

@@ -34,7 +34,7 @@ namespace Phoenix
     // and generic invocation systems.
     //
     //  • Struct — any Phoenix-registered struct type (has StaticTypeName via
-    //             PHX_DECLARE_TYPE / PHX_ENABLE_TYPE, or via
+    //             PHX_DECLARE_TYPE / PHX_DECLARE_TYPE, or via
     //             PHX_REGISTER_EXTERNAL_TYPE).  PropertyDescriptor::StructDescriptor
     //             points at the nested TypeDescriptor.
     //
@@ -134,6 +134,23 @@ namespace Phoenix
     //   T with reflection traits → IsStruct() with Descriptor pointing to T's descriptor
     //   primitives               → IsPrimitive() with matching EGenericValueType
 
+    // ── GenericValueTypeRefMaker<D> ──────────────────────────────────────────
+    //
+    // Partially-specializable helper used by MakeGenericValueTypeRef for types
+    // that fall through the registered-type branch.
+    // Default: returns {EGenericValueType, nullptr}.
+    // Specialized in Reflection.h for TFixed to attach the TypeDescriptor pointer
+    // (so consumers can read FractionalBits metadata).
+
+    template <class D, class = void>
+    struct GenericValueTypeRefMaker
+    {
+        static GenericValueTypeRef Make()
+        {
+            return { GenericValueTypeBuilder<D>::GetPropertyValueType(), nullptr };
+        }
+    };
+
     template <class T>
     GenericValueTypeRef MakeGenericValueTypeRef()
     {
@@ -145,6 +162,14 @@ namespace Phoenix
         }
         else if constexpr (detail::IsRegisteredType_v<D>)
         {
+            // Allow GenericValueTypeRefMaker to override with a concrete scalar primitive
+            // (e.g. TFixed → FixedPoint so it is treated as a scalar, not an expandable struct).
+            // Exclude Unknown (no-op) and Struct (would lose the TypeDescriptor pointer).
+            const auto overrideRef = GenericValueTypeRefMaker<D>::Make();
+            if (overrideRef.Primitive != EGenericValueType::Unknown &&
+                overrideRef.Primitive != EGenericValueType::Struct)
+                return overrideRef;
+
             // TypeDescriptor must be complete at instantiation sites that call this.
             if constexpr (detail::HasStaticTypeName<D>::value)
                 return { EGenericValueType::Unknown, &D::GetStaticTypeDescriptor() };
@@ -153,7 +178,7 @@ namespace Phoenix
         }
         else
         {
-            return { GenericValueTypeBuilder<D>::GetPropertyValueType(), nullptr };
+            return GenericValueTypeRefMaker<D>::Make();
         }
     }
 
@@ -263,7 +288,7 @@ namespace Phoenix
     //
     // Bidirectional mapping between a C++ type T and GenericValue.
     //
-    // Primary template: registered struct types (PHX_DECLARE_TYPE / PHX_ENABLE_TYPE
+    // Primary template: registered struct types (PHX_DECLARE_TYPE / PHX_DECLARE_TYPE
     // or PHX_REGISTER_EXTERNAL_TYPE).  Raw bytes are stored in Buffer via memcpy.
     // sizeof(T) must not exceed 32 bytes.
     //
@@ -274,7 +299,7 @@ namespace Phoenix
     {
         static_assert(detail::IsRegisteredType_v<T>,
             "GenericConverter requires T to have StaticTypeName (use PHX_DECLARE_TYPE / "
-            "PHX_ENABLE_TYPE) or PHX_REGISTER_EXTERNAL_TYPE, or provide a "
+            "PHX_DECLARE_TYPE) or PHX_REGISTER_EXTERNAL_TYPE, or provide a "
             "GenericConverter<T> specialisation.");
 
         static_assert(sizeof(T) <= sizeof(GenericValue::Buffer),
@@ -298,6 +323,11 @@ namespace Phoenix
             std::memcpy(&result, gv.Buffer, sizeof(T));
             return result;
         }
+    };
+
+    template <>
+    struct GenericConverter<void>
+    {
     };
 
     // ── Primitive specialisations ─────────────────────────────────────────────
@@ -335,6 +365,16 @@ namespace Phoenix
     PHX_GC(ECS::EntityId,   UInt32)
 
 #undef PHX_GC
+
+    // ECS::EntityId is treated as a plain uint32 handle in the reflection system.
+    template <>
+    struct GenericValueTypeBuilder<ECS::EntityId>
+    {
+        static EGenericValueType GetPropertyValueType()
+        {
+            return EGenericValueType::UInt32;
+        }
+    };
 
     template <> struct GenericConverter<std::string>
     {

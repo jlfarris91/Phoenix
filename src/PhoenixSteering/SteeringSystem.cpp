@@ -708,7 +708,7 @@ void SteeringSystem::OnDebugRender(
 
 // ── Type registration ──────────────────────────────────────────────────────────
 
-PHX_TYPE_REGISTRATION(SteeringSystem)
+PHX_DEFINE_TYPE(SteeringSystem)
 {
     registration
         .Field("MoveTowardsGoal",       &SteeringSystem::MoveTowardsGoal)

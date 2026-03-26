@@ -33,6 +33,8 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API SpawnUnitArgs
     {
+        PHX_DECLARE_TYPE(SpawnUnitArgs)
+
         ESpawnUnitFlags Flags = ESpawnUnitFlags::None;
 
         // The maximum range that the unit can spawn from the spawn position.
@@ -61,7 +63,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureUnit : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE(FeatureUnit)
+        PHX_REFLECT_TYPE(FeatureUnit, Phoenix::IFeature)
 
     public:
 

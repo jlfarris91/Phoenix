@@ -351,3 +351,5 @@ namespace Phoenix
 
     using Random = TRandom<RandomDetail::Xoroshiro64SS>;
 }
+
+PHX_REGISTER_EXTERNAL_TYPE(Random)

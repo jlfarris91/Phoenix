@@ -155,3 +155,5 @@ namespace Phoenix
 
     using Box2 = TFixedBox<Vec2>;
 }
+
+PHX_REGISTER_EXTERNAL_TYPE(Box2)

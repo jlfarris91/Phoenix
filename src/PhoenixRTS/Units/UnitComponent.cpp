@@ -4,7 +4,7 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
-PHX_TYPE_REGISTRATION(UnitComponent)
+PHX_DEFINE_TYPE(UnitComponent)
 {
     registration
         .Field("OwningPlayer", &UnitComponent::OwningPlayer)

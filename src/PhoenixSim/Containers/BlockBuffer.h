@@ -2,7 +2,7 @@
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Delegates.h"
-#include "PhoenixSim/Reflection/Reflection.h"
+#include "PhoenixSim/Reflection/Registration.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/OffsetRef.h"
 
@@ -250,8 +250,6 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API BufferBlockBase
     {
-        virtual ~BufferBlockBase() = default;
-        virtual const TypeDescriptor& GetTypeDescriptor() const = 0;
     };
 
     template <class T>
@@ -324,7 +322,7 @@ namespace Phoenix
 }
 
 #define PHX_DECLARE_BLOCK(block) \
-    PHX_ENABLE_TYPE(block)
+    PHX_DECLARE_TYPE(block)
 
 #define PHX_DECLARE_BLOCK_WITH_ALLOC(block) \
     struct Config; \
@@ -332,4 +330,4 @@ namespace Phoenix
     block(BlockBufferAllocator& allocator, const Config& config, const block& other); \
     static BufferBlockLayout Layout(Config config); \
     static void Construct(void* dest, BlockBufferAllocator& allocator, Config config); \
-    PHX_ENABLE_TYPE(block)
+    PHX_DECLARE_TYPE(block)

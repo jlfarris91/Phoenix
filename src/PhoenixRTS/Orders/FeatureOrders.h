@@ -42,7 +42,7 @@ namespace Phoenix::RTS
     // Manages the order queues of all units in the game.
     class PHOENIX_RTS_API FeatureOrders : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE(FeatureOrders)
+        PHX_REFLECT_TYPE(FeatureOrders, Phoenix::IFeature)
 
     public:
 

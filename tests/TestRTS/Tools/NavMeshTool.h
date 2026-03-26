@@ -14,7 +14,7 @@ namespace Phoenix
 
     struct NavMeshTool : ISDLTool
     {
-        PHX_DECLARE_TYPE(NavMeshTool)
+        PHX_REFLECT_TYPE(NavMeshTool)
 
         NavMeshTool(std::shared_ptr<Session> session);
 

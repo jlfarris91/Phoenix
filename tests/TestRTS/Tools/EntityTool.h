@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <PhoenixSim/Reflection/Reflection.h>
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include "../SDL/SDLTool.h"
 
@@ -11,7 +11,7 @@ namespace Phoenix
 
     struct EntityTool : ISDLTool
     {
-        PHX_DECLARE_TYPE(EntityTool)
+        PHX_REFLECT_TYPE(EntityTool)
 
         EntityTool(const std::shared_ptr<Session>& session);
 

@@ -12,7 +12,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureVitals : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE(FeatureVitals)
+        PHX_REFLECT_TYPE(FeatureVitals, Phoenix::IFeature)
 
     public:
 

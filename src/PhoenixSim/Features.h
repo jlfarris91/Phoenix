@@ -108,7 +108,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IFeature : public IService
     {
-        PHX_ENABLE_TYPE(IFeature, IService)
+        PHX_DECLARE_TYPE(IFeature, IService)
 
     public:
 
@@ -228,7 +228,7 @@ namespace Phoenix
 }
 
 
-#define PHX_DECLARE_FEATURE_TYPE(feature) PHX_ENABLE_TYPE(feature, Phoenix::IFeature)
+#define PHX_DECLARE_FEATURE_TYPE(feature) PHX_DECLARE_TYPE(feature, Phoenix::IFeature)
 
 #define FEATURE_SESSION_BLOCK(block, type) Definition.RegisterSessionBlock<block>(type);
 #define FEATURE_WORLD_BLOCK(block, type) Definition.RegisterWorldBlock<block>(type);

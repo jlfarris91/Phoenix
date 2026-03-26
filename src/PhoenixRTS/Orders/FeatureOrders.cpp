@@ -1,4 +1,5 @@
 #include "PhoenixRTS/Orders/FeatureOrders.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/Flags.h"
@@ -17,6 +18,14 @@ using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
+
+PHX_DEFINE_TYPE(FeatureOrders)
+{
+    registration
+        .Namespace("Phoenix.Orders")
+        .StaticMethod("IssueCommand", &FeatureOrders::StaticIssueCommand)
+        .StaticMethod("HasOrders",    &FeatureOrders::HasOrders);
+}
 
 FeatureOrdersDynamicBlock::FeatureOrdersDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
     : OrderQueue(allocator, config.MaxOrders)

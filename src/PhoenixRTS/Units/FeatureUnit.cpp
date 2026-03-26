@@ -1,4 +1,5 @@
 #include "PhoenixRTS/Units/FeatureUnit.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/LDS/FeatureLDS.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
@@ -25,6 +26,16 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
+
+PHX_DEFINE_TYPE(FeatureUnit)
+{
+    registration
+        .Namespace("Phoenix.Unit")
+        .StaticMethod("SpawnUnit",   &FeatureUnit::SpawnUnit)
+        .StaticMethod("IsAlive",     &FeatureUnit::UnitIsAlive)
+        .StaticMethod("GetOwner",    &FeatureUnit::GetOwningPlayer)
+        .StaticMethod("GetUnitData", &FeatureUnit::GetUnitDataId);
+}
 
 FeatureUnit::FeatureUnit()
 {

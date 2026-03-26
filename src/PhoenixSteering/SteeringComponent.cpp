@@ -4,7 +4,7 @@
 using namespace Phoenix;
 using namespace Phoenix::Steering;
 
-PHX_TYPE_REGISTRATION(SteeringComponent)
+PHX_DEFINE_TYPE(SteeringComponent)
 {
     registration
         .Field("Mode",              &SteeringComponent::Mode)

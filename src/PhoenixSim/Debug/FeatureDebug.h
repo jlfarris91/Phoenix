@@ -16,7 +16,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API FeatureDebug : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE(FeatureDebug)
+        PHX_REFLECT_TYPE(FeatureDebug, IFeature)
 
     public:
 

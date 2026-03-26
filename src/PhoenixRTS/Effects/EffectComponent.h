@@ -10,7 +10,7 @@ namespace Phoenix::RTS
 {
     struct PHOENIX_RTS_API EffectComponent : ECS::IComponent
     {
-        PHX_DECLARE_TYPE(EffectComponent, Phoenix::ECS::IComponent)
+        PHX_REFLECT_TYPE(EffectComponent, Phoenix::ECS::IComponent)
 
         FName Name;
         ECS::EntityId SourceId;

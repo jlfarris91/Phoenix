@@ -15,7 +15,7 @@ namespace Phoenix::Physics
     class PHOENIX_PHYSICS_API PhysicsSystem : public ECS::ISystem
     {
     public:
-        PHX_DECLARE_TYPE(PhysicsSystem, Phoenix::ECS::ISystem)
+        PHX_REFLECT_TYPE(PhysicsSystem, ISystem)
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;

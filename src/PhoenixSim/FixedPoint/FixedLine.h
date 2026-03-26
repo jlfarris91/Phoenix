@@ -36,3 +36,5 @@ namespace Phoenix
 
     using Line2 = TLine<Vec2>;
 }
+
+PHX_REGISTER_EXTERNAL_TYPE(Line2);

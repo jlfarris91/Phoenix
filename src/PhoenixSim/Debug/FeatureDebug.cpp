@@ -4,47 +4,64 @@
 #include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/Strings/FeatureString.h"
 
-Phoenix::FeatureDebug::FeatureDebug()
+using namespace Phoenix;
+
+PHX_DEFINE_TYPE(FeatureDebug)
 {
-    FEATURE_WORLD_BLOCK(FeatureDebugScratchBlock, EBufferBlockType::Scratch);
+    registration
+        .StaticMethod<void, WorldRef, const Vec2&, Distance, const Color&>    ("DrawCircle",  &FeatureDebug::DrawCircle)
+        .StaticMethod<void, WorldRef, const Circle2&, const Color&>           ("DrawCircle",  &FeatureDebug::DrawCircle)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawEllipse", &FeatureDebug::DrawEllipse)
+        .StaticMethod<void, WorldRef, const Ellipse2&, const Color&>          ("DrawEllipse", &FeatureDebug::DrawEllipse)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawLine",    &FeatureDebug::DrawLine)
+        .StaticMethod<void, WorldRef, const Line2&, const Color&>             ("DrawLine",    &FeatureDebug::DrawLine)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawRay",     &FeatureDebug::DrawRay)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawBox",     &FeatureDebug::DrawBox)
+        .StaticMethod<void, WorldRef, const Box2&, const Color&>              ("DrawBox",     &FeatureDebug::DrawBox)
+        .StaticMethod                                                         ("GetColor",    &FeatureDebug::GetColor);
+}
+
+FeatureDebug::FeatureDebug()
+{
+    FEATURE_WORLD_BLOCK(FeatureDebugScratchBlock, EBufferBlockType::Scratch)
     FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
     FEATURE_CHANNEL(FeatureChannels::DebugRender)
 }
 
-void Phoenix::FeatureDebug::DrawCircle(WorldRef world, const Vec2& pt, Distance radius, const Color& color)
+void FeatureDebug::DrawCircle(WorldRef world, const Vec2& pt, Distance radius, const Color& color)
 {
     DrawCircle(world, Circle2(pt, radius), color);
 }
 
-void Phoenix::FeatureDebug::DrawCircle(WorldRef world, const Circle2& circle, const Color& color)
+void FeatureDebug::DrawCircle(WorldRef world, const Circle2& circle, const Color& color)
 {
     FeatureDebugScratchBlock& block = world.GetBlockRef<FeatureDebugScratchBlock>();
     block.Shapes.EmplaceBack(circle, color);
 }
 
-void Phoenix::FeatureDebug::DrawEllipse(WorldRef world, const Vec2& pt, const Vec2& radius, const Color& color)
+void FeatureDebug::DrawEllipse(WorldRef world, const Vec2& pt, const Vec2& radius, const Color& color)
 {
     DrawEllipse(world, Ellipse2(pt, radius), color);
 }
 
-void Phoenix::FeatureDebug::DrawEllipse(WorldRef world, const Ellipse2& ellipse, const Color& color)
+void FeatureDebug::DrawEllipse(WorldRef world, const Ellipse2& ellipse, const Color& color)
 {
     FeatureDebugScratchBlock& block = world.GetBlockRef<FeatureDebugScratchBlock>();
     block.Shapes.EmplaceBack(ellipse, color);
 }
 
-void Phoenix::FeatureDebug::DrawLine(WorldRef world, const Vec2& v0, const Vec2& v1, const Color& color)
+void FeatureDebug::DrawLine(WorldRef world, const Vec2& v0, const Vec2& v1, const Color& color)
 {
     DrawLine(world, Line2(v0, v1), color);
 }
 
-void Phoenix::FeatureDebug::DrawLine(WorldRef world, const Line2& line, const Color& color)
+void FeatureDebug::DrawLine(WorldRef world, const Line2& line, const Color& color)
 {
     FeatureDebugScratchBlock& block = world.GetBlockRef<FeatureDebugScratchBlock>();
     block.Shapes.EmplaceBack(line, color);
 }
 
-void Phoenix::FeatureDebug::DrawLines(WorldRef world, const Vec2* points, size_t num, const Color& color)
+void FeatureDebug::DrawLines(WorldRef world, const Vec2* points, size_t num, const Color& color)
 {
     for (size_t i = 0; i < num; ++i)
     {
@@ -52,7 +69,7 @@ void Phoenix::FeatureDebug::DrawLines(WorldRef world, const Vec2* points, size_t
     }
 }
 
-void Phoenix::FeatureDebug::DrawLines(WorldRef world, const Line2* lines, size_t num, const Color& color)
+void FeatureDebug::DrawLines(WorldRef world, const Line2* lines, size_t num, const Color& color)
 {
     for (size_t i = 0; i < num; ++i)
     {
@@ -60,23 +77,23 @@ void Phoenix::FeatureDebug::DrawLines(WorldRef world, const Line2* lines, size_t
     }
 }
 
-void Phoenix::FeatureDebug::DrawRay(WorldRef world, const Vec2& start, const Vec2& dir, const Color& color)
+void FeatureDebug::DrawRay(WorldRef world, const Vec2& start, const Vec2& dir, const Color& color)
 {
     DrawLine(world, start, start + dir, color);
 }
 
-void Phoenix::FeatureDebug::DrawBox(WorldRef world, const Vec2& min, const Vec2& max, const Color& color)
+void FeatureDebug::DrawBox(WorldRef world, const Vec2& min, const Vec2& max, const Color& color)
 {
     DrawBox(world, Box2(min, max), color);
 }
 
-void Phoenix::FeatureDebug::DrawBox(WorldRef world, const Box2& box, const Color& color)
+void FeatureDebug::DrawBox(WorldRef world, const Box2& box, const Color& color)
 {
     FeatureDebugScratchBlock& block = world.GetBlockRef<FeatureDebugScratchBlock>();
     block.Shapes.EmplaceBack(box, color);
 }
 
-void Phoenix::FeatureDebug::DrawDebugText(
+void FeatureDebug::DrawDebugText(
     WorldRef world,
     const Vec2& pt,
     const char* str,
@@ -87,13 +104,13 @@ void Phoenix::FeatureDebug::DrawDebugText(
     block.Shapes.EmplaceBack(DebugShape::TextShape{ pt, FName(str, len) }, color);
 }
 
-Phoenix::Color Phoenix::FeatureDebug::GetColor(WorldConstRef world, size_t index)
+Color FeatureDebug::GetColor(WorldConstRef world, size_t index)
 {
     const FeatureDebugScratchBlock& block = world.GetBlockRef<FeatureDebugScratchBlock>();
     return block.Colors[index % _countof(block.Colors)];
 }
 
-void Phoenix::FeatureDebug::OnWorldInitialize(WorldRef world)
+void FeatureDebug::OnWorldInitialize(WorldRef world)
 {
     IFeature::OnWorldInitialize(world);
 
@@ -106,14 +123,14 @@ void Phoenix::FeatureDebug::OnWorldInitialize(WorldRef world)
     }
 }
 
-void Phoenix::FeatureDebug::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
+void FeatureDebug::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     IFeature::OnPreWorldUpdate(world, args);
     FeatureDebugScratchBlock& block = world.GetBlockRef<FeatureDebugScratchBlock>();
     block.Shapes.Reset();
 }
 
-void Phoenix::FeatureDebug::OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer)
+void FeatureDebug::OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer)
 {
     IFeature::OnDebugRender(world, state, renderer);
 

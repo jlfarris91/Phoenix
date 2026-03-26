@@ -1,27 +1,34 @@
 
 #pragma once
 
-#define SOL_ALL_SAFETIES_ON 1
-#include <sol/sol.hpp>
-
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
 
 #include "PhoenixLua/DLLExport.h"
-#include "PhoenixLua/LuaFP64.h"
-#include "PhoenixLua/LuaRuntime.h"
 #include "PhoenixSim/Features.h"
 
 namespace Phoenix
 {
-    struct PHOENIX_LUA_API FeatureLuaDynamicBlock : BufferBlockBase
-    {
-        PHX_DECLARE_BLOCK(FeatureLuaDynamicBlock)
-
-        sol::state State;
-    };
+    // ── FeatureLua ────────────────────────────────────────────────────────────
+    //
+    // Lua scripting feature built on PhoenixScript's WASM infrastructure.
+    //
+    // Architecture:
+    //  • Delegates WASM runtime management to FeatureScript.
+    //  • On OnWorldInitialize: calls FeatureScript::RegisterWorldRuntime with
+    //    the shared LuaRunner.wasm binary, then calls LoadLuaScript with the
+    //    world's configured .lua file.
+    //  • FeatureScript drives all lifecycle callbacks (OnPreUpdate,
+    //    OnWorldUpdate, etc.) — FeatureLua only orchestrates the Lua layer.
+    //  • EnqueueScript allows thread-safe submission of Lua snippets; they
+    //    are executed on the next OnWorldUpdate tick via WasmEnvironment::RunString.
+    //
+    // World config (under "FeatureLua"):
+    //   "script": "path/to/script.lua"   (relative to worlds directory)
+    //
+    // LuaRunner.wasm is loaded from <DataDirectory>/LuaRunner.wasm.
 
     class PHOENIX_LUA_API FeatureLua : public IFeature
     {
@@ -31,39 +38,18 @@ namespace Phoenix
 
         FeatureLua();
 
-        // Sets the path of the script loaded on Initialize (call before Initialize).
-        void SetScriptPath(std::string path);
-
-        // Thread-safe: enqueues a Lua code string to be executed on the next sim tick.
+        // Thread-safe: enqueues a Lua snippet to execute on the next world update.
         void EnqueueScript(std::string code);
 
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnPreUpdate(const FeatureUpdateArgs& args) override;
-        void OnUpdate(const FeatureUpdateArgs& args) override;
-        void OnPostUpdate(const FeatureUpdateArgs& args) override;
-
-        bool OnPreHandleAction(const FeatureActionArgs& action) override;
-        bool OnHandleAction(const FeatureActionArgs& action) override;
-        bool OnPostHandleAction(const FeatureActionArgs& action) override;
-
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
-
-        void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
-        void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
-
-        bool OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
-        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
-        bool OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
 
     private:
-        std::unique_ptr<LuaRuntime> m_luaRuntime;
-
-        std::string              m_scriptPath;
-        std::mutex               m_scriptQueueMutex;
-        std::vector<std::string> m_scriptQueue;
+        std::mutex               ScriptQueueMutex;
+        std::vector<std::string> ScriptQueue;
     };
 }

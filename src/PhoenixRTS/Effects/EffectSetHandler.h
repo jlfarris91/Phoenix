@@ -6,7 +6,7 @@ namespace Phoenix::RTS
 {
     class PHOENIX_RTS_API EffectSetHandler final : public IEffectHandler
     {
-        PHX_ENABLE_TYPE(EffectSetHandler, IEffectHandler)
+        PHX_DECLARE_TYPE(EffectSetHandler, IEffectHandler)
         
     public:
 

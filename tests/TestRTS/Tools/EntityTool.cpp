@@ -86,7 +86,7 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
 
 using namespace Phoenix;
 
-PHX_TYPE_REGISTRATION(EntityTool)
+PHX_DEFINE_TYPE(EntityTool)
 {
     registration
         .Field("BrushSize",  &EntityTool::BrushSize)

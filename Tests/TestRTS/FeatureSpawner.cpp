@@ -1,7 +1,9 @@
 #include "FeatureSpawner.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
 #include "PhoenixRTS/Orders/FeatureOrders.h"
+#include "PhoenixRTS/Orders/Commands.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixSim/Random.h"
 
@@ -13,6 +15,7 @@ FeatureSpawner::FeatureSpawner()
     FEATURE_WORLD_BLOCK(FeatureSpawnerWorldBlock, EBufferBlockType::Dynamic)
     FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
     FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
 }
 
 bool FeatureSpawner::GetIsEnabled(WorldConstRef world)
@@ -77,6 +80,29 @@ bool FeatureSpawner::OnHandleWorldAction(WorldRef world, const FeatureActionArgs
     if (args.Action.Verb == "enable_spawning"_n)
     {
         SetIsEnabled(world, args.Action.Args[0].AsBool);
+        return true;
+    }
+
+    if (args.Action.Verb == "spawn_unit"_n)
+    {
+        FName unitDataId           = args.Action.Args[0].AsName;
+        uint8 owner                = static_cast<uint8>(args.Action.Args[1].AsUInt32);
+        Distance x                 = args.Action.Args[2].AsDistance;
+        Distance y                 = args.Action.Args[3].AsDistance;
+        Angle facing               = args.Action.Args[4].AsDegrees;
+        FeatureUnit::SpawnUnit(world, unitDataId, owner, Vec2(x, y), facing);
+        return true;
+    }
+
+    if (args.Action.Verb == "issue_command"_n)
+    {
+        ECS::EntityId entityId(args.Action.Args[0].AsUInt32);
+        RTS::UnitId   unitId(entityId);
+        RTS::Command  command;
+        command.CommandId       = args.Action.Args[1].AsName;
+        command.TargetLocation  = Vec2(args.Action.Args[2].AsDistance, args.Action.Args[3].AsDistance);
+        command.Sender          = args.Action.Args[4].AsUInt32;
+        RTS::FeatureOrders::StaticIssueCommand(world, unitId, command);
         return true;
     }
 
@@ -146,4 +172,18 @@ UnitId FeatureSpawner::SpawnTowerForPlayer(WorldRef world, uint8_t player)
     towerPos.X = Wrap<Distance>(towerPos.X, 0.0f, 10.0f * Sqrt(Value(maxPlayers)));
 
     return FeatureUnit::SpawnUnit(world, "Tower"_n, player, towerPos, 0);
+}
+
+// ── Type registration ──────────────────────────────────────────────────────────
+
+PHX_DEFINE_TYPE(FeatureSpawnerWorldBlock)
+{
+    registration
+        .Field("SpawnCooldownMin", &FeatureSpawnerWorldBlock::SpawnCooldownMin)
+        .Field("SpawnCooldownMax", &FeatureSpawnerWorldBlock::SpawnCooldownMax)
+        .Field("NextSpawnTime",    &FeatureSpawnerWorldBlock::NextSpawnTime)
+        .Field("WaveDuration",     &FeatureSpawnerWorldBlock::WaveDuration)
+        .Field("NextWaveTime",     &FeatureSpawnerWorldBlock::NextWaveTime)
+        .Field("WaveNum",          &FeatureSpawnerWorldBlock::WaveNum)
+        .Field("SpawningEnabled",  &FeatureSpawnerWorldBlock::SpawningEnabled);
 }

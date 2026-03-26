@@ -1121,7 +1121,7 @@ void FeatureECS::OnReclaimEntity(WorldRef world, const EntityId& entityId) const
 
 // ── Type registration ──────────────────────────────────────────────────────────
 
-PHX_TYPE_REGISTRATION(FeatureECS)
+PHX_DEFINE_TYPE(FeatureECS)
 {
     registration
         .Field("bDebugDrawMortonCodeBoundaries", &FeatureECS::bDebugDrawMortonCodeBoundaries)

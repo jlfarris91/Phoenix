@@ -517,7 +517,7 @@ void PhysicsSystem::OnDebugRender(WorldConstRef world, const IDebugState& state,
 
 // ── Type registration ──────────────────────────────────────────────────────────
 
-PHX_TYPE_REGISTRATION(PhysicsSystem)
+PHX_DEFINE_TYPE(PhysicsSystem)
 {
     registration
         .Field("DebugDrawContacts",    &PhysicsSystem::DebugDrawContacts)

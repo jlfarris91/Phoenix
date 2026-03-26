@@ -11,7 +11,7 @@ struct SpawnWave
 
 struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 {
-    PHX_DECLARE_TYPE(FeatureSpawnerWorldBlock)
+    PHX_REFLECT_TYPE(FeatureSpawnerWorldBlock)
 
     Phoenix::Time SpawnCooldownMin;
     Phoenix::Time SpawnCooldownMax;

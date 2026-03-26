@@ -82,4 +82,4 @@ namespace Phoenix
 // Any translation unit that needs to reflect on these types must include
 // this header (or another header that includes it).
 
-PHX_REGISTER_EXTERNAL_TYPE(Phoenix::Transform2D,  "Transform2D")
+PHX_REGISTER_EXTERNAL_TYPE(Transform2D)
