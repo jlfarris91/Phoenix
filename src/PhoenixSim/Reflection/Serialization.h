@@ -6,8 +6,8 @@
 
 namespace Phoenix
 {
-    struct PropertyDescriptor;
-    struct TypeDescriptor;
+    class PropertyDescriptor;
+    class TypeDescriptor;
 
     // Serialise a single reflected property to a JSON value.
     // Returns a JSON null for world-context properties and unsupported types.

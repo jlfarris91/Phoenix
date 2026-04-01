@@ -9,7 +9,6 @@ namespace Phoenix
     {
         struct PHOENIX_SIM_API IComponent
         {
-            PHX_DECLARE_TYPE(IComponent)
         };
     }
 }

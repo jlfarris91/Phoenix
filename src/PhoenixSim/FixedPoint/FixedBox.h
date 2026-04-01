@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/Corners.h"
+#include "PhoenixSim/FixedPoint/FixedVector.h"
 
 namespace Phoenix
 {
@@ -96,12 +97,12 @@ namespace Phoenix
 
         constexpr TFixedBox ExpandBy(const TVec& v) const
         {
-            return FixedBox(Min - v, Max + v);
+            return TFixedBox(Min - v, Max + v);
         }
 
         constexpr TFixedBox ExpandBy(const TVecComp& v) const
         {
-            return FixedBox(Min - v, Max + v);
+            return TFixedBox(Min - v, Max + v);
         }
 
         constexpr TFixedBox& Union(const TVec& pt)
@@ -156,4 +157,25 @@ namespace Phoenix
     using Box2 = TFixedBox<Vec2>;
 }
 
-PHX_REGISTER_EXTERNAL_TYPE(Box2)
+PHX_DEFINE_TYPE(Phoenix::Box2)
+{
+    registration
+        .Alias("Box2")
+        .Namespace("Phoenix.Box2")
+        .Constructor<const Vec2&, const Vec2&>()
+        .Field("Min", &Box2::Min)
+        .Field("Max", &Box2::Max)
+        .Method("IsEmpty", &Box2::IsEmpty)
+        .Method("GetCenter", &Box2::GetCenter)
+        .Method("GetExtents", &Box2::GetExtents)
+        .Method("GetSize", &Box2::GetSize)
+        .Method("Overlaps", &Box2::Overlaps)
+        .Method("Contains", static_cast<bool(Box2::*)(const Vec2&)const>(&Box2::Contains))
+        .Method("Contains", static_cast<bool(Box2::*)(const Box2&)const>(&Box2::Contains))
+        .Method("ExpandBy", static_cast<Box2(Box2::*)(const Vec2&)const>(&Box2::ExpandBy))
+        .Method("ExpandBy", static_cast<Box2(Box2::*)(const Vec2::ComponentT&)const>(&Box2::ExpandBy))
+        .Method("Union", static_cast<Box2(Box2::*)(const Vec2&)const>(&Box2::Union))
+        .Method("Union", static_cast<Box2(Box2::*)(const Box2&)const>(&Box2::Union))
+        .Method("Clamp", &Box2::Clamp)
+        .StaticMethod<Box2, const Vec2&, const Vec2&, const Vec2&>("FromPoints", &Box2::FromPoints);
+}

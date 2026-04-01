@@ -28,7 +28,7 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API ISystem
     {
-        PHX_DECLARE_TYPE(ISystem)
+        PHX_DECLARE_TYPE_INTERFACE(ISystem)
 
         virtual FName GetName() const { return FName::None; }
 

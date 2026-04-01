@@ -95,9 +95,9 @@ namespace Phoenix
         template <class TBlock>
         BufferBlockDefinition& RegisterBlock(EBufferBlockType type, const BufferBlockLayout& layout)
         {
-            const TypeDescriptor& typeDescriptor = TBlock::GetStaticTypeDescriptor();
+            const TypeDescriptor& typeDescriptor = TypeRegistry::Get<TBlock>();
             return Definitions.emplace_back(
-                typeDescriptor.GetFName(),
+                typeDescriptor.GetTypeId(),
                 layout,
                 (uint8)type,
                 &typeDescriptor);
@@ -210,13 +210,13 @@ namespace Phoenix
         template <class TBlock>
         TBlock* GetBlock()
         {
-            return reinterpret_cast<TBlock*>(GetBlock(TBlock::StaticTypeName));
+            return reinterpret_cast<TBlock*>(GetBlock(StaticTypeName<TBlock>::TypeId));
         }
 
         template <class TBlock>
         const TBlock* GetBlock() const
         {
-            return reinterpret_cast<const TBlock*>(GetBlock(TBlock::StaticTypeName));
+            return reinterpret_cast<const TBlock*>(GetBlock(StaticTypeName<TBlock>::TypeId));
         }
 
         template <class TBlock>

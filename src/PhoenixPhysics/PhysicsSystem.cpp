@@ -514,17 +514,3 @@ void PhysicsSystem::OnDebugRender(WorldConstRef world, const IDebugState& state,
         }
     }
 }
-
-// ── Type registration ──────────────────────────────────────────────────────────
-
-PHX_DEFINE_TYPE(PhysicsSystem)
-{
-    registration
-        .Field("DebugDrawContacts",    &PhysicsSystem::DebugDrawContacts)
-        .Field("AllowSleep",           &PhysicsSystem::AllowSleep)
-        .Field("NumIterations",        &PhysicsSystem::NumIterations)
-        .Field("NumSolverSteps",       &PhysicsSystem::NumSolverSteps)
-        .Field("NumSeparationSteps",   &PhysicsSystem::NumSeparationSteps)
-        .Field("PenetrationThreshold", &PhysicsSystem::PenetrationThreshold)
-        .Field("PenetrationCorrection",&PhysicsSystem::PenetrationCorrection);
-}

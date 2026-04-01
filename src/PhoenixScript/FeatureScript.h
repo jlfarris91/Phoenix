@@ -54,10 +54,18 @@ namespace Phoenix
     class PHOENIX_SCRIPT_API FeatureScript : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureScript)
+        {
+            FEATURE_CHANNEL(FeatureChannels::PreUpdate)
+            FEATURE_CHANNEL(FeatureChannels::Update)
+            FEATURE_CHANNEL(FeatureChannels::PostUpdate)
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+        }
 
     public:
-
-        FeatureScript();
 
         // Called by other features (e.g. FeatureLua) before OnWorldInitialize fires.
         // Loads wasmPath as a shared WasmRuntime and creates a WasmEnvironment for

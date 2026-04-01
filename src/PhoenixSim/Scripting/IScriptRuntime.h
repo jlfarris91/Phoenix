@@ -1,21 +1,15 @@
 #pragma once
 
-#include <string>
-
-#include "PhoenixSim/Reflection/Reflection.h"
-#include "PhoenixSim/WorldsFwd.h"
-
 namespace Phoenix
 {
     class Session;
+    class World;
+    class TypeDescriptor;
+    class MethodDescriptor;
 
     // ── IScriptRuntime ────────────────────────────────────────────────────────
     //
     // VM-agnostic interface for a script runtime (Lua, QuickJS, Wren, …).
-    //
-    // Used by:
-    //  • FeatureLua, which owns the concrete implementation (LuaRuntime).
-    //  • IScriptBindings, for manual function registration.
 
     class IScriptRuntime
     {
@@ -38,11 +32,6 @@ namespace Phoenix
 
         // Registers a single function in the currently open namespace.
         virtual void RegisterFunction(const MethodDescriptor& fn) = 0;
-
-        // ── Script loading ────────────────────────────────────────────────────
-
-        virtual bool LoadFile(const char* path) = 0;
-        virtual bool ExecString(const std::string& code) = 0;
 
         // ── World context ─────────────────────────────────────────────────────
 

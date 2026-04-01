@@ -10,14 +10,6 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
-FeatureSpawner::FeatureSpawner()
-{
-    FEATURE_WORLD_BLOCK(FeatureSpawnerWorldBlock, EBufferBlockType::Dynamic)
-    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-}
-
 bool FeatureSpawner::GetIsEnabled(WorldConstRef world)
 {
     const FeatureSpawnerWorldBlock& block = world.GetBlockRef<FeatureSpawnerWorldBlock>();
@@ -172,18 +164,4 @@ UnitId FeatureSpawner::SpawnTowerForPlayer(WorldRef world, uint8_t player)
     towerPos.X = Wrap<Distance>(towerPos.X, 0.0f, 10.0f * Sqrt(Value(maxPlayers)));
 
     return FeatureUnit::SpawnUnit(world, "Tower"_n, player, towerPos, 0);
-}
-
-// ── Type registration ──────────────────────────────────────────────────────────
-
-PHX_DEFINE_TYPE(FeatureSpawnerWorldBlock)
-{
-    registration
-        .Field("SpawnCooldownMin", &FeatureSpawnerWorldBlock::SpawnCooldownMin)
-        .Field("SpawnCooldownMax", &FeatureSpawnerWorldBlock::SpawnCooldownMax)
-        .Field("NextSpawnTime",    &FeatureSpawnerWorldBlock::NextSpawnTime)
-        .Field("WaveDuration",     &FeatureSpawnerWorldBlock::WaveDuration)
-        .Field("NextWaveTime",     &FeatureSpawnerWorldBlock::NextWaveTime)
-        .Field("WaveNum",          &FeatureSpawnerWorldBlock::WaveNum)
-        .Field("SpawningEnabled",  &FeatureSpawnerWorldBlock::SpawningEnabled);
 }

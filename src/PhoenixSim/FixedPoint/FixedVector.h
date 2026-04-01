@@ -4,6 +4,7 @@
 #include <cstdlib> // for rand(), remove once we have a deterministic rand
 
 #include "PhoenixSim/FixedPoint/FixedMath.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -329,10 +330,46 @@ namespace Phoenix
     template <class T> struct TOne<TVec2<T>> { static constexpr TVec2<T> Value = TVec2<T>(1, 1); };
 }
 
-// ── External type registration ────────────────────────────────────────────────
-//
-// Register Vec2 with the Phoenix reflection system.
-// Any translation unit that needs to reflect on these types must include
-// this header (or another header that includes it).
+PHX_DEFINE_TYPE(Phoenix::Vec2)
+{
+    using Vec2Member = Vec2 (Vec2::*)(const Vec2&) const;
+    using Vec2ComponentMember = Vec2 (Vec2::*)(const Vec2::ComponentT&) const;
+    using Vec2NegMember = Vec2 (Vec2::*)() const;
 
-PHX_REGISTER_EXTERNAL_TYPE(Vec2)
+    registration
+        .Alias("Vec2")
+        .Constructor<Vec2::ComponentT>()
+        .Constructor<Vec2::ComponentT, Vec2::ComponentT>()
+        .Field("X", &Vec2::X)
+        .Field("Y", &Vec2::Y)
+        .StaticField("Zero", &Vec2::Zero)
+        .StaticField("One", &Vec2::One)
+        .StaticField("XAxis", &Vec2::XAxis)
+        .StaticField("YAxis", &Vec2::YAxis)
+        .StaticField("Min", &Vec2::Min)
+        .StaticField("Max", &Vec2::Max)
+        .Method("Add", static_cast<Vec2Member>(&Vec2::operator+))
+        .Method("Add", static_cast<Vec2ComponentMember>(&Vec2::operator+))
+        .Method("Sub", static_cast<Vec2Member>(&Vec2::operator-))
+        .Method("Sub", static_cast<Vec2ComponentMember>(&Vec2::operator-))
+        .Method("Mult", static_cast<Vec2Member>(&Vec2::operator*))
+        .Method("Mult", static_cast<Vec2ComponentMember>(&Vec2::operator*))
+        .Method("Div", static_cast<Vec2Member>(&Vec2::operator/))
+        .Method("Div", static_cast<Vec2ComponentMember>(&Vec2::operator/))
+        .Method("Neg", static_cast<Vec2NegMember>(&Vec2::operator-))
+        .Method("AsRadians", &Vec2::AsRadians)
+        .Method("AsDegrees", &Vec2::AsDegrees)
+        .Method("Length", &Vec2::Length)
+        .Method("Normalized", &Vec2::Normalized)
+        .Method("Rotated", &Vec2::Rotate)
+        .StaticMethod("Equals", &Vec2::Equals)
+        // .StaticMethod("Dot", &Vec2::Dot)
+        .StaticMethod("Distance", &Vec2::Distance)
+        .StaticMethod("Project", &Vec2::Project)
+        .StaticMethod("Reflect", &Vec2::Reflect)
+        // .StaticMethod("Cross", &Vec2::Cross)
+        // .StaticMethod("Intersects", &Vec2::Intersects)
+        .StaticMethod("Midpoint", &Vec2::Midpoint)
+        .StaticMethod("FromPolar", &Vec2::FromPolar);
+    // .StaticMethod("Perpendicular", &Vec2::Perpendicular);
+}

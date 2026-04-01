@@ -11,7 +11,7 @@ struct SpawnWave
 
 struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 {
-    PHX_REFLECT_TYPE(FeatureSpawnerWorldBlock)
+    PHX_DECLARE_BLOCK(FeatureSpawnerWorldBlock)
 
     Phoenix::Time SpawnCooldownMin;
     Phoenix::Time SpawnCooldownMax;
@@ -31,10 +31,14 @@ struct FeatureSpawnerWorldBlock : Phoenix::BufferBlockBase
 class FeatureSpawner : public Phoenix::IFeature
 {
     PHX_DECLARE_FEATURE_TYPE(FeatureSpawner)
+    {
+        FEATURE_WORLD_BLOCK(FeatureSpawnerWorldBlock, Phoenix::EBufferBlockType::Dynamic)
+        FEATURE_CHANNEL(Phoenix::FeatureChannels::WorldInitialize)
+        FEATURE_CHANNEL(Phoenix::FeatureChannels::WorldUpdate)
+        FEATURE_CHANNEL(Phoenix::FeatureChannels::HandleWorldAction)
+    }
 
 public:
-
-    FeatureSpawner();
 
     static bool GetIsEnabled(Phoenix::WorldConstRef world);
     static void SetIsEnabled(Phoenix::WorldRef world, const bool& enabled);

@@ -343,7 +343,7 @@ namespace Phoenix
 
             auto rr = SqrxQ(radius);
             uint64 random64 = NextU64();
-            T randomRadius = Cordic::Sqrt(T(TFixedQ<T>(random64 % rr)));
+            T randomRadius = Cordic::Sqrt(T(T::QT(random64 % rr)));
             Angle theta = Angle::QT(NextT<Angle::ValueT>());
             return Cordic::Rotate<T>(randomRadius, 0, theta);
         }
@@ -352,4 +352,16 @@ namespace Phoenix
     using Random = TRandom<RandomDetail::Xoroshiro64SS>;
 }
 
-PHX_REGISTER_EXTERNAL_TYPE(Random)
+PHX_DEFINE_TYPE(Phoenix::Random)
+{
+    registration
+        .Alias("Random")
+        .Method("Next32", &Random::Next32)
+        .Method("NextU32", &Random::NextU32)
+        .Method("Next64", &Random::Next64)
+        .Method("NextU64", &Random::NextU64)
+        .Method("RandomRange32", &Random::RandomRange32)
+        .Method("RandomRangeU32", &Random::RandomRangeU32)
+        .Method("RandomPointOnCircle", &Random::RandomPointOnCircle<Distance>)
+        .Method("RandomPointInCircle", &Random::RandomPointInCircle<Distance>);
+}

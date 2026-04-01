@@ -42,11 +42,13 @@ namespace Phoenix::RTS
     // Manages the order queues of all units in the game.
     class PHOENIX_RTS_API FeatureOrders : public IFeature
     {
-        PHX_REFLECT_TYPE(FeatureOrders, Phoenix::IFeature)
+        PHX_DECLARE_FEATURE_TYPE(FeatureOrders)
+        {
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+        }
 
     public:
-
-        FeatureOrders();
 
         //
         // Command Handler Management
@@ -201,4 +203,12 @@ namespace Phoenix::RTS
 
         std::unordered_map<FName, std::shared_ptr<ICommandHandler>> CommandIdToHandlerMap;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::RTS::FeatureOrders)
+{
+    registration
+        .Namespace("Phoenix.Orders")
+        .StaticMethod("IssueCommand", &RTS::FeatureOrders::StaticIssueCommand)
+        .StaticMethod("HasOrders",    &RTS::FeatureOrders::HasOrders);
 }

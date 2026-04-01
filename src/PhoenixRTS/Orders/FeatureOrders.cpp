@@ -19,14 +19,6 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-PHX_DEFINE_TYPE(FeatureOrders)
-{
-    registration
-        .Namespace("Phoenix.Orders")
-        .StaticMethod("IssueCommand", &FeatureOrders::StaticIssueCommand)
-        .StaticMethod("HasOrders",    &FeatureOrders::HasOrders);
-}
-
 FeatureOrdersDynamicBlock::FeatureOrdersDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
     : OrderQueue(allocator, config.MaxOrders)
 {
@@ -51,12 +43,6 @@ BufferBlockLayout FeatureOrdersDynamicBlock::Layout(Config config)
 void FeatureOrdersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
 {
     new (dest) FeatureOrdersDynamicBlock(allocator, config);
-}
-
-FeatureOrders::FeatureOrders()
-{
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
 
 void FeatureOrders::RegisterCommandHandler(const std::shared_ptr<ICommandHandler>& handler)
@@ -361,7 +347,7 @@ void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, BlockBuffer
     FeatureOrdersDynamicBlock::Config dynamicBlockConfig;
     dynamicBlockConfig.MaxOrders = PHX_RTS_ORDER_QUEUE_MAX_ORDERS;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         dynamicBlockConfig.MaxOrders = featureConfigData.value("max_orders", dynamicBlockConfig.MaxOrders);

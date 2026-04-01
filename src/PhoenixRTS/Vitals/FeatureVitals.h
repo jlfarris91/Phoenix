@@ -12,7 +12,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureVitals : public IFeature
     {
-        PHX_REFLECT_TYPE(FeatureVitals, Phoenix::IFeature)
+        PHX_DECLARE_FEATURE_TYPE(FeatureVitals) {}
 
     public:
 
@@ -25,4 +25,12 @@ namespace Phoenix::RTS
 
         std::shared_ptr<VitalsSystem> VitalsSystem;
     };
+}
+
+
+PHX_DEFINE_TYPE(Phoenix::RTS::FeatureVitals)
+{
+    registration
+        .Namespace("Phoenix.Vitals")
+        .StaticMethod("ApplyDamage", &RTS::FeatureVitals::ApplyDamage);
 }

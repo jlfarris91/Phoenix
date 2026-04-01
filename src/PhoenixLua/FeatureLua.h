@@ -33,10 +33,13 @@ namespace Phoenix
     class PHOENIX_LUA_API FeatureLua : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureLua)
+        {
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+            FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+        }
 
     public:
-
-        FeatureLua();
 
         // Thread-safe: enqueues a Lua snippet to execute on the next world update.
         void EnqueueScript(std::string code);

@@ -9,7 +9,7 @@
 #include "PhoenixSim/Containers/BlockBuffer.h"
 #include "PhoenixSim/Random.h"
 #include "PhoenixSim/WorldsFwd.h"
-#include "PhoenixSim/Reflection/Reflection.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -95,36 +95,8 @@ namespace Phoenix
 
 } // namespace Phoenix
 
-// ── GenericConverter<World> ───────────────────────────────────────────────────
-//
-// World is too large for the 32-byte inline buffer.  Stores World* instead.
-// LuaRuntime injects the current world pointer when it detects a World param;
-// the generic invoke dereferences it to produce the WorldRef / WorldConstRef
-// expected by the registered function.
-
 namespace Phoenix
 {
-    template <>
-    struct GenericConverter<World>
-    {
-        static GenericValue Borrow(World& w)
-        {
-            GenericValue gv;
-            gv.Type.Descriptor = &World::GetStaticTypeDescriptor();
-            World* ptr = &w;
-            static_assert(sizeof(ptr) <= sizeof(GenericValue::Buffer));
-            std::memcpy(gv.Buffer, &ptr, sizeof(ptr));
-            return gv;
-        }
-
-        static World& From(const GenericValue& gv)
-        {
-            World* ptr = nullptr;
-            std::memcpy(&ptr, gv.Buffer, sizeof(ptr));
-            return *ptr;
-        }
-    };
-
     struct PHOENIX_SIM_API WorldManagerCtorArgs
     {
         std::weak_ptr<Session> Session;

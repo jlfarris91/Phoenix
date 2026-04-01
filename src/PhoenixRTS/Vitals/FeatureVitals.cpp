@@ -1,5 +1,4 @@
 #include "PhoenixRTS/Vitals/FeatureVitals.h"
-#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
@@ -17,25 +16,6 @@
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
-
-PHX_DEFINE_TYPE(FeatureVitals)
-{
-    registration
-        .Namespace("Phoenix.Vitals")
-        .StaticMethod("ApplyDamage", &FeatureVitals::ApplyDamage);
-}
-
-// Register Damage fields so PhoenixWasmGen can flatten the struct for the WASM ABI.
-static const bool s_DamageFieldsRegistered = []()
-{
-    TypeDescriptorBuilder<Damage>()
-        .Field("Amount",            &Damage::Amount)
-        .Field("ArmorMultiplier",   &Damage::ArmorMultiplier)
-        .Field("BaseAmount",        &Damage::BaseAmount)
-        .Field("SourceId",          &Damage::SourceId)
-        .Field("VitalId",           &Damage::VitalId);
-    return true;
-}();
 
 bool FeatureVitals::ApplyDamage(WorldRef world, EntityId target, const Damage& damage)
 {

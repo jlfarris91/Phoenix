@@ -705,21 +705,3 @@ void SteeringSystem::OnDebugRender(
     //     }
     // }));
 }
-
-// ── Type registration ──────────────────────────────────────────────────────────
-
-PHX_DEFINE_TYPE(SteeringSystem)
-{
-    registration
-        .Field("MoveTowardsGoal",       &SteeringSystem::MoveTowardsGoal)
-        .Field("DensityScalar",         &SteeringSystem::DensityScalar)
-        .Field("DensityRadiusScalar",   &SteeringSystem::DensityRadiusScalar)
-        .Field("AvoidanceScalar",       &SteeringSystem::AvoidanceScalar)
-        .Field("AvoidanceRadiusScalar", &SteeringSystem::AvoidanceRadiusScalar)
-        .Field("ArrivalThreshold",      &SteeringSystem::ArrivalThreshold)
-        .Field("SlackIncreaseRate",     &SteeringSystem::SlackIncreaseRate)
-        .Field("SlackIncreaseRateFast", &SteeringSystem::SlackIncreaseRateFast)
-        .Field("SlackRateDivisor",      &SteeringSystem::SlackRateDivisor)
-        .Field("SlackRateDivisorSlow",  &SteeringSystem::SlackRateDivisorSlow)
-        .Field("MaxSlack",              &SteeringSystem::MaxSlack);
-}

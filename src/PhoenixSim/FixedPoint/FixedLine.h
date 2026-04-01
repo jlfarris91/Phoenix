@@ -37,4 +37,15 @@ namespace Phoenix
     using Line2 = TLine<Vec2>;
 }
 
-PHX_REGISTER_EXTERNAL_TYPE(Line2);
+PHX_DEFINE_TYPE(Phoenix::Line2)
+{
+    registration
+        .Alias("Line2")
+        .Namespace("Phoenix.Line2")
+        .Constructor<const Vec2&, const Vec2&>()
+        .Field("Start", &Line2::Start)
+        .Field("End", &Line2::End)
+        .Method("Lerp", &Line2::Lerp)
+        .Method("GetVector", &Line2::GetVector)
+        .Method("GetDirection", &Line2::GetDirection);
+}

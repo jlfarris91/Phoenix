@@ -16,11 +16,14 @@ namespace Phoenix
 
     class PHOENIX_SIM_API FeatureDebug : public IFeature
     {
-        PHX_REFLECT_TYPE(FeatureDebug, IFeature)
+        PHX_DECLARE_FEATURE_TYPE(FeatureDebug)
+        {
+            FEATURE_WORLD_BLOCK(FeatureDebugScratchBlock, EBufferBlockType::Scratch)
+            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::DebugRender)
+        }
 
     public:
-
-        FeatureDebug();
 
         static void DrawCircle(WorldRef world, const Vec2& pt, Distance radius, const Color& color);
         static void DrawCircle(WorldRef world, const Circle2& circle, const Color& color);
@@ -49,4 +52,19 @@ namespace Phoenix
         void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer) override;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::FeatureDebug)
+{
+    registration
+        .StaticMethod<void, WorldRef, const Vec2&, Distance, const Color&>    ("DrawCircle",  &FeatureDebug::DrawCircle)
+        .StaticMethod<void, WorldRef, const Circle2&, const Color&>           ("DrawCircle",  &FeatureDebug::DrawCircle)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawEllipse", &FeatureDebug::DrawEllipse)
+        .StaticMethod<void, WorldRef, const Ellipse2&, const Color&>          ("DrawEllipse", &FeatureDebug::DrawEllipse)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawLine",    &FeatureDebug::DrawLine)
+        .StaticMethod<void, WorldRef, const Line2&, const Color&>             ("DrawLine",    &FeatureDebug::DrawLine)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawRay",     &FeatureDebug::DrawRay)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawBox",     &FeatureDebug::DrawBox)
+        .StaticMethod<void, WorldRef, const Box2&, const Color&>              ("DrawBox",     &FeatureDebug::DrawBox)
+        .StaticMethod                                                         ("GetColor",    &FeatureDebug::GetColor);
 }

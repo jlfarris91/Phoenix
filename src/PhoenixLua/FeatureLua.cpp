@@ -41,13 +41,6 @@ static std::filesystem::path GetExeDirectory()
 #endif
 }
 
-FeatureLua::FeatureLua()
-{
-    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
-}
-
 void FeatureLua::EnqueueScript(std::string code)
 {
     std::lock_guard lock(ScriptQueueMutex);
@@ -72,7 +65,7 @@ void FeatureLua::OnWorldInitialize(WorldRef world)
 
     // Read the .lua script path from this world's FeatureLua config.
     std::filesystem::path luaPath;
-    if (const FeatureJsonConfig* config = world.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* config = world.GetFeatureConfig(GetFeatureId()))
     {
         const auto& data = config->GetData();
         if (const auto it = data.find("script"); it != data.end())

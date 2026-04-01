@@ -4,50 +4,43 @@
 #include <vector>
 
 #include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Reflection/Reflection.h"
-#include "PhoenixSim/Scripting/IScriptRuntime.h"
+#include "PhoenixSim/Reflection/MethodDescriptor.h"
 
 namespace Phoenix
 {
+    class Session;
+
     // ── WasmHostEntry ─────────────────────────────────────────────────────────
     //
     // A C++ function registered as a WASM host import.
     // ImportModule is the WASM import module string (e.g. "Phoenix.Unit").
     // Descriptor carries the name, parameter types, and the generic invoker.
 
-    struct WasmHostEntry
+    struct PHOENIX_SIM_API WasmHostEntry
     {
-        std::string      ImportModule;
-        MethodDescriptor Descriptor;
+        std::string ImportModule;
+        MethodDescriptor Method;
     };
 
-    class WasmRuntime : public IScriptRuntime
+    class PHOENIX_SIM_API WasmRuntime
     {
     public:
 
         WasmRuntime(const std::shared_ptr<Session>& session);
 
-        const std::string& GetScriptPath() const { return ScriptPath; }
-        const std::vector<uint8>& GetWasmBytes() const { return WasmBytes; }
-        const std::vector<WasmHostEntry>& GetRegistrations() const { return Registrations; }
+        const std::string& GetScriptPath() const;
+        const std::vector<uint8>& GetWasmBytes() const;
+        const std::vector<WasmHostEntry>& GetRegistrations() const;
 
-        // Begin IScriptRuntime implementation
-        void RegisterType(const TypeDescriptor& desc) override;
-        void OpenNamespace(const char* ns) override;
-        void CloseNamespace() override;
-        void RegisterFunction(const MethodDescriptor& fn) override;
-        bool LoadFile(const char* path) override;
-        bool ExecString(const std::string& /*code*/) override;
-        void SetCurrentWorld(World* /*world*/) override;
-        void OnBindingsComplete() override;
-        // End IScriptRuntime implementation
+        bool LoadFile(const char* path);
 
     private:
+
+        void RegisterType(const TypeDescriptor& desc);
 
         std::shared_ptr<Session>    Session;
         std::string                 ScriptPath;
         std::vector<uint8_t>        WasmBytes;
         std::vector<WasmHostEntry>  Registrations;
-        std::string                 CurrentNamespace;
     };
 }

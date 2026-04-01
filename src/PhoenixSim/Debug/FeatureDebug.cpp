@@ -6,28 +6,6 @@
 
 using namespace Phoenix;
 
-PHX_DEFINE_TYPE(FeatureDebug)
-{
-    registration
-        .StaticMethod<void, WorldRef, const Vec2&, Distance, const Color&>    ("DrawCircle",  &FeatureDebug::DrawCircle)
-        .StaticMethod<void, WorldRef, const Circle2&, const Color&>           ("DrawCircle",  &FeatureDebug::DrawCircle)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawEllipse", &FeatureDebug::DrawEllipse)
-        .StaticMethod<void, WorldRef, const Ellipse2&, const Color&>          ("DrawEllipse", &FeatureDebug::DrawEllipse)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawLine",    &FeatureDebug::DrawLine)
-        .StaticMethod<void, WorldRef, const Line2&, const Color&>             ("DrawLine",    &FeatureDebug::DrawLine)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawRay",     &FeatureDebug::DrawRay)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawBox",     &FeatureDebug::DrawBox)
-        .StaticMethod<void, WorldRef, const Box2&, const Color&>              ("DrawBox",     &FeatureDebug::DrawBox)
-        .StaticMethod                                                         ("GetColor",    &FeatureDebug::GetColor);
-}
-
-FeatureDebug::FeatureDebug()
-{
-    FEATURE_WORLD_BLOCK(FeatureDebugScratchBlock, EBufferBlockType::Scratch)
-    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::DebugRender)
-}
-
 void FeatureDebug::DrawCircle(WorldRef world, const Vec2& pt, Distance radius, const Color& color)
 {
     DrawCircle(world, Circle2(pt, radius), color);

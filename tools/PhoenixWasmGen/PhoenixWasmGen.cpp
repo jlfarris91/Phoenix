@@ -36,39 +36,14 @@
 #include <string>
 #include <vector>
 
-#include "PhoenixSim/Reflection/Reflection.h"
-#include "PhoenixSim/Reflection/GenericValue.h"
+#include "PhoenixScript/WasmUtility.h"
+#include "PhoenixSim/Reflection/Variant.h"
 #include "PhoenixSim/Reflection/TypeRegistry.h"
 #include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix;
 
 // ── WASM type helpers ─────────────────────────────────────────────────────────
-// Must match WasmEnvironment::ToWasmTypeChar exactly.
-
-static char WasmTypeChar(const GenericValueTypeRef& type)
-{
-    if (type.IsVoid()) return 'v';
-    switch (type.Primitive)
-    {
-    case EGenericValueType::Bool:
-    case EGenericValueType::Int8:   case EGenericValueType::UInt8:
-    case EGenericValueType::Int16:  case EGenericValueType::UInt16:
-    case EGenericValueType::Int32:  case EGenericValueType::UInt32:
-    case EGenericValueType::Name:
-        return 'i';
-    case EGenericValueType::Int64:  case EGenericValueType::UInt64:
-        return 'I';
-    case EGenericValueType::Float:
-        return 'f';
-    case EGenericValueType::FixedPoint:
-        return 'i';  // TFixed stores int32_t internally
-    case EGenericValueType::Double:
-        return 'F';
-    default:
-        return 'v';
-    }
-}
 
 static const char* CType(char w)
 {
@@ -120,24 +95,6 @@ static std::vector<std::string> SplitDot(const std::string& s)
 
 // ── Struct marshaling utilities ───────────────────────────────────────────────
 
-// Returns properties of desc sorted alphabetically (deterministic field order).
-static std::vector<std::pair<std::string, const PropertyDescriptor*>>
-GetSortedProps(const TypeDescriptor& desc)
-{
-    std::vector<std::pair<std::string, const PropertyDescriptor*>> sorted;
-    for (const auto& [name, prop] : desc.GetProperties())
-        sorted.push_back({ name, &prop });
-    std::sort(sorted.begin(), sorted.end(),
-        [](const auto& a, const auto& b) { return a.first < b.first; });
-    return sorted;
-}
-
-static bool IsExpandableStruct(const GenericValueTypeRef& type)
-{
-    return type.IsStruct() && type.Descriptor &&
-           type.Descriptor->GetSize() <= 32;
-}
-
 // Flat description of one scalar field in a struct (nested structs are expanded).
 struct StructField
 {
@@ -155,40 +112,42 @@ static std::vector<StructField> FlattenStructFields(const TypeDescriptor& desc,
 {
     std::vector<StructField> result;
     size_t offset = 0;
-    for (const auto& [name, prop] : GetSortedProps(desc))
+    for (const auto& [name, prop] : desc.GetFields())
     {
         const std::string qualName = prefix.empty() ? name : prefix + "_" + name;
-        GenericValueTypeRef tr = prop->GetTypeRef();
-        if (IsExpandableStruct(tr))
+        const TypeDescriptor* tr = prop.GetType();
+        assert(tr);
+
+        if (Script::IsExpandableStruct(*tr) && tr != &desc)
         {
             // Nested struct: expand recursively with qualified prefix.
-            auto nested = FlattenStructFields(*tr.Descriptor, qualName);
+            auto nested = FlattenStructFields(*tr, qualName);
             for (auto& f : nested)
             {
                 f.ByteOffset += offset;
                 result.push_back(f);
             }
-            offset += tr.Descriptor->GetSize();
+            offset += tr->GetSize();
         }
         else
         {
-            char c = WasmTypeChar(tr);
+            char c = Script::ToWasmTypeChar(*tr);
             if (c == 'v') continue;
             const size_t sz = (c == 'I' || c == 'F') ? 8 : 4;
             // Read FractionalBits from PropertyDescriptor metadata (for FixedPoint fields)
             // or from the type's TypeDescriptor (stored via GenericValueTypeRefMaker<TFixed>).
             int fracBits = 0;
-            if (tr.Primitive == EGenericValueType::FixedPoint)
+            if (tr->IsTemplate("Phoenix::TFixed"))
             {
                 // Check PropertyDescriptor::Metadata first (populated by TypeDescriptorMetadataProvider)
-                auto it = prop->Metadata.find("FractionalBits");
-                if (it != prop->Metadata.end())
+                auto it = prop.GetMetadata().find("FractionalBits");
+                if (it != prop.GetMetadata().end())
                     fracBits = std::stoi(it->second);
                 // Fallback: check the type's own TypeDescriptor (stored via GenericValueTypeRefMaker)
-                else if (tr.Descriptor)
+                else if (tr)
                 {
-                    auto it2 = tr.Descriptor->GetMetadata().find("FractionalBits");
-                    if (it2 != tr.Descriptor->GetMetadata().end())
+                    auto it2 = tr->GetMetadata().find("FractionalBits");
+                    if (it2 != tr->GetMetadata().end())
                         fracBits = std::stoi(it2->second);
                 }
             }
@@ -234,8 +193,8 @@ static std::vector<StructInfo> CollectStructTypes(const TypeDescriptor* worldDes
         if (fields.empty()) continue;
 
         StructInfo si;
-        si.CName   = desc->GetCName();
-        si.LuaPath = QualNameToLuaPath(desc->GetQualifiedCName());
+        si.CName   = desc->GetAliasOrName();
+        si.LuaPath = QualNameToLuaPath(desc->GetQualifiedName());
         si.Fields  = std::move(fields);
         si.Desc    = desc.get();
         structs.push_back(std::move(si));
@@ -407,7 +366,7 @@ static void EmitStructTypeTableRegistration(FILE* out, const std::vector<StructI
         // Non-static instance methods (if any)
         std::vector<std::pair<std::string, const MethodDescriptor*>> methods;
         for (const auto& [n, m] : si.Desc->GetMethods())
-            if (!m.IsStatic() && !HasAnyFlags(m.Flags, EMemberDescriptorFlags::ScriptHidden))
+            if (!m.IsStatic() && !m.IsScriptHidden())
                 methods.push_back({ n, &m });
         std::sort(methods.begin(), methods.end(),
             [](const auto& a, const auto& b) { return a.first < b.first; });
@@ -432,7 +391,7 @@ static std::string NamespaceOfDesc(const TypeDescriptor& desc)
     if (it != desc.GetMetadata().end()) return it->second;
     // QualifiedTypeCName<T> is a compile-time template; at runtime we use the
     // descriptor's own qualified name getter.
-    return QualNameToLuaPath(desc.GetQualifiedCName());
+    return QualNameToLuaPath(desc.GetQualifiedName());
 }
 
 struct MethodInfo
@@ -481,7 +440,7 @@ static std::vector<MethodInfo> CollectMethods(const TypeDescriptor* worldDesc)
 
         bool hasStaticMethods = false;
         for (const auto& [n, m] : desc->GetMethods())
-            if (m.IsStatic() && !HasAnyFlags(m.Flags, EMemberDescriptorFlags::ScriptHidden))
+            if (m.IsStatic() && !m.IsScriptHidden())
                 { hasStaticMethods = true; break; }
 
         const bool isValueType = (desc->GetSize() > 0 && desc->GetSize() <= 32);
@@ -499,76 +458,54 @@ static std::vector<MethodInfo> CollectMethods(const TypeDescriptor* worldDesc)
     {
         const std::string ns = NamespaceOfDesc(*desc);
 
-        // ── Static methods ────────────────────────────────────────────────────
-        {
-            std::vector<std::pair<std::string, const MethodDescriptor*>> sorted;
-            for (const auto& [n, m] : desc->GetMethods())
-            {
-                if (!m.IsStatic()) continue;
-                if (HasAnyFlags(m.Flags, EMemberDescriptorFlags::ScriptHidden)) continue;
-                sorted.push_back({ n, &m });
-            }
-            std::sort(sorted.begin(), sorted.end(),
-                [](const auto& a, const auto& b) { return a.first < b.first; });
-            for (const auto& [n, m] : sorted)
-            {
-                MethodInfo mi;
-                mi.Namespace = ns;
-                mi.Name      = n;
-                mi.Desc      = m;
-                methods.push_back(std::move(mi));
-            }
-        }
-
         // ── Field getter / setter for value types (≤32 bytes) ─────────────────
         // These are synthesized as static functions:
         //   get_<field>(self: T) -> fieldType
         //   set_<field>(self: T, value: fieldType) -> T  (returns modified copy)
         if (desc->GetSize() > 0 && desc->GetSize() <= 32 && !desc->GetProperties().empty())
         {
-            const GenericValueTypeRef selfType { EGenericValueType::Unknown, desc };
-
-            std::vector<std::pair<std::string, const PropertyDescriptor*>> sortedProps;
-            for (const auto& [n, p] : desc->GetProperties())
+            for (const auto& [propName, prop] : desc->GetProperties())
             {
-                if (HasAnyFlags(p.Flags, EMemberDescriptorFlags::ScriptHidden)) continue;
-                sortedProps.push_back({ n, &p });
-            }
-            std::sort(sortedProps.begin(), sortedProps.end(),
-                [](const auto& a, const auto& b) { return a.first < b.first; });
+                if (prop.IsScriptHidden())
+                {
+                    continue;
+                }
 
-            for (const auto& [propName, prop] : sortedProps)
-            {
-                const GenericValueTypeRef fieldType = prop->GetTypeRef();
+                const TypeDescriptor* fieldType = prop.GetType();
+
                 // Skip field types we can't express in the WASM ABI.
-                if (WasmTypeChar(fieldType) == 'v' && !IsExpandableStruct(fieldType)) continue;
+                if (Script::ToWasmTypeChar(*fieldType) == 'v' && !Script::IsExpandableStruct(*fieldType))
+                {
+                    continue;
+                }
 
                 // Getter: get_<field>(self) -> field
-                {
-                    MethodInfo mi;
-                    mi.Namespace = ns;
-                    mi.Name      = "get_" + propName;
-                    mi.OwnedDesc.emplace();
-                    mi.OwnedDesc->Name = mi.Name;
-                    mi.OwnedDesc->Params.push_back({ "self", selfType });
-                    mi.OwnedDesc->Return.Type = fieldType;
-                    mi.Desc = &*mi.OwnedDesc;
-                    methods.push_back(std::move(mi));
-                }
-
-                // Setter: set_<field>(self, value) -> T
-                {
-                    MethodInfo mi;
-                    mi.Namespace = ns;
-                    mi.Name      = "set_" + propName;
-                    mi.OwnedDesc.emplace();
-                    mi.OwnedDesc->Name = mi.Name;
-                    mi.OwnedDesc->Params.push_back({ "self",  selfType  });
-                    mi.OwnedDesc->Params.push_back({ "value", fieldType });
-                    mi.OwnedDesc->Return.Type = selfType;  // returns modified struct
-                    mi.Desc = &*mi.OwnedDesc;
-                    methods.push_back(std::move(mi));
-                }
+                // {
+                //     MethodInfo mi;
+                //     mi.Namespace = ns;
+                //     mi.Name      = "get_" + propName;
+                //     mi.OwnedDesc.emplace();
+                //     mi.OwnedDesc->Name = mi.Name;
+                //     mi.OwnedDesc->Params.push_back({ "self", selfType });
+                //     mi.OwnedDesc->Return.Type = fieldType;
+                //     mi.Desc = &*mi.OwnedDesc;
+                //     methods.push_back(std::move(mi));
+                // }
+                //
+                // // Setter: set_<field>(self, value) -> T
+                // if (!prop->IsReadOnly())
+                // {
+                //     MethodInfo mi;
+                //     mi.Namespace = ns;
+                //     mi.Name      = "set_" + propName;
+                //     mi.OwnedDesc.emplace();
+                //     mi.OwnedDesc->Name = mi.Name;
+                //     mi.OwnedDesc->Params.push_back({ "self",  selfType  });
+                //     mi.OwnedDesc->Params.push_back({ "value", fieldType });
+                //     mi.OwnedDesc->Return.Type = selfType;  // returns modified struct
+                //     mi.Desc = &*mi.OwnedDesc;
+                //     methods.push_back(std::move(mi));
+                // }
             }
         }
     }
@@ -603,32 +540,34 @@ static void GenerateHostApi(FILE* out, const std::vector<MethodInfo>& methods,
             fprintf(out, "/* ── %s ── */\n\n", mi.Namespace.c_str());
             lastNs = mi.Namespace;
         }
+        
+        const TypeDescriptor& returnType = *mi.GetDesc().GetReturnType();
 
         // Build WASM param list (structs expanded, struct return → sret).
-        const bool retIsStruct = IsExpandableStruct(mi.GetDesc().Return.Type);
+        const bool retIsStruct = Script::IsExpandableStruct(returnType);
         std::vector<char> paramChars;
         std::string notes;
 
         if (retIsStruct) paramChars.push_back('i');  // sret pointer
 
-        for (const auto& p : mi.GetDesc().Params)
+        for (const auto& p : mi.GetDesc().GetParams())
         {
-            if (p.Type.Descriptor == worldDesc) { notes += " World"; continue; }
-            if (IsExpandableStruct(p.Type))
+            if (p.Type == worldDesc) { notes += " World"; continue; }
+            if (Script::IsExpandableStruct(*p.Type))
             {
-                for (const auto& f : FlattenStructFields(*p.Type.Descriptor))
+                for (const auto& f : FlattenStructFields(*p.Type))
                     paramChars.push_back(f.WasmChar);
                 notes += " Struct";
             }
             else
             {
-                char c = WasmTypeChar(p.Type);
+                char c = Script::ToWasmTypeChar(*p.Type);
                 if (c != 'v') paramChars.push_back(c);
                 else          notes += " Unknown";
             }
         }
 
-        char retChar = retIsStruct ? 'v' : WasmTypeChar(mi.GetDesc().Return.Type);
+        char retChar = retIsStruct ? 'v' : Script::ToWasmTypeChar(returnType);
         const char* retC = (retChar == 'v' || !CType(retChar)) ? "void" : CType(retChar);
 
         std::string params;
@@ -758,16 +697,17 @@ static void GenerateLuaBridge(FILE* out, const std::vector<MethodInfo>& methods,
         int luaIdx = 1;
         int callIdx = 0;
 
-        const bool retIsStruct = IsExpandableStruct(mi.GetDesc().Return.Type);
+        const TypeDescriptor& returnType = *mi.GetDesc().GetReturnType();
+        const bool retIsStruct = Script::IsExpandableStruct(returnType);
 
-        for (const auto& p : mi.GetDesc().Params)
+        for (const auto& p : mi.GetDesc().GetParams())
         {
-            if (p.Type.Descriptor == worldDesc) continue;
+            if (p.Type == worldDesc) continue;
 
-            if (IsExpandableStruct(p.Type))
+            if (Script::IsExpandableStruct(*p.Type))
             {
                 // Struct param: one Lua arg (a table), multiple WASM args.
-                const char* cn = p.Type.Descriptor->GetCName();
+                const char* cn = p.Type->GetAliasOrName().c_str();
                 const StructInfo* si = structByCName.count(cn) ? structByCName[cn] : nullptr;
                 if (!si) { ++luaIdx; continue; }
 
@@ -793,11 +733,11 @@ static void GenerateLuaBridge(FILE* out, const std::vector<MethodInfo>& methods,
                 continue;
             }
 
-            char c = WasmTypeChar(p.Type);
+            char c = Script::ToWasmTypeChar(*p.Type);
             if (c == 'v') { ++luaIdx; continue; }
 
-            bool isFName    = (p.Type.Primitive == EGenericValueType::Name);
-            bool isFixed    = (p.Type.Primitive == EGenericValueType::FixedPoint);
+            bool isFName    = p.Type->GetTypeId() == StaticTypeName<FName>::TypeId;
+            bool isFixed    = p.Type->IsTemplate("Phoenix::TFixed");
             std::string var = "p" + std::to_string(callIdx);
             Segment seg;
             if (isFName)
@@ -808,12 +748,12 @@ static void GenerateLuaBridge(FILE* out, const std::vector<MethodInfo>& methods,
                     "(int32_t)_phx_fnv1a32(_s" + std::to_string(callIdx) +
                     ", strlen(_s" + std::to_string(callIdx) + "))");
             }
-            else if (isFixed && p.Type.Descriptor)
+            else if (isFixed && p.Type)
             {
                 // FixedPoint param with known FractionalBits — scale from real-world number.
                 int fracBits = 0;
-                auto it = p.Type.Descriptor->GetMetadata().find("FractionalBits");
-                if (it != p.Type.Descriptor->GetMetadata().end())
+                auto it = p.Type->GetMetadata().find("FractionalBits");
+                if (it != p.Type->GetMetadata().end())
                     fracBits = std::stoi(it->second);
                 const char* ct = CType(c);
                 if (fracBits > 0)
@@ -858,9 +798,9 @@ static void GenerateLuaBridge(FILE* out, const std::vector<MethodInfo>& methods,
             if (!seg.Decl.empty()) fprintf(out, "%s", seg.Decl.c_str());
 
         // Emit the import call.
-        char retChar = retIsStruct ? 'v' : WasmTypeChar(mi.GetDesc().Return.Type);
-        bool hasScalarReturn = (!retIsStruct && retChar != 'v' && CType(retChar) != nullptr);
-        bool isBoolReturn = (mi.GetDesc().Return.Type.Primitive == EGenericValueType::Bool);
+        char retChar = retIsStruct ? 'v' : Script::ToWasmTypeChar(returnType);
+        bool hasScalarReturn = !retIsStruct && retChar != 'v' && CType(retChar) != nullptr;
+        bool isBoolReturn = returnType.GetTypeId() == StaticTypeName<bool>::TypeId;
 
         if (hasScalarReturn)
             fprintf(out, "    %s _r = %s(",
@@ -882,7 +822,7 @@ static void GenerateLuaBridge(FILE* out, const std::vector<MethodInfo>& methods,
         if (retIsStruct)
         {
             // Pack struct from sret buffer.
-            const char* cn = mi.GetDesc().Return.Type.Descriptor->GetCName();
+            const char* cn = returnType.GetAliasOrName().c_str();
             const StructInfo* si = structByCName.count(cn) ? structByCName[cn] : nullptr;
             if (si)
             {
@@ -906,12 +846,12 @@ static void GenerateLuaBridge(FILE* out, const std::vector<MethodInfo>& methods,
         }
         else if (hasScalarReturn)
         {
-            const bool retIsFixed = (mi.GetDesc().Return.Type.Primitive == EGenericValueType::FixedPoint);
+            const bool retIsFixed = returnType.IsTemplate("Phoenix::TFixed");
             int retFracBits = 0;
-            if (retIsFixed && mi.GetDesc().Return.Type.Descriptor)
+            if (retIsFixed)
             {
-                auto it = mi.GetDesc().Return.Type.Descriptor->GetMetadata().find("FractionalBits");
-                if (it != mi.GetDesc().Return.Type.Descriptor->GetMetadata().end())
+                auto it = returnType.GetMetadata().find("FractionalBits");
+                if (it != returnType.GetMetadata().end())
                     retFracBits = std::stoi(it->second);
             }
 
@@ -998,7 +938,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    const TypeDescriptor* worldDesc = &World::GetStaticTypeDescriptor();
+    const TypeDescriptor* worldDesc = &TypeRegistry::Get<World>();
     std::vector<MethodInfo> methods = CollectMethods(worldDesc);
     std::vector<StructInfo> structs = CollectStructTypes(worldDesc);
 

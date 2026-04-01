@@ -30,6 +30,7 @@ namespace Phoenix::RTS
     struct PHOENIX_RTS_API Command
     {
         PHX_DECLARE_TYPE(Command)
+
         Command() = default;
         Command(const Action& action);
 
@@ -87,4 +88,16 @@ namespace Phoenix::RTS
         // A command index of 0 is usually the default behavior of an ability.
         uint8 CommandIndex = 0;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::RTS::Command)
+{
+    registration
+        .Field("Sender",            &RTS::Command::Sender)
+        .Field("Flags",             &RTS::Command::Flags)
+        .Field("Kind",              &RTS::Command::Kind)
+        .Field("CommandId",         &RTS::Command::CommandId)
+        .Field("CommandIndex",      &RTS::Command::CommandIndex)
+        .Field("TargetEntity",      &RTS::Command::TargetEntity)
+        .Field("TargetLocation",    &RTS::Command::TargetLocation);
 }

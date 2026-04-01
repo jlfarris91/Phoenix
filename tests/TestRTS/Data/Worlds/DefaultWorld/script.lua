@@ -21,7 +21,10 @@ function OnWorldUpdate()
         local wave = math.floor(frameCount / SPAWN_INTERVAL)
         local unitData = (wave % 2 == 0) and "Lancer" or "Archer"
         local owner = (wave % 9) + 1
-        Phoenix.Unit.SpawnUnit(unitData, owner, {X=0.0, Y=0.0}, 0.0)
+        local angle = math.random() * 2 * math.pi
+        local pos = Phoenix.Vec2.FromPolar(angle, 10.0)
+        local unit = Phoenix.Unit.SpawnUnit(unitData, owner, pos, 0.0)
+        Phoenix.Unit.IssueCommand(unit, "Move", {X=0.0, Y=0.0})
     end
 end
 

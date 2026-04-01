@@ -21,7 +21,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API FeatureString : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE(FeatureString)
+        PHX_DECLARE_FEATURE_TYPE(FeatureString) {}
 
     public:
 

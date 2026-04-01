@@ -124,18 +124,23 @@ TEST_SUITE("FName")
     {
         // When base Value == 0 (None), Append("foo") is the same as FName("foo").
         FName result = FName::None.Append("foo");
-        CHECK(result == FName("foo"));
+        FName expected = FName("foo");
+        CHECK(result == expected);
     }
 
     TEST_CASE("Append is not commutative")
     {
-        CHECK(FName("a").Append("b") != FName("b").Append("a"));
+        FName a = FName("a").Append("b");
+        FName b = FName("b").Append("a");
+        CHECK(a != b);
     }
 
     TEST_CASE("operator+ is equivalent to Append")
     {
         FName base("base");
-        CHECK((base + "suffix") == base.Append("suffix"));
+        FName a = (base + "suffix");
+        FName b = base.Append("suffix");
+        CHECK(a == b);
     }
 
     // -------------------------------------------------------------------------
@@ -145,15 +150,18 @@ TEST_SUITE("FName")
     TEST_CASE("Combine with None returns other name unchanged")
     {
         FName name("combine_test");
-        CHECK(FName::None.Combine(name) == name);
+        FName combined = FName::None.Combine(name);
+        CHECK(combined == name);
     }
 
     TEST_CASE("Combine produces a different result than Append")
     {
-        FName a("foo");
-        FName b("bar");
+        FName foo("foo");
+        FName bar("bar");
+        FName a = foo.Combine(bar);
+        FName b = foo.Append("bar");
         // Combine hashes a name-of-a-name; Append hashes the raw bytes of "bar".
         // They must differ for non-trivial inputs.
-        CHECK(a.Combine(b) != a.Append("bar"));
+        CHECK(a != b);
     }
 }

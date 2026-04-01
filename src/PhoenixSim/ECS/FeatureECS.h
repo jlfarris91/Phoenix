@@ -80,11 +80,6 @@ namespace Phoenix::ECS
         std::atomic<uint32> SortedEntityCount = 0;
     };
 
-    struct PHOENIX_SIM_API FeatureECSCtorArgs
-    {
-        std::vector<std::shared_ptr<ISystem>> Systems;
-    };
-
     struct EntityRangeQueryArgs
     {
         TOptional<std::unordered_set<FName>> Kinds;
@@ -97,12 +92,20 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
-        PHX_REFLECT_TYPE(FeatureECS, Phoenix::IFeature)
+        PHX_DECLARE_FEATURE_TYPE(FeatureECS)
+        {
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::DebugRender)
+        }
 
     public:
-
-        FeatureECS();
-        FeatureECS(const FeatureECSCtorArgs& args);
 
         void OnPreUpdate(const FeatureUpdateArgs& args) override;
         void OnUpdate(const FeatureUpdateArgs& args) override;
@@ -318,7 +321,7 @@ namespace Phoenix::ECS
         template <class TComponent>
         static bool UnregisterComponentDefinition(WorldRef world)
         {
-            return UnregisterComponentDefinition(world, TComponent::StaticTypeName);
+            return UnregisterComponentDefinition(world, StaticTypeName<TComponent>::TypeId);
         }
 
         static bool HasComponentDefinition(WorldRef world, const FName& componentType);
@@ -339,7 +342,7 @@ namespace Phoenix::ECS
         template <class T>
         static T* GetComponent(WorldRef world, EntityId entityId)
         {
-            IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+            IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<T*>(comp);
         }
 
@@ -347,7 +350,7 @@ namespace Phoenix::ECS
         template <class T>
         static const T* GetComponent(WorldConstRef world, EntityId entityId)
         {
-            const IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+            const IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<const T*>(comp);
         }
 
@@ -355,7 +358,7 @@ namespace Phoenix::ECS
         template <class T>
         static T* GetOrAddComponent(WorldRef world, EntityId entityId)
         {
-            IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+            IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
             if (!comp)
             {
                 comp = AddComponent<T>(world, entityId);
@@ -367,7 +370,7 @@ namespace Phoenix::ECS
         template <class T>
         static T& GetComponentRef(WorldRef world, EntityId entityId)
         {
-            IComponent& comp = GetComponentRef(world, entityId, T::StaticTypeName);
+            IComponent& comp = GetComponentRef(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<T&>(comp);
         }
 
@@ -375,7 +378,7 @@ namespace Phoenix::ECS
         template <class T>
         static const T& GetComponentRef(WorldConstRef world, EntityId entityId)
         {
-            const IComponent& comp = GetComponentRef(world, entityId, T::StaticTypeName);
+            const IComponent& comp = GetComponentRef(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<const T&>(comp);
         }
 
@@ -417,7 +420,7 @@ namespace Phoenix::ECS
         template <class TComponent>
         static bool RemoveComponent(WorldRef world, EntityId entityId)
         {
-            return RemoveComponent(world, entityId, TComponent::StaticTypeName);
+            return RemoveComponent(world, entityId, StaticTypeName<TComponent>::TypeId);
         }
 
         // Removes all components from an entity, effectively releasing the associated archetype.
@@ -731,4 +734,11 @@ namespace Phoenix::ECS
         FOnEntityReleasing EntityReleasedEvent;
         FOnEntityReleased EntityDestroyedEvent;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::ECS::FeatureECS)
+{
+    registration
+        .Field("bDebugDrawMortonCodeBoundaries", &ECS::FeatureECS::bDebugDrawMortonCodeBoundaries)
+        .Field("bDebugDrawEntityZCodes",         &ECS::FeatureECS::bDebugDrawEntityZCodes);
 }

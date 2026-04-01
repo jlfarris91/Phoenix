@@ -15,7 +15,7 @@ namespace Phoenix::Physics
     class PHOENIX_PHYSICS_API PhysicsSystem : public ECS::ISystem
     {
     public:
-        PHX_REFLECT_TYPE(PhysicsSystem, ISystem)
+        PHX_DECLARE_TYPE_DERIVED(PhysicsSystem, ISystem)
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -31,4 +31,16 @@ namespace Phoenix::Physics
         double PenetrationThreshold = 0.05;
         double PenetrationCorrection = 0.1;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::Physics::PhysicsSystem)
+{
+    registration
+        .Field("DebugDrawContacts",     &Physics::PhysicsSystem::DebugDrawContacts)
+        .Field("AllowSleep",            &Physics::PhysicsSystem::AllowSleep)
+        .Field("NumIterations",         &Physics::PhysicsSystem::NumIterations)
+        .Field("NumSolverSteps",        &Physics::PhysicsSystem::NumSolverSteps)
+        .Field("NumSeparationSteps",    &Physics::PhysicsSystem::NumSeparationSteps)
+        .Field("PenetrationThreshold",  &Physics::PhysicsSystem::PenetrationThreshold)
+        .Field("PenetrationCorrection", &Physics::PhysicsSystem::PenetrationCorrection);
 }

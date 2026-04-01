@@ -8,10 +8,8 @@
 # language-specific WASM toolchain that needs the host API).
 #
 # Linking model:
-#   GenerateWasmApi.cpp calls GetStaticTypeDescriptor() for each registered
-#   type, which forces the linker to include those TUs.  The static
-#   initializers in those TUs then populate the TypeRegistry with all
-#   Namespace() and StaticMethod() registrations.  No whole-archive needed.
+#   GenerateWasmApi.cpp calls for each registered type, which forces the linker to include those TUs.
+#   The static initializers in those TUs then populate the TypeRegistry with all member registrations.
 
 add_executable(PhoenixWasmGen
     "${CMAKE_CURRENT_LIST_DIR}/PhoenixWasmGen.cpp"
@@ -30,6 +28,7 @@ target_link_libraries(PhoenixWasmGen PRIVATE
     PhoenixPhysics
     PhoenixSteering
     PhoenixSim
+    PhoenixScript
 )
 
 # MSVC: /WHOLEARCHIVE:<lib> forces all .obj files from each static library to
@@ -39,6 +38,7 @@ target_link_options(PhoenixWasmGen PRIVATE
     /WHOLEARCHIVE:$<TARGET_FILE:PhoenixPhysics>
     /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSteering>
     /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
+    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixScript>
 )
 
 set_property(TARGET PhoenixWasmGen PROPERTY FOLDER "Tools")

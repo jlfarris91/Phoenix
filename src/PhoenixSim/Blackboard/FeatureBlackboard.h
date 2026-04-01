@@ -31,10 +31,11 @@ namespace Phoenix::Blackboard
     class PHOENIX_SIM_API FeatureBlackboard final : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureBlackboard)
+        {
+            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+        }
 
     public:
-
-        FeatureBlackboard();
 
         void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
 

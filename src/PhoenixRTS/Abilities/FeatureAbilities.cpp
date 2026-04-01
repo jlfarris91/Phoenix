@@ -14,13 +14,6 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-FeatureAbilities::FeatureAbilities()
-{
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-}
-
 void FeatureAbilities::RegisterAbilityHandler(const std::shared_ptr<IAbilityHandler>& handler)
 {
     AbilityIdToHandlerMap.emplace(handler->GetCommandId(), handler);

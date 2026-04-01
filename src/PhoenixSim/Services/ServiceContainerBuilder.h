@@ -15,7 +15,7 @@ namespace Phoenix
         template <class TService>
         const ServiceRegistrar& As() const
         {
-            return As(TService::StaticTypeName);
+            return As(StaticTypeName<TService>::TypeId);
         }
 
         const ServiceRegistrar& AsInterfaces() const;

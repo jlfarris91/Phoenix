@@ -29,18 +29,6 @@ void FeatureScriptDynamicBlock::Construct(void* dest, BlockBufferAllocator& allo
 
 // ── FeatureScript ─────────────────────────────────────────────────────────────
 
-FeatureScript::FeatureScript()
-{
-    FEATURE_CHANNEL(FeatureChannels::PreUpdate)
-    FEATURE_CHANNEL(FeatureChannels::Update)
-    FEATURE_CHANNEL(FeatureChannels::PostUpdate)
-    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-}
-
 void FeatureScript::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
@@ -95,7 +83,7 @@ void FeatureScript::OnWorldLayout(const WorldLayoutContext& context, BlockBuffer
 
     FeatureScriptDynamicBlock::Config dynamicBlockConfig;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         dynamicBlockConfig.WasmMemoryCapacity = featureConfigData.value("memory_capacity", dynamicBlockConfig.WasmMemoryCapacity);
@@ -128,13 +116,15 @@ void FeatureScript::OnWorldInitialize(WorldRef world)
     if (WasmEnvironment* existing = GetEnvironment(world))
     {
         if (existing->IsValid())
+        {
             existing->CallVoid("OnWorldInitialize");
+        }
         return;
     }
 
     // Otherwise check for a FeatureScript-specific "script" world config.
     std::filesystem::path scriptPath;
-    if (const FeatureJsonConfig* config = world.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* config = world.GetFeatureConfig(GetFeatureId()))
     {
         const auto& data = config->GetData();
         if (const auto it = data.find("script"); it != data.end())
@@ -152,7 +142,9 @@ void FeatureScript::OnWorldInitialize(WorldRef world)
 
     auto environment = std::make_unique<WasmEnvironment>(Session.get(), &world, runtime);
     if (environment->IsValid())
+    {
         environment->CallVoid("OnWorldInitialize");
+    }
 
     Environments.emplace(world.GetId(), std::move(environment));
 }

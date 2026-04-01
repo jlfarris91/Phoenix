@@ -31,10 +31,12 @@ namespace Phoenix::RTS
     class PHOENIX_RTS_API FeatureTimers : IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureTimers)
+        {
+            FEATURE_CHANNEL(FeatureChannels::PreUpdate)
+            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+        }
 
     public:
-
-        FeatureTimers();
 
         static FixedTimerManager* GetSessionTimerManager(SessionRef session);
         static const FixedTimerManager* GetSessionTimerManager(SessionConstRef session);

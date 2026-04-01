@@ -63,11 +63,12 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureUnit : public IFeature
     {
-        PHX_REFLECT_TYPE(FeatureUnit, Phoenix::IFeature)
+        PHX_DECLARE_FEATURE_TYPE(FeatureUnit)
+        {
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+        }
 
     public:
-
-        FeatureUnit();
 
         static UnitId SpawnUnit(
             WorldRef world,
@@ -154,4 +155,14 @@ namespace Phoenix::RTS
 
         std::shared_ptr<ECS::ISystem> UnitSystem;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::RTS::FeatureUnit)
+{
+    registration
+        .Namespace("Phoenix.Unit")
+        .StaticMethod("SpawnUnit",   &RTS::FeatureUnit::SpawnUnit)
+        .StaticMethod("IsAlive",     &RTS::FeatureUnit::UnitIsAlive)
+        .StaticMethod("GetOwner",    &RTS::FeatureUnit::GetOwningPlayer)
+        .StaticMethod("GetUnitData", &RTS::FeatureUnit::GetUnitDataId);
 }

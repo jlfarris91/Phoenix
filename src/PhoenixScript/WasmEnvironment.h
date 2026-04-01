@@ -8,13 +8,12 @@
 #include <vector>
 
 #include "PhoenixScript/DLLExport.h"
-#include "PhoenixSim/Reflection/Reflection.h"
+#include "PhoenixSim/Reflection/MethodDescriptor.h"
 #include "PhoenixSim/Scripting/IScriptRuntime.h"
 
 namespace Phoenix
 {
     class WasmRuntime;
-    class Session;
 
     // ── WasmEnvironment ──────────────────────────────────────────────────────
     //
@@ -45,8 +44,8 @@ namespace Phoenix
         // Public so the file-local trampoline in .cpp can access members.
         struct CallCtx
         {
-            WasmEnvironment*        Runtime;
-            MethodDescriptor    Descriptor;
+            WasmEnvironment* Runtime;
+            MethodDescriptor Descriptor;
         };
 
         WasmEnvironment(
@@ -86,23 +85,7 @@ namespace Phoenix
         void Snapshot();
         void Restore();
 
-        // These are public so the file-local WasmHostTrampoline in .cpp can call them
-        // without requiring a friend declaration.
-
-        // Maps EGenericValueType to the wasm3 signature character ('v' for struct/unknown).
-        static char ToWasmTypeChar(const GenericValueTypeRef& type);
-
-        // Unpack one argument from the wasm3 stack slot and advance sp.
-        static GenericValue ReadWasmArg(uint64_t*& sp, const GenericValueTypeRef& type);
-
-        // Write a GenericValue return value into the wasm3 return slot.
-        static void WriteWasmReturn(uint64_t* sp, const GenericValue& val);
-
     private:
-
-        // Builds the wasm3 type-signature string (e.g. "v(ii)") for a method,
-        // skipping World-typed parameters (they are injected, not WASM args).
-        static std::string BuildWasmSignature(const MethodDescriptor& fn);
 
         // Look up (and cache) a WASM export by name. Returns nullptr if absent.
         void* FindExport(const char* name);

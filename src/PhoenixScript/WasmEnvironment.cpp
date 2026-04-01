@@ -20,8 +20,9 @@
 #include "m3_compile.h"  // CompileFunction()
 
 #include "WasmRuntime.h"
+#include "WasmUtility.h"
 #include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Reflection/GenericValue.h"
+#include "PhoenixSim/Reflection/Variant.h"
 #include "PhoenixSim/Worlds.h"
 #include "PhoenixSim/Scripting/IScriptRuntime.h"
 
@@ -248,120 +249,47 @@ static void LinkWasiStubs(IM3Module module)
                        });
 }
 
-// ── Struct marshaling helpers ─────────────────────────────────────────────────
 
-// Returns properties of desc sorted alphabetically — provides a deterministic
-// field order that matches the PhoenixWasmGen generator.
-static std::vector<std::pair<std::string, const PropertyDescriptor*>>
-GetSortedProps(const TypeDescriptor& desc)
-{
-    std::vector<std::pair<std::string, const PropertyDescriptor*>> sorted;
-    for (const auto& [name, prop] : desc.GetProperties())
-        sorted.push_back({ name, &prop });
-    std::sort(sorted.begin(), sorted.end(),
-        [](const auto& a, const auto& b) { return a.first < b.first; });
-    return sorted;
-}
-
-// Appends flattened WASM type chars for all fields of a struct (sorted alphabetically).
-static void AppendStructFieldChars(std::string& sig, const TypeDescriptor& desc)
-{
-    for (const auto& [name, prop] : GetSortedProps(desc))
-    {
-        GenericValueTypeRef tr = prop->GetTypeRef();
-        if (tr.IsStruct() && tr.Descriptor)
-            AppendStructFieldChars(sig, *tr.Descriptor);  // nested struct
-        else
-        {
-            char c = WasmEnvironment::ToWasmTypeChar(tr);
-            if (c != 'v') sig += c;
-        }
-    }
-}
-
-// Returns true when a type is a struct small enough to marshal over WASM.
-static bool IsExpandableStruct(const GenericValueTypeRef& type)
-{
-    return type.IsStruct() && type.Descriptor &&
-           type.Descriptor->GetSize() <= sizeof(std::byte[32]);
-}
-
-// Read struct fields from the WASM stack into a GenericValue.
-static GenericValue ReadStructArg(uint64_t*& sp, const TypeDescriptor& desc)
-{
-    GenericValue result;
-    result.Type = { EGenericValueType::Unknown, &desc };
-    desc.DefaultConstruct(result.Buffer);
-
-    for (const auto& [name, prop] : GetSortedProps(desc))
-    {
-        GenericValueTypeRef tr = prop->GetTypeRef();
-        if (tr.IsStruct() && tr.Descriptor)
-        {
-            // Nested struct — read its fields recursively, then copy bytes into parent.
-            GenericValue nested = ReadStructArg(sp, *tr.Descriptor);
-            prop->PropertyAccessor->Set(result.Buffer, nested.Buffer, sizeof(nested.Buffer));
-        }
-        else if (WasmEnvironment::ToWasmTypeChar(tr) != 'v')
-        {
-            GenericValue fieldGv = WasmEnvironment::ReadWasmArg(sp, tr);
-            prop->PropertyAccessor->Set(result.Buffer, fieldGv.Buffer, sizeof(fieldGv.Buffer));
-        }
-    }
-    return result;
-}
-
-// Write a struct GenericValue's fields into WASM linear memory at sretPtr.
-// Fields are written in alphabetical order (matching the generator).
-static void WriteStructToWasmMemory(IM3Runtime rt, uint32_t sretPtr,
-                                     const GenericValue& val, const TypeDescriptor& desc)
+// Write a struct Variant's fields into WASM linear memory at sretPtr.
+uint32 WriteStructToWasmMemory(IM3Runtime rt, uint32_t sretPtr, const Variant& val, const TypeDescriptor& desc)
 {
     uint32_t memSize = 0;
     uint8_t* mem = m3_GetMemory(rt, &memSize, 0);
-    if (!mem) return;
+    if (!mem)
+    {
+        return 0;
+    }
 
     uint32_t offset = 0;
-    for (const auto& [name, prop] : GetSortedProps(desc))
+    for (const auto& field : desc.GetFields() | std::views::values)
     {
-        GenericValueTypeRef tr = prop->GetTypeRef();
-        if (tr.IsStruct() && tr.Descriptor)
+        const TypeDescriptor* type = field.GetType();
+        assert(type);
+
+        char c;
+        if (Script::ToWasmTypeChar(*type, c))
         {
-            // Nested struct — read out of parent buffer, recurse.
-            GenericValue nested;
-            nested.Type = tr;
-            prop->PropertyAccessor->Get(val.Buffer, nested.Buffer, sizeof(nested.Buffer));
-            // Write each nested field sequentially.
-            for (const auto& [fn2, fp2] : GetSortedProps(*tr.Descriptor))
-            {
-                GenericValueTypeRef tr2 = fp2->GetTypeRef();
-                char c = WasmEnvironment::ToWasmTypeChar(tr2);
-                if (c == 'v') continue;
-                GenericValue f2;
-                f2.Type = tr2;
-                fp2->PropertyAccessor->Get(nested.Buffer, f2.Buffer, sizeof(f2.Buffer));
-                uint64_t slot = 0;
-                WasmEnvironment::WriteWasmReturn(&slot, f2);
-                const size_t sz = (c == 'I' || c == 'F') ? 8 : 4;
-                if (sretPtr + offset + sz <= memSize)
-                    std::memcpy(mem + sretPtr + offset, &slot, sz);
-                offset += static_cast<uint32_t>(sz);
-            }
-        }
-        else
-        {
-            char c = WasmEnvironment::ToWasmTypeChar(tr);
-            if (c == 'v') continue;
-            GenericValue fieldGv;
-            fieldGv.Type = tr;
-            prop->PropertyAccessor->Get(val.Buffer, fieldGv.Buffer, sizeof(fieldGv.Buffer));
+            Variant fieldGv(*type);
+            field.Get(val.GetData(), fieldGv.GetData(), type->GetSize());
             uint64_t slot = 0;
-            WasmEnvironment::WriteWasmReturn(&slot, fieldGv);
+            Script::WriteWasmReturn(&slot, fieldGv);
             const size_t sz = (c == 'I' || c == 'F') ? 8 : 4;
             if (sretPtr + offset + sz <= memSize)
+            {
                 std::memcpy(mem + sretPtr + offset, &slot, sz);
+            }
             offset += static_cast<uint32_t>(sz);
         }
+        else if (Script::IsExpandableStruct(*type))
+        {
+            // Nested struct — read out of parent buffer, recurse.
+            Variant nested(*type);
+            field.Get(val.GetData(), nested.GetData(), type->GetSize());
+            offset += WriteStructToWasmMemory(rt, sretPtr + offset, nested, *type);
+        }
     }
+
+    return offset;
 }
 
 // ── File-local trampoline ─────────────────────────────────────────────────────
@@ -376,243 +304,71 @@ static const void* WasmHostTrampoline(IM3Runtime rt, M3ImportContext* ctx, uint6
     WasmEnvironment* self = callCtx->Runtime;
     const MethodDescriptor& fn = callCtx->Descriptor;
 
-    const TypeDescriptor* worldDesc = &World::GetStaticTypeDescriptor();
+    const TypeDescriptor* worldDesc = &TypeRegistry::Get<World>();
 
-    std::vector<GenericValue> args;
-    args.reserve(fn.Params.size());
+    std::vector<Variant> args;
+    args.reserve(fn.GetParams().size());
+
+    const TypeDescriptor& returnType = *fn.GetReturnType();
 
     // wasm3: sp[0..numReturns-1] = return slots, sp[numReturns..] = args.
     // Struct returns use sret convention: return type is 'v' (sp[0] is first arg slot),
     // and the actual first WASM arg is an i32 pointer into linear memory.
-    const bool returnIsStruct = IsExpandableStruct(fn.Return.Type);
-    const bool hasScalarReturn = !fn.Return.Type.IsVoid() && !returnIsStruct;
+    const bool returnIsStruct = Script::IsExpandableStruct(returnType);
+    const bool returnIsVoid = returnType.GetTypeId() == StaticTypeName<void>::TypeId;
+    const bool hasScalarReturn = !returnIsStruct && !returnIsVoid;
     uint64_t* argSp = hasScalarReturn ? (sp + 1) : sp;
 
     // Consume sret pointer (first WASM arg for struct-returning functions).
     uint32_t sretPtr = 0;
     if (returnIsStruct)
-        sretPtr = static_cast<uint32_t>(*argSp++);
-
-    for (const auto& param : fn.Params)
     {
-        if (param.Type.Descriptor == worldDesc)
+        sretPtr = static_cast<uint32_t>(*argSp++);
+    }
+
+    for (const auto& param : fn.GetParams())
+    {
+        if (param.Type == worldDesc)
         {
             // World param is implicit in per-world runtimes — inject directly.
             if (World* w = self->GetWorld())
-                args.push_back(GenericConverter<World>::Borrow(*w));
+            {
+                args.push_back(Variant(static_cast<WorldRef>(*w)));
+            }
             else
-                args.push_back(GenericValue::Void());
+            {
+                args.push_back(Variant::Void());
+            }
         }
-        else if (IsExpandableStruct(param.Type))
+        else if (Script::IsExpandableStruct(*param.Type))
         {
             // Struct param: fields are flattened on the WASM stack, reassemble.
-            args.push_back(ReadStructArg(argSp, *param.Type.Descriptor));
+            args.push_back(Script::ReadStructArg(argSp, *param.Type));
         }
-        else if (WasmEnvironment::ToWasmTypeChar(param.Type) != 'v')
+        else if (Script::IsSupportedWasmType(*param.Type))
         {
             // Primitive param: read from WASM stack slot (advances argSp).
-            args.push_back(WasmEnvironment::ReadWasmArg(argSp, param.Type));
+            args.push_back(Script::ReadWasmArg(argSp, *param.Type));
         }
         else
         {
             // Unknown/unsupported param: inject Void.
-            args.push_back(GenericValue::Void());
+            args.push_back(Variant::Void());
         }
     }
 
-    GenericValue result = fn.Execute(nullptr, args);
+    Variant result = fn.Execute(nullptr, args);
 
     if (returnIsStruct)
-        WriteStructToWasmMemory(rt, sretPtr, result, *fn.Return.Type.Descriptor);
+    {
+        WriteStructToWasmMemory(rt, sretPtr, result, *fn.GetReturnType());
+    }
     else if (hasScalarReturn)
-        WasmEnvironment::WriteWasmReturn(sp, result);
+    {
+        Script::WriteWasmReturn(sp, result);
+    }
 
     return nullptr;  // m3Err_none
-}
-
-// ── Static helpers ────────────────────────────────────────────────────────────
-
-char WasmEnvironment::ToWasmTypeChar(const GenericValueTypeRef& type)
-{
-    if (type.IsVoid()) return 'v';
-    switch (type.Primitive)
-    {
-    case EGenericValueType::Bool:
-    case EGenericValueType::Int8:   case EGenericValueType::UInt8:
-    case EGenericValueType::Int16:  case EGenericValueType::UInt16:
-    case EGenericValueType::Int32:  case EGenericValueType::UInt32:
-    case EGenericValueType::Name:
-        return 'i';
-    case EGenericValueType::Int64:  case EGenericValueType::UInt64:
-        return 'I';
-    case EGenericValueType::Float:
-        return 'f';
-    case EGenericValueType::FixedPoint:
-        return 'i';  // TFixed stores int32_t internally, not IEEE 754 float
-    case EGenericValueType::Double:
-        return 'F';
-    case EGenericValueType::Unknown:
-    case EGenericValueType::String:
-    case EGenericValueType::Struct:
-    case EGenericValueType::COUNT:
-    default:
-        return 'v';  // Struct/Unknown — unsupported over the WASM scalar ABI
-    }
-}
-
-std::string WasmEnvironment::BuildWasmSignature(const MethodDescriptor& fn)
-{
-    const TypeDescriptor* worldDesc = &World::GetStaticTypeDescriptor();
-    const bool returnIsStruct = IsExpandableStruct(fn.Return.Type);
-
-    std::string sig;
-    // Struct return → void return + leading 'i' sret pointer.
-    sig += returnIsStruct ? 'v' : ToWasmTypeChar(fn.Return.Type);
-    sig += '(';
-    if (returnIsStruct)
-        sig += 'i';  // sret: pointer into WASM linear memory
-
-    for (const auto& param : fn.Params)
-    {
-        if (param.Type.Descriptor == worldDesc)
-            continue;  // world is injected — not a WASM argument
-        if (IsExpandableStruct(param.Type))
-            AppendStructFieldChars(sig, *param.Type.Descriptor);
-        else
-        {
-            char c = ToWasmTypeChar(param.Type);
-            if (c != 'v') sig += c;
-        }
-    }
-    sig += ')';
-    return sig;
-}
-
-GenericValue WasmEnvironment::ReadWasmArg(uint64_t*& sp, const GenericValueTypeRef& type)
-{
-    const uint64_t slot = *sp++;
-
-    switch (type.Primitive)
-    {
-    case EGenericValueType::Bool:
-        return GenericConverter<bool>::Borrow(static_cast<uint32_t>(slot) != 0u);
-    case EGenericValueType::Int8:
-        return GenericConverter<int8_t>::Borrow(static_cast<int8_t>(static_cast<int32_t>(slot)));
-    case EGenericValueType::UInt8:
-        return GenericConverter<uint8_t>::Borrow(static_cast<uint8_t>(slot));
-    case EGenericValueType::Int16:
-        return GenericConverter<int16_t>::Borrow(static_cast<int16_t>(static_cast<int32_t>(slot)));
-    case EGenericValueType::UInt16:
-        return GenericConverter<uint16_t>::Borrow(static_cast<uint16_t>(slot));
-    case EGenericValueType::Int32:
-        return GenericConverter<int32_t>::Borrow(static_cast<int32_t>(slot));
-    case EGenericValueType::UInt32:
-        return GenericConverter<uint32_t>::Borrow(static_cast<uint32_t>(slot));
-    case EGenericValueType::Int64:
-        return GenericConverter<int64_t>::Borrow(static_cast<int64_t>(slot));
-    case EGenericValueType::UInt64:
-        return GenericConverter<uint64_t>::Borrow(slot);
-    case EGenericValueType::Float:
-    {
-        float v;
-        const uint32_t u = static_cast<uint32_t>(slot);
-        std::memcpy(&v, &u, sizeof(float));
-        return GenericConverter<float>::Borrow(v);
-    }
-    case EGenericValueType::FixedPoint:
-    {
-        // TFixed stores a raw int32_t. Pass it through as-is.
-        GenericValue gv;
-        gv.Type.Primitive = EGenericValueType::FixedPoint;
-        const int32_t raw = static_cast<int32_t>(slot);
-        std::memcpy(gv.Buffer, &raw, sizeof(int32_t));
-        return gv;
-    }
-    case EGenericValueType::Double:
-    {
-        double v;
-        std::memcpy(&v, &slot, sizeof(double));
-        return GenericConverter<double>::Borrow(v);
-    }
-    case EGenericValueType::Name:
-    {
-        const FName name(static_cast<uint32_t>(slot));
-        return GenericConverter<FName>::Borrow(name);
-    }
-    case EGenericValueType::Unknown:
-    case EGenericValueType::String:
-    case EGenericValueType::Struct:
-    case EGenericValueType::COUNT:
-    default:
-        return GenericValue::Void();
-    }
-}
-
-void WasmEnvironment::WriteWasmReturn(uint64_t* sp, const GenericValue& val)
-{
-    switch (val.Type.Primitive)
-    {
-    case EGenericValueType::Bool:
-        *sp = val.As<bool>() ? 1u : 0u;
-        break;
-    case EGenericValueType::Int8:
-        *sp = static_cast<uint64_t>(static_cast<int32_t>(val.As<int8_t>()));
-        break;
-    case EGenericValueType::UInt8:
-        *sp = static_cast<uint64_t>(val.As<uint8_t>());
-        break;
-    case EGenericValueType::Int16:
-        *sp = static_cast<uint64_t>(static_cast<int32_t>(val.As<int16_t>()));
-        break;
-    case EGenericValueType::UInt16:
-        *sp = static_cast<uint64_t>(val.As<uint16_t>());
-        break;
-    case EGenericValueType::Int32:
-        *sp = static_cast<uint64_t>(val.As<int32_t>());
-        break;
-    case EGenericValueType::UInt32:
-        *sp = static_cast<uint64_t>(val.As<uint32_t>());
-        break;
-    case EGenericValueType::Int64:
-        *sp = static_cast<uint64_t>(val.As<int64_t>());
-        break;
-    case EGenericValueType::UInt64:
-        *sp = val.As<uint64_t>();
-        break;
-    case EGenericValueType::Float:
-    {
-        const float v = val.As<float>();
-        uint32_t u;
-        std::memcpy(&u, &v, sizeof(float));
-        *sp = u;
-        break;
-    }
-    case EGenericValueType::FixedPoint:
-    {
-        // Raw int32 bits — pass through without float reinterpretation.
-        int32_t raw;
-        std::memcpy(&raw, val.Buffer, sizeof(int32_t));
-        *sp = static_cast<uint64_t>(static_cast<uint32_t>(raw));
-        break;
-    }
-    case EGenericValueType::Double:
-    {
-        const double v = val.As<double>();
-        std::memcpy(sp, &v, sizeof(double));
-        break;
-    }
-    case EGenericValueType::Name:
-    {
-        const FName n = val.As<FName>();
-        *sp = static_cast<uint64_t>(static_cast<hash32_t>(n));
-        break;
-    }
-    case EGenericValueType::Unknown:
-    case EGenericValueType::String:
-    case EGenericValueType::Struct:
-    case EGenericValueType::COUNT:
-        break;
-    }
 }
 
 // ── WasmWorldRuntime ──────────────────────────────────────────────────────────
@@ -660,8 +416,7 @@ WasmEnvironment::WasmEnvironment(
     // ── Parse module ─────────────────────────────────────────────────────────
 
     IM3Module module = nullptr;
-    M3Result err = m3_ParseModule(env, &module,
-        wasmBytes.data(), static_cast<uint32_t>(wasmBytes.size()));
+    M3Result err = m3_ParseModule(env, &module, wasmBytes.data(), static_cast<uint32_t>(wasmBytes.size()));
     if (err)
     {
         LogError("[PhoenixScript] m3_ParseModule: {}", err);
@@ -671,7 +426,7 @@ WasmEnvironment::WasmEnvironment(
     // ── Load module ───────────────────────────────────────────────────────────
     //
     // m3_LoadModule attaches the module to the runtime (sets module->runtime)
-    // and initialises memory/globals.  It does NOT run the WASM start section;
+    // and initializes memory/globals.  It does NOT run the WASM start section;
     // that happens lazily on the first m3_FindFunction call.
     //
     // Imports must be linked AFTER this call because m3_LinkRawFunctionEx
@@ -691,7 +446,7 @@ WasmEnvironment::WasmEnvironment(
     //
     // emscripten's __wasm_call_ctors start section fires on the first
     // m3_FindFunction call.  It can invoke WASI functions (fd_write, etc.)
-    // and, once the Lua state is initialised, will call through to Phoenix
+    // and, once the Lua state is initialized, will call through to Phoenix
     // host functions.  All imports must be linked now so the start section
     // finds them resolved rather than unlinked (→ "missing imported function").
     //
@@ -706,17 +461,17 @@ WasmEnvironment::WasmEnvironment(
     const auto& hostEntries = wasmRuntime->GetRegistrations();
     CallContexts.reserve(hostEntries.size());
     for (const auto& entry : hostEntries)
-        CallContexts.push_back({ this, entry.Descriptor });
+        CallContexts.push_back({ this, entry.Method });
 
     for (size_t i = 0; i < hostEntries.size(); ++i)
     {
         const WasmHostEntry& entry = hostEntries[i];
-        const std::string    sig   = BuildWasmSignature(entry.Descriptor);
+        const std::string    sig   = Script::BuildWasmSignature(entry.Method);
         const char*          mod   = entry.ImportModule.empty() ? "*" : entry.ImportModule.c_str();
 
         M3Result result = m3_LinkRawFunctionEx(module,
             mod,
-            entry.Descriptor.Name.c_str(),
+            entry.Method.GetName().c_str(),
             sig.c_str(),
             &WasmHostTrampoline,
             &CallContexts[i]);
@@ -727,13 +482,13 @@ WasmEnvironment::WasmEnvironment(
         if (result && result != m3Err_functionLookupFailed)
         {
             LogError("[PhoenixScript] Link mismatch {}::{} host_sig={} — {}",
-                mod, entry.Descriptor.Name, sig, result);
+                mod, entry.Method.GetName(), sig, result);
         }
 #if PHX_WASM_VERBOSE
         else
         {
             const char* status = result ? "skipped" : "linked";
-            LogVerbose("[PhoenixScript] {} {}::{} {}", status, mod, entry.Descriptor.Name, sig);
+            LogVerbose("[PhoenixScript] {} {}::{} {}", status, mod, entry.Method.GetName(), sig);
         }
 #endif
     }
@@ -744,7 +499,7 @@ WasmEnvironment::WasmEnvironment(
     // it exports "_initialize" which calls __wasm_call_ctors (C global ctors,
     // Emscripten's internal heap/stack setup).  wasm3 never triggers this
     // automatically.  Without calling it, Emscripten's __stack_pointer global
-    // and memory allocator are uninitialised — the first WASM memory access then
+    // and memory allocator are uninitialized — the first WASM memory access then
     // AV's.  Call it now, after all imports are linked but before any script
     // exports (OnWorldInitialize, etc.) are invoked.
     //

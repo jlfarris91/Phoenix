@@ -5,7 +5,6 @@
 
 #include "PhoenixSim/Logging.h"
 #include "PhoenixSim/Session.h"
-#include "PhoenixSim/Scripting/IScriptBindings.h"
 
 using namespace Phoenix;
 
@@ -32,20 +31,46 @@ WasmRuntime::WasmRuntime(const std::shared_ptr<Phoenix::Session>& session)
 {
 }
 
+const std::string& WasmRuntime::GetScriptPath() const
+{ 
+    return ScriptPath; 
+}
+
+const std::vector<uint8>& WasmRuntime::GetWasmBytes() const
+{ 
+    return WasmBytes; 
+}
+
+const std::vector<WasmHostEntry>& WasmRuntime::GetRegistrations() const
+{ 
+    return Registrations; 
+}
+
 void WasmRuntime::RegisterType(const TypeDescriptor& desc)
 {
     // Skip types with nothing script-visible.
-    if (desc.IsScriptHidden()) return;
+    if (desc.IsScriptHidden())
+    {
+        return;
+    }
 
     const bool isValueType = (desc.GetSize() > 0 && desc.GetSize() <= 32);
-    const bool hasFields   = !desc.GetProperties().empty();
+    const bool hasFields   = !desc.GetFields().empty() || !desc.GetProperties().empty();
 
     bool hasStaticMethods = false;
-    for (const auto& [n, m] : desc.GetMethods())
-        if (m.IsStatic() && !HasAnyFlags(m.Flags, EMemberDescriptorFlags::ScriptHidden))
-            { hasStaticMethods = true; break; }
+    for (const auto& methodDescriptor : desc.GetMethods() | std::views::values)
+    {
+        if (methodDescriptor.IsStatic() && methodDescriptor.IsScriptHidden())
+        {
+            hasStaticMethods = true;
+            break;
+        }
+    }
 
-    if (!hasStaticMethods && !(isValueType && hasFields)) return;
+    if (!hasStaticMethods && !(isValueType && hasFields))
+    {
+        return;
+    }
 
     // Explicit "Namespace" metadata takes priority; otherwise fall back to the
     // type's qualified C++ name converted to a dot-separated Lua path.
@@ -53,10 +78,12 @@ void WasmRuntime::RegisterType(const TypeDescriptor& desc)
     {
         const auto it = desc.GetMetadata().find("Namespace");
         if (it != desc.GetMetadata().end())
+        {
             ns = it->second;
+        }
         else
         {
-            ns = desc.GetQualifiedCName();
+            ns = desc.GetQualifiedName();
             for (size_t i = 0; i + 1 < ns.size(); )
             {
                 if (ns[i] == ':' && ns[i+1] == ':') { ns.replace(i, 2, "."); }
@@ -66,91 +93,12 @@ void WasmRuntime::RegisterType(const TypeDescriptor& desc)
     }
 
     // ── Static methods ────────────────────────────────────────────────────────
-    for (const auto& [n, method] : desc.GetMethods())
+    for (const auto& method : desc.GetMethods() | std::views::values)
     {
         if (!method.IsStatic()) continue;
-        if (HasAnyFlags(method.Flags, EMemberDescriptorFlags::ScriptHidden)) continue;
-        Registrations.push_back({ .ImportModule = ns, .Descriptor = method });
+        if (method.IsScriptHidden()) continue;
+        Registrations.push_back({ ns, method });
     }
-
-    // ── Synthesized field getter / setter for value types (≤32 bytes) ─────────
-    //
-    // Each field becomes two static host functions:
-    //   get_<field>(self: T) -> fieldType          — reads one field from the struct
-    //   set_<field>(self: T, value: fieldType) -> T — returns a modified copy
-    //
-    // The accessor's Execute lambda reconstructs the struct from args[0].Buffer,
-    // reads/writes the field, and returns the result.
-    if (isValueType && hasFields)
-    {
-        for (const auto& [propName, prop] : desc.GetProperties())
-        {
-            if (HasAnyFlags(prop.Flags, EMemberDescriptorFlags::ScriptHidden)) continue;
-            if (!prop.PropertyAccessor) continue;
-
-            const GenericValueTypeRef selfType  { EGenericValueType::Unknown, &desc };
-            const GenericValueTypeRef fieldType = prop.GetTypeRef();
-
-            // Getter.
-            {
-                auto accessor = prop.PropertyAccessor;
-                WasmHostEntry entry;
-                entry.ImportModule          = ns;
-                entry.Descriptor.Name       = "get_" + propName;
-                entry.Descriptor.Params.push_back({ "self",  selfType  });
-                entry.Descriptor.Return.Type = fieldType;
-                entry.Descriptor.Function.HasSelfParam = false;
-                entry.Descriptor.Function.Invoke =
-                    [accessor, fieldType](void*, std::span<const GenericValue> args) -> GenericValue
-                    {
-                        if (args.empty()) return GenericValue::Void();
-                        GenericValue result;
-                        result.Type = fieldType;
-                        accessor->Get(args[0].Buffer, result.Buffer, sizeof(result.Buffer));
-                        return result;
-                    };
-                Registrations.push_back(std::move(entry));
-            }
-
-            // Setter (skip if accessor is read-only).
-            if (!prop.PropertyAccessor->IsReadOnly())
-            {
-                auto accessor = prop.PropertyAccessor;
-                WasmHostEntry entry;
-                entry.ImportModule           = ns;
-                entry.Descriptor.Name        = "set_" + propName;
-                entry.Descriptor.Params.push_back({ "self",  selfType  });
-                entry.Descriptor.Params.push_back({ "value", fieldType });
-                entry.Descriptor.Return.Type  = selfType;  // returns modified copy
-                entry.Descriptor.Function.HasSelfParam = false;
-                entry.Descriptor.Function.Invoke =
-                    [accessor, selfType](void*, std::span<const GenericValue> args) -> GenericValue
-                    {
-                        if (args.size() < 2) return GenericValue::Void();
-                        GenericValue result = args[0];  // copy the struct
-                        result.Type = selfType;
-                        accessor->Set(result.Buffer, args[1].Buffer, sizeof(args[1].Buffer));
-                        return result;
-                    };
-                Registrations.push_back(std::move(entry));
-            }
-        }
-    }
-}
-
-void WasmRuntime::OpenNamespace(const char* ns)
-{
-    CurrentNamespace = ns ? ns : "";
-}
-
-void WasmRuntime::CloseNamespace()
-{
-    CurrentNamespace.clear();
-}
-
-void WasmRuntime::RegisterFunction(const MethodDescriptor& fn)
-{
-    Registrations.push_back({.ImportModule = CurrentNamespace, .Descriptor = fn });
 }
 
 bool WasmRuntime::LoadFile(const char* path)
@@ -172,38 +120,13 @@ bool WasmRuntime::LoadFile(const char* path)
         return false;
     }
 
-    Registrations.clear();
     ScriptPath = scriptPath.generic_string();
 
+    Registrations.clear();
     for (const auto& desc : TypeRegistry::GetAll() | std::views::values)
     {
         RegisterType(*desc);
     }
 
-    std::vector<std::shared_ptr<IScriptBindings>> bindingServices;
-    Session->GetServices2<IScriptBindings>(bindingServices);
-
-    for (const auto& svc : bindingServices)
-    {
-        auto bindings = static_pointer_cast<IScriptBindings>(svc);
-        OpenNamespace(bindings->GetNamespace());
-        bindings->Register(*this);
-        CloseNamespace();
-    }
-
     return true;
-}
-
-bool WasmRuntime::ExecString(const std::string&)
-{
-    // WASM runtimes do not support evaluating source strings.
-    return false;
-}
-
-void WasmRuntime::SetCurrentWorld(World*)
-{
-}
-
-void WasmRuntime::OnBindingsComplete()
-{
 }

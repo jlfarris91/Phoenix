@@ -62,9 +62,23 @@ namespace Phoenix
 // these types.  Value == Distance (same TFixed<12,int32> type) — Distance is
 // the canonical name.  InvValue / DeltaTime are inverse types, not registered.
 
-#include "PhoenixSim/Reflection/TypeTraits.h"
+#include "PhoenixSim/Reflection/TypeName.h"
+#include "PhoenixSim/Reflection/TypeDescriptorMetadataProvider.h"
 
-PHX_REGISTER_EXTERNAL_TYPE(Distance)
-PHX_REGISTER_EXTERNAL_TYPE(Time)
-PHX_REGISTER_EXTERNAL_TYPE(Speed)
-PHX_REGISTER_EXTERNAL_TYPE(Angle)
+namespace Phoenix
+{
+    // A specialization for TFixed to provide the number of fractional bits as metadata, which is useful for UI to
+    // display the fixed-point value correctly.
+    template <uint8 Tb, class T>
+    struct TypeDescriptorMetadataProvider<TFixed<Tb, T>>
+    {
+        static std::unordered_map<std::string, std::string> GetMetadata()
+        {
+            return
+            { 
+                { "FractionalBits", std::to_string(Tb) },
+                { "UnderlyingType", std::to_string(StaticTypeName<T>::TypeId) }
+            };
+        }
+    };
+}
