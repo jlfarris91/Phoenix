@@ -177,5 +177,5 @@ PHX_DEFINE_TYPE(Phoenix::Box2)
         .Method("Union", static_cast<Box2(Box2::*)(const Vec2&)const>(&Box2::Union))
         .Method("Union", static_cast<Box2(Box2::*)(const Box2&)const>(&Box2::Union))
         .Method("Clamp", &Box2::Clamp)
-        .StaticMethod<Box2, const Vec2&, const Vec2&, const Vec2&>("FromPoints", &Box2::FromPoints);
+        .StaticMethod("FromPoints(a, b, c)", StaticMethodCast<Box2, const Vec2&, const Vec2&, const Vec2&>(&Box2::FromPoints));
 }

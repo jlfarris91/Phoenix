@@ -33,9 +33,10 @@ in the service container. `FeatureLua::OnWorldInitialize` pre-creates the enviro
 `RegisterWorldRuntime`) and loads the Lua script. `FeatureScript::OnWorldInitialize` then finds
 the already-created environment and fires `CallVoid("OnWorldInitialize")` on it.
 
-**Build pipeline** (CMake, `src/PhoenixLuaWasm/CMakeLists.txt`):
-1. `PhoenixWasmGen` → `host_api.h` + `lua_bridge.c` (host function stubs from TypeRegistry)
-2. `emcc(lua_wasm.c + lua_bridge.c + Lua 5.4 sources)` → `LuaRunner.wasm`
+**Build pipeline** (CMake, `tools/PhoenixLuaRuntime/CMakeLists.txt`):
+1. `PhoenixWasmGen` → `host_api.h` (language-agnostic WASM import declarations)
+2. `PhoenixLuaGen` → `lua_bridge.c` (Lua stack marshaling from TypeRegistry)
+3. `emcc(lua_wasm.c + lua_bridge.c + Lua 5.4 sources)` → `lua.wasm`
 
 ---
 
@@ -298,9 +299,10 @@ the WASM routes through `fd_write` → the host's log sink.
 | `src/PhoenixScript/FeatureScript.cpp/.h` | Generic WASM host: RegisterWorldRuntime API, per-world lifecycle dispatch |
 | `src/PhoenixScript/WasmEnvironment.cpp/.h` | wasm3 runtime, import linking, export dispatch, LoadLuaScript, RunString |
 | `src/PhoenixScript/WasmRuntime.cpp/.h` | Loads raw .wasm bytes, owns IM3Environment |
-| `src/PhoenixLuaWasm/lua_wasm.c` | Lua interpreter WASM entry points: GetScriptBuffer, LoadScript, RunString, lifecycle exports |
-| `src/PhoenixLuaWasm/CMakeLists.txt` | Emscripten build pipeline + `add_lua_wasm_script()` function |
-| `tools/PhoenixWasmGen/PhoenixWasmGen.cpp` | Generates `host_api.h` + `lua_bridge.c` from TypeRegistry |
+| `tools/PhoenixLuaRuntime/lua_wasm.c` | Lua interpreter WASM entry points: GetScriptBuffer, LoadScript, RunString, lifecycle exports |
+| `tools/PhoenixLuaRuntime/CMakeLists.txt` | Emscripten build pipeline + `add_lua_wasm_script()` function |
+| `tools/PhoenixWasmGen/PhoenixWasmGen.cpp` | Generates `host_api.h` from TypeRegistry |
+| `tools/PhoenixLuaGen/PhoenixLuaGen.cpp` | Generates `lua_bridge.c` from TypeRegistry |
 | `tests/TestRTS/Data/LuaRunner.wasm` | Built artifact — generic Lua 5.4 interpreter, shared across worlds |
 
 ---

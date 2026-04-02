@@ -93,7 +93,7 @@ bool Phoenix::Variant::IsRef() const
 
 bool Phoenix::Variant::IsConstRef() const
 {
-    return HasAnyFlags(Flags, EVariantFlags::ConstRef);
+    return HasAllFlags(Flags, EVariantFlags::ConstRef);
 }
 
 Phoenix::FName Phoenix::Variant::GetTypeId() const

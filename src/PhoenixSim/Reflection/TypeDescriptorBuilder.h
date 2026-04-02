@@ -1,5 +1,9 @@
 #pragma once
 
+#include <ranges>
+#include <array>
+
+#include "MethodDescriptorString.h"
 #include "PhoenixSim/Reflection/FieldAccessor.h"
 #include "PhoenixSim/Reflection/FieldDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/MethodDescriptorBuilder.h"
@@ -216,18 +220,22 @@ namespace Phoenix
         }
 
         // ── Methods ───────────────────────────────────────────────────────────
+
         template <class TRet, class ...TArgs, size_t ...I>
-        static void FillMethodParams(MethodDescriptor& d, const char* name, std::index_sequence<I...>)
+        static void FillMethodParams(
+            MethodDescriptor& d,
+            const std::type_identity_t<MethodDeclarationString<TArgs...>>& declStr,
+            std::index_sequence<I...>)
         {
-            d.Name = name;
+            d.Name = std::string(declStr.Name);
             SetFlagRef(d.Flags, EMemberDescriptorFlags::Method);
-            d.Params        = { ParamDescriptor{ std::to_string(I), &TypeRegistry::Get<TArgs>() }... };
+            d.Params        = { ParamDescriptor{ std::string(declStr.ParamNames[I]), &TypeRegistry::Get<TArgs>() }... };
             d.ReturnType    = &TypeRegistry::Get<TRet>();
         }
 
         template <class TRet, class... TArgs>
         TypeDescriptorBuilder& Method(
-            const char* name,
+            const std::type_identity_t<MethodDeclarationString<TArgs...>>& name,
             TRet(T::* fn)(TArgs...),
             const MethodDescriptorBuilderFunc& method = {})
         {
@@ -239,13 +247,13 @@ namespace Phoenix
                 MethodDescriptorBuilder methodBuilder(&descriptor);
                 method(methodBuilder);
             }
-            Descriptor->Methods[name] = std::move(descriptor);
+            Descriptor->Methods[descriptor.Name] = std::move(descriptor);
             return *this;
         }
 
         template <class TRet, class... TArgs>
         TypeDescriptorBuilder& Method(
-            const char* name,
+            const std::type_identity_t<MethodDeclarationString<TArgs...>>& name,
             TRet(T::* fn)(TArgs...) const,
             const MethodDescriptorBuilderFunc& method = {})
         {
@@ -257,13 +265,13 @@ namespace Phoenix
                 MethodDescriptorBuilder methodBuilder(&descriptor);
                 method(methodBuilder);
             }
-            Descriptor->Methods[name] = std::move(descriptor);
+            Descriptor->Methods[descriptor.Name] = std::move(descriptor);
             return *this;
         }
 
         template <class TRet, class... TArgs>
         TypeDescriptorBuilder& StaticMethod(
-            const char* name,
+            const std::type_identity_t<MethodDeclarationString<TArgs...>>& name,
             TRet(*fn)(TArgs...),
             const MethodDescriptorBuilderFunc& method = {})
         {
@@ -276,7 +284,7 @@ namespace Phoenix
                 MethodDescriptorBuilder methodBuilder(&descriptor);
                 method(methodBuilder);
             }
-            Descriptor->Methods[name] = std::move(descriptor);
+            Descriptor->Methods[descriptor.Name] = std::move(descriptor);
             return *this;
         }
 
@@ -290,9 +298,10 @@ namespace Phoenix
                 new(mem) T(std::forward<TArgs>(args)...);
             };
 
+            MethodDeclarationString<TArgs...> declStr("__construct__");
             MethodDescriptor descriptor;
             descriptor.Function = MakeGenericFunctionTakingSelf(std::function(ctor));
-            FillMethodParams<void, void*, TArgs...>(descriptor, "__construct__", std::index_sequence_for<void*, TArgs...>{});
+            FillMethodParams<void, TArgs...>(descriptor, declStr, std::index_sequence_for<TArgs...>{});
             SetFlagRef(descriptor.Flags, EMemberDescriptorFlags::Method);
             SetFlagRef(descriptor.Flags, EMemberDescriptorFlags::Constructor);
 

@@ -35,6 +35,36 @@ const std::string& Phoenix::TypeDescriptor::GetQualifiedName() const
     return QualifiedName;
 }
 
+// Builds the dot-separated script namespace path for this type.
+//
+//   alias        — caller-supplied alias (e.g. "Vec2" for TVec2<...>).
+//                  If empty, falls back to TemplateName (for templates) or Name.
+//
+// Examples:
+//   TVec2<TFixed<12,int>>, alias="Vec2"  →  "Phoenix.Vec2"
+//   Phoenix::RTS::FeatureUnit, alias=""  →  "Phoenix.RTS.FeatureUnit"
+std::string Phoenix::TypeDescriptor::GetScriptNamespace() const
+{
+    const auto it = Metadata.find("Namespace");
+    if (it != Metadata.end())
+        return it->second;
+
+    // Convert the C++ parent namespace (e.g. "Phoenix::RTS") to dot notation.
+    std::string parent = TypeName.GetParent();
+    for (size_t i = 0; i + 1 < parent.size(); )
+    {
+        if (parent[i] == ':' && parent[i + 1] == ':') { parent.replace(i, 2, "."); }
+        else ++i;
+    }
+
+    // Local name: alias > bare template name > short name.
+    std::string local = !Alias.empty()         ? Alias
+                      : (TypeName.GetNumTemplateArgs() > 0)  ? std::string(TypeName.GetTemplateName())
+                                               : std::string(Name);
+
+    return parent.empty() ? local : parent + "." + local;
+}
+
 const std::string& Phoenix::TypeDescriptor::GetDisplayName() const
 {
     return DisplayName.empty() ? GetAliasOrName() : DisplayName;

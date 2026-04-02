@@ -906,16 +906,46 @@ const Transform2D* FeatureECS::GetWorldTransformPtr(WorldConstRef world, EntityI
     return comp ? &comp->Transform : nullptr;
 }
 
+Vec2 FeatureECS::GetLocalPosition(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetLocalTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Position : Vec2::Zero;
+}
+
 Vec2 FeatureECS::GetWorldPosition(WorldConstRef world, EntityId entityId)
 {
     auto entityTransform = GetWorldTransformPtr(world, entityId);
     return entityTransform ? entityTransform->Position : Vec2::Zero;
 }
 
+Angle FeatureECS::GetLocalFacing(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Rotation : 0;
+}
+
 Angle FeatureECS::GetWorldFacing(WorldConstRef world, EntityId entityId)
 {
     auto entityTransform = GetWorldTransformPtr(world, entityId);
     return entityTransform ? entityTransform->Rotation : 0;
+}
+
+Value FeatureECS::GetLocalScale(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Scale : 1;
+}
+
+Value FeatureECS::GetWorldScale(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Scale : 1;
+}
+
+EntityId FeatureECS::GetParent(WorldConstRef world, EntityId entityId)
+{
+    const TransformComponent* comp = GetComponent<TransformComponent>(world, entityId);
+    return comp ? comp->AttachParent : EntityId::Invalid;
 }
 
 bool FeatureECS::IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range)

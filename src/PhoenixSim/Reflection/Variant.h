@@ -117,6 +117,60 @@ namespace Phoenix
         }
 
         template <class T>
+        T As()
+        {
+            if constexpr (std::is_reference_v<T>)
+            {
+                if constexpr (std::is_const_v<T>)
+                {
+                    if (IsRef())
+                    {
+                        return *DerefConst<T>();
+                    }
+                    return *GetData<T>();
+                }
+                else
+                {
+                    assert(!IsConstRef());
+                    if (IsRef())
+                    {
+                        return *Deref<T>();
+                    }
+                    return *GetData<std::remove_reference_t<T>>();
+                }
+            }
+            else if constexpr (std::is_pointer_v<T>)
+            {
+                if constexpr (std::is_const_v<T>)
+                {
+                    if (IsRef())
+                    {
+                        return DerefConst<T>();
+                    }
+                    return GetData<T>();
+                }
+                else
+                {
+                    if (IsRef())
+                    {
+                        return *Deref<T>();
+                    }
+                    assert(OwnsData());
+                    return *GetData<T>();
+                }
+            }
+            else
+            {
+                if (IsRef())
+                {
+                    return *DerefConst<T>();
+                }
+                assert(OwnsData());
+                return *GetData<T>();
+            }
+        }
+
+        template <class T>
         T As() const
         {
             if constexpr (std::is_reference_v<T>)
@@ -132,7 +186,11 @@ namespace Phoenix
                 else
                 {
                     assert(!IsConstRef());
-                    return *Deref<T>();
+                    if (IsRef())
+                    {
+                        return *Deref<T>();
+                    }
+                    return *const_cast<std::remove_reference_t<T>*>(GetData<std::remove_reference_t<T>>());
                 }
             }
             else if constexpr (std::is_pointer_v<T>)

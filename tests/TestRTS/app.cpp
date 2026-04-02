@@ -187,8 +187,8 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
-    // serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
-    // serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
@@ -197,7 +197,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
 
     // Register game-specific features
-    serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
+    // serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
 
     // Register ability handlers
     serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();

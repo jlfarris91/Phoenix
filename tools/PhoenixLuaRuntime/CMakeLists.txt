@@ -82,7 +82,7 @@ find_program(EMCC NAMES emcc emcc.bat
     HINTS "$ENV{EMSDK}/upstream/emscripten"
 )
 if(NOT EMCC)
-    message(STATUS "PhoenixLuaWasm: emcc not found — any call to add_lua_wasm_script() will be a fatal error")
+    message(STATUS "PhoenixLuaRuntime: emcc not found — any call to add_lua_wasm_script() will be a fatal error")
     message(STATUS "  Run: build/bootstrap.ps1 -Target emscripten  (then re-run cmake)")
 endif()
 
@@ -92,12 +92,9 @@ endif()
 # file loadable by FeatureScript / WasmEnvironment.
 #
 # Build pipeline:
-#   1. PhoenixWasmGen → host_api.h + lua_bridge.c   (from TypeRegistry)
-#   2. EmbedScript.cmake → lua_embedded_script.h    (script bytes as C array)
-#   3. emcc(lua_wasm.c + lua_bridge.c + Lua srcs) → script.wasm
-#
-# PhoenixWasmGen is a separate tool in tools/PhoenixWasmGen/ — it is not
-# Lua-specific.  host_api.h is a build artifact only (never in source tree).
+#   1a. PhoenixWasmGen → host_api.h      (language-agnostic WASM imports)
+#   1b. PhoenixLuaGen  → lua_bridge.c   (Lua stack marshaling)
+#   2.  emcc(lua_wasm.c + lua_bridge.c + Lua srcs) → lua.wasm
 #
 # Usage:
 #   add_lua_wasm_script(
@@ -121,14 +118,14 @@ function(add_lua_wasm_script)
             "  Run: build/bootstrap.ps1 -Target emscripten  (then re-run cmake)")
     endif()
 
-    # lua54_SOURCE_DIR was set in src/PhoenixLuaWasm's directory scope by
+    # lua54_SOURCE_DIR was set in tools/PhoenixLuaRuntime's directory scope by
     # FetchContent_Populate.  Functions execute in the *calling* scope, so the
     # variable is not visible here.  FetchContent_GetProperties re-resolves it
     # from the global FetchContent state into the current (function) scope.
     FetchContent_GetProperties(lua54)
     if(NOT lua54_POPULATED)
         message(FATAL_ERROR "add_lua_wasm_script: lua54 is not populated — "
-                            "include src/PhoenixLuaWasm before calling this function.")
+                            "include tools/PhoenixLuaRuntime before calling this function.")
     endif()
 
     set(_lua_src "${lua54_SOURCE_DIR}")
@@ -146,17 +143,27 @@ function(add_lua_wasm_script)
         "${_lua_src}/lzio.c"
     )
 
-    # ── Step 1: Generate host_api.h + lua_bridge.c ─────────────────────────
+    # ── Step 1a: Generate host_api.h (PhoenixWasmGen) ──────────────────────
     set(HOST_API_H   "${CMAKE_CURRENT_BINARY_DIR}/host_api.h")
     set(LUA_BRIDGE_C "${CMAKE_CURRENT_BINARY_DIR}/lua_bridge.c")
 
     add_custom_command(
-        OUTPUT  "${HOST_API_H}" "${LUA_BRIDGE_C}"
+        OUTPUT  "${HOST_API_H}"
         COMMAND $<TARGET_FILE:PhoenixWasmGen>
-            --host-api   "${HOST_API_H}"
+            --host-api "${HOST_API_H}"
+        DEPENDS PhoenixWasmGen GenerateAPI
+        COMMENT "Generating host_api.h from TypeRegistry"
+    )
+
+    # ── Step 1b: Generate lua_bridge.c + Phoenix.d.lua (PhoenixLuaGen) ─────────
+    set(LUA_DEFS_FILE "${CMAKE_CURRENT_BINARY_DIR}/Phoenix.d.lua")
+    add_custom_command(
+        OUTPUT  "${LUA_BRIDGE_C}" "${LUA_DEFS_FILE}"
+        COMMAND $<TARGET_FILE:PhoenixLuaGen>
             --lua-bridge "${LUA_BRIDGE_C}"
-        DEPENDS PhoenixWasmGen
-        COMMENT "Generating host_api.h + lua_bridge.c from TypeRegistry"
+            --lua-defs   "${LUA_DEFS_FILE}"
+        DEPENDS PhoenixLuaGen GenerateAPI
+        COMMENT "Generating lua_bridge.c from TypeRegistry"
     )
 
     # ── Step 2: Compile → .wasm ─────────────────────────────────────────────

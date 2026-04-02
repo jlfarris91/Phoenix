@@ -34,10 +34,12 @@ target_link_libraries(TestRTS PUBLIC PhoenixSim PhoenixPhysics PhoenixSteering P
 set_property(TARGET TestRTS PROPERTY FOLDER "Apps")
 
 # wasm3 without TCO (MSVC doesn't guarantee tail-call elimination) uses deep
-# C recursion for its op-chain interpreter.  Running a Lua 5.4 script through
-# wasm3 can easily exhaust the default 1 MB thread stack.  Reserve 32 MB.
+# C recursion for its op-chain interpreter.  Running Lua 5.4 through wasm3
+# requires significant stack depth — Debug builds are especially heavy because
+# MSVC's /RTC1 runtime checks bloat each frame.  Reserve 128 MB (virtual,
+# not committed until touched).
 if(MSVC)
-    target_link_options(TestRTS PRIVATE "/STACK:33554432")
+    target_link_options(TestRTS PRIVATE "/STACK:134217728")
 endif()
 
 # ── Lua runner WASM ───────────────────────────────────────────────────────────
@@ -48,7 +50,7 @@ endif()
 # co-located with the app regardless of working directory.
 #
 # Requires emcc (Emscripten) to be on PATH.  add_lua_wasm_script() is defined
-# in src/PhoenixLuaWasm/CMakeLists.txt and will fatal-error at configure time
+# in tools/PhoenixLuaRuntime/CMakeLists.txt and will fatal-error at configure time
 # if emcc is not found, ensuring the build never silently omits LuaRunner.wasm.
 set(LUARUNNER_WASM "${CMAKE_CURRENT_BINARY_DIR}/LuaRunner.wasm")
 add_lua_wasm_script(

@@ -33,6 +33,13 @@ namespace Phoenix
 
         const std::string& GetQualifiedName() const;
 
+        // Returns the dot-separated script namespace path for this type.
+        // Explicit "Namespace" metadata takes priority; otherwise derived from
+        // FTypeName::GetScriptPath() using the alias (if any) for the local name.
+        // e.g. TVec2<TFixed<12,int>> alias="Vec2"  →  "Phoenix.Vec2"
+        //      Phoenix::RTS::FeatureUnit            →  "Phoenix.RTS.FeatureUnit"
+        std::string GetScriptNamespace() const;
+
         const std::string& GetDisplayName() const;
 
         uint32 GetSize() const;

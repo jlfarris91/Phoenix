@@ -60,7 +60,7 @@ void WasmRuntime::RegisterType(const TypeDescriptor& desc)
     bool hasStaticMethods = false;
     for (const auto& methodDescriptor : desc.GetMethods() | std::views::values)
     {
-        if (methodDescriptor.IsStatic() && methodDescriptor.IsScriptHidden())
+        if (methodDescriptor.IsStatic() && !methodDescriptor.IsScriptHidden())
         {
             hasStaticMethods = true;
             break;
@@ -72,25 +72,7 @@ void WasmRuntime::RegisterType(const TypeDescriptor& desc)
         return;
     }
 
-    // Explicit "Namespace" metadata takes priority; otherwise fall back to the
-    // type's qualified C++ name converted to a dot-separated Lua path.
-    std::string ns;
-    {
-        const auto it = desc.GetMetadata().find("Namespace");
-        if (it != desc.GetMetadata().end())
-        {
-            ns = it->second;
-        }
-        else
-        {
-            ns = desc.GetQualifiedName();
-            for (size_t i = 0; i + 1 < ns.size(); )
-            {
-                if (ns[i] == ':' && ns[i+1] == ':') { ns.replace(i, 2, "."); }
-                else ++i;
-            }
-        }
-    }
+    const std::string ns = desc.GetScriptNamespace();
 
     // ── Static methods ────────────────────────────────────────────────────────
     for (const auto& method : desc.GetMethods() | std::views::values)

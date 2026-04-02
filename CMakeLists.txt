@@ -48,6 +48,7 @@ add_compile_options(
 set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.natvis")
 
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(inja CONFIG REQUIRED)
 
 add_subdirectory(src/PhoenixSim)
 add_subdirectory(src/PhoenixPhysics)
@@ -56,8 +57,10 @@ add_subdirectory(src/PhoenixLua)
 add_subdirectory(src/PhoenixRTS)
 if(NOT EMSCRIPTEN)
     add_subdirectory(src/PhoenixScript)
-    add_subdirectory(tools/PhoenixWasmGen)  # must come before PhoenixLuaWasm
-    add_subdirectory(src/PhoenixLuaWasm)
+    add_subdirectory(tools/PhoenixAPIGen)   # dumps api.json; consumed by downstream generators
+    add_subdirectory(tools/PhoenixWasmGen)  # generates host_api.h
+    add_subdirectory(tools/PhoenixLuaGen)      # generates lua_bridge.c
+    add_subdirectory(tools/PhoenixLuaRuntime)  # Lua runtime compiled to WASM
 endif()
 option(PHX_BUILD_TESTAPP "Build TestRTS test application" ON)
 option(PHX_BUILD_TESTS "Build unit tests" OFF)

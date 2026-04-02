@@ -63,8 +63,20 @@ bool Script::ToWasmTypeChar(const TypeDescriptor& type, char& outChar)
                 return true;
             }
         default:
-            return false;
+            break;
     }
+
+    // Fallback: opaque 32-bit handle type (e.g. EntityId, UnitId) with no registered
+    // fields. Treat as i32 so it round-trips through WASM. Intentionally limited to
+    // 4-byte types — 8-byte types without fields are likely multi-field structs with
+    // padding (e.g. SpawnUnitArgs) and should stay Unknown so their default values apply.
+    if (!IsExpandableStruct(type) && type.GetSize() == sizeof(int32))
+    {
+        outChar = 'i';
+        return true;
+    }
+
+    return false;
 }
 
 char Script::ToWasmTypeChar(const TypeDescriptor& type)
@@ -122,6 +134,20 @@ Variant Script::ReadWasmArg(uint64_t*& sp, const TypeDescriptor& type)
         }
         default:
         {
+            // Opaque value type (e.g. EntityId) — copy raw bits into a typed Variant.
+            if (type.GetSize() == sizeof(int32))
+            {
+                Variant v(type);
+                const uint32_t raw = static_cast<uint32_t>(slot);
+                std::memcpy(v.GetData(), &raw, sizeof(uint32_t));
+                return v;
+            }
+            if (type.GetSize() == sizeof(int64))
+            {
+                Variant v(type);
+                std::memcpy(v.GetData(), &slot, sizeof(uint64_t));
+                return v;
+            }
             return Variant::Void();
         }
     }
@@ -190,7 +216,20 @@ void Script::WriteWasmReturn(uint64_t* sp, const Variant& val)
         break;
     }
     default:
+    {
+        // Opaque value type (e.g. EntityId) — copy raw bits to the WASM stack slot.
+        if (type->GetSize() == sizeof(uint32))
+        {
+            uint32_t raw;
+            std::memcpy(&raw, val.GetData(), sizeof(uint32_t));
+            *sp = static_cast<uint64_t>(raw);
+        }
+        else if (type->GetSize() == sizeof(uint64))
+        {
+            std::memcpy(sp, val.GetData(), sizeof(uint64_t));
+        }
         break;
+    }
     }
 }
 
@@ -239,6 +278,11 @@ Variant Script::ReadStructArg(uint64_t*& sp, const TypeDescriptor& desc)
 
     for (const auto& field : desc.GetFields() | std::views::values)
     {
+        if (field.GetType() == &desc || field.IsStatic() || field.IsScriptHidden())
+        {
+            continue;
+        }
+
         const TypeDescriptor* type = field.GetType();
         assert(type);
 

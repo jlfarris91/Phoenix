@@ -32,5 +32,5 @@ PHX_DEFINE_TYPE(Phoenix::RTS::FeatureVitals)
 {
     registration
         .Namespace("Phoenix.Vitals")
-        .StaticMethod("ApplyDamage", &RTS::FeatureVitals::ApplyDamage);
+        .StaticMethod("ApplyDamage(world, target, damage)", &RTS::FeatureVitals::ApplyDamage);
 }

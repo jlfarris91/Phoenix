@@ -30,7 +30,7 @@ using namespace Phoenix;
 
 // Set to 1 to log every host→WASM import link attempt and unresolved imports.
 // Leave at 0 for normal builds — signature mismatches are always logged.
-#define PHX_WASM_VERBOSE 1
+#define PHX_WASM_VERBOSE 0
 
 // ── WASI / Emscripten env stubs ───────────────────────────────────────────────
 //
@@ -194,7 +194,7 @@ static const void* WasiFdWrite(IM3Runtime runtime, M3ImportContext*, uint64_t* s
         }
         // Strip trailing newline — LogInfo adds its own.
         if (!line.empty() && line.back() == '\n') line.pop_back();
-        if (!line.empty()) LogInfo("[Lua] {}", line);
+        if (!line.empty()) LogInfo("[Wasm] {}", line);
         std::memcpy(mem + nwritten_ptr, &total_written, 4);
     }
 
@@ -263,6 +263,11 @@ uint32 WriteStructToWasmMemory(IM3Runtime rt, uint32_t sretPtr, const Variant& v
     uint32_t offset = 0;
     for (const auto& field : desc.GetFields() | std::views::values)
     {
+        if (field.GetType() == &desc || field.IsStatic() || field.IsScriptHidden())
+        {
+            continue;
+        }
+
         const TypeDescriptor* type = field.GetType();
         assert(type);
 
@@ -303,6 +308,10 @@ static const void* WasmHostTrampoline(IM3Runtime rt, M3ImportContext* ctx, uint6
     auto* callCtx = static_cast<WasmEnvironment::CallCtx*>(ctx->userdata);
     WasmEnvironment* self = callCtx->Runtime;
     const MethodDescriptor& fn = callCtx->Descriptor;
+
+#if PHX_WASM_VERBOSE
+    LogInfo("[PhoenixScript] >> {}", fn.GetName());
+#endif
 
     const TypeDescriptor* worldDesc = &TypeRegistry::Get<World>();
 
@@ -353,11 +362,20 @@ static const void* WasmHostTrampoline(IM3Runtime rt, M3ImportContext* ctx, uint6
         else
         {
             // Unknown/unsupported param: inject Void.
-            args.push_back(Variant::Void());
+            Variant defaultParam(*param.Type);
+            args.push_back(defaultParam);
         }
     }
 
+#if PHX_WASM_VERBOSE
+    LogInfo("[PhoenixScript] executing {}...", fn.GetName());
+#endif
+
     Variant result = fn.Execute(nullptr, args);
+
+#if PHX_WASM_VERBOSE
+    LogInfo("[PhoenixScript] done executing {}", fn.GetName());
+#endif
 
     if (returnIsStruct)
     {
@@ -664,7 +682,10 @@ bool WasmEnvironment::CallVoid(const char* name)
         return false;
 
     IM3Runtime fnRuntime = fn->module ? fn->module->runtime : nullptr;
-    LogInfo("Calling wasm function: {} compiled={}", name, static_cast<const void*>(fn->compiled));
+
+#if PHX_WASM_VERBOSE
+    LogVerbose("Calling wasm function: {} compiled={}", name, static_cast<const void*>(fn->compiled));
+#endif
 
 #ifdef _WIN32
     // Reserve 64 KB of stack for the exception handler itself so we can catch
@@ -735,6 +756,16 @@ bool WasmEnvironment::CallVoid(const char* name)
     {
         LogError("[PhoenixScript] Error calling '{}': {}", name, err);
 
+        // Log wasm3 error detail (includes the missing import name for functionImportMissing).
+        if (fnRuntime)
+        {
+            M3ErrorInfo ei{};
+            m3_GetErrorInfo(fnRuntime, &ei);
+            if (ei.message && ei.message != err)
+                LogError("[PhoenixScript] wasm3 detail: {} ({}:{})", ei.message,
+                         ei.file ? ei.file : "?", ei.line);
+        }
+
         // If this was a Lua longjmp trap, try to retrieve the Lua error message.
         // GetLuaErrorMsg() reads the top of the Lua stack and writes it to a buffer
         // in WASM linear memory, then returns the WASM-side pointer to that buffer.
@@ -759,10 +790,12 @@ bool WasmEnvironment::CallVoid(const char* name)
             }
         }
     }
+#if PHX_WASM_VERBOSE
     else
     {
-        LogInfo("[PhoenixScript] '{}' returned OK", name);
+        LogVerbose("[PhoenixScript] '{}' returned OK", name);
     }
+#endif
     return err == nullptr;
 }
 

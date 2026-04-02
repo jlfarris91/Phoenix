@@ -27,9 +27,26 @@ set(BUILD_WASI          "none" CACHE STRING "" FORCE)
 FetchContent_MakeAvailable(wasm3)
 
 # Enable wasm3 call-stack recording so m3_GetBacktrace() returns useful info.
-# Must be set on the m3 target directly (not via add_compile_definitions, which
-# only affects targets in the current directory).
-target_compile_definitions(m3 PUBLIC d_m3RecordBacktraces=1)
+# Restricted to Release builds — in Debug, backtrace recording calls
+# PushBacktraceFrame at every WASM op, which roughly doubles native stack
+# usage and causes a stack overflow when running Lua (a large WASM binary).
+target_compile_definitions(m3 PUBLIC
+    $<$<NOT:$<CONFIG:Debug>>:d_m3RecordBacktraces=1>
+)
+
+# Disable wasm3 debug assertions (NASSERTS).
+# wasm3's PushBacktraceFrame assert fires when a trap propagates through
+# our DispatchTableCall direct-dispatch path (invoke_* trampolines).
+# The assert is a false-positive: the backtrace mechanism gets confused by
+# compiled WASM invoked directly from a host function rather than via m3_CallV.
+target_compile_definitions(m3 PRIVATE NASSERTS)
+
+# Always optimize wasm3, even in Debug builds.
+# wasm3's threaded dispatch chains C function pointers for every WASM op.
+# Without optimization, MSVC generates large debug frames for each op, and
+# running a large WASM binary like the Lua VM exhausts the stack even at 32 MB.
+# Optimization collapses the per-instruction frames and reduces stack depth by
+# ~10x, making Debug builds viable.
 
 # ── PhoenixScript ─────────────────────────────────────────────────────────────
 

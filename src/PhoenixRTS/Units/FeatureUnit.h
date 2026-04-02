@@ -161,8 +161,8 @@ PHX_DEFINE_TYPE(Phoenix::RTS::FeatureUnit)
 {
     registration
         .Namespace("Phoenix.Unit")
-        .StaticMethod("SpawnUnit",   &RTS::FeatureUnit::SpawnUnit)
-        .StaticMethod("IsAlive",     &RTS::FeatureUnit::UnitIsAlive)
-        .StaticMethod("GetOwner",    &RTS::FeatureUnit::GetOwningPlayer)
-        .StaticMethod("GetUnitData", &RTS::FeatureUnit::GetUnitDataId);
+        .StaticMethod("SpawnUnit(world, unitData, owner, pos, facing, args)",   &RTS::FeatureUnit::SpawnUnit)
+        .StaticMethod("IsAlive(world, unit)",                                   &RTS::FeatureUnit::UnitIsAlive)
+        .StaticMethod("GetOwner(world, unit)",                                  &RTS::FeatureUnit::GetOwningPlayer)
+        .StaticMethod("GetUnitData(world, unit)",                               &RTS::FeatureUnit::GetUnitDataId);
 }

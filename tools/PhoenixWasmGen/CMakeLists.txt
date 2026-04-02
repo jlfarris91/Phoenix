@@ -2,14 +2,12 @@
 #
 # Native executable that walks the live TypeRegistry and emits:
 #   host_api.h   — language-agnostic WASM import declarations
-#   lua_bridge.c — Lua stack-marshaling wrappers + register_phoenix_api()
 #
-# Used as a CMake build step by src/PhoenixLuaWasm (and any future
-# language-specific WASM toolchain that needs the host API).
+# Used as a CMake build step by tools/PhoenixLuaRuntime.
 #
 # Linking model:
-#   GenerateWasmApi.cpp calls for each registered type, which forces the linker to include those TUs.
-#   The static initializers in those TUs then populate the TypeRegistry with all member registrations.
+#   /WHOLEARCHIVE forces every .obj from each static library to be included so
+#   every PHX_DEFINE_TYPE static initializer runs and populates the TypeRegistry.
 
 add_executable(PhoenixWasmGen
     "${CMAKE_CURRENT_LIST_DIR}/PhoenixWasmGen.cpp"
@@ -29,6 +27,7 @@ target_link_libraries(PhoenixWasmGen PRIVATE
     PhoenixSteering
     PhoenixSim
     PhoenixScript
+    pantor::inja
 )
 
 # MSVC: /WHOLEARCHIVE:<lib> forces all .obj files from each static library to

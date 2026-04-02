@@ -57,14 +57,14 @@ namespace Phoenix
 PHX_DEFINE_TYPE(Phoenix::FeatureDebug)
 {
     registration
-        .StaticMethod<void, WorldRef, const Vec2&, Distance, const Color&>    ("DrawCircle",  &FeatureDebug::DrawCircle)
-        .StaticMethod<void, WorldRef, const Circle2&, const Color&>           ("DrawCircle",  &FeatureDebug::DrawCircle)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawEllipse", &FeatureDebug::DrawEllipse)
-        .StaticMethod<void, WorldRef, const Ellipse2&, const Color&>          ("DrawEllipse", &FeatureDebug::DrawEllipse)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawLine",    &FeatureDebug::DrawLine)
-        .StaticMethod<void, WorldRef, const Line2&, const Color&>             ("DrawLine",    &FeatureDebug::DrawLine)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawRay",     &FeatureDebug::DrawRay)
-        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawBox",     &FeatureDebug::DrawBox)
-        .StaticMethod<void, WorldRef, const Box2&, const Color&>              ("DrawBox",     &FeatureDebug::DrawBox)
-        .StaticMethod                                                         ("GetColor",    &FeatureDebug::GetColor);
+        .StaticMethod<void, WorldRef, const Vec2&, Distance, const Color&>    ("DrawCircle(world, pt, radius, color)",  &FeatureDebug::DrawCircle)
+        .StaticMethod<void, WorldRef, const Circle2&, const Color&>           ("DrawCircle(world, circle, color)",      &FeatureDebug::DrawCircle)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawEllipse(world, pt, radii, color)",  &FeatureDebug::DrawEllipse)
+        .StaticMethod<void, WorldRef, const Ellipse2&, const Color&>          ("DrawEllipse(world, ellipse, color)",    &FeatureDebug::DrawEllipse)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawLine(world, start, end, color)",    &FeatureDebug::DrawLine)
+        .StaticMethod<void, WorldRef, const Line2&, const Color&>             ("DrawLine(world, line, color)",          &FeatureDebug::DrawLine)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawRay(world, start, dir, color)",     &FeatureDebug::DrawRay)
+        .StaticMethod<void, WorldRef, const Vec2&, const Vec2&, const Color&> ("DrawBox(world, min, max, color)",       &FeatureDebug::DrawBox)
+        .StaticMethod<void, WorldRef, const Box2&, const Color&>              ("DrawBox(world, box, color)",            &FeatureDebug::DrawBox)
+        .StaticMethod                                                         ("GetColor(world, index)",                &FeatureDebug::GetColor);
 }

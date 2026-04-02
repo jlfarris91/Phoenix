@@ -362,14 +362,14 @@ PHX_DEFINE_TYPE(Phoenix::Vec2)
         .Method("Length", &Vec2::Length)
         .Method("Normalized", &Vec2::Normalized)
         .Method("Rotated", &Vec2::Rotate)
-        .StaticMethod("Equals", &Vec2::Equals)
+        .StaticMethod("Equals(a, b, threshold)", &Vec2::Equals)
         // .StaticMethod("Dot", &Vec2::Dot)
-        .StaticMethod("Distance", &Vec2::Distance)
-        .StaticMethod("Project", &Vec2::Project)
-        .StaticMethod("Reflect", &Vec2::Reflect)
+        .StaticMethod("Distance(a, b)", &Vec2::Distance)
+        .StaticMethod("Project(s, n, p)", &Vec2::Project)
+        .StaticMethod("Reflect(normal, vector)", &Vec2::Reflect)
         // .StaticMethod("Cross", &Vec2::Cross)
         // .StaticMethod("Intersects", &Vec2::Intersects)
-        .StaticMethod("Midpoint", &Vec2::Midpoint)
-        .StaticMethod("FromPolar", &Vec2::FromPolar);
+        .StaticMethod("Midpoint(a, b)", &Vec2::Midpoint)
+        .StaticMethod("FromPolar(angle, radius)", &Vec2::FromPolar);
     // .StaticMethod("Perpendicular", &Vec2::Perpendicular);
 }

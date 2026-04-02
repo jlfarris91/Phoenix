@@ -15,6 +15,24 @@ namespace Phoenix
     template <class T>
     struct ExternalTypeRegistration {};
 
+    template <class TRet, class T, class ...TArgs>
+    auto MethodCast(auto fn)
+    {
+        return static_cast<TRet(T::*)(TArgs...)>(fn);
+    }
+
+    template <class TRet, class T, class ...TArgs>
+    auto MethodCast(TRet(T::*fn)(TArgs...) const)
+    {
+        return static_cast<TRet(T::*)(TArgs...) const>(fn);
+    }
+
+    template <class TRet, class ...TArgs>
+    auto StaticMethodCast(TRet(*fn)(TArgs...))
+    {
+        return static_cast<TRet(*)(TArgs...)>(fn);
+    }
+
 #define _PHX_TYPE_COMMON(type, ...) \
     private: \
         inline static const bool _s_phx_type_init_ = ( \

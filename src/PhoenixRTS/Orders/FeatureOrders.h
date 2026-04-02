@@ -209,6 +209,6 @@ PHX_DEFINE_TYPE(Phoenix::RTS::FeatureOrders)
 {
     registration
         .Namespace("Phoenix.Orders")
-        .StaticMethod("IssueCommand", &RTS::FeatureOrders::StaticIssueCommand)
-        .StaticMethod("HasOrders",    &RTS::FeatureOrders::HasOrders);
+        .StaticMethod("IssueCommand(world, unit, command)", &RTS::FeatureOrders::StaticIssueCommand)
+        .StaticMethod("HasOrders(world, unit)",    &RTS::FeatureOrders::HasOrders);
 }
