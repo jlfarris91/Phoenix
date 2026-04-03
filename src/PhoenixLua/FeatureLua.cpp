@@ -11,8 +11,8 @@
 #include <unistd.h>
 #endif
 
+#include "PhoenixLua/LuaWasmEnvironment.h"
 #include "PhoenixScript/FeatureScript.h"
-#include "PhoenixScript/WasmEnvironment.h"
 #include "PhoenixSim/Logging.h"
 #include "PhoenixSim/Session.h"
 #include "PhoenixSim/Worlds.h"
@@ -81,9 +81,6 @@ void FeatureLua::OnWorldInitialize(WorldRef world)
     // lua.wasm lives next to the application executable.
     const std::filesystem::path runnerPath = GetExeDirectory() / "lua.wasm";
 
-    // Ask FeatureScript to load lua.wasm and create a WasmEnvironment
-    // for this world.  FeatureScript owns the environment and drives all
-    // WASM lifecycle callbacks.
     auto featureScript = Session->GetFeature<FeatureScript>();
     if (!featureScript)
     {
@@ -91,18 +88,19 @@ void FeatureLua::OnWorldInitialize(WorldRef world)
         return;
     }
 
-    WasmEnvironment* env = featureScript->RegisterWorldRuntime(world, runnerPath);
-    if (!env)
+    // Create a LuaWasmEnvironment (subclass of WasmEnvironment) for this world.
+    // FeatureScript owns it and drives all WASM lifecycle callbacks.
+    // FeatureScript::OnWorldInitialize calls the WASM OnWorldInitialize export
+    // after this function returns (FeatureLua is registered before FeatureScript).
+    LuaWasmEnvironment* luaEnv = featureScript->RegisterWorldRuntime<LuaWasmEnvironment>(world, runnerPath);
+    if (!luaEnv)
     {
-        LogError("[FeatureLua] Failed to create WASM environment for world using {}",
+        LogError("[FeatureLua] Failed to create Lua WASM environment for world using {}",
                  runnerPath.string());
         return;
     }
 
-    // Load the Lua script into the interpreter.
-    // FeatureScript::OnWorldInitialize will call OnWorldInitialize on the env
-    // after this function returns (FeatureLua is registered before FeatureScript).
-    if (!env->LoadLuaScript(luaPath))
+    if (!luaEnv->LoadLuaScript(luaPath))
     {
         LogError("[FeatureLua] Failed to load Lua script: {}", luaPath.string());
     }
@@ -135,10 +133,12 @@ void FeatureLua::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
     if (!featureScript)
         return;
 
-    WasmEnvironment* env = featureScript->GetEnvironment(world);
-    if (!env || !env->IsValid())
+    // FeatureScript owns the environment; downcast is safe because FeatureLua
+    // always creates LuaWasmEnvironment via RegisterWorldRuntime<LuaWasmEnvironment>.
+    auto* luaEnv = static_cast<LuaWasmEnvironment*>(featureScript->GetEnvironment(world));
+    if (!luaEnv || !luaEnv->IsValid())
         return;
 
     for (const std::string& code : pending)
-        env->RunString(code);
+        luaEnv->RunString(code);
 }

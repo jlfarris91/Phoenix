@@ -53,7 +53,7 @@ namespace Phoenix
             World*                             world,
             const std::shared_ptr<WasmRuntime>& wasmRuntime);
 
-        ~WasmEnvironment();
+        virtual ~WasmEnvironment();
 
         WasmEnvironment(const WasmEnvironment&) = delete;
         WasmEnvironment& operator=(const WasmEnvironment&) = delete;
@@ -65,21 +65,15 @@ namespace Phoenix
         // Returns false if the export does not exist.
         bool CallVoid(const char* name);
 
-        // Load a Lua script from disk into the WASM interpreter.
-        // Writes the file bytes into the WASM buffer (via GetScriptBuffer/LoadScript
-        // exports) and stores the path for ReloadLuaScript().
-        // Returns false on file-read failure or missing WASM exports.
-        bool LoadLuaScript(const std::filesystem::path& path);
+        // Call a named WASM export with arguments and retrieve results.
+        // argPtrs: array of pointers to argument values (nullptr if argc == 0).
+        // retPtrs: array of pointers where results are written (nullptr if retc == 0).
+        // Mirrors the m3_Call / m3_GetResults convention used by wasm3.
+        bool CallExport(const char* name, int argc, const void** argPtrs, int retc, const void** retPtrs);
 
-        // Re-read and reload the last successfully loaded Lua script.
-        // The new script takes effect on the next lifecycle callback.
-        bool ReloadLuaScript();
-
-        // Execute a Lua code string inside the running Lua state.
-        // Writes code into the script buffer and calls the RunString WASM export.
-        // The global state (variables, functions) is preserved between calls.
-        // Returns false if the WASM export is missing or Lua reports an error.
-        bool RunString(const std::string& code);
+        // Returns a pointer to the WASM linear memory and optionally its size in bytes.
+        // Returns nullptr if the runtime is not valid.
+        uint8_t* GetMemory(uint32_t* outSize = nullptr) const;
 
         // Snapshot / restore linear memory for rollback.
         void Snapshot();
@@ -108,9 +102,6 @@ namespace Phoenix
 
         // In-process snapshot of WASM linear memory for rollback.
         std::vector<uint8_t> MemorySnapshot;
-
-        // Path of the last successfully loaded Lua script (for ReloadLuaScript).
-        std::filesystem::path LuaScriptPath;
     };
 
 } // namespace Phoenix

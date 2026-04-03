@@ -9,9 +9,9 @@ Reference for `PhoenixScript` / `PhoenixLua` / `WasmEnvironment` — the wasm3-b
 ```
 FeatureLua  (PhoenixLua)
   │  reads "script" key from world config → .lua path
-  │  calls FeatureScript::RegisterWorldRuntime(world, "Data/lua.wasm")
-  │  calls WasmEnvironment::LoadLuaScript(luaPath)
-  │  drains EnqueueScript queue via WasmEnvironment::RunString
+  │  calls FeatureScript::RegisterWorldRuntime(world, "lua.wasm")
+  │  calls LuaWasmEnvironment::LoadLuaScript(luaPath)
+  │  drains EnqueueScript queue via LuaWasmEnvironment::RunString
   │
   ▼
 FeatureScript  (PhoenixScript)
@@ -55,20 +55,23 @@ WasmEnvironment* GetEnvironment(WorldRef world) const;
 ```
 
 `FeatureLua` is the Lua orchestration layer — it knows about `lua.wasm`, `.lua` files,
-and `EnqueueScript`. Its `OnWorldInitialize`:
+and `EnqueueScript`. It holds a `LuaWasmEnvironment` per world (keyed by `WasmEnvironment*`).
+Its `OnWorldInitialize`:
 
 ```cpp
 // 1. Read lua script path from world's FeatureLua config ("script" key)
-// 2. Resolve lua.wasm: Session->GetDataDirectory() / "lua.wasm"
+// 2. Resolve lua.wasm path (next to the executable)
 // 3. featureScript->RegisterWorldRuntime(world, runnerPath)  → WasmEnvironment*
-// 4. env->LoadLuaScript(luaPath)
+// 4. LuaWasmEnvironment(env).LoadLuaScript(luaPath)
+// 5. Store LuaWasmEnvironment in per-world map
 // FeatureScript fires OnWorldInitialize WASM export after this returns
 ```
 
 `FeatureLua::OnWorldUpdate` drains the `EnqueueScript` queue:
 ```cpp
-// Gets the env from featureScript->GetEnvironment(world)
-// Calls env->RunString(code) for each pending snippet
+// Gets env from featureScript->GetEnvironment(world)
+// Looks up LuaWasmEnvironment in per-world map
+// Calls luaEnv.RunString(code) for each pending snippet
 ```
 
 **World config** (`DefaultWorld.json`):
@@ -146,20 +149,20 @@ The WASM binary exports these functions for Lua script management (all use the 1
 | `LoadScript` | `(i32 len) → i32` | Loads new script — closes any live `lua_State` so next lifecycle call re-initializes |
 | `RunString` | `(i32 len) → i32` | Executes a Lua snippet in the **existing** `lua_State`; global state is preserved |
 
-**`LoadLuaScript`** (host side, `WasmEnvironment`):
+**`LoadLuaScript`** (host side, `LuaWasmEnvironment`):
 1. Read `.lua` file bytes
 2. `GetScriptBuffer()` → `wasmPtr`
 3. `memcpy(mem + wasmPtr, bytes, len)`
 4. `LoadScript(len)` — tears down old `lua_State`
 5. Next lifecycle callback calls `ensure_state()` which re-creates the state and runs the script body
 
-**`RunString`** (host side, `WasmEnvironment::RunString`):
+**`RunString`** (host side, `LuaWasmEnvironment::RunString`):
 1. `GetScriptBuffer()` → `wasmPtr`
 2. `memcpy(mem + wasmPtr, code, len)`
 3. `RunString(len)` — runs `luaL_loadbuffer` + `lua_pcall` on existing state
 4. Used by `FeatureLua::OnWorldUpdate` to drain `EnqueueScript` queue
 
-`ReloadLuaScript()` just calls `LoadLuaScript(LuaScriptPath)` — the state is torn down and
+`LuaWasmEnvironment::ReloadLuaScript()` just calls `LoadLuaScript(LuaScriptPath)` — the state is torn down and
 rebuilt on the next callback, picking up any changes to the `.lua` file on disk.
 
 ---
@@ -295,9 +298,10 @@ the WASM routes through `fd_write` → the host's log sink.
 
 | File | Purpose |
 |---|---|
-| `src/PhoenixLua/FeatureLua.cpp/.h` | Lua orchestration: RegisterWorldRuntime, LoadLuaScript, EnqueueScript drain |
+| `src/PhoenixLua/FeatureLua.cpp/.h` | Lua orchestration: RegisterWorldRuntime, per-world LuaWasmEnvironment, EnqueueScript drain |
+| `src/PhoenixLua/LuaWasmEnvironment.cpp/.h` | Lua-specific layer: LoadLuaScript, ReloadLuaScript, RunString |
 | `src/PhoenixScript/FeatureScript.cpp/.h` | Generic WASM host: RegisterWorldRuntime API, per-world lifecycle dispatch |
-| `src/PhoenixScript/WasmEnvironment.cpp/.h` | wasm3 runtime, import linking, export dispatch, LoadLuaScript, RunString |
+| `src/PhoenixScript/WasmEnvironment.cpp/.h` | wasm3 runtime, import linking, export dispatch, CallExport, GetMemory |
 | `src/PhoenixScript/WasmRuntime.cpp/.h` | Loads raw .wasm bytes, owns IM3Environment |
 | `tools/PhoenixLuaRuntime/lua_wasm.c` | Lua interpreter WASM entry points: GetScriptBuffer, LoadScript, RunString, lifecycle exports |
 | `tools/PhoenixLuaRuntime/CMakeLists.txt` | Emscripten build pipeline + `add_lua_wasm_script()` function |

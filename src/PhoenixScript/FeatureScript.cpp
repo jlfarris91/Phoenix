@@ -92,20 +92,6 @@ void FeatureScript::OnWorldLayout(const WorldLayoutContext& context, BlockBuffer
     builder.RegisterBlockWithAlloc<FeatureScriptDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
 }
 
-WasmEnvironment* FeatureScript::RegisterWorldRuntime(WorldRef world, const std::filesystem::path& wasmPath)
-{
-    auto runtime = GetOrLoadWasmRuntime(wasmPath);
-    if (!runtime)
-        return nullptr;
-
-    auto environment = std::make_unique<WasmEnvironment>(Session.get(), &world, runtime);
-    if (!environment->IsValid())
-        return nullptr;
-
-    auto* ptr = environment.get();
-    Environments.emplace(world.GetId(), std::move(environment));
-    return ptr;
-}
 
 void FeatureScript::OnWorldInitialize(WorldRef world)
 {

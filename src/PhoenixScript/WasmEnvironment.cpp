@@ -555,124 +555,25 @@ WasmEnvironment::~WasmEnvironment()
     }
 }
 
-bool WasmEnvironment::LoadLuaScript(const std::filesystem::path& path)
+bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtrs, int retc, const void** retPtrs)
 {
-    // Read the .lua file.
-    std::ifstream file(path, std::ios::binary);
-    if (!file)
-    {
-        LogError("[PhoenixScript] Cannot open Lua script: {}", path.string());
+    IM3Function fn = static_cast<IM3Function>(FindExport(name));
+    if (!fn)
         return false;
-    }
-    std::vector<char> bytes(
-        (std::istreambuf_iterator<char>(file)),
-        std::istreambuf_iterator<char>{});
-
-    // Locate the GetScriptBuffer() and LoadScript(i32) WASM exports.
-    IM3Function getBuf    = static_cast<IM3Function>(FindExport("GetScriptBuffer"));
-    IM3Function loadScript = static_cast<IM3Function>(FindExport("LoadScript"));
-    if (!getBuf || !loadScript)
-    {
-        LogError("[PhoenixScript] WASM missing GetScriptBuffer/LoadScript exports — not a lua_wasm binary");
+    if (const M3Result err = m3_Call(fn, argc, argPtrs))
         return false;
-    }
-
-    // Call GetScriptBuffer() → i32 (WASM linear-memory address of the buffer).
-    if (m3_Call(getBuf, 0, nullptr))
-    {
-        LogError("[PhoenixScript] GetScriptBuffer() call failed");
-        return false;
-    }
-    uint32_t wasmPtr = 0;
-    {
-        const void* retPtrs[] = { &wasmPtr };
-        m3_GetResults(getBuf, 1, retPtrs);
-    }
-
-    // Bounds-check: script must fit in the WASM buffer.
-    uint32_t memSize = 0;
-    uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &memSize, 0);
-    if (!mem || wasmPtr + bytes.size() > memSize)
-    {
-        LogError("[PhoenixScript] Lua script ({} bytes) exceeds WASM buffer at offset {}",
-                 static_cast<uint32_t>(bytes.size()), wasmPtr);
-        return false;
-    }
-
-    // Copy script bytes into WASM linear memory.
-    std::memcpy(mem + wasmPtr, bytes.data(), bytes.size());
-
-    // Call LoadScript(i32 len) → i32.
-    const int32_t len = static_cast<int32_t>(bytes.size());
-    {
-        const void* argPtrs[] = { &len };
-        if (m3_Call(loadScript, 1, argPtrs))
-        {
-            LogError("[PhoenixScript] LoadScript() call failed");
-            return false;
-        }
-        int32_t result = -1;
-        const void* retPtrs[] = { &result };
-        m3_GetResults(loadScript, 1, retPtrs);
-        if (result != 0)
-        {
-            LogError("[PhoenixScript] LoadScript() returned {} — script too large?", result);
-            return false;
-        }
-    }
-
-    LuaScriptPath = path;
-    LogInfo("[PhoenixScript] Loaded Lua script: {} ({} bytes)", path.string(), static_cast<uint32_t>(bytes.size()));
+    if (retc > 0 && retPtrs)
+        m3_GetResults(fn, retc, retPtrs);
     return true;
 }
 
-bool WasmEnvironment::ReloadLuaScript()
+uint8_t* WasmEnvironment::GetMemory(uint32_t* outSize) const
 {
-    if (LuaScriptPath.empty())
-    {
-        LogWarning("[PhoenixScript] ReloadLuaScript: no script loaded yet");
-        return false;
-    }
-    return LoadLuaScript(LuaScriptPath);
-}
-
-bool WasmEnvironment::RunString(const std::string& code)
-{
-    IM3Function getBuf   = static_cast<IM3Function>(FindExport("GetScriptBuffer"));
-    IM3Function runStrFn = static_cast<IM3Function>(FindExport("RunString"));
-    if (!getBuf || !runStrFn)
-    {
-        LogError("[PhoenixScript] WASM missing GetScriptBuffer/RunString exports");
-        return false;
-    }
-
-    // Get the WASM buffer address.
-    if (m3_Call(getBuf, 0, nullptr))
-        return false;
-    uint32_t wasmPtr = 0;
-    { const void* r[] = { &wasmPtr }; m3_GetResults(getBuf, 1, r); }
-
-    // Bounds-check.
-    uint32_t memSize = 0;
-    uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &memSize, 0);
-    if (!mem || wasmPtr + code.size() > memSize)
-    {
-        LogError("[PhoenixScript] RunString: code ({} bytes) exceeds WASM buffer", code.size());
-        return false;
-    }
-
-    std::memcpy(mem + wasmPtr, code.data(), code.size());
-
-    const int32_t len = static_cast<int32_t>(code.size());
-    { const void* a[] = { &len }; m3_Call(runStrFn, 1, a); }
-    int32_t result = -1;
-    { const void* r[] = { &result }; m3_GetResults(runStrFn, 1, r); }
-    if (result != 0)
-    {
-        LogError("[PhoenixScript] RunString returned {} — Lua error (see console)", result);
-        return false;
-    }
-    return true;
+    uint32_t size = 0;
+    uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &size, 0);
+    if (outSize)
+        *outSize = size;
+    return mem;
 }
 
 bool WasmEnvironment::CallVoid(const char* name)

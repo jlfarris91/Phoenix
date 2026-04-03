@@ -3,14 +3,15 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
-#include <vector>
 
 #include "PhoenixScript/DLLExport.h"
 #include "PhoenixScript/WasmEnvironment.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Containers/FixedMemory.h"
+#include "PhoenixSim/Worlds.h"
 
 #ifndef PHX_SCRIPT_WASM_MEMORY_CAPACITY
 #define PHX_SCRIPT_WASM_MEMORY_CAPACITY (4 * 1024 * 1024 * 10) // 10x 4 MiB default memory size
@@ -68,12 +69,27 @@ namespace Phoenix
     public:
 
         // Called by other features (e.g. FeatureLua) before OnWorldInitialize fires.
-        // Loads wasmPath as a shared WasmRuntime and creates a WasmEnvironment for
-        // the given world.  Returns the environment so the caller can configure it
-        // (e.g. call LoadLuaScript).  Returns nullptr on load failure.
+        // Loads wasmPath as a shared WasmRuntime and creates a TEnv (defaults to
+        // WasmEnvironment) for the given world.  TEnv must derive from WasmEnvironment
+        // and share its constructor signature (Session*, World*, shared_ptr<WasmRuntime>).
+        // Returns the typed pointer for immediate configuration, or nullptr on failure.
         // FeatureScript::OnWorldInitialize will later call the lifecycle callbacks
         // on this pre-created environment rather than creating a new one.
-        WasmEnvironment* RegisterWorldRuntime(WorldRef world, const std::filesystem::path& wasmPath);
+        template<typename TEnv = WasmEnvironment>
+        TEnv* RegisterWorldRuntime(WorldRef world, const std::filesystem::path& wasmPath)
+        {
+            static_assert(std::is_base_of_v<WasmEnvironment, TEnv>,
+                          "TEnv must derive from WasmEnvironment");
+            auto runtime = GetOrLoadWasmRuntime(wasmPath);
+            if (!runtime)
+                return nullptr;
+            auto env = std::make_unique<TEnv>(Session.get(), &world, runtime);
+            if (!env->IsValid())
+                return nullptr;
+            auto* ptr = env.get();
+            Environments.emplace(world.GetId(), std::move(env));
+            return ptr;
+        }
 
         // Returns the environment for a world, or nullptr.
         WasmEnvironment* GetEnvironment(WorldRef world) const;
