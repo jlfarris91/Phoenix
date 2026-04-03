@@ -45,24 +45,24 @@ endif()
 # ── Lua runner WASM ───────────────────────────────────────────────────────────
 #
 # Builds a generic Lua 5.4 interpreter as a standalone WASM binary.
-# LuaRunner.wasm is shared across all worlds and loaded by FeatureLua at
+# lua.wasm is shared across all worlds and loaded by FeatureLua at
 # runtime.  It is placed next to the TestRTS executable so it is always
 # co-located with the app regardless of working directory.
 #
 # Requires emcc (Emscripten) to be on PATH.  add_lua_wasm_script() is defined
 # in tools/PhoenixLuaRuntime/CMakeLists.txt and will fatal-error at configure time
-# if emcc is not found, ensuring the build never silently omits LuaRunner.wasm.
-set(LUARUNNER_WASM "${CMAKE_CURRENT_BINARY_DIR}/LuaRunner.wasm")
+# if emcc is not found, ensuring the build never silently omits lua.wasm.
+set(LUA_WASM "${CMAKE_CURRENT_BINARY_DIR}/lua.wasm")
 add_lua_wasm_script(
-    OUTPUT  "${LUARUNNER_WASM}"
+    OUTPUT  "${LUA_WASM}"
     TARGET  TestRTS
 )
-# Copy LuaRunner.wasm next to the TestRTS executable after each build.
+# Copy lua.wasm next to the TestRTS executable after each build.
 add_custom_command(TARGET TestRTS POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${LUARUNNER_WASM}"
-        "$<TARGET_FILE_DIR:TestRTS>/LuaRunner.wasm"
-    COMMENT "Copying LuaRunner.wasm to output directory"
+        "${LUA_WASM}"
+        "$<TARGET_FILE_DIR:TestRTS>/lua.wasm"
+    COMMENT "Copying lua.wasm to output directory"
 )
 
 # Set working directory to access the data files

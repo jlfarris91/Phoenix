@@ -78,16 +78,16 @@ void FeatureLua::OnWorldInitialize(WorldRef world)
     if (luaPath.empty())
         return;
 
-    // LuaRunner.wasm lives next to the application executable.
-    const std::filesystem::path runnerPath = GetExeDirectory() / "LuaRunner.wasm";
+    // lua.wasm lives next to the application executable.
+    const std::filesystem::path runnerPath = GetExeDirectory() / "lua.wasm";
 
-    // Ask FeatureScript to load LuaRunner.wasm and create a WasmEnvironment
+    // Ask FeatureScript to load lua.wasm and create a WasmEnvironment
     // for this world.  FeatureScript owns the environment and drives all
     // WASM lifecycle callbacks.
     auto featureScript = Session->GetFeature<FeatureScript>();
     if (!featureScript)
     {
-        LogError("[FeatureLua] FeatureScript not registered — cannot load LuaRunner.wasm");
+        LogError("[FeatureLua] FeatureScript not registered — cannot load lua.wasm");
         return;
     }
 

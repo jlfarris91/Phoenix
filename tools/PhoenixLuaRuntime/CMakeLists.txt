@@ -98,7 +98,7 @@ endif()
 #
 # Usage:
 #   add_lua_wasm_script(
-#       OUTPUT  <path/to/output/LuaRunner.wasm>
+#       OUTPUT  <path/to/output/lua.wasm>
 #       [TARGET <cmake_target_that_depends_on_the_wasm>]
 #   )
 #
@@ -114,7 +114,7 @@ function(add_lua_wasm_script)
 
     if(NOT EMCC)
         message(FATAL_ERROR
-            "add_lua_wasm_script: emcc not found — cannot build LuaRunner.wasm.\n"
+            "add_lua_wasm_script: emcc not found — cannot build lua.wasm.\n"
             "  Run: build/bootstrap.ps1 -Target emscripten  (then re-run cmake)")
     endif()
 

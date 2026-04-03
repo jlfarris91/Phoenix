@@ -22,7 +22,7 @@ namespace Phoenix
         std::string DataDirectory;
         std::string ConfigName;
 
-        // Directory where runtime binaries (e.g. LuaRunner.wasm) are located.
+        // Directory where runtime binaries (e.g. lua.wasm) are located.
         // Typically the directory containing the application executable.
         // If empty, falls back to DataDirectory.
         std::string BinDirectory;

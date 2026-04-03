@@ -9,7 +9,7 @@ Reference for `PhoenixScript` / `PhoenixLua` / `WasmEnvironment` — the wasm3-b
 ```
 FeatureLua  (PhoenixLua)
   │  reads "script" key from world config → .lua path
-  │  calls FeatureScript::RegisterWorldRuntime(world, "Data/LuaRunner.wasm")
+  │  calls FeatureScript::RegisterWorldRuntime(world, "Data/lua.wasm")
   │  calls WasmEnvironment::LoadLuaScript(luaPath)
   │  drains EnqueueScript queue via WasmEnvironment::RunString
   │
@@ -23,8 +23,8 @@ FeatureScript  (PhoenixScript)
   └─► WasmEnvironment  — owns IM3Runtime (linear memory), links imports, calls exports
 ```
 
-**Binary split**: `LuaRunner.wasm` is a generic Lua 5.4 interpreter — it knows nothing about
-any specific script. It lives at `Data/LuaRunner.wasm` and is shared across all worlds in a
+**Binary split**: `lua.wasm` is a generic Lua 5.4 interpreter — it knows nothing about
+any specific script. It lives at `Data/lua.wasm` and is shared across all worlds in a
 session. World-specific Lua source lives in `Data/Worlds/<world>/script.lua` and is pushed
 into WASM linear memory at runtime via `LoadLuaScript`.
 
@@ -54,12 +54,12 @@ WasmEnvironment* RegisterWorldRuntime(WorldRef world, const std::filesystem::pat
 WasmEnvironment* GetEnvironment(WorldRef world) const;
 ```
 
-`FeatureLua` is the Lua orchestration layer — it knows about `LuaRunner.wasm`, `.lua` files,
+`FeatureLua` is the Lua orchestration layer — it knows about `lua.wasm`, `.lua` files,
 and `EnqueueScript`. Its `OnWorldInitialize`:
 
 ```cpp
 // 1. Read lua script path from world's FeatureLua config ("script" key)
-// 2. Resolve LuaRunner.wasm: Session->GetDataDirectory() / "LuaRunner.wasm"
+// 2. Resolve lua.wasm: Session->GetDataDirectory() / "lua.wasm"
 // 3. featureScript->RegisterWorldRuntime(world, runnerPath)  → WasmEnvironment*
 // 4. env->LoadLuaScript(luaPath)
 // FeatureScript fires OnWorldInitialize WASM export after this returns
@@ -303,7 +303,7 @@ the WASM routes through `fd_write` → the host's log sink.
 | `tools/PhoenixLuaRuntime/CMakeLists.txt` | Emscripten build pipeline + `add_lua_wasm_script()` function |
 | `tools/PhoenixWasmGen/PhoenixWasmGen.cpp` | Generates `host_api.h` from TypeRegistry |
 | `tools/PhoenixLuaGen/PhoenixLuaGen.cpp` | Generates `lua_bridge.c` from TypeRegistry |
-| `tests/TestRTS/Data/LuaRunner.wasm` | Built artifact — generic Lua 5.4 interpreter, shared across worlds |
+| `tests/TestRTS/Data/lua.wasm` | Built artifact — generic Lua 5.4 interpreter, shared across worlds |
 
 ---
 

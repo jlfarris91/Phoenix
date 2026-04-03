@@ -18,7 +18,7 @@ namespace Phoenix
     // Architecture:
     //  • Delegates WASM runtime management to FeatureScript.
     //  • On OnWorldInitialize: calls FeatureScript::RegisterWorldRuntime with
-    //    the shared LuaRunner.wasm binary, then calls LoadLuaScript with the
+    //    the shared lua.wasm binary, then calls LoadLuaScript with the
     //    world's configured .lua file.
     //  • FeatureScript drives all lifecycle callbacks (OnPreUpdate,
     //    OnWorldUpdate, etc.) — FeatureLua only orchestrates the Lua layer.
@@ -28,7 +28,7 @@ namespace Phoenix
     // World config (under "FeatureLua"):
     //   "script": "path/to/script.lua"   (relative to worlds directory)
     //
-    // LuaRunner.wasm is loaded from <DataDirectory>/LuaRunner.wasm.
+    // lua.wasm is loaded from <DataDirectory>/lua.wasm.
 
     class PHOENIX_LUA_API FeatureLua : public IFeature
     {
