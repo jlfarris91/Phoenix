@@ -106,7 +106,7 @@ endif()
 # Scripts are loaded at runtime by the host via GetScriptBuffer/LoadScript exports.
 
 function(add_lua_wasm_script)
-    cmake_parse_arguments(ARG "" "SCRIPT;OUTPUT;TARGET" "" ${ARGN})
+    cmake_parse_arguments(ARG "" "SCRIPT;OUTPUT;TARGET;DEFS_DEST" "" ${ARGN})
 
     if(NOT ARG_OUTPUT)
         message(FATAL_ERROR "add_lua_wasm_script: OUTPUT argument is required")
@@ -166,6 +166,19 @@ function(add_lua_wasm_script)
         COMMENT "Generating lua_bridge.c from TypeRegistry"
     )
 
+    # ── Step 1c: Copy Phoenix.d.lua to source tree (optional) ─────────────────
+    if(ARG_DEFS_DEST)
+        add_custom_command(
+            OUTPUT  "${ARG_DEFS_DEST}"
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${LUA_DEFS_FILE}"
+                "${ARG_DEFS_DEST}"
+            DEPENDS "${LUA_DEFS_FILE}"
+            COMMENT "Copying Phoenix.d.lua → ${ARG_DEFS_DEST}"
+        )
+        list(APPEND _lua_wasm_extra_outputs "${ARG_DEFS_DEST}")
+    endif()
+
     # ── Step 2: Compile → .wasm ─────────────────────────────────────────────
     #
     # The script is no longer embedded at compile time.  lua_wasm.c exports
@@ -213,7 +226,7 @@ function(add_lua_wasm_script)
         set(WASM_TARGET_NAME "lua_wasm_${SCRIPT_STEM}")
     endif()
 
-    add_custom_target("${WASM_TARGET_NAME}" ALL DEPENDS "${ARG_OUTPUT}")
+    add_custom_target("${WASM_TARGET_NAME}" ALL DEPENDS "${ARG_OUTPUT}" ${_lua_wasm_extra_outputs})
 
     if(ARG_TARGET AND TARGET "${ARG_TARGET}")
         add_dependencies("${ARG_TARGET}" "${WASM_TARGET_NAME}")

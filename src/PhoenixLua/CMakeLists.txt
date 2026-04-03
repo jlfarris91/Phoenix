@@ -1,4 +1,4 @@
-file(GLOB_RECURSE PHOENIXLUA_SRC "*.cpp" "*.h")
+file(GLOB_RECURSE PHOENIXLUA_SRC "*.cpp" "*.h" "*.lua")
 find_package(sol2 CONFIG REQUIRED)
 find_package(lua CONFIG REQUIRED)
 add_library(PhoenixLua ${PHOENIXLUA_SRC})
