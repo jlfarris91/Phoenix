@@ -54,9 +54,10 @@ namespace Phoenix
 
     private:
 
-        template <class T>
-        friend class TypeDescriptorBuilder;
+        template <class T> friend class TypeDescriptorBuilder;
         friend class TypeRegistry;
+        friend class ScriptNamespaceBuilder;
+        template <class T> friend class ScriptClassBuilder;
 
         std::vector<ParamDescriptor>    Params;
         const TypeDescriptor*           ReturnType;

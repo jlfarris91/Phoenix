@@ -30,6 +30,25 @@ target_include_directories(TestRTS PUBLIC ../../src)
 target_include_directories(TestRTS PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include")
 target_link_libraries(TestRTS PUBLIC PhoenixSim PhoenixPhysics PhoenixSteering PhoenixLua PhoenixRTS PhoenixScript)
 
+# Force the linker to include all object files from libs that self-register via
+# static initializers (PHX_DEFINE_TYPE, IScriptBindings).  Without this, MSVC
+# strips translation units whose only contribution is a static initializer, so
+# ScriptBindings implementations (SimScriptBindings, RTSScriptBindings, etc.)
+# are silently dropped and TypeRegistry::GetAllDerivedFrom<IScriptBindings>()
+# returns nothing at runtime.
+if(MSVC)
+    target_link_options(TestRTS PRIVATE
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixRTS>)
+elseif(APPLE)
+    target_link_options(TestRTS PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:PhoenixSim>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixRTS>)
+else()
+    target_link_options(TestRTS PRIVATE
+        -Wl,--whole-archive $<TARGET_FILE:PhoenixSim> $<TARGET_FILE:PhoenixRTS> -Wl,--no-whole-archive)
+endif()
+
 # Set the target folder for organization in IDEs
 set_property(TARGET TestRTS PROPERTY FOLDER "Apps")
 

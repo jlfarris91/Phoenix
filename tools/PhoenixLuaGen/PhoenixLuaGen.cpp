@@ -37,6 +37,8 @@
 #include "PhoenixScript/WasmUtility.h"
 #include "PhoenixSim/Reflection/Variant.h"
 #include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "PhoenixSim/Scripting/IScriptBindings.h"
+#include "PhoenixSim/Scripting/ScriptModuleBuilder.h"
 #include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix;
@@ -71,6 +73,15 @@ static std::string ImportFuncName(const std::string& ns, const std::string& meth
 static std::string LuaFuncName(const std::string& ns, const std::string& method)
 {
     return "_phx_l_" + ImportFuncName(ns, method).substr(4);
+}
+
+// "Phoenix.Unit" → "Phoenix_Unit"  (C-safe identifier component)
+static std::string SanitizeNs(const std::string& s)
+{
+    std::string r;
+    for (char c : s)
+        r += (c == '.') ? '_' : c;
+    return r;
 }
 
 static std::vector<std::string> SplitDot(const std::string& s)
@@ -189,30 +200,51 @@ struct MethodInfo
     std::string              Name;
     const MethodDescriptor*  Desc      = nullptr;
     std::optional<MethodDescriptor> OwnedDesc;
+    bool                     IsInstanceMethod = false; // first non-World param is a class handle
+    std::string              HandleNs;                 // sanitized namespace of the owning class
 
     const MethodDescriptor& GetDesc() const { return OwnedDesc ? *OwnedDesc : *Desc; }
 
     MethodInfo() = default;
     MethodInfo(const MethodInfo& o)
         : Namespace(o.Namespace), Name(o.Name), OwnedDesc(o.OwnedDesc)
+        , IsInstanceMethod(o.IsInstanceMethod), HandleNs(o.HandleNs)
     { Desc = OwnedDesc ? &*OwnedDesc : o.Desc; }
     MethodInfo(MethodInfo&& o) noexcept
         : Namespace(std::move(o.Namespace)), Name(std::move(o.Name))
         , Desc(o.Desc), OwnedDesc(std::move(o.OwnedDesc))
+        , IsInstanceMethod(o.IsInstanceMethod), HandleNs(std::move(o.HandleNs))
     { if (OwnedDesc) Desc = &*OwnedDesc; }
     MethodInfo& operator=(const MethodInfo& o)
     {
         Namespace = o.Namespace; Name = o.Name; OwnedDesc = o.OwnedDesc;
         Desc = OwnedDesc ? &*OwnedDesc : o.Desc;
+        IsInstanceMethod = o.IsInstanceMethod; HandleNs = o.HandleNs;
         return *this;
     }
     MethodInfo& operator=(MethodInfo&& o) noexcept
     {
         Namespace = std::move(o.Namespace); Name = std::move(o.Name);
         OwnedDesc = std::move(o.OwnedDesc); Desc = o.Desc;
+        IsInstanceMethod = o.IsInstanceMethod; HandleNs = std::move(o.HandleNs);
         if (OwnedDesc) Desc = &*OwnedDesc;
         return *this;
     }
+};
+
+// ── ClassInfo ─────────────────────────────────────────────────────────────────
+//
+// Carries the data for a ScriptClassEntry after bindings collection.
+// LuaGen emits pack/unpack helpers and a metatable for each ClassInfo.
+
+struct ClassInfo
+{
+    std::string              Namespace;      // "Phoenix.Unit"
+    std::string              BaseNamespace;  // "Phoenix.Entity" (empty = no base)
+    std::string              HandleNs;       // "Phoenix_Unit" (sanitized for C names)
+    FName                    HandleTypeId;   // TypeId of the wrapped handle (e.g. UnitId)
+    std::vector<MethodInfo>  Methods;        // instance methods
+    std::vector<MethodInfo>  Statics;        // static methods
 };
 
 static std::vector<MethodInfo> CollectMethods(const TypeDescriptor* worldDesc)
@@ -220,7 +252,7 @@ static std::vector<MethodInfo> CollectMethods(const TypeDescriptor* worldDesc)
     std::vector<const TypeDescriptor*> types;
     for (const auto& [_, desc] : TypeRegistry::GetAll())
     {
-        if (!desc || desc.get() == worldDesc || desc->IsScriptHidden()) continue;
+        if (!desc || desc->IsScriptHidden()) continue;
 
         bool hasStaticMethods = false;
         for (const auto& [n, m] : desc->GetMethods())
@@ -250,6 +282,77 @@ static std::vector<MethodInfo> CollectMethods(const TypeDescriptor* worldDesc)
         }
     }
     return methods;
+}
+
+// Discover all IScriptBindings implementations, instantiate each, call Describe(),
+// then append their entries to `methods` and `classes`.
+static void CollectBindings(std::vector<MethodInfo>& methods, std::vector<ClassInfo>& classes)
+{
+    ScriptModuleBuilder builder;
+    for (const TypeDescriptor* bindDesc : TypeRegistry::GetAllDerivedFrom<IScriptBindings>())
+    {
+        if (!bindDesc || bindDesc->GetSize() == 0) continue;
+        std::vector<uint8_t> storage(bindDesc->GetSize());
+        bindDesc->DefaultConstruct(storage.data());
+        reinterpret_cast<IScriptBindings*>(storage.data())->Describe(builder);
+        bindDesc->Destruct(storage.data());
+    }
+
+    // Free functions → MethodInfo (same as reflection-registered methods)
+    for (const auto& entry : builder.GetFunctions())
+    {
+        MethodInfo mi;
+        mi.Namespace = entry.Namespace;
+        mi.OwnedDesc = entry.Method;
+        mi.Desc      = &*mi.OwnedDesc;
+        mi.Name      = mi.GetDesc().GetName();
+        methods.push_back(std::move(mi));
+    }
+
+    // Class entries → ClassInfo + flattened MethodInfo for each method/static
+    for (const auto& cls : builder.GetClasses())
+    {
+        ClassInfo ci;
+        ci.Namespace     = cls.Namespace;
+        ci.BaseNamespace = cls.BaseNamespace;
+        ci.HandleNs      = SanitizeNs(cls.Namespace);
+        ci.HandleTypeId  = cls.HandleTypeId;
+
+        auto makeMethod = [&](const MethodDescriptor& m, bool isInstance) -> MethodInfo
+        {
+            MethodInfo mi;
+            mi.Namespace        = cls.Namespace;
+            mi.OwnedDesc        = m;
+            mi.Desc             = &*mi.OwnedDesc;
+            mi.Name             = mi.GetDesc().GetName();
+            mi.IsInstanceMethod = isInstance;
+            mi.HandleNs         = ci.HandleNs;
+            return mi;
+        };
+
+        // Insert into flat methods list, replacing any existing reflection entry with
+        // the same (namespace, name) so the IScriptBindings version (with IsInstanceMethod)
+        // is used and no duplicate declarations appear in the generated C files.
+        auto upsert = [&](MethodInfo mi)
+        {
+            auto it = std::find_if(methods.begin(), methods.end(),
+                [&](const MethodInfo& e) { return e.Namespace == mi.Namespace && e.Name == mi.Name; });
+            if (it != methods.end()) *it = mi;
+            else methods.push_back(mi);
+        };
+
+        for (const auto& m : cls.Methods)
+        {
+            ci.Methods.push_back(makeMethod(m, true));
+            upsert(ci.Methods.back());
+        }
+        for (const auto& s : cls.Statics)
+        {
+            ci.Statics.push_back(makeMethod(s, false));
+            upsert(ci.Statics.back());
+        }
+        classes.push_back(std::move(ci));
+    }
 }
 
 // ── Namespace tree (for register_phoenix_api body) ────────────────────────────
@@ -337,7 +440,8 @@ static void EmitGetOrCreateTable(std::string& out, const std::string& luaPath, i
 }
 
 static std::string BuildRegisterBody(const std::vector<MethodInfo>& methods,
-                                      const std::vector<StructInfo>& structs)
+                                      const std::vector<StructInfo>& structs,
+                                      const std::vector<ClassInfo>& classes)
 {
     // Build namespace tree for method tables.
     std::map<std::string, NSNode> roots;
@@ -378,6 +482,51 @@ static std::string BuildRegisterBody(const std::vector<MethodInfo>& methods,
         }
     }
 
+    if (!classes.empty())
+    {
+        out += "\n    /* ── Class metatables ── */\n";
+        for (const auto& ci : classes)
+        {
+            out += "\n    /* " + ci.Namespace + " (OOP class) */\n";
+            // Get or create the table at the class namespace path.
+            EmitGetOrCreateTable(out, ci.Namespace, 1);
+            // Register instance methods in the table.
+            for (const auto& m : ci.Methods)
+            {
+                out += "    lua_pushcfunction(L, " + LuaFuncName(ci.Namespace, m.Name) + ");\n";
+                out += "    lua_setfield(L, -2, \"" + m.Name + "\");\n";
+            }
+            // Register static methods in the table.
+            for (const auto& s : ci.Statics)
+            {
+                out += "    lua_pushcfunction(L, " + LuaFuncName(ci.Namespace, s.Name) + ");\n";
+                out += "    lua_setfield(L, -2, \"" + s.Name + "\");\n";
+            }
+            // __index = self, enabling unit:Method() syntax.
+            out += "    lua_pushvalue(L, -1); lua_setfield(L, -2, \"__index\");\n";
+            // Store metatable in registry so pack functions can attach it.
+            out += "    lua_pushvalue(L, -1);\n";
+            out += "    lua_setfield(L, LUA_REGISTRYINDEX, \"_phx_mt_" + ci.HandleNs + "\");\n";
+            out += "    lua_pop(L, 1);\n";
+        }
+    }
+
+    // ── Class inheritance ─────────────────────────────────────────────────────
+    // Done in a second pass so both base and derived metatables are already set up.
+    // Sets setmetatable(Derived, {__index = Base}) so instance method lookup falls
+    // through from Derived to Base when a method isn't found locally.
+    for (const auto& ci : classes)
+    {
+        if (ci.BaseNamespace.empty()) continue;
+        out += "\n    /* " + ci.Namespace + " : " + ci.BaseNamespace + " */\n";
+        EmitGetOrCreateTable(out, ci.Namespace, 1);      // [Derived]
+        out += "    lua_newtable(L);\n";                 // [Derived, {}]
+        EmitGetOrCreateTable(out, ci.BaseNamespace, 1);  // [Derived, {}, Base]
+        out += "    lua_setfield(L, -2, \"__index\");\n"; // [Derived, {__index=Base}]
+        out += "    lua_setmetatable(L, -2);\n";          // [Derived]
+        out += "    lua_pop(L, 1);\n";                    // []
+    }
+
     out += "\n    /* ── Phoenix utilities ── */\n";
     out += "    lua_getglobal(L, \"Phoenix\");\n";
     out += "    if (lua_istable(L, -1)) {\n";
@@ -395,7 +544,8 @@ static std::string BuildRegisterBody(const std::vector<MethodInfo>& methods,
 
 static std::string BuildMethodBody(const MethodInfo& mi,
                                     const TypeDescriptor* worldDesc,
-                                    const std::map<std::string, const StructInfo*>& structByCName)
+                                    const std::map<std::string, const StructInfo*>& structByCName,
+                                    const std::map<FName, std::string>& handleNsByTypeId)
 {
     struct Segment {
         std::string              Decl;
@@ -408,10 +558,27 @@ static std::string BuildMethodBody(const MethodInfo& mi,
     std::vector<Segment> segments;
     int luaIdx  = 1;
     int callIdx = 0;
+    bool expectingHandle = mi.IsInstanceMethod; // consume handle from self at first non-World param
 
     for (const auto& p : mi.GetDesc().GetParams())
     {
         if (p.Type == worldDesc) continue;
+
+        // ── Instance method handle param ───────────────────────────────────────
+        // The first non-World param of an instance method is the class handle.
+        // It lives in a Lua table as the "_id" field (set by _phx_pack_<HandleNs>_handle).
+        if (expectingHandle)
+        {
+            expectingHandle = false;
+            std::string var = "p" + std::to_string(callIdx);
+            Segment seg;
+            seg.Decl = "    int32_t " + var + " = _phx_unpack_" + mi.HandleNs +
+                       "_handle(L, " + std::to_string(luaIdx) + ");\n";
+            seg.CallArgs.push_back(var);
+            ++luaIdx; ++callIdx;
+            segments.push_back(std::move(seg));
+            continue;
+        }
 
         if (Script::IsExpandableStruct(*p.Type))
         {
@@ -550,25 +717,35 @@ static std::string BuildMethodBody(const MethodInfo& mi,
     }
     else if (hasScalarReturn)
     {
-        const bool retIsFixed = returnType.IsTemplate("Phoenix::TFixed");
-        int retFracBits = 0;
-        if (retIsFixed)
+        // Check whether the return type is a class handle — if so, pack it as a table.
+        auto handleIt = handleNsByTypeId.find(returnType.GetTypeId());
+        if (handleIt != handleNsByTypeId.end())
         {
-            auto it = returnType.GetMetadata().find("FractionalBits");
-            if (it != returnType.GetMetadata().end())
-                retFracBits = std::stoi(it->second);
+            body += "    _phx_pack_" + handleIt->second + "_handle(L, (int32_t)_r);\n";
+            body += "    return 1;\n";
         }
-
-        if (isBoolReturn)
-            body += "    lua_pushboolean(L, (int)_r);\n";
-        else if (retIsFixed && retFracBits > 0)
-            body += "    lua_pushnumber(L, (lua_Number)_r / " +
-                    std::to_string(1 << retFracBits) + ".0);\n";
-        else if (retChar == 'i' || retChar == 'I')
-            body += "    lua_pushinteger(L, (lua_Integer)_r);\n";
         else
-            body += "    lua_pushnumber(L, (lua_Number)_r);\n";
-        body += "    return 1;\n";
+        {
+            const bool retIsFixed = returnType.IsTemplate("Phoenix::TFixed");
+            int retFracBits = 0;
+            if (retIsFixed)
+            {
+                auto it = returnType.GetMetadata().find("FractionalBits");
+                if (it != returnType.GetMetadata().end())
+                    retFracBits = std::stoi(it->second);
+            }
+
+            if (isBoolReturn)
+                body += "    lua_pushboolean(L, (int)_r);\n";
+            else if (retIsFixed && retFracBits > 0)
+                body += "    lua_pushnumber(L, (lua_Number)_r / " +
+                        std::to_string(1 << retFracBits) + ".0);\n";
+            else if (retChar == 'i' || retChar == 'I')
+                body += "    lua_pushinteger(L, (lua_Integer)_r);\n";
+            else
+                body += "    lua_pushnumber(L, (lua_Number)_r);\n";
+            body += "    return 1;\n";
+        }
     }
     else
     {
@@ -682,6 +859,31 @@ static int _phx_{{ s.cname }}_new(lua_State* L)
 }
 {% endfor %}
 {% endif %}
+{% if length(classes) > 0 %}
+
+/* ── Class handle pack/unpack helpers ── */
+{% for c in classes %}
+
+/* {{ c.namespace }} — handle type packed as {_id=N} table */
+static int32_t _phx_unpack_{{ c.handle_ns }}_handle(lua_State* L, int idx)
+{
+    lua_getfield(L, idx, "_id");
+    int32_t v = (int32_t)lua_tointeger(L, -1);
+    lua_pop(L, 1);
+    return v;
+}
+
+static void _phx_pack_{{ c.handle_ns }}_handle(lua_State* L, int32_t id)
+{
+    lua_newtable(L);
+    lua_pushinteger(L, (lua_Integer)id);
+    lua_setfield(L, -2, "_id");
+    lua_getfield(L, LUA_REGISTRYINDEX, "_phx_mt_{{ c.handle_ns }}");
+    if (lua_istable(L, -1)) lua_setmetatable(L, -2);
+    else lua_pop(L, 1);
+}
+{% endfor %}
+{% endif %}
 
 /* ── Method wrappers ── */
 {% for m in methods %}
@@ -728,6 +930,7 @@ static json BuildStructFieldJson(const StructField& f)
 
 static json BuildLuaBridgeData(const std::vector<MethodInfo>& methods,
                                 const std::vector<StructInfo>& structs,
+                                const std::vector<ClassInfo>& classes,
                                 const TypeDescriptor* worldDesc)
 {
     json data;
@@ -759,6 +962,16 @@ static json BuildLuaBridgeData(const std::vector<MethodInfo>& methods,
         data["structs"].push_back(std::move(s));
     }
 
+    // ── Classes ───────────────────────────────────────────────────────────────
+    data["classes"] = json::array();
+    for (const auto& ci : classes)
+        data["classes"].push_back({ {"namespace", ci.Namespace}, {"handle_ns", ci.HandleNs} });
+
+    // Build handle type id → HandleNs map for BuildMethodBody return-type detection.
+    std::map<FName, std::string> handleNsByTypeId;
+    for (const auto& ci : classes)
+        handleNsByTypeId[ci.HandleTypeId] = ci.HandleNs;
+
     // ── Methods ───────────────────────────────────────────────────────────────
     std::map<std::string, const StructInfo*> structByCName;
     for (const auto& si : structs) structByCName[si.CName] = &si;
@@ -770,12 +983,12 @@ static json BuildLuaBridgeData(const std::vector<MethodInfo>& methods,
             {"namespace", mi.Namespace},
             {"name",      mi.Name},
             {"lua_func",  LuaFuncName(mi.Namespace, mi.Name)},
-            {"body",      BuildMethodBody(mi, worldDesc, structByCName)}
+            {"body",      BuildMethodBody(mi, worldDesc, structByCName, handleNsByTypeId)}
         });
     }
 
     // ── register_phoenix_api body ─────────────────────────────────────────────
-    data["register_body"] = BuildRegisterBody(methods, structs);
+    data["register_body"] = BuildRegisterBody(methods, structs, classes);
 
     return data;
 }
@@ -889,6 +1102,7 @@ static void EmitMethodStubs(std::string& out, const std::string& ns,
 }
 
 static std::string BuildLuaDefs(const std::vector<MethodInfo>& methods,
+                                  const std::vector<ClassInfo>& classes,
                                   const TypeDescriptor* worldDesc)
 {
     auto allTypes = CollectAllScriptTypes(worldDesc);
@@ -896,13 +1110,19 @@ static std::string BuildLuaDefs(const std::vector<MethodInfo>& methods,
     // Index methods by namespace for quick lookup.
     std::map<std::string, std::vector<const MethodInfo*>> methodsByNs;
     for (const auto& mi : methods)
-        methodsByNs[mi.Namespace].push_back(&mi);
+        if (!mi.IsInstanceMethod)   // instance methods are emitted under the OOP class block
+            methodsByNs[mi.Namespace].push_back(&mi);
 
-    // Collect the set of namespaces that are struct types so we can distinguish
-    // pure-namespace tables (e.g. Phoenix.Unit) from value-type tables (e.g. Phoenix.Vec2).
+    // Collect the set of namespaces that are struct types or OOP classes — these get
+    // class declarations rather than bare table declarations.
     std::set<std::string> structNamespaces;
     for (const TypeDescriptor* desc : allTypes)
         structNamespaces.insert(desc->GetScriptNamespace());
+
+    // OOP class namespaces (from IScriptBindings) also behave like struct namespaces.
+    std::set<std::string> classNamespaces;
+    for (const auto& ci : classes)
+        classNamespaces.insert(ci.Namespace);
 
     // Collect every intermediate namespace prefix that needs a table declaration.
     // e.g. "Phoenix.RTS.Command" implies "Phoenix" and "Phoenix.RTS".
@@ -922,6 +1142,8 @@ static std::string BuildLuaDefs(const std::vector<MethodInfo>& methods,
         collectPrefixes(desc->GetScriptNamespace());
     for (const auto& mi : methods)
         collectPrefixes(mi.Namespace);
+    for (const auto& ci : classes)
+        collectPrefixes(ci.Namespace);
 
     std::string out;
     out += "---@meta\n";
@@ -930,11 +1152,11 @@ static std::string BuildLuaDefs(const std::vector<MethodInfo>& methods,
     out += "-- Regenerate: build the PhoenixLuaGen target.\n";
 
     // Emit bare table declarations for pure namespace prefixes that are not themselves
-    // struct classes (so that nested assignments like Phoenix.Vec2 = {} are valid).
+    // struct classes or OOP classes (so that nested assignments like Phoenix.Vec2 = {} are valid).
     out += "\n";
     for (const auto& ns : allNamespaces)
     {
-        if (structNamespaces.count(ns) == 0)
+        if (structNamespaces.count(ns) == 0 && classNamespaces.count(ns) == 0)
             out += ns + " = {}\n";
     }
 
@@ -978,11 +1200,69 @@ static std::string BuildLuaDefs(const std::vector<MethodInfo>& methods,
             EmitMethodStubs(out, ns, it->second, worldDesc);
     }
 
+    // ── OOP class declarations (from IScriptBindings) ────────────────────────
+    for (const auto& ci : classes)
+    {
+        out += "\n---@class " + ci.Namespace;
+        if (!ci.BaseNamespace.empty()) out += " : " + ci.BaseNamespace;
+        out += "\n";
+        out += "---@field _id integer\n";
+        out += ci.Namespace + " = {}\n";
+
+        // Instance methods — emit with colon syntax placeholder (self omitted in params).
+        for (const auto& m : ci.Methods)
+        {
+            auto isValidIdent = [](const std::string& s) {
+                if (s.empty()) return false;
+                if (!std::isalpha(static_cast<unsigned char>(s[0])) && s[0] != '_') return false;
+                return std::all_of(s.begin(), s.end(), [](unsigned char c) {
+                    return std::isalnum(c) || c == '_';
+                });
+            };
+            // Params: skip World and the handle (first non-World param).
+            std::vector<std::string> pnames;
+            bool skippedHandle = false;
+            int argIdx = 0;
+            for (const auto& p : m.GetDesc().GetParams())
+            {
+                if (p.Type == worldDesc) continue;
+                if (!skippedHandle) { skippedHandle = true; continue; }  // skip self
+                pnames.push_back(isValidIdent(p.Name) ? p.Name : ("arg" + std::to_string(argIdx)));
+                ++argIdx;
+            }
+            int annotIdx = 0;
+            skippedHandle = false;
+            for (const auto& p : m.GetDesc().GetParams())
+            {
+                if (p.Type == worldDesc) continue;
+                if (!skippedHandle) { skippedHandle = true; continue; }  // skip self
+                out += "---@param " + pnames[annotIdx] + " " + TypeToLuaAnnotation(p.Type, worldDesc) + "\n";
+                ++annotIdx;
+            }
+            const TypeDescriptor* ret = m.GetDesc().GetReturnType();
+            if (ret && ret->GetTypeId() != StaticTypeName<void>::TypeId)
+                out += "---@return " + TypeToLuaAnnotation(ret, worldDesc) + "\n";
+            out += "function " + ci.Namespace + ":" + m.Name + "(";
+            for (size_t i = 0; i < pnames.size(); ++i)
+            {
+                if (i) out += ", ";
+                out += pnames[i];
+            }
+            out += ") end\n";
+        }
+
+        // Static methods — emit with dot syntax.
+        auto it = methodsByNs.find(ci.Namespace);
+        if (it != methodsByNs.end())
+            EmitMethodStubs(out, ci.Namespace, it->second, worldDesc);
+    }
+
     // ── Pure-namespace (feature) method stubs ─────────────────────────────────
-    // These are namespaces like Phoenix.Unit, Phoenix.Orders that are not struct types.
+    // These are namespaces like Phoenix.Orders that are not struct types or OOP classes.
     for (const auto& [ns, mis] : methodsByNs)
     {
-        if (structNamespaces.count(ns) > 0) continue;  // already emitted above
+        if (structNamespaces.count(ns) > 0) continue;   // already emitted above
+        if (classNamespaces.count(ns) > 0)  continue;   // already emitted above
         out += "\n-- " + ns + "\n";
         EmitMethodStubs(out, ns, mis, worldDesc);
     }
@@ -1025,8 +1305,10 @@ int main(int argc, char* argv[])
     const TypeDescriptor* worldDesc = &TypeRegistry::Get<World>();
     std::vector<MethodInfo>  methods = CollectMethods(worldDesc);
     std::vector<StructInfo>  structs = CollectStructTypes(worldDesc);
+    std::vector<ClassInfo>   classes;
+    CollectBindings(methods, classes);
 
-    json data = BuildLuaBridgeData(methods, structs, worldDesc);
+    json data = BuildLuaBridgeData(methods, structs, classes, worldDesc);
 
     try
     {
@@ -1046,7 +1328,7 @@ int main(int argc, char* argv[])
 
     if (luaDefsPath)
     {
-        std::string defs = BuildLuaDefs(methods, worldDesc);
+        std::string defs = BuildLuaDefs(methods, classes, worldDesc);
         std::ofstream out(luaDefsPath);
         if (!out) { fprintf(stderr, "Cannot open '%s'\n", luaDefsPath); return 1; }
         out << defs;

@@ -35,6 +35,8 @@
 #include "PhoenixScript/WasmUtility.h"
 #include "PhoenixSim/Reflection/Variant.h"
 #include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "PhoenixSim/Scripting/IScriptBindings.h"
+#include "PhoenixSim/Scripting/ScriptModuleBuilder.h"
 #include "PhoenixSim/Worlds.h"
 
 using namespace Phoenix;
@@ -163,7 +165,7 @@ static std::vector<MethodInfo> CollectMethods(const TypeDescriptor* worldDesc)
     std::vector<const TypeDescriptor*> types;
     for (const auto& [_, desc] : TypeRegistry::GetAll())
     {
-        if (!desc || desc.get() == worldDesc || desc->IsScriptHidden()) continue;
+        if (!desc || desc->IsScriptHidden()) continue;
 
         bool hasStaticMethods = false;
         for (const auto& [n, m] : desc->GetMethods())
@@ -352,6 +354,44 @@ int main(int argc, char* argv[])
 
     const TypeDescriptor* worldDesc = &TypeRegistry::Get<World>();
     std::vector<MethodInfo> methods = CollectMethods(worldDesc);
+
+    // ── IScriptBindings ───────────────────────────────────────────────────────
+    // Flatten all IScriptBindings class methods and free functions into the
+    // methods list.  Class instance methods and statics both become plain host
+    // imports — the handle is just another WASM i32 argument.
+    {
+        ScriptModuleBuilder builder;
+        for (const TypeDescriptor* bindDesc : TypeRegistry::GetAllDerivedFrom<IScriptBindings>())
+        {
+            if (!bindDesc || bindDesc->GetSize() == 0) continue;
+            std::vector<uint8_t> storage(bindDesc->GetSize());
+            bindDesc->DefaultConstruct(storage.data());
+            reinterpret_cast<IScriptBindings*>(storage.data())->Describe(builder);
+            bindDesc->Destruct(storage.data());
+        }
+        // Insert or replace: IScriptBindings version wins over reflection for the same (ns, name).
+        auto appendMethod = [&](const std::string& ns, const MethodDescriptor& m)
+        {
+            MethodInfo mi;
+            mi.Namespace  = ns;
+            mi.OwnedDesc  = m;
+            mi.Desc       = &*mi.OwnedDesc;
+            mi.Name       = mi.GetDesc().GetName();
+            auto it = std::find_if(methods.begin(), methods.end(),
+                [&](const MethodInfo& e) { return e.Namespace == mi.Namespace && e.Name == mi.Name; });
+            if (it != methods.end()) *it = std::move(mi);
+            else methods.push_back(std::move(mi));
+        };
+        for (const auto& entry : builder.GetFunctions())
+            appendMethod(entry.Namespace, entry.Method);
+        for (const auto& cls : builder.GetClasses())
+        {
+            for (const auto& m : cls.Methods)  appendMethod(cls.Namespace, m);
+            for (const auto& s : cls.Statics)  appendMethod(cls.Namespace, s);
+        }
+        std::sort(methods.begin(), methods.end(), [](const MethodInfo& a, const MethodInfo& b)
+        { return a.Namespace < b.Namespace || (a.Namespace == b.Namespace && a.Name < b.Name); });
+    }
 
     json data = BuildHostApiData(methods, worldDesc);
 

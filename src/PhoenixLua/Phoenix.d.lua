@@ -9,7 +9,6 @@ Phoenix.Orders = {}
 Phoenix.Physics = {}
 Phoenix.RTS = {}
 Phoenix.Steering = {}
-Phoenix.Unit = {}
 Phoenix.Vitals = {}
 
 ---@class Phoenix.Box2
@@ -407,6 +406,73 @@ function Phoenix.Vec2.Midpoint(a, b) end
 ---@return Phoenix.Vec2
 function Phoenix.Vec2.FromPolar(angle, radius) end
 
+---@class Phoenix.Unit : Phoenix.Entity
+---@field _id integer
+Phoenix.Unit = {}
+---@return boolean
+function Phoenix.Unit:IsAlive() end
+---@param command Phoenix.RTS.Command
+---@return boolean
+function Phoenix.Unit:IssueCommand(command) end
+
+---@param unitData integer|string
+---@param owner integer
+---@param pos Phoenix.Vec2
+---@param facing number
+---@param args integer
+---@return integer
+function Phoenix.Unit.SpawnUnit(unitData, owner, pos, facing, args) end
+
+---@param unit integer
+---@return integer
+function Phoenix.Unit.GetOwner(unit) end
+
+---@param unit integer
+---@return integer|string
+function Phoenix.Unit.GetUnitData(unit) end
+
+---@param unitData integer|string
+---@param owner integer
+---@param pos Phoenix.Vec2
+---@param facing number
+---@return integer
+function Phoenix.Unit.Spawn(unitData, owner, pos, facing) end
+
+---@class Phoenix.Entity
+---@field _id integer
+Phoenix.Entity = {}
+---@return boolean
+function Phoenix.Entity:IsValid() end
+---@param tag integer|string
+---@return boolean
+function Phoenix.Entity:HasTag(tag) end
+---@param tag integer|string
+---@return boolean
+function Phoenix.Entity:AddTag(tag) end
+---@param tag integer|string
+---@return boolean
+function Phoenix.Entity:RemoveTag(tag) end
+---@return Phoenix.Vec2
+function Phoenix.Entity:GetPosition() end
+---@return number
+function Phoenix.Entity:GetFacing() end
+
+-- Phoenix
+
+---@return integer|string
+function Phoenix.GetWorldId() end
+
+---@return integer|string
+function Phoenix.GetWorldType() end
+
+---@param min integer
+---@param max integer
+---@return integer
+function Phoenix.RandomRange(min, max) end
+
+---@return number
+function Phoenix.RandomFloat() end
+
 -- Phoenix.FeatureDebug
 
 ---@param circle Phoenix.Circle2
@@ -444,28 +510,6 @@ function Phoenix.Orders.IssueCommand(unit, command) end
 ---@param unit integer
 ---@return boolean
 function Phoenix.Orders.HasOrders(unit) end
-
--- Phoenix.Unit
-
----@param unit integer
----@return boolean
-function Phoenix.Unit.IsAlive(unit) end
-
----@param unitData integer|string
----@param owner integer
----@param pos Phoenix.Vec2
----@param facing number
----@param args integer
----@return integer
-function Phoenix.Unit.SpawnUnit(unitData, owner, pos, facing, args) end
-
----@param unit integer
----@return integer
-function Phoenix.Unit.GetOwner(unit) end
-
----@param unit integer
----@return integer|string
-function Phoenix.Unit.GetUnitData(unit) end
 
 -- Phoenix.Vitals
 

@@ -243,7 +243,7 @@ static void LinkWasiStubs(IM3Module module)
                        "v()", [](IM3Runtime, M3ImportContext*, uint64_t*, void*) -> const void* {
                            // Lua called longjmp — an error occurred inside a lua_pcall.
                            // Returning m3Err_trapAbort causes wasm3 to cleanly unwind to
-                           // m3_CallV. CallVoid will then call GetLuaErrorMsg() for details.
+                           // m3_CallV. CallExport will then call GetLuaErrorMsg() for details.
                            LogWarning("[PhoenixScript] _emscripten_throw_longjmp — Lua error, aborting WASM");
                            return m3Err_trapAbort;
                        });
@@ -557,27 +557,6 @@ WasmEnvironment::~WasmEnvironment()
 
 bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtrs, int retc, const void** retPtrs)
 {
-    IM3Function fn = static_cast<IM3Function>(FindExport(name));
-    if (!fn)
-        return false;
-    if (const M3Result err = m3_Call(fn, argc, argPtrs))
-        return false;
-    if (retc > 0 && retPtrs)
-        m3_GetResults(fn, retc, retPtrs);
-    return true;
-}
-
-uint8_t* WasmEnvironment::GetMemory(uint32_t* outSize) const
-{
-    uint32_t size = 0;
-    uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &size, 0);
-    if (outSize)
-        *outSize = size;
-    return mem;
-}
-
-bool WasmEnvironment::CallVoid(const char* name)
-{
     auto* fn = static_cast<IM3Function>(FindExport(name));
     if (!fn)
         return false;
@@ -585,19 +564,17 @@ bool WasmEnvironment::CallVoid(const char* name)
     IM3Runtime fnRuntime = fn->module ? fn->module->runtime : nullptr;
 
 #if PHX_WASM_VERBOSE
-    LogVerbose("Calling wasm function: {} compiled={}", name, static_cast<const void*>(fn->compiled));
+    LogVerbose("[PhoenixScript] Calling '{}' argc={}", name, argc);
 #endif
 
 #ifdef _WIN32
-    // Reserve 64 KB of stack for the exception handler itself so we can catch
-    // stack-overflow exceptions (0xC00000FD), which need guaranteed stack space.
     ULONG stackGuarantee = 65536;
     SetThreadStackGuarantee(&stackGuarantee);
 
     static DWORD s_lastExceptionCode = 0;
     M3Result err = nullptr;
     __try {
-        err = m3_CallV(fn);
+        err = m3_Call(fn, argc, argPtrs);
     } __except([](EXCEPTION_POINTERS* ep) -> int {
             s_lastExceptionCode = ep->ExceptionRecord->ExceptionCode;
             if (s_lastExceptionCode == 0xC0000005 && ep->ExceptionRecord->NumberParameters >= 2)
@@ -618,7 +595,6 @@ bool WasmEnvironment::CallVoid(const char* name)
         if (s_lastExceptionCode == 0xC00000FD)
             _resetstkoflw();
 
-        // Dump wasm3 backtrace
         if (fnRuntime)
         {
             IM3BacktraceInfo bt = m3_GetBacktrace(fnRuntime);
@@ -641,7 +617,6 @@ bool WasmEnvironment::CallVoid(const char* name)
             }
             else
             {
-                // Backtrace not available — at least dump the error info
                 M3ErrorInfo ei{};
                 m3_GetErrorInfo(fnRuntime, &ei);
                 if (ei.message)
@@ -651,13 +626,13 @@ bool WasmEnvironment::CallVoid(const char* name)
         return false;
     }
 #else
-    const M3Result err = m3_CallV(fn);
+    const M3Result err = m3_Call(fn, argc, argPtrs);
 #endif
+
     if (err)
     {
         LogError("[PhoenixScript] Error calling '{}': {}", name, err);
 
-        // Log wasm3 error detail (includes the missing import name for functionImportMissing).
         if (fnRuntime)
         {
             M3ErrorInfo ei{};
@@ -667,37 +642,43 @@ bool WasmEnvironment::CallVoid(const char* name)
                          ei.file ? ei.file : "?", ei.line);
         }
 
-        // If this was a Lua longjmp trap, try to retrieve the Lua error message.
-        // GetLuaErrorMsg() reads the top of the Lua stack and writes it to a buffer
-        // in WASM linear memory, then returns the WASM-side pointer to that buffer.
         if (fnRuntime)
         {
             IM3Function getErrFn = nullptr;
             if (m3_FindFunction(&getErrFn, fnRuntime, "GetLuaErrorMsg") == m3Err_none && getErrFn)
             {
-                const M3Result callRes = m3_Call(getErrFn, 0, nullptr);
-                if (!callRes)
+                if (m3_Call(getErrFn, 0, nullptr) == m3Err_none)
                 {
                     uint32_t wasmPtr = 0;
-                    const void* retPtrs[] = { &wasmPtr };
-                    m3_GetResults(getErrFn, 1, retPtrs);
-
+                    const void* retPtrs_[] = { &wasmPtr };
+                    m3_GetResults(getErrFn, 1, retPtrs_);
                     uint32_t memSize = 0;
                     const uint8_t* mem = m3_GetMemory(fnRuntime, &memSize, 0);
                     if (wasmPtr && mem && wasmPtr < memSize)
-                        LogError("[PhoenixScript] Lua error message: {}",
+                        LogError("[PhoenixScript] Lua error: {}",
                                  reinterpret_cast<const char*>(mem + wasmPtr));
                 }
             }
         }
+        return false;
     }
+
+    if (retc > 0 && retPtrs)
+        m3_GetResults(fn, retc, retPtrs);
+
 #if PHX_WASM_VERBOSE
-    else
-    {
-        LogVerbose("[PhoenixScript] '{}' returned OK", name);
-    }
+    LogVerbose("[PhoenixScript] '{}' OK", name);
 #endif
-    return err == nullptr;
+    return true;
+}
+
+uint8_t* WasmEnvironment::GetMemory(uint32_t* outSize) const
+{
+    uint32_t size = 0;
+    uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &size, 0);
+    if (outSize)
+        *outSize = size;
+    return mem;
 }
 
 void WasmEnvironment::Snapshot()

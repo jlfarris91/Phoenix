@@ -5,6 +5,8 @@
 
 #include "PhoenixSim/Logging.h"
 #include "PhoenixSim/Session.h"
+#include "PhoenixSim/Scripting/IScriptBindings.h"
+#include "PhoenixSim/Scripting/ScriptModuleBuilder.h"
 
 using namespace Phoenix;
 
@@ -108,6 +110,32 @@ bool WasmRuntime::LoadFile(const char* path)
     for (const auto& desc : TypeRegistry::GetAll() | std::views::values)
     {
         RegisterType(*desc);
+    }
+
+    // ── IScriptBindings ───────────────────────────────────────────────────────
+    //
+    // Discover all concrete IScriptBindings implementations, instantiate each
+    // one, call Describe(), then flatten the resulting ScriptFunctionEntries and
+    // ScriptClassEntry methods into the Registrations list.
+    {
+        ScriptModuleBuilder builder;
+        for (const TypeDescriptor* bindDesc : TypeRegistry::GetAllDerivedFrom<IScriptBindings>())
+        {
+            if (!bindDesc || bindDesc->GetSize() == 0) continue;
+            std::vector<uint8_t> storage(bindDesc->GetSize());
+            bindDesc->DefaultConstruct(storage.data());
+            reinterpret_cast<IScriptBindings*>(storage.data())->Describe(builder);
+            bindDesc->Destruct(storage.data());
+        }
+        for (const auto& entry : builder.GetFunctions())
+            Registrations.push_back({ entry.Namespace, entry.Method });
+        for (const auto& cls : builder.GetClasses())
+        {
+            for (const auto& m : cls.Methods)
+                Registrations.push_back({ cls.Namespace, m });
+            for (const auto& s : cls.Statics)
+                Registrations.push_back({ cls.Namespace, s });
+        }
     }
 
     return true;

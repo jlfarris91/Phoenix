@@ -312,7 +312,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
 
-    GLogger = std::make_shared<Logger>("./Phoenix.log"); 
+    GLogger = std::make_shared<Logger>(std::filesystem::absolute("./Phoenix.log")); 
     SetLogger(GLogger);
     InitConsole(GLogger);
 

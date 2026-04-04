@@ -48,7 +48,7 @@ void FeatureScript::OnPreUpdate(const FeatureUpdateArgs& args)
     {
         if (rt && rt->IsValid())
         {
-            rt->CallVoid("OnPreUpdate");
+            rt->CallExport("OnPreUpdate", 0, nullptr, 0, nullptr);
         }
     }
 }
@@ -60,7 +60,7 @@ void FeatureScript::OnUpdate(const FeatureUpdateArgs& args)
     {
         if (rt && rt->IsValid())
         {
-            rt->CallVoid("OnUpdate");
+            rt->CallExport("OnUpdate", 0, nullptr, 0, nullptr);
         }
     }
 }
@@ -72,7 +72,7 @@ void FeatureScript::OnPostUpdate(const FeatureUpdateArgs& args)
     {
         if (rt && rt->IsValid())
         {
-            rt->CallVoid("OnPostUpdate");
+            rt->CallExport("OnPostUpdate", 0, nullptr, 0, nullptr);
         }
     }
 }
@@ -103,7 +103,7 @@ void FeatureScript::OnWorldInitialize(WorldRef world)
     {
         if (existing->IsValid())
         {
-            existing->CallVoid("OnWorldInitialize");
+            existing->CallExport("OnWorldInitialize", 0, nullptr, 0, nullptr);
         }
         return;
     }
@@ -129,7 +129,7 @@ void FeatureScript::OnWorldInitialize(WorldRef world)
     auto environment = std::make_unique<WasmEnvironment>(Session.get(), &world, runtime);
     if (environment->IsValid())
     {
-        environment->CallVoid("OnWorldInitialize");
+        environment->CallExport("OnWorldInitialize", 0, nullptr, 0, nullptr);
     }
 
     Environments.emplace(world.GetId(), std::move(environment));
@@ -143,34 +143,40 @@ void FeatureScript::OnWorldShutdown(WorldRef world)
     {
         if (it->second && it->second->IsValid())
         {
-            it->second->CallVoid("OnWorldShutdown");
+            it->second->CallExport("OnWorldShutdown", 0, nullptr, 0, nullptr);
         }
         Environments.erase(it);
     }
     IFeature::OnWorldShutdown(world);
 }
 
-void FeatureScript::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& /*args*/)
+void FeatureScript::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
-    if (auto* rt = GetEnvironment(world); rt && rt->IsValid())
+    if (auto* env = GetEnvironment(world); env && env->IsValid())
     {
-        rt->CallVoid("OnPreWorldUpdate");
+        const float dt = args.StepHz > 0 ? 1.0f / static_cast<float>(args.StepHz) : 0.0f;
+        const void* argPtrs[] = { &dt };
+        env->CallExport("OnPreWorldUpdate", 1, argPtrs, 0, nullptr);
     }
 }
 
-void FeatureScript::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& /*args*/)
+void FeatureScript::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
-    if (auto* rt = GetEnvironment(world); rt && rt->IsValid())
+    if (auto* env = GetEnvironment(world); env && env->IsValid())
     {
-        rt->CallVoid("OnWorldUpdate");
+        const float dt = args.StepHz > 0 ? 1.0f / static_cast<float>(args.StepHz) : 0.0f;
+        const void* argPtrs[] = { &dt };
+        env->CallExport("OnWorldUpdate", 1, argPtrs, 0, nullptr);
     }
 }
 
-void FeatureScript::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& /*args*/)
+void FeatureScript::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
-    if (auto* rt = GetEnvironment(world); rt && rt->IsValid())
+    if (auto* env = GetEnvironment(world); env && env->IsValid())
     {
-        rt->CallVoid("OnPostWorldUpdate");
+        const float dt = args.StepHz > 0 ? 1.0f / static_cast<float>(args.StepHz) : 0.0f;
+        const void* argPtrs[] = { &dt };
+        env->CallExport("OnPostWorldUpdate", 1, argPtrs, 0, nullptr);
     }
 }
 

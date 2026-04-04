@@ -1,38 +1,43 @@
 #pragma once
 
-#include "PhoenixSim/Services/Service.h"
+#include "PhoenixSim/Reflection/Registration.h"
+#include "PhoenixSim/Scripting/ScriptModuleBuilder.h"
 
 namespace Phoenix
 {
-    class IScriptRuntime;
-
     // ── IScriptBindings ───────────────────────────────────────────────────────
     //
-    // Manual escape hatch for script bindings that cannot be expressed
-    // declaratively via PHX_SCRIPT_REGISTRATION.
+    // Declarative DDL interface for script bindings that cannot (or should not)
+    // be expressed via PHX_DEFINE_TYPE reflection.
     //
-    // Examples of cases that benefit from manual bindings:
-    //  • Functions whose C++ signatures include types not covered by GenericConverter.
-    //  • Lambdas that capture session or feature state.
-    //  • Complex multi-step registration logic.
+    // Examples:
+    //  • Namespace remapping (IssueCommand under Phoenix.Unit instead of Phoenix.Orders)
+    //  • OOP wrappers (UnitId metatable with :IsAlive(), :IssueCommand())
+    //  • Glue functions with no C++ equivalent (GetWorldId, GetWorldType)
     //
-    // Register as IScriptBindings via ServiceContainerBuilder:
+    // Implementations are discovered at build time by PhoenixWasmGen and
+    // PhoenixLuaGen (and at runtime by WasmRuntime) via:
     //
-    //   builder.RegisterService<MyBindings>().As<IScriptBindings>();
+    //   TypeRegistry::GetAllDerivedFrom<IScriptBindings>()
     //
-    // FeatureLua discovers all IScriptBindings services at session init and calls
-    // Register() after the declarative registry has been processed.
+    // Each discovered concrete type is default-constructed, Describe() is
+    // called, then the instance is destroyed.  Implementations must be
+    // default-constructible (guaranteed automatically by TypeRegistry::Get<T>
+    // for any default-constructible type).
+    //
+    // WasmGen flattens all Class methods to static host imports.
+    // LuaGen composes Class entries into metatables and Namespace entries
+    // into Lua table hierarchies.
 
-    class IScriptBindings : public IService
+    class IScriptBindings
     {
-        PHX_DECLARE_TYPE(IScriptBindings, IService)
+        PHX_DECLARE_TYPE_INTERFACE(IScriptBindings)
 
     public:
-        // Dot-separated namespace this class registers into (e.g. "Phoenix.Unit").
-        // The runtime opens this namespace before calling Register and closes it after.
-        virtual const char* GetNamespace() const = 0;
+        virtual ~IScriptBindings() = default;
 
-        // Called once at session init. Implementations call runtime.RegisterFunction(...).
-        virtual void Register(IScriptRuntime& runtime) = 0;
+        // Populate builder with this module's script API declarations.
+        virtual void Describe(ScriptModuleBuilder& builder) const = 0;
     };
-}
+
+} // namespace Phoenix

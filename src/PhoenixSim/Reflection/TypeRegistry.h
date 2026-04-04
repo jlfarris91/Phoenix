@@ -118,6 +118,22 @@ namespace Phoenix
         // Read-only view of all registered descriptors.
         static const std::unordered_map<hash32_t, std::unique_ptr<TypeDescriptor>>& GetAll();
 
+        // Returns all descriptors whose type derives from (or is) the given base type.
+        // Only returns concrete (non-abstract) types.
+        template <class T>
+        static std::vector<const TypeDescriptor*> GetAllDerivedFrom()
+        {
+            const FName baseTypeId = StaticTypeName<T>::TypeId;
+            std::vector<const TypeDescriptor*> result;
+            for (const auto& [_, desc] : GetAll())
+            {
+                if (!desc || desc->IsInterface()) continue;
+                if (desc->IsA(baseTypeId))
+                    result.push_back(desc.get());
+            }
+            return result;
+        }
+
         template <class TCallback>
         static void ForEachBaseClass(FName typeId, const TCallback& callback)
         {

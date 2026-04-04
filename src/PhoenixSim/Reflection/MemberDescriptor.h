@@ -47,8 +47,8 @@ namespace Phoenix
 
     protected:
 
-        template <class T>
-        friend class MemberDescriptorBuilder;
+        template <class T> friend class MemberDescriptorBuilder;
+        friend class ScriptNamespaceBuilder;
 
         std::string Name;
         std::string DisplayName;

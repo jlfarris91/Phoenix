@@ -32,8 +32,9 @@ namespace Phoenix
     //  • Full BlockBuffer integration (for seamless session-level rollback) is TODO.
     //
     // WASM calling convention (script exports):
+    //  • Update exports accept a float dt parameter:
+    //      OnPreWorldUpdate(dt), OnWorldUpdate(dt), OnPostWorldUpdate(dt)
     //  • No-arg exports:   OnPreUpdate, OnUpdate, OnPostUpdate,
-    //                      OnPreWorldUpdate, OnWorldUpdate, OnPostWorldUpdate,
     //                      OnWorldInitialize, OnWorldShutdown
     //  • All are optional — missing exports are silently skipped.
 
@@ -60,10 +61,6 @@ namespace Phoenix
 
         bool   IsValid()   const { return ScriptRuntime != nullptr; }
         World* GetWorld()  const { return ScriptWorld; }
-
-        // Call a no-arg WASM export (e.g. "OnWorldUpdate").
-        // Returns false if the export does not exist.
-        bool CallVoid(const char* name);
 
         // Call a named WASM export with arguments and retrieve results.
         // argPtrs: array of pointers to argument values (nullptr if argc == 0).

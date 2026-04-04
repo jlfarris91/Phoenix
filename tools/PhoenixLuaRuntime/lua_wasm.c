@@ -158,7 +158,7 @@ int GetLuaErrorMsg(void)
     return (int)(uintptr_t)g_lua_error_buf;
 }
 
-/* ── WASM exports (called by WasmEnvironment::CallVoid) ──────────────────── */
+/* ── WASM exports (called by WasmEnvironment::CallExport) ────────────────── */
 
 __attribute__((export_name("OnWorldInitialize")))
 void OnWorldInitialize(void)
@@ -180,13 +180,31 @@ void OnWorldShutdown(void)
 }
 
 __attribute__((export_name("OnPreWorldUpdate")))
-void OnPreWorldUpdate(void) { lua_State* L = ensure_state(); if (L) call_void(L, "OnPreWorldUpdate"); }
+void OnPreWorldUpdate(float dt)
+{
+    lua_State* L = ensure_state();
+    if (!L) return;
+    lua_getglobal(L, "Phoenix"); lua_pushnumber(L, dt); lua_setfield(L, -2, "DeltaTime"); lua_pop(L, 1);
+    call_void(L, "OnPreWorldUpdate");
+}
 
 __attribute__((export_name("OnWorldUpdate")))
-void OnWorldUpdate(void) { lua_State* L = ensure_state(); if (L) call_void(L, "OnWorldUpdate"); }
+void OnWorldUpdate(float dt)
+{
+    lua_State* L = ensure_state();
+    if (!L) return;
+    lua_getglobal(L, "Phoenix"); lua_pushnumber(L, dt); lua_setfield(L, -2, "DeltaTime"); lua_pop(L, 1);
+    call_void(L, "OnWorldUpdate");
+}
 
 __attribute__((export_name("OnPostWorldUpdate")))
-void OnPostWorldUpdate(void) { lua_State* L = ensure_state(); if (L) call_void(L, "OnPostWorldUpdate"); }
+void OnPostWorldUpdate(float dt)
+{
+    lua_State* L = ensure_state();
+    if (!L) return;
+    lua_getglobal(L, "Phoenix"); lua_pushnumber(L, dt); lua_setfield(L, -2, "DeltaTime"); lua_pop(L, 1);
+    call_void(L, "OnPostWorldUpdate");
+}
 
 __attribute__((export_name("OnPreUpdate")))
 void OnPreUpdate(void) { lua_State* L = ensure_state(); if (L) call_void(L, "OnPreUpdate"); }
