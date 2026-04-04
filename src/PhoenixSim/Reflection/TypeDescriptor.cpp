@@ -152,11 +152,6 @@ bool Phoenix::TypeDescriptor::IsInterface() const
     return HasAnyFlags(Flags, ETypeDescriptorFlags::Interface);
 }
 
-bool Phoenix::TypeDescriptor::IsNoScriptTable() const
-{
-    return HasAnyFlags(Flags, ETypeDescriptorFlags::NoScriptTable);
-}
-
 bool Phoenix::TypeDescriptor::IsScriptHidden() const
 {
     return HasAnyFlags(Flags, ETypeDescriptorFlags::ScriptHidden);

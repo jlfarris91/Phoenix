@@ -168,7 +168,7 @@ static std::vector<StructInfo> CollectStructTypes(const TypeDescriptor* worldDes
     for (const auto& [_, desc] : TypeRegistry::GetAll())
     {
         if (!desc || desc.get() == worldDesc) continue;
-        if (desc->IsNoScriptTable()) continue;
+        if (desc->IsScriptHidden()) continue;
         if (desc->GetFields().empty()) continue;
         if (desc->GetSize() > 32) continue;
 
@@ -312,11 +312,26 @@ static void CollectBindings(std::vector<MethodInfo>& methods, std::vector<ClassI
     // Class entries → ClassInfo + flattened MethodInfo for each method/static
     for (const auto& cls : builder.GetClasses())
     {
-        ClassInfo ci;
-        ci.Namespace     = cls.Namespace;
-        ci.BaseNamespace = cls.BaseNamespace;
-        ci.HandleNs      = SanitizeNs(cls.Namespace);
-        ci.HandleTypeId  = cls.HandleTypeId;
+        ClassInfo* ci = nullptr;
+        for (ClassInfo& existingCi : classes)
+        {
+            if (existingCi.Namespace == cls.Namespace)
+            {
+                assert(existingCi.HandleTypeId == cls.HandleTypeId);
+                ci = &existingCi;
+                break;
+            }
+        }
+
+        if (!ci)
+        {
+            ci = &classes.emplace_back();
+        }
+
+        ci->Namespace     = cls.Namespace;
+        ci->BaseNamespace = cls.BaseNamespace;
+        ci->HandleNs      = SanitizeNs(cls.Namespace);
+        ci->HandleTypeId  = cls.HandleTypeId;
 
         auto makeMethod = [&](const MethodDescriptor& m, bool isInstance) -> MethodInfo
         {
@@ -326,7 +341,7 @@ static void CollectBindings(std::vector<MethodInfo>& methods, std::vector<ClassI
             mi.Desc             = &*mi.OwnedDesc;
             mi.Name             = mi.GetDesc().GetName();
             mi.IsInstanceMethod = isInstance;
-            mi.HandleNs         = ci.HandleNs;
+            mi.HandleNs         = ci->HandleNs;
             return mi;
         };
 
@@ -343,15 +358,14 @@ static void CollectBindings(std::vector<MethodInfo>& methods, std::vector<ClassI
 
         for (const auto& m : cls.Methods)
         {
-            ci.Methods.push_back(makeMethod(m, true));
-            upsert(ci.Methods.back());
+            ci->Methods.push_back(makeMethod(m, true));
+            upsert(ci->Methods.back());
         }
         for (const auto& s : cls.Statics)
         {
-            ci.Statics.push_back(makeMethod(s, false));
-            upsert(ci.Statics.back());
+            ci->Statics.push_back(makeMethod(s, false));
+            upsert(ci->Statics.back());
         }
-        classes.push_back(std::move(ci));
     }
 }
 
@@ -1047,7 +1061,7 @@ static std::vector<const TypeDescriptor*> CollectAllScriptTypes(const TypeDescri
     for (const auto& [_, desc] : TypeRegistry::GetAll())
     {
         if (!desc || desc.get() == worldDesc) continue;
-        if (desc->IsScriptHidden() || desc->IsNoScriptTable()) continue;
+        if (desc->IsScriptHidden()) continue;
         if (desc->GetFields().empty()) continue;
         types.push_back(desc.get());
     }

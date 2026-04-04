@@ -1,5 +1,7 @@
 #pragma once
 
+#include <array>
+
 namespace Phoenix
 {
     // ── consteval error sentinels ─────────────────────────────────────────────

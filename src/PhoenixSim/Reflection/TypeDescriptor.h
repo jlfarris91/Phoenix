@@ -13,8 +13,7 @@ namespace Phoenix
         None = 0,
         Class = 1,
         Interface = 2,
-        ScriptHidden = 4,
-        NoScriptTable = 8,  // opt-out of Lua metatable generation for this type
+        ScriptHidden = 4
     };
 
     class PHOENIX_SIM_API TypeDescriptor
@@ -68,8 +67,6 @@ namespace Phoenix
         bool IsComplex() const;
 
         bool IsInterface() const;
-
-        bool IsNoScriptTable()  const;
 
         bool IsScriptHidden()   const;
 

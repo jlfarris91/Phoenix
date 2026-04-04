@@ -191,7 +191,6 @@ int main(int argc, char* argv[])
         typeObj["size"]               = td->GetSize();
         typeObj["is_interface"]       = td->IsInterface();
         typeObj["is_script_hidden"]   = td->IsScriptHidden();
-        typeObj["is_no_script_table"] = td->IsNoScriptTable();
 
         {
             const auto& meta = td->GetMetadata();

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <ranges>
-#include <array>
-
 #include "MethodDescriptorString.h"
 #include "PhoenixSim/Reflection/FieldAccessor.h"
 #include "PhoenixSim/Reflection/FieldDescriptorBuilder.h"
@@ -324,9 +321,9 @@ namespace Phoenix
         }
 
         // Opt out of automatic Lua metatable generation for this type.
-        TypeDescriptorBuilder& NoScriptTable()
+        TypeDescriptorBuilder& ScriptHidden(bool value = true)
         {
-            SetFlagRef(Descriptor->Flags, ETypeDescriptorFlags::NoScriptTable);
+            SetFlagRef(Descriptor->Flags, ETypeDescriptorFlags::ScriptHidden, value);
             return *this;
         }
 

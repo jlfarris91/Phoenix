@@ -24,7 +24,7 @@ function OnWorldUpdate()
     local dt = Phoenix.DeltaTime
     angle1 = angle1 + ROTATION_SPEED * dt
 
-    Phoenix.FeatureDebug.DrawRay({0.0, 0.0}, Phoenix.Vec2.FromPolar(angle1, 10), {R=255, G=0, B=0, A=255})
+    Phoenix.Debug.DrawRay({0.0, 0.0}, Phoenix.Vec2.FromPolar(angle1, 10), {R=255, G=0, B=0, A=255})
 
     if frameCount % SPAWN_INTERVAL == 0 then
         local wave = math.floor(frameCount / SPAWN_INTERVAL)

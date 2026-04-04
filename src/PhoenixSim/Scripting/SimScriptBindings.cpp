@@ -24,19 +24,22 @@ PHX_DEFINE_TYPE(Phoenix::SimScriptBindings)
 
 void SimScriptBindings::Describe(ScriptModuleBuilder& builder) const
 {
-    builder.Namespace("Phoenix")
+    builder
+        .Namespace("Phoenix")
         .Function("GetWorldId(world)",              &PhxSim_GetWorldId)
         .Function("GetWorldType(world)",            &PhxSim_GetWorldType)
         .Function("RandomRange(world, min, max)",   &PhxSim_RandomRange)
-        .Function("RandomFloat(world)",             &PhxSim_RandomFloat)
-        .End();
+        .Function("RandomFloat(world)",             &PhxSim_RandomFloat);
 
-    builder.Class<EntityId>("Phoenix.Entity")
+    builder
+        .Class<EntityId>("Phoenix.Entity")
         .Method("IsValid(world, entity)",           &FeatureECS::IsEntityValid)
+        // Tags
         .Method("HasTag(world, entity, tag)",       &FeatureECS::HasTag)
         .Method("AddTag(world, entity, tag)",       &FeatureECS::AddTag)
         .Method("RemoveTag(world, entity, tag)",    &FeatureECS::RemoveTag)
         .Method("GetPosition(world, entity)",       &FeatureECS::GetWorldPosition)
-        .Method("GetFacing(world, entity)",         &FeatureECS::GetWorldFacing)
-        .End();
+        .Method("GetFacing(world, entity)",         &FeatureECS::GetWorldFacing);
+        // Blackboard
+        // .Method()
 }

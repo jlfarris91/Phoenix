@@ -4,27 +4,12 @@
 -- Regenerate: build the PhoenixLuaGen target.
 
 Phoenix = {}
-Phoenix.FeatureDebug = {}
+Phoenix.Debug = {}
 Phoenix.Orders = {}
 Phoenix.Physics = {}
 Phoenix.RTS = {}
 Phoenix.Steering = {}
 Phoenix.Vitals = {}
-
----@class Phoenix.Box2
----@field Min Phoenix.Vec2
----@field Max Phoenix.Vec2
-Phoenix.Box2 = {}
-
----@param t? {Min?: Phoenix.Vec2, Max?: Phoenix.Vec2}
----@return Phoenix.Box2
-function Phoenix.Box2.new(t) end
-
----@param a Phoenix.Vec2
----@param b Phoenix.Vec2
----@param c Phoenix.Vec2
----@return Phoenix.Box2
-function Phoenix.Box2.FromPoints(a, b, c) end
 
 ---@class Phoenix.Circle2
 ---@field Origin Phoenix.Vec2
@@ -219,15 +204,6 @@ Phoenix.Ellipse2 = {}
 ---@return Phoenix.Ellipse2
 function Phoenix.Ellipse2.new(t) end
 
----@class Phoenix.Line2
----@field Start Phoenix.Vec2
----@field End Phoenix.Vec2
-Phoenix.Line2 = {}
-
----@param t? {Start?: Phoenix.Vec2, End?: Phoenix.Vec2}
----@return Phoenix.Line2
-function Phoenix.Line2.new(t) end
-
 ---@class Phoenix.Physics.BodyComponent
 ---@field Force Phoenix.Vec2
 ---@field Flags integer
@@ -245,20 +221,6 @@ Phoenix.Physics.BodyComponent = {}
 ---@param t? {Force?: Phoenix.Vec2, Flags?: integer, Radius?: number, LinearVelocity?: Phoenix.Vec2, CollisionMask?: integer, Movement?: integer, MaxLinearVelocity?: number, LinearDamping?: number, InvMass?: integer, SleepTimer?: integer, PreviousPos?: Phoenix.Vec2}
 ---@return Phoenix.Physics.BodyComponent
 function Phoenix.Physics.BodyComponent.new(t) end
-
----@class Phoenix.Physics.PhysicsSystem
----@field NumIterations integer
----@field DebugDrawContacts boolean
----@field PenetrationThreshold number
----@field AllowSleep boolean
----@field NumSolverSteps integer
----@field PenetrationCorrection number
----@field NumSeparationSteps integer
-Phoenix.Physics.PhysicsSystem = {}
-
----@param t? {NumIterations?: integer, DebugDrawContacts?: boolean, PenetrationThreshold?: number, AllowSleep?: boolean, NumSolverSteps?: integer, PenetrationCorrection?: number, NumSeparationSteps?: integer}
----@return Phoenix.Physics.PhysicsSystem
-function Phoenix.Physics.PhysicsSystem.new(t) end
 
 ---@class Phoenix.RTS.Command
 ---@field Flags integer
@@ -336,24 +298,6 @@ Phoenix.Steering.SteeringComponent = {}
 ---@param t? {PreviousPos?: Phoenix.Vec2, Velocity?: Phoenix.Vec2, Mode?: integer, GoalPos?: Phoenix.Vec2, Flags?: integer, CollisionMask?: integer, GoalEntity?: integer, Slack?: number, BestPos?: Phoenix.Vec2, InnerRadius?: number, OuterRadius?: number, ArrivalRange?: number, MaxSpeed?: number, TurnRateIdle?: number, TurnRateMoving?: number, AccelerationTime?: number, DecelerationTime?: number, AvoidanceRadius?: number, SeparationDelay?: number, SeparationRadius?: number, SeparationStrength?: number}
 ---@return Phoenix.Steering.SteeringComponent
 function Phoenix.Steering.SteeringComponent.new(t) end
-
----@class Phoenix.Steering.SteeringSystem
----@field AvoidanceRadiusScalar number
----@field MoveTowardsGoal boolean
----@field SlackIncreaseRateFast number
----@field DensityScalar number
----@field AvoidanceScalar number
----@field DensityRadiusScalar number
----@field SlackIncreaseRate number
----@field ArrivalThreshold number
----@field SlackRateDivisor number
----@field SlackRateDivisorSlow number
----@field MaxSlack number
-Phoenix.Steering.SteeringSystem = {}
-
----@param t? {AvoidanceRadiusScalar?: number, MoveTowardsGoal?: boolean, SlackIncreaseRateFast?: number, DensityScalar?: number, AvoidanceScalar?: number, DensityRadiusScalar?: number, SlackIncreaseRate?: number, ArrivalThreshold?: number, SlackRateDivisor?: number, SlackRateDivisorSlow?: number, MaxSlack?: number}
----@return Phoenix.Steering.SteeringSystem
-function Phoenix.Steering.SteeringSystem.new(t) end
 
 ---@class Phoenix.Transform2D
 ---@field Position Phoenix.Vec2
@@ -473,32 +417,36 @@ function Phoenix.RandomRange(min, max) end
 ---@return number
 function Phoenix.RandomFloat() end
 
--- Phoenix.FeatureDebug
+-- Phoenix.Debug
 
----@param circle Phoenix.Circle2
+---@param pt Phoenix.Vec2
+---@param radius number
 ---@param color Phoenix.Color
-function Phoenix.FeatureDebug.DrawCircle(circle, color) end
+function Phoenix.Debug.DrawCircle(pt, radius, color) end
 
----@param ellipse Phoenix.Ellipse2
+---@param pt Phoenix.Vec2
+---@param radii Phoenix.Vec2
 ---@param color Phoenix.Color
-function Phoenix.FeatureDebug.DrawEllipse(ellipse, color) end
+function Phoenix.Debug.DrawEllipse(pt, radii, color) end
 
----@param line Phoenix.Line2
+---@param start Phoenix.Vec2
+---@param end Phoenix.Vec2
 ---@param color Phoenix.Color
-function Phoenix.FeatureDebug.DrawLine(line, color) end
+function Phoenix.Debug.DrawLine(start, end, color) end
 
 ---@param start Phoenix.Vec2
 ---@param dir Phoenix.Vec2
 ---@param color Phoenix.Color
-function Phoenix.FeatureDebug.DrawRay(start, dir, color) end
+function Phoenix.Debug.DrawRay(start, dir, color) end
 
----@param box Phoenix.Box2
+---@param min Phoenix.Vec2
+---@param max Phoenix.Vec2
 ---@param color Phoenix.Color
-function Phoenix.FeatureDebug.DrawBox(box, color) end
+function Phoenix.Debug.DrawBox(min, max, color) end
 
 ---@param index integer
 ---@return Phoenix.Color
-function Phoenix.FeatureDebug.GetColor(index) end
+function Phoenix.Debug.GetColor(index) end
 
 -- Phoenix.Orders
 
@@ -510,6 +458,84 @@ function Phoenix.Orders.IssueCommand(unit, command) end
 ---@param unit integer
 ---@return boolean
 function Phoenix.Orders.HasOrders(unit) end
+
+-- Phoenix.Steering
+
+---@param entity integer
+---@param target Phoenix.Vec2
+---@param range number
+---@return boolean
+function Phoenix.Steering.MoveToLocation(entity, target, range) end
+
+---@param entity integer
+---@param target integer
+---@param range number
+---@return boolean
+function Phoenix.Steering.FollowEntity(entity, target, range) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.IsMoving(entity) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.HasFinishedMoving(entity) end
+
+---@param entity integer
+---@param target integer
+---@return boolean
+function Phoenix.Steering.TurnToFaceEntity(entity, target) end
+
+---@param entity integer
+---@param target integer
+---@return boolean
+function Phoenix.Steering.TurnToFacePos(entity, target) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.IsTurning(entity) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.HasFinishedTurning(entity) end
+
+---@param entity integer
+---@return integer
+function Phoenix.Steering.GetSteeringMode(entity) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.IsSeekingGoal(entity) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.HasArrivedAtGoal(entity) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.Stop(entity) end
+
+---@param entity integer
+---@return boolean
+function Phoenix.Steering.IsHolding(entity) end
+
+---@param entity integer
+---@param holding boolean
+---@return boolean
+function Phoenix.Steering.SetHolding(entity, holding) end
+
+---@param entity integer
+---@param args any
+---@return boolean
+function Phoenix.Steering.UpdateSpeed(entity, args) end
+
+---@param entity integer
+---@return number
+function Phoenix.Steering.GetInnerRadius(entity) end
+
+---@param entity integer
+---@return number
+function Phoenix.Steering.GetOuterRadius(entity) end
 
 -- Phoenix.Vitals
 

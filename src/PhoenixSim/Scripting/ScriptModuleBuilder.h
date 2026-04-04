@@ -54,7 +54,11 @@ namespace Phoenix
     {
     public:
         ScriptNamespaceBuilder(ScriptModuleBuilder& module, std::string ns)
-            : Module(module), Ns(std::move(ns)) {}
+            : Module(module)
+            , Ns(std::move(ns))
+        {
+            
+        }
 
         template <class TRet, class... TArgs>
         ScriptNamespaceBuilder& Function(
@@ -70,7 +74,7 @@ namespace Phoenix
         }
 
         // Return to parent builder for further chaining.
-        ScriptModuleBuilder& End() { return Module; }
+        ScriptModuleBuilder& End() const { return Module; }
 
     private:
         template <class TRet, class... TArgs, size_t... I>
@@ -96,7 +100,7 @@ namespace Phoenix
             return d;
         }
 
-        void Emit(ScriptFunctionEntry entry);
+        void Emit(ScriptFunctionEntry entry) const;
 
         ScriptModuleBuilder& Module;
         std::string          Ns;
@@ -111,12 +115,7 @@ namespace Phoenix
     class ScriptClassBuilder
     {
     public:
-        ScriptClassBuilder(ScriptModuleBuilder& module, std::string ns)
-            : Module(module)
-        {
-            Entry.Namespace    = std::move(ns);
-            Entry.HandleTypeId = StaticTypeName<THandle>::TypeId;
-        }
+        ScriptClassBuilder(ScriptModuleBuilder& module, std::string ns);
 
         // Instance method: first non-World parameter must be THandle.
         template <class TRet, class... TArgs>
@@ -127,7 +126,7 @@ namespace Phoenix
             MethodDescriptor d;
             d.Function = MakeGenericFunction(fn);
             FillParams<TRet, TArgs...>(d, name, std::index_sequence_for<TArgs...>{});
-            Entry.Methods.push_back(std::move(d));
+            Entry->Methods.push_back(std::move(d));
             return *this;
         }
 
@@ -141,7 +140,7 @@ namespace Phoenix
             d.Function = MakeGenericFunction(fn);
             FillParams<TRet, TArgs...>(d, name, std::index_sequence_for<TArgs...>{});
             SetFlagRef(d.Flags, EMemberDescriptorFlags::Static);
-            Entry.Statics.push_back(std::move(d));
+            Entry->Statics.push_back(std::move(d));
             return *this;
         }
 
@@ -150,12 +149,12 @@ namespace Phoenix
         // instance methods from the base are reachable via the normal lookup chain.
         ScriptClassBuilder& Inherits(const char* baseNamespace)
         {
-            Entry.BaseNamespace = baseNamespace;
+            Entry->BaseNamespace = baseNamespace;
             return *this;
         }
 
         // Return to parent builder for further chaining.
-        ScriptModuleBuilder& End() { return EmitAndReturn(); }
+        ScriptModuleBuilder& End() const { return Module; }
 
     private:
         template <class TRet, class... TArgs, size_t... I>
@@ -169,10 +168,8 @@ namespace Phoenix
             d.ReturnType = &TypeRegistry::Get<TRet>();
         }
 
-        ScriptModuleBuilder& EmitAndReturn();
-
         ScriptModuleBuilder& Module;
-        ScriptClassEntry     Entry;
+        ScriptClassEntry*    Entry;
     };
 
     // ── ScriptModuleBuilder ───────────────────────────────────────────────────
@@ -207,26 +204,47 @@ namespace Phoenix
             Classes.push_back(std::move(entry));
         }
 
+        ScriptClassEntry* FindClass(const std::string& ns)
+        {
+            for (ScriptClassEntry& entry : Classes)
+            {
+                if (entry.Namespace == ns)
+                    return &entry;
+            }
+            return nullptr;
+        }
+
         const std::vector<ScriptFunctionEntry>& GetFunctions() const { return Functions; }
         const std::vector<ScriptClassEntry>&    GetClasses()   const { return Classes; }
 
     private:
+
+        template <class T>
+        friend class ScriptClassBuilder;
+
         std::vector<ScriptFunctionEntry> Functions;
         std::vector<ScriptClassEntry>    Classes;
     };
 
     // ── Out-of-line definitions ───────────────────────────────────────────────
 
-    inline void ScriptNamespaceBuilder::Emit(ScriptFunctionEntry entry)
+    inline void ScriptNamespaceBuilder::Emit(ScriptFunctionEntry entry) const
     {
         Module.AddFunction(std::move(entry));
     }
 
     template <class THandle>
-    ScriptModuleBuilder& ScriptClassBuilder<THandle>::EmitAndReturn()
+    ScriptClassBuilder<THandle>::ScriptClassBuilder(ScriptModuleBuilder& module, std::string ns)
+        : Module(module)
     {
-        Module.AddClass(std::move(Entry));
-        return Module;
+        Entry = Module.FindClass(ns);
+        if (!Entry)
+        {
+            Entry = &Module.Classes.emplace_back(std::move(ns));
+        }
+
+        assert(FName::IsNoneOrEmpty(Entry->HandleTypeId) || Entry->HandleTypeId == StaticTypeName<THandle>::TypeId);
+        Entry->HandleTypeId = StaticTypeName<THandle>::TypeId;
     }
 
 } // namespace Phoenix

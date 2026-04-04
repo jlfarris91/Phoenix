@@ -36,6 +36,7 @@ namespace Phoenix::Physics
 PHX_DEFINE_TYPE(Phoenix::Physics::PhysicsSystem)
 {
     registration
+        .ScriptHidden()
         .Field("DebugDrawContacts",     &Physics::PhysicsSystem::DebugDrawContacts)
         .Field("AllowSleep",            &Physics::PhysicsSystem::AllowSleep)
         .Field("NumIterations",         &Physics::PhysicsSystem::NumIterations)

@@ -35,6 +35,7 @@ namespace Phoenix::Steering
 PHX_DEFINE_TYPE(Phoenix::Steering::SteeringSystem)
 {
     registration
+        .ScriptHidden()
         .Field("MoveTowardsGoal", &Steering::SteeringSystem::MoveTowardsGoal)
         .Field("DensityScalar", &Steering::SteeringSystem::DensityScalar)
         .Field("DensityRadiusScalar", &Steering::SteeringSystem::DensityRadiusScalar)
