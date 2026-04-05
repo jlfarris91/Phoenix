@@ -8,45 +8,119 @@
 #include "PhoenixSim/Reflection/MethodDescriptorString.h"
 #include "PhoenixSim/Reflection/TypeDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "PhoenixSim/Scripting/ScriptOptional.h"
 
 namespace Phoenix
 {
-    // ── ScriptFunctionEntry ───────────────────────────────────────────────────
+    // ── TypePack ──────────────────────────────────────────────────────────────
     //
-    // A single function registered into a dot-separated namespace.
-    // WasmGen emits it as a flat host import under that namespace.
-    // LuaGen emits it as a table entry.
+    // Empty tag type that carries a list of C++ types for use with
+    // ScriptClassBuilder::TemplateMethod().
+    //
+    // Usage:
+    //   using BBTypes = TypePack<int32, EntityId, FName>;
+    //   builder.Class<EntityId>("Phoenix.Entity")
+    //       .TEMPLATE_METHOD("GetBlackboardValue(world, entity, key, defaultValue)",
+    //                        &FeatureECS::GetBlackboardValue, BBTypes)
+    //       .End();
+    //
+    // This registers one Lua method per type:
+    //   GetBlackboardValue_int32, GetBlackboardValue_EntityId, ...
+
+    template<class... TTypes>
+    struct TypePack {};
+
+    // Returns a script-safe suffix for T: alias if registered, otherwise the
+    // last :: component of the C++ type name with non-alphanumerics stripped.
+    template<class T>
+    std::string ScriptTypeSuffix()
+    {
+        const TypeDescriptor& td = TypeRegistry::Get<T>();
+        const std::string& alias = td.GetAlias();
+        if (!alias.empty())
+            return alias;
+        const std::string& name = td.GetName();
+        const size_t colon = name.rfind(':');
+        std::string base = (colon != std::string::npos) ? name.substr(colon + 1) : name;
+        for (char& c : base)
+            if (!std::isalnum(static_cast<unsigned char>(c))) c = '_';
+        while (!base.empty() && base.back() == '_') base.pop_back();
+        return base;
+    }
+
+    // ── DeduceFnReturnType ────────────────────────────────────────────────────
+    //
+    // Deduces the return type of a function pointer via overload resolution.
+    // Usage:  using R = decltype(DeduceFnReturnType(fn));
+
+    template<class TRet, class... TArgs>
+    TRet DeduceFnReturnType(TRet(*)(TArgs...));
+
+    // ── StringLiteral ─────────────────────────────────────────────────────────
+    //
+    // A structural class-type non-type template parameter (C++20) that stores a
+    // string literal.  Used to pass declaration strings through TemplateMethod /
+    // TemplateFunction so they arrive as compile-time constants at the point where
+    // TArgs... is known, enabling MethodDeclarationString validation.
+    //
+    // Usage:  .TemplateMethod<"GetValue(world, entity, key)">(TypePack<...>{}, factory)
+    //   or via the TEMPLATE_METHOD / TEMPLATE_FUNCTION macros.
+
+    template<size_t N>
+    struct StringLiteral
+    {
+        char data[N];
+        consteval StringLiteral(const char (&s)[N])
+        {
+            for (size_t i = 0; i < N; ++i) data[i] = s[i];
+        }
+    };
+
+    // ── BuildTemplateDescriptor ───────────────────────────────────────────────
+    //
+    // Shared helper used by both ScriptNamespaceBuilder and ScriptClassBuilder.
+    // Constructs a MethodDescriptor from a compile-time declaration string (NTTP)
+    // at the point where TArgs... is known, appending "_<suffix>" to the name.
+
+    template<StringLiteral Decl, class TRet, class... TArgs, size_t... I>
+    static MethodDescriptor BuildTemplateDescriptorImpl(
+        TRet(*fn)(TArgs...), const std::string& suffix, std::index_sequence<I...>)
+    {
+        constexpr MethodDeclarationString<TArgs...> decl(Decl.data);
+        MethodDescriptor d;
+        d.Function   = MakeGenericFunction(fn);
+        d.Name       = std::string(decl.Name) + "_" + suffix;
+        d.ReturnType = &TypeRegistry::Get<TRet>();
+        d.Params     = { ParamDescriptor{ std::string(decl.ParamNames[I]), &TypeRegistry::Get<TArgs>() }... };
+        return d;
+    }
+
+    template<StringLiteral Decl, class TRet, class... TArgs>
+    static MethodDescriptor BuildTemplateDescriptor(TRet(*fn)(TArgs...), const std::string& suffix)
+    {
+        return BuildTemplateDescriptorImpl<Decl>(fn, suffix, std::index_sequence_for<TArgs...>{});
+    }
+
+    // ── ScriptFunctionEntry ───────────────────────────────────────────────────
 
     struct ScriptFunctionEntry
     {
-        std::string      Namespace;   // e.g. "Phoenix" or "Phoenix.Unit"
+        std::string      Namespace;
         MethodDescriptor Method;
     };
 
     // ── ScriptClassEntry ──────────────────────────────────────────────────────
-    //
-    // An OOP class wrapping a handle type (e.g. UnitId).
-    //
-    // WasmGen flattens Methods and Statics into the Namespace as regular host
-    // imports — the handle type is treated like any other WASM argument.
-    //
-    // LuaGen generates a metatable for HandleTypeId so that handle values
-    // support method-call syntax (unit:IsAlive()). Statics are placed as
-    // plain table entries (Unit.Spawn(...)).
 
     struct ScriptClassEntry
     {
-        std::string              Namespace;     // Lua table path, e.g. "Phoenix.Unit"
-        std::string              BaseNamespace; // Optional base class path, e.g. "Phoenix.Entity" (empty = no base)
-        FName                    HandleTypeId;  // TypeId of the wrapped handle (e.g. UnitId)
-        std::vector<MethodDescriptor> Methods;  // instance methods — handle injected as first non-World arg
-        std::vector<MethodDescriptor> Statics;  // static methods — no handle injection
+        std::string              Namespace;
+        std::string              BaseNamespace;
+        FName                    HandleTypeId;
+        std::vector<MethodDescriptor> Methods;
+        std::vector<MethodDescriptor> Statics;
     };
 
     // ── ScriptNamespaceBuilder ────────────────────────────────────────────────
-    //
-    // Fluent builder returned by ScriptModuleBuilder::Namespace().
-    // Registers free functions under a dot-separated namespace.
 
     class ScriptModuleBuilder;
 
@@ -54,12 +128,10 @@ namespace Phoenix
     {
     public:
         ScriptNamespaceBuilder(ScriptModuleBuilder& module, std::string ns)
-            : Module(module)
-            , Ns(std::move(ns))
-        {
-            
-        }
+            : Module(module), Ns(std::move(ns))
+        {}
 
+        // Register a free function under this namespace.
         template <class TRet, class... TArgs>
         ScriptNamespaceBuilder& Function(
             const std::type_identity_t<MethodDeclarationString<TArgs...>>& name,
@@ -67,16 +139,43 @@ namespace Phoenix
         {
             ScriptFunctionEntry entry;
             entry.Namespace = Ns;
-            entry.Method    = BuildMethod<TRet, TArgs...>(name, fn);
+            entry.Method    = BuildMethod(name, fn);
             SetFlagRef(entry.Method.Flags, EMemberDescriptorFlags::Static);
             Emit(std::move(entry));
             return *this;
         }
 
-        // Return to parent builder for further chaining.
+        // Register one free-function variant per type in TypePack.
+        // The declaration string is validated at compile time against each
+        // variant's actual argument types — same as Function().
+        // Method name = baseName + "_" + TypeDescriptor alias.
+        template<StringLiteral Decl, class... TTypes, class TFactory>
+        ScriptNamespaceBuilder& TemplateFunction(TypePack<TTypes...>, TFactory factory)
+        {
+            (RegisterTemplateFunctionVariant<TTypes, Decl>(factory), ...);
+            return *this;
+        }
+
         ScriptModuleBuilder& End() const { return Module; }
 
     private:
+        template<class T, StringLiteral Decl, class TFactory>
+        void RegisterTemplateFunctionVariant(TFactory& factory)
+        {
+            auto fn = factory.template operator()<T>();
+
+            using RetType = decltype(DeduceFnReturnType(fn));
+            if constexpr (IsScriptOptional<RetType>::value)
+                EnsureScriptOptionalRegistered<typename IsScriptOptional<RetType>::Inner>(
+                    ScriptTypeSuffix<typename IsScriptOptional<RetType>::Inner>());
+
+            ScriptFunctionEntry entry;
+            entry.Namespace = Ns;
+            entry.Method    = BuildTemplateDescriptor<Decl>(fn, ScriptTypeSuffix<T>());
+            SetFlagRef(entry.Method.Flags, EMemberDescriptorFlags::Static);
+            Emit(std::move(entry));
+        }
+
         template <class TRet, class... TArgs, size_t... I>
         static MethodDescriptor FillParams(
             MethodDescriptor& d,
@@ -107,9 +206,6 @@ namespace Phoenix
     };
 
     // ── ScriptClassBuilder ────────────────────────────────────────────────────
-    //
-    // Fluent builder returned by ScriptModuleBuilder::Class<THandle>().
-    // Registers instance methods (handle injected after World) and statics.
 
     template <class THandle>
     class ScriptClassBuilder
@@ -117,7 +213,6 @@ namespace Phoenix
     public:
         ScriptClassBuilder(ScriptModuleBuilder& module, std::string ns);
 
-        // Instance method: first non-World parameter must be THandle.
         template <class TRet, class... TArgs>
         ScriptClassBuilder& Method(
             const std::type_identity_t<MethodDeclarationString<TArgs...>>& name,
@@ -130,7 +225,6 @@ namespace Phoenix
             return *this;
         }
 
-        // Static method: no handle parameter.
         template <class TRet, class... TArgs>
         ScriptClassBuilder& StaticMethod(
             const std::type_identity_t<MethodDeclarationString<TArgs...>>& name,
@@ -144,16 +238,30 @@ namespace Phoenix
             return *this;
         }
 
-        // Declare that this class inherits from an existing class at the given Lua path.
-        // LuaGen will emit `setmetatable(Phoenix.Unit, {__index = Phoenix.Entity})` so
-        // instance methods from the base are reachable via the normal lookup chain.
         ScriptClassBuilder& Inherits(const char* baseNamespace)
         {
             Entry->BaseNamespace = baseNamespace;
             return *this;
         }
 
-        // Return to parent builder for further chaining.
+        // Register one instance-method variant per type in TypePack.
+        // The declaration string is validated at compile time against each
+        // variant's actual argument types — same as Method().
+        // Method name = baseName + "_" + TypeDescriptor alias.
+        template<StringLiteral Decl, class... TTypes, class TFactory>
+        ScriptClassBuilder& TemplateMethod(TypePack<TTypes...>, TFactory factory)
+        {
+            (RegisterTemplateVariant<TTypes, Decl>(factory, false), ...);
+            return *this;
+        }
+
+        template<StringLiteral Decl, class... TTypes, class TFactory>
+        ScriptClassBuilder& TemplateStaticMethod(TypePack<TTypes...>, TFactory factory)
+        {
+            (RegisterTemplateVariant<TTypes, Decl>(factory, true), ...);
+            return *this;
+        }
+
         ScriptModuleBuilder& End() const { return Module; }
 
     private:
@@ -168,49 +276,57 @@ namespace Phoenix
             d.ReturnType = &TypeRegistry::Get<TRet>();
         }
 
+        template<class T, StringLiteral Decl, class TFactory>
+        void RegisterTemplateVariant(TFactory& factory, bool isStatic)
+        {
+            auto fn = factory.template operator()<T>();
+
+            using RetType = decltype(DeduceFnReturnType(fn));
+            if constexpr (IsScriptOptional<RetType>::value)
+            {
+                EnsureScriptOptionalRegistered<typename IsScriptOptional<RetType>::Inner>(
+                    ScriptTypeSuffix<typename IsScriptOptional<RetType>::Inner>());
+            }
+
+            MethodDescriptor d = BuildTemplateDescriptor<Decl>(fn, ScriptTypeSuffix<T>());
+            if (isStatic)
+            {
+                SetFlagRef(d.Flags, EMemberDescriptorFlags::Static);
+                Entry->Statics.push_back(std::move(d));
+            }
+            else
+            {
+                Entry->Methods.push_back(std::move(d));
+            }
+        }
+
         ScriptModuleBuilder& Module;
         ScriptClassEntry*    Entry;
     };
 
     // ── ScriptModuleBuilder ───────────────────────────────────────────────────
-    //
-    // Top-level builder passed to IScriptBindings::Describe().
-    // Accumulates ScriptFunctionEntry and ScriptClassEntry collections that
-    // WasmGen and LuaGen query to emit their respective outputs.
 
     class PHOENIX_SIM_API ScriptModuleBuilder
     {
     public:
-        // Open a dot-separated namespace for free function registration.
         ScriptNamespaceBuilder Namespace(const char* ns)
         {
             return ScriptNamespaceBuilder(*this, ns);
         }
 
-        // Open an OOP class wrapping THandle under the given Lua namespace.
         template <class THandle>
         ScriptClassBuilder<THandle> Class(const char* ns)
         {
             return ScriptClassBuilder<THandle>(*this, ns);
         }
 
-        void AddFunction(ScriptFunctionEntry entry)
-        {
-            Functions.push_back(std::move(entry));
-        }
-
-        void AddClass(ScriptClassEntry entry)
-        {
-            Classes.push_back(std::move(entry));
-        }
+        void AddFunction(ScriptFunctionEntry entry)  { Functions.push_back(std::move(entry)); }
+        void AddClass   (ScriptClassEntry    entry)  { Classes  .push_back(std::move(entry)); }
 
         ScriptClassEntry* FindClass(const std::string& ns)
         {
             for (ScriptClassEntry& entry : Classes)
-            {
-                if (entry.Namespace == ns)
-                    return &entry;
-            }
+                if (entry.Namespace == ns) return &entry;
             return nullptr;
         }
 
@@ -218,7 +334,6 @@ namespace Phoenix
         const std::vector<ScriptClassEntry>&    GetClasses()   const { return Classes; }
 
     private:
-
         template <class T>
         friend class ScriptClassBuilder;
 
@@ -239,12 +354,21 @@ namespace Phoenix
     {
         Entry = Module.FindClass(ns);
         if (!Entry)
-        {
             Entry = &Module.Classes.emplace_back(std::move(ns));
-        }
 
         assert(FName::IsNoneOrEmpty(Entry->HandleTypeId) || Entry->HandleTypeId == StaticTypeName<THandle>::TypeId);
         Entry->HandleTypeId = StaticTypeName<THandle>::TypeId;
     }
 
 } // namespace Phoenix
+
+// ── Convenience macros ────────────────────────────────────────────────────────
+//
+// Pass the declaration string as a class NTTP so it arrives as a compile-time
+// constant where TArgs... is known, enabling MethodDeclarationString validation.
+
+#define TEMPLATE_FUNCTION(decl, fn, typePack) \
+    TemplateFunction<decl>(typePack, []<class T>(){ return fn<T>; })
+
+#define TEMPLATE_METHOD(decl, fn, typePack) \
+    TemplateMethod<decl>(typePack, []<class T>(){ return fn<T>; })

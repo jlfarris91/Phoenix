@@ -97,7 +97,7 @@ void FeatureDebug::OnWorldInitialize(WorldRef world)
 
     for (Color& color : block.Colors)
     {
-        color = Color(random.NextU32() % 255, random.NextU32() % 255, random.NextU32() % 255, 255);
+        color = Color(random.Next<uint8>() % 255, random.Next<uint8>() % 255, random.Next<uint8>() % 255, 255);
     }
 }
 

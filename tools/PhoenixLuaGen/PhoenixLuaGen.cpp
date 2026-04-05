@@ -171,6 +171,9 @@ static std::vector<StructInfo> CollectStructTypes(const TypeDescriptor* worldDes
         if (desc->IsScriptHidden()) continue;
         if (desc->GetFields().empty()) continue;
         if (desc->GetSize() > 32) continue;
+        // ScriptOptional<T> is handled via a special nil-or-value path in BuildMethodBody;
+        // it must not generate pack/unpack/new/tostring helpers.
+        if (desc->IsTemplate("Phoenix::ScriptOptional")) continue;
 
         auto fields = FlattenStructFields(*desc);
         if (fields.empty()) continue;
@@ -708,7 +711,60 @@ static std::string BuildMethodBody(const MethodInfo& mi,
     {
         const char* cn = returnType.GetAliasOrName().c_str();
         auto it = structByCName.find(cn);
-        if (it != structByCName.end())
+
+        // ── ScriptOptional<T>: emit nil-or-value instead of a Lua table ──────
+        if (it != structByCName.end() && returnType.IsTemplate("Phoenix::ScriptOptional"))
+        {
+            const StructInfo* si = it->second;
+
+            // Find slot indices for HasValue and Value by field name.
+            int hasValueSlot = 0, valueSlot = 1;
+            StructField valueField{};
+            {
+                size_t slotIdx = 0;
+                for (const auto& f : si->Fields)
+                {
+                    if (f.Name == "HasValue") hasValueSlot = (int)slotIdx;
+                    if (f.Name == "Value")    { valueSlot = (int)slotIdx; valueField = f; }
+                    slotIdx += (f.WasmChar == 'I' || f.WasmChar == 'F') ? 2 : 1;
+                }
+            }
+
+            body += "    if (_sret[" + std::to_string(hasValueSlot) + "]) {\n";
+
+            // Push value — check whether it's a class handle first.
+            const TypeDescriptor* valueType = nullptr;
+            {
+                auto vf = returnType.GetFields().find("Value");
+                if (vf != returnType.GetFields().end()) valueType = vf->second.GetType();
+            }
+            bool pushedHandle = false;
+            if (valueType)
+            {
+                auto handleIt = handleNsByTypeId.find(valueType->GetTypeId());
+                if (handleIt != handleNsByTypeId.end())
+                {
+                    body += "        _phx_pack_" + handleIt->second +
+                            "_handle(L, (int32_t)_sret[" + std::to_string(valueSlot) + "]);\n";
+                    pushedHandle = true;
+                }
+            }
+            if (!pushedHandle)
+            {
+                if (valueField.WasmChar == 'I')
+                    body += "        lua_pushinteger(L, (lua_Integer)*(int64_t*)&_sret[" + std::to_string(valueSlot) + "]);\n";
+                else if (valueField.WasmChar == 'f')
+                    body += "        lua_pushnumber(L, (lua_Number)*(float*)&_sret[" + std::to_string(valueSlot) + "]);\n";
+                else if (valueField.WasmChar == 'F')
+                    body += "        lua_pushnumber(L, (lua_Number)*(double*)&_sret[" + std::to_string(valueSlot) + "]);\n";
+                else
+                    body += "        lua_pushinteger(L, (lua_Integer)_sret[" + std::to_string(valueSlot) + "]);\n";
+            }
+
+            body += "    } else {\n        lua_pushnil(L);\n    }\n    return 1;\n";
+        }
+        // ── Regular struct: pack into a Lua table ────────────────────────────
+        else if (it != structByCName.end())
         {
             const StructInfo* si = it->second;
             body += "    _phx_pack_" + std::string(cn) + "(L";
@@ -1038,6 +1094,15 @@ static std::string TypeToLuaAnnotation(const TypeDescriptor* type,
             return "number";
         default:
             break;
+    }
+
+    // ScriptOptional<T>: return "T|nil" so LuaLS knows this can be nil.
+    if (type->IsTemplate("Phoenix::ScriptOptional"))
+    {
+        auto vf = type->GetFields().find("Value");
+        if (vf != type->GetFields().end() && vf->second.GetType())
+            return TypeToLuaAnnotation(vf->second.GetType(), worldDesc) + "|nil";
+        return "any|nil";
     }
 
     // Named struct/class with registered fields → use its script namespace as the class name.

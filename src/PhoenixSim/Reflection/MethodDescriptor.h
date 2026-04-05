@@ -52,12 +52,7 @@ namespace Phoenix
 
         const GenericFunction& GetFunction() const;
 
-    private:
-
-        template <class T> friend class TypeDescriptorBuilder;
-        friend class TypeRegistry;
-        friend class ScriptNamespaceBuilder;
-        template <class T> friend class ScriptClassBuilder;
+    // private:
 
         std::vector<ParamDescriptor>    Params;
         const TypeDescriptor*           ReturnType;

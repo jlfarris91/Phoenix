@@ -45,10 +45,7 @@ namespace Phoenix
 
         bool IsScriptHidden() const;
 
-    protected:
-
-        template <class T> friend class MemberDescriptorBuilder;
-        friend class ScriptNamespaceBuilder;
+    // protected:
 
         std::string Name;
         std::string DisplayName;

@@ -10,19 +10,13 @@ using namespace Phoenix::RTS;
 //
 // World is injected by the WASM trampoline — not passed from Lua.
 
-static UnitId PhxUnit_Spawn(WorldRef w, FName unitData, uint8 owner, Vec2 pos, Angle facing)
-{
-    return FeatureUnit::SpawnUnit(w, unitData, owner, pos, facing);
-}
-
 // ── Registration ──────────────────────────────────────────────────────────────
 
 void RTSScriptBindings::Describe(ScriptModuleBuilder& builder) const
 {
-    builder.Class<UnitId>("Phoenix.Unit")
+    builder
+        .Class<UnitId>("Phoenix.Unit")
         .Inherits("Phoenix.Entity")
         .Method("IsAlive(world, unit)",                             &FeatureUnit::UnitIsAlive)
-        .Method("IssueCommand(world, unit, command)",               &FeatureOrders::StaticIssueCommand)
-        .StaticMethod("Spawn(world, unitData, owner, pos, facing)", &PhxUnit_Spawn)
-        .End();
+        .Method("IssueCommand(world, unit, command)",               &FeatureOrders::StaticIssueCommand);
 }

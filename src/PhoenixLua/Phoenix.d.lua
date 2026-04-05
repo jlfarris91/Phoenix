@@ -8,8 +8,10 @@ Phoenix.Debug = {}
 Phoenix.Orders = {}
 Phoenix.Physics = {}
 Phoenix.RTS = {}
+Phoenix.Random = {}
 Phoenix.Steering = {}
 Phoenix.Vitals = {}
+Phoenix.World = {}
 
 ---@class Phoenix.Circle2
 ---@field Origin Phoenix.Vec2
@@ -271,6 +273,123 @@ Phoenix.RTS.UnitComponent = {}
 ---@return Phoenix.RTS.UnitComponent
 function Phoenix.RTS.UnitComponent.new(t) end
 
+---@class Phoenix.ScriptOptional_Angle
+---@field HasValue integer
+---@field Value number
+Phoenix.ScriptOptional_Angle = {}
+
+---@param t? {HasValue?: integer, Value?: number}
+---@return Phoenix.ScriptOptional_Angle
+function Phoenix.ScriptOptional_Angle.new(t) end
+
+---@class Phoenix.ScriptOptional_Color
+---@field HasValue integer
+---@field Value Phoenix.Color
+Phoenix.ScriptOptional_Color = {}
+
+---@param t? {HasValue?: integer, Value?: Phoenix.Color}
+---@return Phoenix.ScriptOptional_Color
+function Phoenix.ScriptOptional_Color.new(t) end
+
+---@class Phoenix.ScriptOptional_EntityId
+---@field HasValue integer
+---@field Value integer
+Phoenix.ScriptOptional_EntityId = {}
+
+---@param t? {HasValue?: integer, Value?: integer}
+---@return Phoenix.ScriptOptional_EntityId
+function Phoenix.ScriptOptional_EntityId.new(t) end
+
+---@class Phoenix.ScriptOptional_FName
+---@field HasValue integer
+---@field Value integer|string
+Phoenix.ScriptOptional_FName = {}
+
+---@param t? {HasValue?: integer, Value?: integer|string}
+---@return Phoenix.ScriptOptional_FName
+function Phoenix.ScriptOptional_FName.new(t) end
+
+---@class Phoenix.ScriptOptional_Speed
+---@field HasValue integer
+---@field Value number
+Phoenix.ScriptOptional_Speed = {}
+
+---@param t? {HasValue?: integer, Value?: number}
+---@return Phoenix.ScriptOptional_Speed
+function Phoenix.ScriptOptional_Speed.new(t) end
+
+---@class Phoenix.ScriptOptional_Time
+---@field HasValue integer
+---@field Value number
+Phoenix.ScriptOptional_Time = {}
+
+---@param t? {HasValue?: integer, Value?: number}
+---@return Phoenix.ScriptOptional_Time
+function Phoenix.ScriptOptional_Time.new(t) end
+
+---@class Phoenix.ScriptOptional_Value
+---@field HasValue integer
+---@field Value number
+Phoenix.ScriptOptional_Value = {}
+
+---@param t? {HasValue?: integer, Value?: number}
+---@return Phoenix.ScriptOptional_Value
+function Phoenix.ScriptOptional_Value.new(t) end
+
+---@class Phoenix.ScriptOptional_Vec2
+---@field HasValue integer
+---@field Value Phoenix.Vec2
+Phoenix.ScriptOptional_Vec2 = {}
+
+---@param t? {HasValue?: integer, Value?: Phoenix.Vec2}
+---@return Phoenix.ScriptOptional_Vec2
+function Phoenix.ScriptOptional_Vec2.new(t) end
+
+---@class Phoenix.ScriptOptional_bool
+---@field HasValue integer
+---@field Value boolean
+Phoenix.ScriptOptional_bool = {}
+
+---@param t? {HasValue?: integer, Value?: boolean}
+---@return Phoenix.ScriptOptional_bool
+function Phoenix.ScriptOptional_bool.new(t) end
+
+---@class Phoenix.ScriptOptional_int
+---@field HasValue integer
+---@field Value integer
+Phoenix.ScriptOptional_int = {}
+
+---@param t? {HasValue?: integer, Value?: integer}
+---@return Phoenix.ScriptOptional_int
+function Phoenix.ScriptOptional_int.new(t) end
+
+---@class Phoenix.ScriptOptional_int64
+---@field HasValue integer
+---@field Value integer
+Phoenix.ScriptOptional_int64 = {}
+
+---@param t? {HasValue?: integer, Value?: integer}
+---@return Phoenix.ScriptOptional_int64
+function Phoenix.ScriptOptional_int64.new(t) end
+
+---@class Phoenix.ScriptOptional_uint64
+---@field HasValue integer
+---@field Value integer
+Phoenix.ScriptOptional_uint64 = {}
+
+---@param t? {HasValue?: integer, Value?: integer}
+---@return Phoenix.ScriptOptional_uint64
+function Phoenix.ScriptOptional_uint64.new(t) end
+
+---@class Phoenix.ScriptOptional_unsigned_int
+---@field HasValue integer
+---@field Value integer
+Phoenix.ScriptOptional_unsigned_int = {}
+
+---@param t? {HasValue?: integer, Value?: integer}
+---@return Phoenix.ScriptOptional_unsigned_int
+function Phoenix.ScriptOptional_unsigned_int.new(t) end
+
 ---@class Phoenix.Steering.SteeringComponent
 ---@field PreviousPos Phoenix.Vec2
 ---@field Velocity Phoenix.Vec2
@@ -375,13 +494,6 @@ function Phoenix.Unit.GetOwner(unit) end
 ---@return integer|string
 function Phoenix.Unit.GetUnitData(unit) end
 
----@param unitData integer|string
----@param owner integer
----@param pos Phoenix.Vec2
----@param facing number
----@return integer
-function Phoenix.Unit.Spawn(unitData, owner, pos, facing) end
-
 ---@class Phoenix.Entity
 ---@field _id integer
 Phoenix.Entity = {}
@@ -400,22 +512,149 @@ function Phoenix.Entity:RemoveTag(tag) end
 function Phoenix.Entity:GetPosition() end
 ---@return number
 function Phoenix.Entity:GetFacing() end
-
--- Phoenix
-
----@return integer|string
-function Phoenix.GetWorldId() end
-
----@return integer|string
-function Phoenix.GetWorldType() end
-
----@param min integer
----@param max integer
+---@param key integer|string
+---@param defaultValue boolean
+---@return boolean
+function Phoenix.Entity:GetBlackboardValue_bool(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue integer
 ---@return integer
-function Phoenix.RandomRange(min, max) end
-
+function Phoenix.Entity:GetBlackboardValue_int(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue integer
+---@return integer
+function Phoenix.Entity:GetBlackboardValue_unsigned_int(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue integer
+---@return integer
+function Phoenix.Entity:GetBlackboardValue_int64(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue integer
+---@return integer
+function Phoenix.Entity:GetBlackboardValue_uint64(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue number
 ---@return number
-function Phoenix.RandomFloat() end
+function Phoenix.Entity:GetBlackboardValue_Value(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue number
+---@return number
+function Phoenix.Entity:GetBlackboardValue_Angle(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue number
+---@return number
+function Phoenix.Entity:GetBlackboardValue_Time(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue number
+---@return number
+function Phoenix.Entity:GetBlackboardValue_Speed(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue Phoenix.Vec2
+---@return Phoenix.Vec2
+function Phoenix.Entity:GetBlackboardValue_Vec2(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue integer|string
+---@return integer|string
+function Phoenix.Entity:GetBlackboardValue_FName(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue integer
+---@return integer
+function Phoenix.Entity:GetBlackboardValue_EntityId(key, defaultValue) end
+---@param key integer|string
+---@param defaultValue Phoenix.Color
+---@return Phoenix.Color
+function Phoenix.Entity:GetBlackboardValue_Color(key, defaultValue) end
+---@param key integer|string
+---@param value boolean
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_bool(key, value) end
+---@param key integer|string
+---@param value integer
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_int(key, value) end
+---@param key integer|string
+---@param value integer
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_unsigned_int(key, value) end
+---@param key integer|string
+---@param value integer
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_int64(key, value) end
+---@param key integer|string
+---@param value integer
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_uint64(key, value) end
+---@param key integer|string
+---@param value number
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_Value(key, value) end
+---@param key integer|string
+---@param value number
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_Angle(key, value) end
+---@param key integer|string
+---@param value number
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_Time(key, value) end
+---@param key integer|string
+---@param value number
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_Speed(key, value) end
+---@param key integer|string
+---@param value Phoenix.Vec2
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_Vec2(key, value) end
+---@param key integer|string
+---@param value integer|string
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_FName(key, value) end
+---@param key integer|string
+---@param value integer
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_EntityId(key, value) end
+---@param key integer|string
+---@param value Phoenix.Color
+---@return boolean
+function Phoenix.Entity:SetBlackboardValue_Color(key, value) end
+---@param arg2 integer|string
+---@return boolean|nil
+function Phoenix.Entity:TryGetBlackboardValue_bool(arg2) end
+---@param arg2 integer|string
+---@return integer|nil
+function Phoenix.Entity:TryGetBlackboardValue_int(arg2) end
+---@param arg2 integer|string
+---@return integer|nil
+function Phoenix.Entity:TryGetBlackboardValue_unsigned_int(arg2) end
+---@param arg2 integer|string
+---@return integer|nil
+function Phoenix.Entity:TryGetBlackboardValue_int64(arg2) end
+---@param arg2 integer|string
+---@return integer|nil
+function Phoenix.Entity:TryGetBlackboardValue_uint64(arg2) end
+---@param arg2 integer|string
+---@return number|nil
+function Phoenix.Entity:TryGetBlackboardValue_Value(arg2) end
+---@param arg2 integer|string
+---@return number|nil
+function Phoenix.Entity:TryGetBlackboardValue_Angle(arg2) end
+---@param arg2 integer|string
+---@return number|nil
+function Phoenix.Entity:TryGetBlackboardValue_Time(arg2) end
+---@param arg2 integer|string
+---@return number|nil
+function Phoenix.Entity:TryGetBlackboardValue_Speed(arg2) end
+---@param arg2 integer|string
+---@return Phoenix.Vec2|nil
+function Phoenix.Entity:TryGetBlackboardValue_Vec2(arg2) end
+---@param arg2 integer|string
+---@return integer|string|nil
+function Phoenix.Entity:TryGetBlackboardValue_FName(arg2) end
+---@param arg2 integer|string
+---@return integer|nil
+function Phoenix.Entity:TryGetBlackboardValue_EntityId(arg2) end
+---@param arg2 integer|string
+---@return Phoenix.Color|nil
+function Phoenix.Entity:TryGetBlackboardValue_Color(arg2) end
 
 -- Phoenix.Debug
 
@@ -458,6 +697,91 @@ function Phoenix.Orders.IssueCommand(unit, command) end
 ---@param unit integer
 ---@return boolean
 function Phoenix.Orders.HasOrders(unit) end
+
+-- Phoenix.Random
+
+---@param seed integer
+function Phoenix.Random.Seed(seed) end
+
+---@return boolean
+function Phoenix.Random.Next_bool() end
+
+---@return integer
+function Phoenix.Random.Next_int() end
+
+---@return integer
+function Phoenix.Random.Next_unsigned_int() end
+
+---@return integer
+function Phoenix.Random.Next_int64() end
+
+---@return integer
+function Phoenix.Random.Next_uint64() end
+
+---@return number
+function Phoenix.Random.Next_Value() end
+
+---@return number
+function Phoenix.Random.Next_Angle() end
+
+---@return number
+function Phoenix.Random.Next_Time() end
+
+---@return number
+function Phoenix.Random.Next_Speed() end
+
+---@param min boolean
+---@param max boolean
+---@return boolean
+function Phoenix.Random.Range_bool(min, max) end
+
+---@param min integer
+---@param max integer
+---@return integer
+function Phoenix.Random.Range_int(min, max) end
+
+---@param min integer
+---@param max integer
+---@return integer
+function Phoenix.Random.Range_unsigned_int(min, max) end
+
+---@param min integer
+---@param max integer
+---@return integer
+function Phoenix.Random.Range_int64(min, max) end
+
+---@param min integer
+---@param max integer
+---@return integer
+function Phoenix.Random.Range_uint64(min, max) end
+
+---@param min number
+---@param max number
+---@return number
+function Phoenix.Random.Range_Value(min, max) end
+
+---@param min number
+---@param max number
+---@return number
+function Phoenix.Random.Range_Angle(min, max) end
+
+---@param min number
+---@param max number
+---@return number
+function Phoenix.Random.Range_Time(min, max) end
+
+---@param min number
+---@param max number
+---@return number
+function Phoenix.Random.Range_Speed(min, max) end
+
+---@param radius number
+---@return Phoenix.Vec2
+function Phoenix.Random.PointInCircle(radius) end
+
+---@param radius number
+---@return Phoenix.Vec2
+function Phoenix.Random.PointOnCircle(radius) end
 
 -- Phoenix.Steering
 
@@ -543,6 +867,200 @@ function Phoenix.Steering.GetOuterRadius(entity) end
 ---@param damage Phoenix.RTS.Damage
 ---@return boolean
 function Phoenix.Vitals.ApplyDamage(target, damage) end
+
+-- Phoenix.World
+
+---@return integer|string
+function Phoenix.World.GetId() end
+
+---@return integer|string
+function Phoenix.World.GetType() end
+
+---@param key integer
+---@return boolean
+function Phoenix.World.HasBlackboardValue(key) end
+
+---@param key integer
+---@return boolean|nil
+function Phoenix.World.TryGetBlackboardValue_bool(key) end
+
+---@param key integer
+---@return integer|nil
+function Phoenix.World.TryGetBlackboardValue_int(key) end
+
+---@param key integer
+---@return integer|nil
+function Phoenix.World.TryGetBlackboardValue_unsigned_int(key) end
+
+---@param key integer
+---@return integer|nil
+function Phoenix.World.TryGetBlackboardValue_int64(key) end
+
+---@param key integer
+---@return integer|nil
+function Phoenix.World.TryGetBlackboardValue_uint64(key) end
+
+---@param key integer
+---@return number|nil
+function Phoenix.World.TryGetBlackboardValue_Value(key) end
+
+---@param key integer
+---@return number|nil
+function Phoenix.World.TryGetBlackboardValue_Angle(key) end
+
+---@param key integer
+---@return number|nil
+function Phoenix.World.TryGetBlackboardValue_Time(key) end
+
+---@param key integer
+---@return number|nil
+function Phoenix.World.TryGetBlackboardValue_Speed(key) end
+
+---@param key integer
+---@return Phoenix.Vec2|nil
+function Phoenix.World.TryGetBlackboardValue_Vec2(key) end
+
+---@param key integer
+---@return integer|string|nil
+function Phoenix.World.TryGetBlackboardValue_FName(key) end
+
+---@param key integer
+---@return integer|nil
+function Phoenix.World.TryGetBlackboardValue_EntityId(key) end
+
+---@param key integer
+---@return Phoenix.Color|nil
+function Phoenix.World.TryGetBlackboardValue_Color(key) end
+
+---@param key integer
+---@param defaultValue boolean
+---@return boolean
+function Phoenix.World.GetBlackboardValue_bool(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue integer
+---@return integer
+function Phoenix.World.GetBlackboardValue_int(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue integer
+---@return integer
+function Phoenix.World.GetBlackboardValue_unsigned_int(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue integer
+---@return integer
+function Phoenix.World.GetBlackboardValue_int64(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue integer
+---@return integer
+function Phoenix.World.GetBlackboardValue_uint64(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue number
+---@return number
+function Phoenix.World.GetBlackboardValue_Value(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue number
+---@return number
+function Phoenix.World.GetBlackboardValue_Angle(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue number
+---@return number
+function Phoenix.World.GetBlackboardValue_Time(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue number
+---@return number
+function Phoenix.World.GetBlackboardValue_Speed(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue Phoenix.Vec2
+---@return Phoenix.Vec2
+function Phoenix.World.GetBlackboardValue_Vec2(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue integer|string
+---@return integer|string
+function Phoenix.World.GetBlackboardValue_FName(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue integer
+---@return integer
+function Phoenix.World.GetBlackboardValue_EntityId(key, defaultValue) end
+
+---@param key integer
+---@param defaultValue Phoenix.Color
+---@return Phoenix.Color
+function Phoenix.World.GetBlackboardValue_Color(key, defaultValue) end
+
+---@param key integer
+---@param value boolean
+---@return boolean
+function Phoenix.World.SetBlackboardValue_bool(key, value) end
+
+---@param key integer
+---@param value integer
+---@return boolean
+function Phoenix.World.SetBlackboardValue_int(key, value) end
+
+---@param key integer
+---@param value integer
+---@return boolean
+function Phoenix.World.SetBlackboardValue_unsigned_int(key, value) end
+
+---@param key integer
+---@param value integer
+---@return boolean
+function Phoenix.World.SetBlackboardValue_int64(key, value) end
+
+---@param key integer
+---@param value integer
+---@return boolean
+function Phoenix.World.SetBlackboardValue_uint64(key, value) end
+
+---@param key integer
+---@param value number
+---@return boolean
+function Phoenix.World.SetBlackboardValue_Value(key, value) end
+
+---@param key integer
+---@param value number
+---@return boolean
+function Phoenix.World.SetBlackboardValue_Angle(key, value) end
+
+---@param key integer
+---@param value number
+---@return boolean
+function Phoenix.World.SetBlackboardValue_Time(key, value) end
+
+---@param key integer
+---@param value number
+---@return boolean
+function Phoenix.World.SetBlackboardValue_Speed(key, value) end
+
+---@param key integer
+---@param value Phoenix.Vec2
+---@return boolean
+function Phoenix.World.SetBlackboardValue_Vec2(key, value) end
+
+---@param key integer
+---@param value integer|string
+---@return boolean
+function Phoenix.World.SetBlackboardValue_FName(key, value) end
+
+---@param key integer
+---@param value integer
+---@return boolean
+function Phoenix.World.SetBlackboardValue_EntityId(key, value) end
+
+---@param key integer
+---@param value Phoenix.Color
+---@return boolean
+function Phoenix.World.SetBlackboardValue_Color(key, value) end
 
 ---@param s string
 ---@return integer

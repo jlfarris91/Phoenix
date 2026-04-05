@@ -29,7 +29,7 @@ void FeatureSpawner::SetIsEnabled(WorldRef world, const bool& enabled)
 
     if (enabled)
     {
-        block.NextSpawnTime = world.GetSimTime() + block.Random.RandomRange(block.SpawnCooldownMin, block.SpawnCooldownMax);
+        block.NextSpawnTime = world.GetSimTime() + block.Random.Range(block.SpawnCooldownMin, block.SpawnCooldownMax);
         block.NextWaveTime = world.GetSimTime() + block.WaveDuration;
     }
 }
@@ -54,7 +54,7 @@ void FeatureSpawner::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args
 
         while (world.GetSimTime() >= block.NextSpawnTime)
         {
-            block.NextSpawnTime = world.GetSimTime() + random.RandomRange(block.SpawnCooldownMin, block.SpawnCooldownMax);
+            block.NextSpawnTime = world.GetSimTime() + random.Range(block.SpawnCooldownMin, block.SpawnCooldownMax);
 
             SpawnUnit(world, block);
         }
@@ -135,10 +135,10 @@ bool FeatureSpawner::SpawnUnit(WorldRef world, FeatureSpawnerWorldBlock& block)
         return false;
     }
 
-    Vec2 pos = random.RandomPointOnCircle<Distance>(10.0);
+    Vec2 pos = random.PointOnCircle<Distance>(10.0);
     Angle facing = -pos.AsDegrees();
 
-    uint8 owner = world.GetRandom().RandomRange<uint8>(1, 10);
+    uint8 owner = world.GetRandom().Range<uint8>(1, 10);
 
     UnitId unit = FeatureUnit::SpawnUnit(world, unitDataId, owner, pos, facing);
     if (unit == UnitId::Invalid)

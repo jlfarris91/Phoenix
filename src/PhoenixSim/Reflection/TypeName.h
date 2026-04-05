@@ -132,6 +132,33 @@ namespace Phoenix
             if (qualifiedTypeName.starts_with("class "))   qualifiedTypeName = qualifiedTypeName.substr(6);
             if (qualifiedTypeName.starts_with("struct "))  qualifiedTypeName = qualifiedTypeName.substr(7);
             if (qualifiedTypeName.starts_with("enum "))    qualifiedTypeName = qualifiedTypeName.substr(5);
+
+            // Normalize MSVC-specific integer spellings to cross-platform names.
+            // unsigned must be checked before the signed variants to avoid
+            // partial replacement of "unsigned __int64" → "unsigned int64".
+            {
+                struct { const char* From; const char* To; } kIntNorm[] = {
+                    { "unsigned __int64", "uint64" },
+                    { "unsigned __int32", "uint32" },
+                    { "unsigned __int16", "uint16" },
+                    { "unsigned __int8",  "uint8"  },
+                    { "__int64",          "int64"  },
+                    { "__int32",          "int32"  },
+                    { "__int16",          "int16"  },
+                    { "__int8",           "int8"   },
+                };
+                for (auto& [from, to] : kIntNorm)
+                {
+                    size_t pos = 0;
+                    const size_t fromLen = std::string_view(from).size();
+                    const size_t toLen   = std::string_view(to).size();
+                    while ((pos = qualifiedTypeName.find(from, pos)) != std::string::npos)
+                    {
+                        qualifiedTypeName.replace(pos, fromLen, to);
+                        pos += toLen;
+                    }
+                }
+            }
 #endif
             if (qualifiedTypeName[0] == ' ')                    qualifiedTypeName = qualifiedTypeName.substr(1);
 

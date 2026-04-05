@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/FixedPoint/FixedPoint.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -62,8 +63,34 @@ namespace Phoenix
 // these types.  Value == Distance (same TFixed<12,int32> type) — Distance is
 // the canonical name.  InvValue / DeltaTime are inverse types, not registered.
 
-#include "PhoenixSim/Reflection/TypeName.h"
 #include "PhoenixSim/Reflection/TypeDescriptorMetadataProvider.h"
+#include "PhoenixSim/Reflection/TypeName.h"
+
+PHX_DEFINE_TYPE(Phoenix::Value)
+{
+    registration.Alias("Value");
+}
+
+// Distance is the same underlying type as Value...
+// PHX_DEFINE_TYPE(Phoenix::Distance)
+// {
+//     registration.Alias("Distance");
+// }
+
+PHX_DEFINE_TYPE(Phoenix::Time)
+{
+    registration.Alias("Time");
+}
+
+PHX_DEFINE_TYPE(Phoenix::Speed)
+{
+    registration.Alias("Speed");
+}
+
+PHX_DEFINE_TYPE(Phoenix::Angle)
+{
+    registration.Alias("Angle");
+}
 
 namespace Phoenix
 {
