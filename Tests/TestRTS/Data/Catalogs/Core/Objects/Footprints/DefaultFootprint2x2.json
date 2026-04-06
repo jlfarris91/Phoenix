@@ -1,9 +1,0 @@
-﻿{
-    "base": "Footprint",
-    "id": "DefaultFootprint2x2",
-    "asset": "Footprints/DefaultFootprint2x2",
-    "snap": {
-        "x": 1.0,
-        "y": 1.0
-    }
-}

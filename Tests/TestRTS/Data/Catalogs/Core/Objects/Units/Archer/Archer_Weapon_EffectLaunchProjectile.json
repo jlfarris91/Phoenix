@@ -1,6 +1,0 @@
-{
-    "id": "Archer_Weapon_EffectLaunchProjectile",
-    "base": "EffectLaunchProjectile",
-    "impact_effect": "Archer_Weapon_EffectDamage",
-    "projectile": "Arrow_Projectile"
-}
