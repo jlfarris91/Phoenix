@@ -11,6 +11,8 @@ namespace Phoenix
 {
     struct PHOENIX_SIM_API DebugShape
     {
+        PHX_DECLARE_TYPE(DebugShape)
+
         enum class Type : uint8
         {
             Invalid,

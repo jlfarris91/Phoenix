@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -73,4 +74,14 @@ namespace Phoenix
         Result.Position = a.RotateVectorInverse(local);
         return Result;
     }
+}
+
+PHX_DEFINE_TYPE(Phoenix::Transform2D)
+{
+    registration
+        .Alias("Transform2D")
+        .Namespace("Phoenix.Transform2D")
+        .Field("Position", &Transform2D::Position)
+        .Field("Rotation", &Transform2D::Rotation)
+        .Field("Scale",    &Transform2D::Scale);
 }

@@ -82,7 +82,7 @@ TestRTS is an RTS sandbox that exercises the full engine stack: spawning units, 
 
 ## Emscripten Build (WebAssembly)
 
-To build the library targets for WebAssembly (no TestRTS):
+The Emscripten build compiles all library targets — including `PhoenixScript` and `PhoenixLua` — to WebAssembly. `TestRTS` and the code-generation tools are excluded (they are native-only host executables).
 
 1. Install EMSDK. The bootstrap script can do this for you — check `build/bootstrap.ps1` for details, or install manually to `$HOME\.emsdk`.
 2. Activate EMSDK so `EMSDK` is in your environment.
@@ -106,7 +106,8 @@ PhoenixSim/
 │   ├── PhoenixPhysics/     # 2D physics integrated with ECS
 │   ├── PhoenixSteering/    # Pathfinding and steering behaviors
 │   ├── PhoenixRTS/         # RTS gameplay systems (units, abilities, orders, effects)
-│   └── PhoenixLua/         # Lua scripting bridge
+│   ├── PhoenixScript/      # WASM runtime host (wasm3 wrapper, FeatureScript)
+│   └── PhoenixLua/         # Lua scripting bridge (FeatureLua, LuaWasmEnvironment)
 ├── tests/
 │   └── TestRTS/            # Interactive RTS sandbox application
 ├── vcpkg/                  # vcpkg submodule (package manager)

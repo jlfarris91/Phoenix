@@ -9,13 +9,6 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::Physics;
 
-FeaturePhysics::FeaturePhysics()
-{
-    FEATURE_WORLD_BLOCK(FeaturePhysicsDynamicBlock, EBufferBlockType::Dynamic)
-    FEATURE_WORLD_BLOCK(FeaturePhysicsScratchBlock, EBufferBlockType::Scratch)
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-}
-
 void FeaturePhysics::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);

@@ -3,7 +3,6 @@
 #include <PhoenixSim/Color.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 #include <PhoenixSim/Containers/Optional.h>
-#include <PhoenixSim/Reflection/Reflection.h>
 #include <PhoenixSim/Navigation/FeatureNavigation.h>
 
 #include "../SDL/SDLTool.h"
@@ -14,7 +13,7 @@ namespace Phoenix
 
     struct NavMeshTool : ISDLTool
     {
-        PHX_DECLARE_TYPE(NavMeshTool)
+        PHX_DECLARE_TYPE_DERIVED(NavMeshTool, ISDLTool);
 
         NavMeshTool(std::shared_ptr<Session> session);
 

@@ -3,10 +3,15 @@
   "version-string": "1.0.0",
   "dependencies": [
     "nlohmann-json",
-    "sol2",
-    "lua"
+    "inja"
   ],
   "features": {
+    "tests": {
+      "description": "Dependencies for unit tests",
+      "dependencies": [
+        "doctest"
+      ]
+    },
     "testapp": {
       "description": "Dependencies for the TestRTS demo app",
       "dependencies": [

@@ -73,6 +73,8 @@
 // Test App Tools
 #include "Console.h"
 #include "Logger.h"
+#include "PhoenixLua/FeatureLua.h"
+#include "PhoenixScript/FeatureScript.h"
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "SDL/SDLLineModel.h"
@@ -187,6 +189,7 @@ void InitSession()
         lua->SetScriptPath("./Data/Maps/TestMap/test_script.lua");
         serviceContainerBuilder->RegisterService(lua).AsInterfaces();
     }
+    serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
@@ -195,7 +198,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
 
     // Register game-specific features
-    serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
+    // serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
 
     // Register ability handlers
     serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
@@ -306,7 +309,7 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
 
-    GLogger = std::make_shared<Logger>("./Phoenix.log"); 
+    GLogger = std::make_shared<Logger>(std::filesystem::absolute("./Phoenix.log")); 
     SetLogger(GLogger);
     InitConsole(GLogger);
 
@@ -594,7 +597,7 @@ void OnAppRenderUI()
                 const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
                 const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
 
-                if (ImGui::CollapsingHeader(typeDescriptor.GetDisplayName()))
+                if (ImGui::CollapsingHeader(typeDescriptor.GetDisplayName().c_str()))
                 {
                     if (ImGui::TreeNode("Properties:"))
                     {
@@ -613,13 +616,13 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->GetCName()))
+                            if (ImGui::TreeNode(blockDef.Type->GetDisplayName().c_str()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
                             }
                         }
-                        
+
                         ImGui::TreePop();
                     }
 
@@ -633,13 +636,13 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->GetCName()))
+                            if (ImGui::TreeNode(blockDef.Type->GetDisplayName().c_str()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
                             }
                         }
-                        
+
                         ImGui::TreePop();
                     }
                 }
@@ -656,7 +659,7 @@ void OnAppRenderUI()
         {
             const auto& descriptor = tool->GetTypeDescriptor();
 
-            if (ImGui::CollapsingHeader(descriptor.GetDisplayName()))
+            if (ImGui::CollapsingHeader(descriptor.GetDisplayName().c_str()))
             {
                 GActiveTools.push_back(tool);
                 DrawPropertyGrid(tool.get(), descriptor);
@@ -709,7 +712,7 @@ void OnAppRenderUI()
                 for (const std::shared_ptr<ISystem>& system : featureECS->GetSystems())
                 {
                     const auto& systemDescriptor = system->GetTypeDescriptor();
-                    if (ImGui::CollapsingHeader(systemDescriptor.GetDisplayName()))
+                    if (ImGui::CollapsingHeader(systemDescriptor.GetDisplayName().c_str()))
                     {
                         DrawPropertyGrid(system.get(), systemDescriptor);
                     }
@@ -769,7 +772,7 @@ void OnAppRenderUI()
                                 {
                                     const ComponentDefinition& compDef = archDef[i];
                                     
-                                    if (ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
+                                    if (ImGui::TreeNode(compDef.TypeDescriptor->GetDisplayName().c_str()))
                                     {
                                         if (ImGui::BeginTable("Props", 2, ImGuiTableFlags_SizingFixedFit))
                                         {                                
@@ -830,7 +833,7 @@ void OnAppRenderUI()
                                     {
                                         list.ForEachComponent(handle, [](const ComponentDefinition& compDef, const void* comp)
                                         {
-                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
+                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetDisplayName().c_str()))
                                             {
                                                 DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                                                 ImGui::TreePop();
@@ -990,7 +993,7 @@ void OnAppRenderUI()
                 {
                     FeatureECS::ForEachComponent(world, selectedEntityId, [&](const ComponentDefinition& compDef, const void* comp)
                     {
-                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetCName()))
+                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetDisplayName().c_str()))
                         {
                             DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                             ImGui::TreePop();
@@ -1055,6 +1058,7 @@ void OnAppShutdown()
     GSessionThreadWantsExit = true;
     GSessionThread->join();
 
+    LogInfo("App shutdown complete.");
     GLogger.reset();
 }
 

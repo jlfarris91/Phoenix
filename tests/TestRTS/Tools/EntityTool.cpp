@@ -1,6 +1,6 @@
 
 #include "EntityTool.h"
-#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include <SDL3/SDL_events.h>
 
@@ -86,7 +86,7 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
 
 using namespace Phoenix;
 
-PHX_TYPE_REGISTRATION(EntityTool)
+PHX_DEFINE_TYPE(EntityTool)
 {
     registration
         .Field("BrushSize",  &EntityTool::BrushSize)

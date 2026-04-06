@@ -23,10 +23,13 @@ namespace Phoenix::RTS
     class PHOENIX_RTS_API FeatureAbilities : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureAbilities)
+        {
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+        }
 
     public:
-
-        FeatureAbilities();
 
         //
         // Ability Handlers

@@ -1,4 +1,5 @@
 #include "PhoenixRTS/Units/FeatureUnit.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/LDS/FeatureLDS.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
@@ -25,11 +26,6 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
-
-FeatureUnit::FeatureUnit()
-{
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-}
 
 UnitId FeatureUnit::SpawnUnit(
     WorldRef world,

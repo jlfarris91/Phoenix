@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <fstream>
+#include <mutex>
 
 #include "PhoenixSim/Logging.h"
 #include "PhoenixSim/Containers/FixedArray.h"
@@ -20,6 +21,7 @@ public:
 
 private:
 
-    std::wofstream LogFileStream;
+    std::mutex LogMutex;
+    std::ofstream LogFileStream;
     LogCallback OnLogCallback;
 };

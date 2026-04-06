@@ -44,12 +44,6 @@ void FeatureLDSDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocat
     new (dest) FeatureLDSDynamicBlock(allocator, config);
 }
 
-FeatureLDS::FeatureLDS()
-{
-    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-}
-
 std::shared_ptr<HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog()
 {
     return StaticSessionCatalog;
@@ -171,7 +165,7 @@ void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLay
     dynamicBlockConfig.MaxObjectRecords = 8192;
     dynamicBlockConfig.MaxTypeRecords = 1024;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         dynamicBlockConfig.MaxObjectRecords = featureConfigData.value("max_dynamic_object_records", dynamicBlockConfig.MaxObjectRecords);
@@ -192,7 +186,7 @@ void FeatureLDS::OnWorldInitialize(WorldRef world)
         StaticWorldCatalogs.emplace(world.GetId(), staticWorldCatalog);
     }
 
-    if (const FeatureJsonConfig* config = world.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* config = world.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = config->GetData();
         auto catalogPathIter = featureConfigData.find("catalog");

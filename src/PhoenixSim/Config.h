@@ -78,7 +78,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IConfigService : public IService
     {
-        PHX_DECLARE_INTERFACE_WITH_BASE(IConfigService, IService)
+        PHX_DECLARE_TYPE_DERIVED(IConfigService, IService)
 
         virtual bool LoadConfig(const std::filesystem::path& dataDir, const std::string& configName) = 0;
         virtual const SessionJsonConfig& GetSessionConfig() const = 0;
@@ -89,7 +89,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API DefaultConfigService : public IConfigService
     {
-        PHX_DECLARE_TYPE_WITH_BASE(DefaultConfigService, IConfigService)
+        PHX_DECLARE_TYPE_DERIVED(DefaultConfigService, IConfigService)
 
     public:
 

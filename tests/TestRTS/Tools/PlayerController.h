@@ -5,7 +5,6 @@
 
 #include <PhoenixSim/Containers/Optional.h>
 #include <PhoenixSim/ECS/EntityId.h>
-#include <PhoenixSim/Reflection/Reflection.h>
 
 #include "../SDL/SDLCamera.h"
 #include "../SDL/SDLTool.h"
@@ -18,7 +17,7 @@ namespace Phoenix
 
     struct PlayerController : ISDLTool
     {
-        PHX_DECLARE_TYPE(PlayerController)
+        PHX_DECLARE_TYPE_DERIVED(PlayerController, ISDLTool);
 
         PlayerController(const std::shared_ptr<Session>& session, SDLCamera* camera, SDLViewport* viewport);
 

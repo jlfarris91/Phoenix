@@ -1,6 +1,6 @@
 
 #include "CameraTool.h"
-#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include <SDL3/SDL_events.h>
 
@@ -100,7 +100,7 @@ void CameraTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
 
 using namespace Phoenix;
 
-PHX_TYPE_REGISTRATION(CameraTool)
+PHX_DEFINE_TYPE(CameraTool)
 {
     registration
         .Field("PanSpeed",  &CameraTool::PanSpeed)

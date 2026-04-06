@@ -9,6 +9,7 @@
 #include "PhoenixSim/Containers/BlockBuffer.h"
 #include "PhoenixSim/Random.h"
 #include "PhoenixSim/WorldsFwd.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -44,6 +45,8 @@ namespace Phoenix
 
     class PHOENIX_SIM_API World : public BlockBufferOwner<World>
     {
+        PHX_DECLARE_TYPE(World)
+
     public:
 
         World(const WorldConfig& config);
@@ -90,6 +93,10 @@ namespace Phoenix
         Random Random;
     };
 
+} // namespace Phoenix
+
+namespace Phoenix
+{
     struct PHOENIX_SIM_API WorldManagerCtorArgs
     {
         std::weak_ptr<Session> Session;

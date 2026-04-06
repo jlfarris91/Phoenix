@@ -50,6 +50,9 @@ jobs:
       - name: Build
         run: cmake --build .build/linux-ci --parallel
 
+      - name: Test
+        run: ctest --test-dir .build/linux-ci --output-on-failure
+
       - name: Install
         if: inputs.upload_artifact
         run: |

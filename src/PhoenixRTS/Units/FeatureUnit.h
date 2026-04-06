@@ -33,6 +33,8 @@ namespace Phoenix::RTS
 
     struct PHOENIX_RTS_API SpawnUnitArgs
     {
+        PHX_DECLARE_TYPE(SpawnUnitArgs)
+
         ESpawnUnitFlags Flags = ESpawnUnitFlags::None;
 
         // The maximum range that the unit can spawn from the spawn position.
@@ -62,10 +64,11 @@ namespace Phoenix::RTS
     class PHOENIX_RTS_API FeatureUnit : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureUnit)
+        {
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+        }
 
     public:
-
-        FeatureUnit();
 
         static UnitId SpawnUnit(
             WorldRef world,
@@ -152,4 +155,14 @@ namespace Phoenix::RTS
 
         std::shared_ptr<ECS::ISystem> UnitSystem;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::RTS::FeatureUnit)
+{
+    registration
+        .Namespace("Phoenix.Unit")
+        .StaticMethod("SpawnUnit(world, unitData, owner, pos, facing, args)",   &RTS::FeatureUnit::SpawnUnit)
+        .StaticMethod("IsAlive(world, unit)",                                   &RTS::FeatureUnit::UnitIsAlive)
+        .StaticMethod("GetOwner(world, unit)",                                  &RTS::FeatureUnit::GetOwningPlayer)
+        .StaticMethod("GetUnitData(world, unit)",                               &RTS::FeatureUnit::GetUnitDataId);
 }

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/Actions.h"
-#include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Reflection/Registration.h"
 #include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
@@ -28,7 +28,7 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API ISystem
     {
-        PHX_DECLARE_INTERFACE(ISystem)
+        PHX_DECLARE_TYPE_INTERFACE(ISystem)
 
         virtual FName GetName() const { return FName::None; }
 
@@ -61,9 +61,4 @@ namespace Phoenix::ECS
     };
 }
 
-#define PHX_ECS_DECLARE_SYSTEM_BEGIN(type) PHX_DECLARE_TYPE_WITH_BASE_BEGIN(type, Phoenix::ECS::ISystem)
-#define PHX_ECS_DECLARE_SYSTEM_END() PHX_DECLARE_TYPE_WITH_BASE_END()
-
-#define PHX_ECS_DECLARE_SYSTEM(type) \
-    PHX_ECS_DECLARE_SYSTEM_BEGIN(type) \
-    PHX_ECS_DECLARE_SYSTEM_END()
+#define PHX_ECS_DECLARE_SYSTEM(type) PHX_DECLARE_TYPE(type, Phoenix::ECS::ISystem)

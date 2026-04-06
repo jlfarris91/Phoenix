@@ -244,7 +244,7 @@ namespace Phoenix
 
         bool GetRandom(TRandom& random, T& outValue) const
         {
-            TWeight weight = random.template RandomRange<TWeight>(0.0, TotalWeight);
+            TWeight weight = random.template Range<TWeight>(0.0, TotalWeight);
             return Sample(weight, outValue);
         }
 
@@ -291,7 +291,7 @@ namespace Phoenix
 
         bool PopRandom(TRandom& random, T& outValue) const
         {
-            TWeight weight = random.template RandomRange<TWeight>(0.0, TotalWeight);
+            TWeight weight = random.template Range<TWeight>(0.0, TotalWeight);
             return SampleAndRemove(weight, outValue);
         }
 

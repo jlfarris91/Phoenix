@@ -3,6 +3,9 @@
     "features": {
         "FeatureLDS": {
             "catalog": "./DefaultWorld/Catalog/Catalog.json"
+        },
+        "FeatureLua": {
+            "script": "./DefaultWorld/script.lua"
         }
     }
 }

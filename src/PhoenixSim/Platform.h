@@ -18,7 +18,9 @@
 #include <unordered_set>
 #include <chrono>
 
+#ifdef _MSC_VER
 #pragma warning( disable : 4251 )
+#endif
 
 #ifdef PHOENIX_DLL
     #ifdef _WIN32

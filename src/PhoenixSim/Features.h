@@ -4,7 +4,6 @@
 
 #include "PhoenixSim/Actions.h"
 #include "PhoenixSim/Containers/BlockBuffer.h"
-#include "PhoenixSim/Reflection.h"
 #include "PhoenixSim/Services/Service.h"
 
 namespace Phoenix
@@ -83,6 +82,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API FeatureDefinition
     {
+        FName FeatureId;
         BlockBufferConfig SessionBlocks;
         BlockBufferConfig WorldBlocks;
         std::vector<FeatureChannelInsertArgs> Channels;
@@ -108,11 +108,14 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IFeature : public IService
     {
-        PHX_DECLARE_INTERFACE_WITH_BASE(IFeature, IService)
+        PHX_DECLARE_TYPE(IFeature, IService)
 
     public:
 
         const FeatureDefinition& GetFeatureDefinition();
+
+        // Gets the unique name of the feature.
+        virtual FName GetFeatureId() const;
 
         // Called once per session step, before OnUpdate.
         virtual void OnPreUpdate(const FeatureUpdateArgs& args);
@@ -157,6 +160,8 @@ namespace Phoenix
 
         friend class Session;
 
+        IFeature(FName featureId);
+
         nlohmann::json Config;
         FeatureDefinition Definition;
     };
@@ -188,7 +193,7 @@ namespace Phoenix
         template <class TFeature>
         std::shared_ptr<TFeature> GetFeature() const
         {
-            return GetFeature<TFeature>(TFeature::StaticTypeName);
+            return GetFeature<TFeature>(TFeature::StaticFeatureId);
         }
 
         std::vector<FeatureSharedPtr> GetFeatures() const;
@@ -228,12 +233,10 @@ namespace Phoenix
 }
 
 
-#define PHX_DECLARE_FEATURE_TYPE_BEGIN(feature) PHX_DECLARE_TYPE_WITH_BASE_BEGIN(feature, Phoenix::IFeature)
-#define PHX_DECLARE_FEATURE_TYPE_END() PHX_DECLARE_TYPE_WITH_BASE_END()
-
 #define PHX_DECLARE_FEATURE_TYPE(feature) \
-    PHX_DECLARE_FEATURE_TYPE_BEGIN(feature) \
-    PHX_DECLARE_FEATURE_TYPE_END()
+    PHX_DECLARE_TYPE(feature, Phoenix::IFeature) \
+    static constexpr Phoenix::FName StaticFeatureId = #feature##_n; \
+    feature() : Phoenix::IFeature(StaticFeatureId)
 
 #define FEATURE_SESSION_BLOCK(block, type) Definition.RegisterSessionBlock<block>(type);
 #define FEATURE_WORLD_BLOCK(block, type) Definition.RegisterWorldBlock<block>(type);

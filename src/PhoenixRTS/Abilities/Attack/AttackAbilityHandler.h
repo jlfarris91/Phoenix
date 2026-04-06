@@ -15,16 +15,14 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API AttackAbilitySystem : public ECS::ISystem
     {
-        PHX_ECS_DECLARE_SYSTEM_BEGIN(AttackAbilitySystem)
-        PHX_ECS_DECLARE_SYSTEM_END()
+        PHX_ECS_DECLARE_SYSTEM(AttackAbilitySystem)
 
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
     };
 
     struct PHOENIX_RTS_API AttackAbilityComponent : IAbilityComponent
     {
-        PHX_ECS_DECLARE_COMPONENT_BEGIN(AttackAbilityComponent)
-        PHX_ECS_DECLARE_COMPONENT_END()
+        PHX_ECS_DECLARE_COMPONENT(AttackAbilityComponent)
 
         AttackAbilityComponent();
 
@@ -45,7 +43,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API AttackAbilityHandler : public IAbilityHandler
     {
-        PHX_DECLARE_TYPE_WITH_BASE(AttackAbilityHandler, IAbilityHandler)
+        PHX_DECLARE_TYPE(AttackAbilityHandler, IAbilityHandler)
 
     public:
 

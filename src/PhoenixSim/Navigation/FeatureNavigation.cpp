@@ -12,16 +12,6 @@
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;
 
-FeatureNavigation::FeatureNavigation()
-{
-    FEATURE_WORLD_BLOCK(FeatureNavMeshStaticBlock, EBufferBlockType::Static)
-    FEATURE_WORLD_BLOCK(FeatureNavMeshDynamicBlock, EBufferBlockType::Dynamic)
-    FEATURE_WORLD_BLOCK(FeatureNavMeshScratchBlock, EBufferBlockType::Scratch)
-    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::DebugRender)
-}
-
 void FeatureNavigation::RebuildNavMesh(WorldRef world)
 {
     FeatureNavMeshDynamicBlock& block = world.GetBlockRef<FeatureNavMeshDynamicBlock>();

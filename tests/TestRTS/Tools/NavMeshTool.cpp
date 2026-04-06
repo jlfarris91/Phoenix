@@ -1,5 +1,5 @@
 #include "NavMeshTool.h"
-#include <PhoenixSim/Reflection/TypeRegistrationBuilder.h>
+#include <PhoenixSim/Reflection/Registration.h>
 
 #include <fstream>
 #include <SDL3/SDL_events.h>
@@ -525,7 +525,7 @@ void NavMeshTool::SetFixDelaunayTriangulation(const bool& v)
 
 using namespace Phoenix;
 
-PHX_TYPE_REGISTRATION(NavMeshTool)
+PHX_DEFINE_TYPE(NavMeshTool)
 {
     registration
         .Field("BrushSize",                   &NavMeshTool::BrushSize)
