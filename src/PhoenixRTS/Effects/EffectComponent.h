@@ -10,7 +10,7 @@ namespace Phoenix::RTS
 {
     struct PHOENIX_RTS_API EffectComponent : ECS::IComponent
     {
-        PHX_DECLARE_TYPE(EffectComponent, Phoenix::ECS::IComponent)
+        PHX_DECLARE_TYPE(EffectComponent, ECS::IComponent)
 
         FName Name;
         ECS::EntityId SourceId;
@@ -20,4 +20,16 @@ namespace Phoenix::RTS
         uint16 RefCount = 0;
         uint16 ChannelingCount = 0;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::RTS::EffectComponent)
+{
+    registration
+        .Field("Name",              &RTS::EffectComponent::Name)
+        .Field("SourceId",          &RTS::EffectComponent::SourceId)
+        .Field("TargetId",          &RTS::EffectComponent::TargetId)
+        .Field("SourcePos",         &RTS::EffectComponent::SourcePos)
+        .Field("TargetPos",         &RTS::EffectComponent::TargetPos)
+        .Field("RefCount",          &RTS::EffectComponent::RefCount)
+        .Field("ChannelingCount",   &RTS::EffectComponent::ChannelingCount);
 }

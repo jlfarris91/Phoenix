@@ -50,10 +50,12 @@ namespace Phoenix::LDS
     class PHOENIX_SIM_API FeatureLDS : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureLDS)
+        {
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+        }
 
     public:
-
-        FeatureLDS();
 
         // Gets the static session-level catalog.
         std::shared_ptr<HeapLDSCatalog> GetStaticSessionCatalog();

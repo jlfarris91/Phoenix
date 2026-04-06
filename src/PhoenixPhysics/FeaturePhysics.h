@@ -94,10 +94,13 @@ namespace Phoenix::Physics
     class PHOENIX_PHYSICS_API FeaturePhysics : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeaturePhysics)
+        {
+            FEATURE_WORLD_BLOCK(FeaturePhysicsDynamicBlock, EBufferBlockType::Dynamic)
+            FEATURE_WORLD_BLOCK(FeaturePhysicsScratchBlock, EBufferBlockType::Scratch)
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+        }
 
     public:
-
-        FeaturePhysics();
 
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
 

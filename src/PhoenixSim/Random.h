@@ -164,6 +164,12 @@ namespace Phoenix
         };
     }
 
+    template <class>
+    struct RandomNextImpl;
+
+    template <class>
+    struct RandomRangeImpl;
+
     template <class TStrategy>
     struct TRandom : TStrategy
     {
@@ -196,44 +202,56 @@ namespace Phoenix
             return Strategy::Next();
         }
 
-        int32 Next32()
+        template <class T>
+        T Next()
         {
-            return Strategy::Next32();
-        }
-
-        uint32 NextU32()
-        {
-            return Strategy::Next32();
-        }
-
-        int64 Next64()
-        {
-            return Strategy::Next64();
-        }
-
-        uint64 NextU64()
-        {
-            return Strategy::Next64();
+            return RandomNextImpl<T>::Next(*this);
         }
 
         template <class T>
-        T NextT()
+        T Range(const T& inclusiveMin, const T& exclusiveMax)
         {
-            if constexpr (std::is_same_v<T, int32> || std::is_same_v<T, uint32>)
-            {
-                return NextU32();
-            }
-            else if constexpr (std::is_same_v<T, int64> || std::is_same_v<T, uint64>)
-            {
-                return NextU64();
-            }
-            else
-            {
-                static_assert(0);
-            }
+            return RandomRangeImpl<T>::Range(*this, inclusiveMin, exclusiveMax);
         }
 
-        int32 RandomRange32(int32 inclusiveMin, int32 exclusiveMax)
+        template <class T>
+        TVec2<T> PointOnCircle(T radius)
+        {
+            if (radius == 0)
+            {
+                return TVec2<T>::Zero;
+            }
+
+            return Cordic::Rotate<T>(radius, 0, Next<Angle>());
+        }
+
+        template <class T>
+        TVec2<T> PointInCircle(T radius)
+        {
+            if (radius == 0)
+            {
+                return TVec2<T>::Zero;
+            }
+
+            return Cordic::Rotate<T>(Range<Distance>(0.0, radius), 0, Next<Angle>());
+        }
+    };
+
+    template <class T>
+    struct RandomNextImpl
+    {
+        template <class TStrategy>
+        static T Next(TRandom<TStrategy>& random)
+        {
+            return random.Next();
+        }
+    };
+
+    template <class T>
+    struct RandomRangeImpl
+    {
+        template <class TRandom>
+        static int32 Range(TRandom& random, int32 inclusiveMin, int32 exclusiveMax)
         {
             if (inclusiveMin == exclusiveMax)
             {
@@ -244,108 +262,34 @@ namespace Phoenix
                 Swap(inclusiveMin, exclusiveMax); 
             }
             uint32 range = exclusiveMax - inclusiveMin;
-            uint64 value64 = NextU32();
+            uint64 value64 = random.template Next<uint32>();
             value64 *= range;
             uint32 result = value64 >> 32;
             return inclusiveMin + result;
         }
+    };
 
-        uint32 RandomRangeU32(uint32 inclusiveMin, uint32 exclusiveMax)
+    template <uint8 Tb, class T>
+    struct RandomRangeImpl<TFixed<Tb, T>>
+    {
+        template <class TRandom>
+        static TFixed<Tb, T> Range(TRandom& random, TFixed<Tb, T> inclusiveMin, TFixed<Tb, T> exclusiveMax)
         {
-            if (inclusiveMin == exclusiveMax)
-            {
-                return inclusiveMin;
-            }
-            if (inclusiveMin > exclusiveMax)
-            {
-                Swap(inclusiveMin, exclusiveMax); 
-            }
-            uint32 range = exclusiveMax - inclusiveMin;
-            uint64 value64 = NextU32();
-            value64 *= range;
-            uint32 result = value64 >> 32;
-            return inclusiveMin + result;
+            return TFixedQ_T<T>(random.template Range<T>(inclusiveMin.Value, exclusiveMax.Value));
         }
+    };
 
-        template <uint8 Tb, class T>
-        TFixed<Tb, T> Next()
+    template <uint8 Tb, class T>
+    struct RandomNextImpl<TFixed<Tb, T>>
+    {
+        template <class TRandom>
+        static TFixed<Tb, T> Next(TRandom& random)
         {
-            return TFixedQ_T<T>(NextT<T>());
-        }
-
-        template <class T>
-        struct RandomRangeImpl
-        {
-            static T RandomRange(TRandom& random, T inclusiveMin, T exclusiveMax)
-            {
-                if (inclusiveMin == exclusiveMax)
-                {
-                    return inclusiveMin;
-                }
-                if (inclusiveMin > exclusiveMax)
-                {
-                    Swap(inclusiveMin, exclusiveMax); 
-                }
-                uint32 range = exclusiveMax - inclusiveMin;
-                uint64 value64 = random.NextU32();
-                value64 *= range;
-                uint32 result = value64 >> 32;
-                return inclusiveMin + result;
-            }
-        };
-
-        template <uint8 Tb, class T>
-        struct RandomRangeImpl<TFixed<Tb, T>>
-        {
-            static TFixed<Tb, T> RandomRange(TRandom& random, TFixed<Tb, T> inclusiveMin, TFixed<Tb, T> exclusiveMax)
-            {
-                if (inclusiveMin == exclusiveMax)
-                {
-                    return inclusiveMin;
-                }
-                if (inclusiveMin > exclusiveMax)
-                {
-                    Swap(inclusiveMin, exclusiveMax); 
-                }
-                uint64 range = exclusiveMax.Value - inclusiveMin.Value;
-                uint64 value64 = random.NextU32();
-                value64 *= range;
-                uint32 result = value64 >> 32;
-                return TFixedQ_T<T>(T(inclusiveMin.Value + result));
-            }
-        };
-
-        template <class T>
-        T RandomRange(const T& inclusiveMin, const T& exclusiveMax)
-        {
-            return RandomRangeImpl<T>::RandomRange(*this, inclusiveMin, exclusiveMax);
-        }
-
-        template <class T>
-        TVec2<T> RandomPointOnCircle(T radius)
-        {
-            if (radius == 0)
-            {
-                return TVec2<T>::Zero;
-            }
-
-            Angle theta = Angle::QT(NextT<Angle::ValueT>());
-            return Cordic::Rotate<T>(radius, 0, theta);
-        }
-
-        template <class T>
-        TVec2<T> RandomPointInCircle(T radius)
-        {
-            if (radius == 0)
-            {
-                return TVec2<T>::Zero;
-            }
-
-            auto rr = SqrxQ(radius);
-            uint64 random64 = NextU64();
-            T randomRadius = Cordic::Sqrt(T(TFixedQ<T>(random64 % rr)));
-            Angle theta = Angle::QT(NextT<Angle::ValueT>());
-            return Cordic::Rotate<T>(randomRadius, 0, theta);
+            // QMIN/QMAX are raw fixed-point storage values (integer domain).
+            // Range<T> operates on them directly, then TFixedQ_T wraps the result.
+            auto constexpr min = static_cast<T>(TFixed<Tb, T>::QMIN);
+            auto constexpr max = static_cast<T>(TFixed<Tb, T>::QMAX);
+            return TFixedQ_T<T>(random.template Range<T>(min, max));
         }
     };
 

@@ -47,10 +47,12 @@ namespace Phoenix::Steering
     class PHOENIX_STEERING_API FeatureSteering : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureSteering)
+        {
+            FEATURE_WORLD_BLOCK(FeatureSteeringScratchBlock, EBufferBlockType::Scratch)
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+        }
 
     public:
-
-        FeatureSteering();
 
         // Starts moving an entity towards a location.
         static bool MoveToLocation(WorldRef world, const ECS::EntityId& entity, const Vec2& target, Distance range);

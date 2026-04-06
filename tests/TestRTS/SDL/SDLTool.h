@@ -5,6 +5,7 @@
 #include <imgui_impl_sdl3.h>
 
 #include <PhoenixSim/WorldsFwd.h>
+#include <PhoenixSim/Reflection/Registration.h> 
 
 namespace Phoenix
 {
@@ -13,9 +14,9 @@ namespace Phoenix
 
     struct ISDLTool
     {
-        virtual ~ISDLTool() = default;
+        PHX_DECLARE_TYPE_INTERFACE(ISDLTool)
 
-        virtual const TypeDescriptor& GetTypeDescriptor() const = 0;
+        virtual ~ISDLTool() = default;
 
         virtual void OnActivated() {}
         virtual void OnDeactivated() {}

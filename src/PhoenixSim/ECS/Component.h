@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Reflection/Reflection.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -9,9 +9,8 @@ namespace Phoenix
     {
         struct PHOENIX_SIM_API IComponent
         {
-            PHX_ENABLE_TYPE(IComponent)
         };
     }
 }
 
-#define PHX_ECS_DECLARE_COMPONENT(name) PHX_ENABLE_TYPE(name, Phoenix::ECS::IComponent)
+#define PHX_ECS_DECLARE_COMPONENT(name) PHX_DECLARE_TYPE(name, Phoenix::ECS::IComponent)

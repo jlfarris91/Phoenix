@@ -26,7 +26,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API FeatureProjectiles : public IFeature
     {
-        PHX_DECLARE_FEATURE_TYPE(FeatureProjectiles)
+        PHX_DECLARE_FEATURE_TYPE(FeatureProjectiles){}
 
     public:
 

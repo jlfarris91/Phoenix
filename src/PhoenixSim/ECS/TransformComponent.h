@@ -3,6 +3,7 @@
 
 #include "PhoenixSim/FixedPoint/FixedTransform.h"
 #include "PhoenixSim/ECS/Component.h"
+#include "PhoenixSim/ECS/EntityId.h"
 
 namespace Phoenix::ECS
 {
@@ -30,4 +31,12 @@ namespace Phoenix::ECS
         TransformComponent* TransformComponent;
         uint64 ZCode = 0;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::ECS::TransformComponent)
+{
+    registration
+        .Field("AttachParent", &ECS::TransformComponent::AttachParent)
+        .Field("Transform",    &ECS::TransformComponent::Transform)
+        .Field("ZCode",        &ECS::TransformComponent::ZCode);
 }

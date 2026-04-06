@@ -9,6 +9,8 @@ Logger::Logger(const std::filesystem::path& logFilePath)
 
 void Logger::Log(ELogLevel level, const std::string& msg)
 {
+    std::scoped_lock lock(LogMutex);
+
     std::wstring wmsg = GetLogWStringWithUnixTime(level, msg);
     OSLog(wmsg.c_str());
 
@@ -19,8 +21,12 @@ void Logger::Log(ELogLevel level, const std::string& msg)
 
     if (LogFileStream.is_open())
     {
-        LogFileStream << wmsg;
-        LogFileStream << L'\n';
+        std::string msgWithTime = GetLogStringWithUnixTime(level, msg);
+        LogFileStream << msgWithTime << '\n';
+        if (LogFileStream.fail())
+        {
+            __debugbreak();
+        }
         LogFileStream.flush();
     }
 }

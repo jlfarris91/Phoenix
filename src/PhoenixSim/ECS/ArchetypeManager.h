@@ -216,13 +216,13 @@ namespace Phoenix
             template <class T>
             bool RemoveComponent(const TArchetypeHandle& handle)
             {
-                return RemoveComponent(handle, T::StaticTypeName);
+                return RemoveComponent(handle, StaticTypeName<T>::TypeId);
             }
 
             template <class T>
             bool RemoveComponent(EntityId entityId)
             {
-                return RemoveComponent(entityId, T::StaticTypeName);
+                return RemoveComponent(entityId, StaticTypeName<T>::TypeId);
             }
 
             bool RemoveAllComponents(const TArchetypeHandle& handle);

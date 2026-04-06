@@ -53,7 +53,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API IEffectHandler : public IService
     {
-        PHX_ENABLE_TYPE(IEffectHandler, IService)
+        PHX_DECLARE_TYPE(IEffectHandler, IService)
 
     public:
 

@@ -145,9 +145,9 @@ namespace Phoenix
 
 #if PHOENIX_SIM_NAME_ENTRIES
         // These are unsafe and should only be used for natvis!
-        static const char* RecordNameEntryAs(const char* chars, size_t len, hash32_t value);
-        static const char* AppendNameEntryAs(hash32_t base, const char* chars, size_t len, hash32_t value);
-        static const char* CombineNameEntryAs(hash32_t base, hash32_t other, hash32_t value);
+        static const char* RecordNameEntryAs(const char* chars, size_t len, hash32_t asHash);
+        static const char* AppendNameEntryAs(hash32_t base, const char* chars, size_t len, hash32_t asHash);
+        static const char* CombineNameEntryAs(hash32_t base, hash32_t other, hash32_t asHash);
 #endif
 
         hash32_t Value = 0;

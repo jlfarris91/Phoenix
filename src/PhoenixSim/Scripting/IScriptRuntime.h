@@ -1,22 +1,15 @@
 #pragma once
 
-#include <string>
-
-#include "PhoenixSim/Reflection/Reflection.h"
-#include "PhoenixSim/WorldsFwd.h"
-
 namespace Phoenix
 {
     class Session;
+    class World;
+    class TypeDescriptor;
+    class MethodDescriptor;
 
     // ── IScriptRuntime ────────────────────────────────────────────────────────
     //
     // VM-agnostic interface for a script runtime (Lua, QuickJS, Wren, …).
-    // No sol2 or lua.h headers appear here.
-    //
-    // Used by:
-    //  • FeatureLua, which owns the concrete implementation (LuaRuntime).
-    //  • IScriptBindings, for manual function registration.
 
     class IScriptRuntime
     {
@@ -25,9 +18,9 @@ namespace Phoenix
 
         // ── Declarative registration ──────────────────────────────────────────
 
-        // Registers all script functions in a TypeDescriptor under its ScriptNamespace.
-        // Called once per type during session init. Types with empty ScriptNamespace
-        // are skipped.
+        // Registers all methods in a TypeDescriptor into the type's Namespace table.
+        // Called once per registered type during session init.
+        // Types without a "Namespace" metadata entry are skipped.
         virtual void RegisterType(const TypeDescriptor& desc) = 0;
 
         // ── Manual registration (used by IScriptBindings) ─────────────────────
@@ -39,11 +32,6 @@ namespace Phoenix
 
         // Registers a single function in the currently open namespace.
         virtual void RegisterFunction(const MethodDescriptor& fn) = 0;
-
-        // ── Script loading ────────────────────────────────────────────────────
-
-        virtual bool LoadFile(const char* path) = 0;
-        virtual bool ExecString(const std::string& code) = 0;
 
         // ── World context ─────────────────────────────────────────────────────
 

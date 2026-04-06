@@ -1,5 +1,0 @@
-{
-    "id": "HealthVital",
-    "base": "Vital",
-    "component": "HealthVitalComponent"
-}

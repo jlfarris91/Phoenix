@@ -51,12 +51,6 @@ uint32 FeatureSelection::GetNumSelected(WorldConstRef world, uint32 player, cons
     return group != EntityId::Invalid ? FeatureECS::GetGroupSize(world, group) : 0;
 }
 
-FeatureSelection::FeatureSelection()
-{
-    FEATURE_WORLD_BLOCK(FeatureSelectionDynamicBlock, EBufferBlockType::Dynamic)
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-}
-
 EntityId FeatureSelection::GetOrCreatePlayerSelection(WorldRef world, uint32 player, const FName& name)
 {
     EntityId group = GetPlayerSelection(world, player, name);

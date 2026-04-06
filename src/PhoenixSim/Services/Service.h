@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/Reflection.h"
+#include "PhoenixSim/Reflection/Registration.h"
 #include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
@@ -12,9 +12,10 @@ namespace Phoenix
 
     class PHOENIX_SIM_API IService : public std::enable_shared_from_this<IService>
     {
-        PHX_ENABLE_TYPE(IService)
+        PHX_DECLARE_TYPE_INTERFACE(IService)
 
     public:
+        virtual ~IService() = default;
 
         // Gets the session that this service belongs to.
         Session* GetSession() const;

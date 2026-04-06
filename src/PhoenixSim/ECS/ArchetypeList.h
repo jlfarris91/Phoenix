@@ -3,6 +3,7 @@
 #include <cstring>
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
+#include "PhoenixSim/Utils.h"
 #include "PhoenixSim/ECS/ArchetypeHandle.h"
 #include "PhoenixSim/ECS/ArchetypeDefinition.h"
 #include "PhoenixSim/ECS/EntityId.h"
@@ -112,14 +113,14 @@ namespace Phoenix
             template <class T>
             T* GetComponent(const Handle& handle)
             {
-                void* dataPtr = GetComponent(handle, T::StaticTypeName);
+                void* dataPtr = GetComponent(handle, StaticTypeName<T>::TypeId);
                 return static_cast<T*>(dataPtr);
             }
 
             template <class T>
             const T* GetComponent(const Handle& handle) const
             {
-                const void* dataPtr = GetComponent(handle, T::StaticTypeName);
+                const void* dataPtr = GetComponent(handle, StaticTypeName<T>::TypeId);
                 return static_cast<const T*>(dataPtr);
             }
 
@@ -267,7 +268,7 @@ namespace Phoenix
             template <class T>
             T* GetEntityComponentPtr(uint32 index)
             {
-                void* dataPtr = GetEntityComponentPtr(index, T::StaticTypeName);
+                void* dataPtr = GetEntityComponentPtr(index, StaticTypeName<T>::TypeId);
                 return static_cast<T*>(dataPtr);
             }
 
@@ -276,7 +277,7 @@ namespace Phoenix
             template <class T>
             const T* GetEntityComponentPtr(uint32 index) const
             {
-                const void* dataPtr = GetEntityComponentPtr(index, T::StaticTypeName);
+                const void* dataPtr = GetEntityComponentPtr(index, StaticTypeName<T>::TypeId);
                 return static_cast<const T*>(dataPtr);
             }
 
@@ -316,7 +317,7 @@ namespace Phoenix
                 span.InstanceCount = list.GetNumInstances();
                 span.Step = list.GetEntityTotalSize();
 
-                uint32 offsets[sizeof...(TComponents)] = { list.GetComponentLocalOffset(std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<TComponents>>>::StaticTypeName)... };
+                uint32 offsets[sizeof...(TComponents)] = { list.GetComponentLocalOffset(StaticTypeName<std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<TComponents>>>>::TypeId)... };
                 memcpy(span.Offsets, offsets, sizeof...(TComponents) * sizeof(uint32));
 
                 span.CheckRawData();

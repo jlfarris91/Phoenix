@@ -32,7 +32,7 @@ namespace Phoenix
         }
 
         template <class TService>
-        std::shared_ptr<TService> GetServiceAs(const FName& typeId = TService::StaticTypeName) const
+        std::shared_ptr<TService> GetServiceAs(const FName& typeId = StaticTypeName<TService>::TypeId) const
         {
             return std::static_pointer_cast<TService>(GetService(typeId));
         }
@@ -46,7 +46,7 @@ namespace Phoenix
         uint32 GetServices2(std::vector<std::shared_ptr<TService>>& outServices) const
         {
             std::vector<std::shared_ptr<IService>> services;
-            GetServices(TService::StaticTypeName, services);
+            GetServices(StaticTypeName<TService>::TypeId, services);
             for (const std::shared_ptr<IService>& service : services)
             {
                 outServices.push_back(std::static_pointer_cast<TService>(service));

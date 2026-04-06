@@ -58,6 +58,9 @@
       "displayName": "Emscripten (WebAssembly)",
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/.build/wasm",
+      "environment": {
+        "PATH": "$env{EMSDK}/upstream/emscripten;$env{EMSDK};$penv{PATH}"
+      },
       "cacheVariables": {
         "VCPKG_TARGET_TRIPLET": "wasm32-emscripten",
         "VCPKG_CHAINLOAD_TOOLCHAIN_FILE": "$env{EMSDK}/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake",

@@ -2,11 +2,9 @@
 #pragma once
 
 #include <algorithm>
-#include <cstring>
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
-#include "PhoenixSim/Reflection/Reflection.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 
 #ifndef PHX_ECS_ARCHETYPE_MAX_COMPS
@@ -25,9 +23,9 @@ namespace Phoenix
             const TypeDescriptor* TypeDescriptor;
 
             template <class T>
-            static ComponentDefinition Create(const FName& id = T::StaticTypeName)
+            static ComponentDefinition Create(const FName& id = StaticTypeName<T>::TypeId)
             {
-                const struct TypeDescriptor& descriptor = T::GetStaticTypeDescriptor();
+                const class TypeDescriptor& descriptor = TypeRegistry::Get<T>();
                 return { id, (uint16)descriptor.GetSize(), 0, &descriptor };
             }
         };
@@ -110,7 +108,7 @@ namespace Phoenix
             template <class TComponent>
             static bool RemoveComponent(const TArchetypeDefinition& baseArchDef, TArchetypeDefinition& outArchDef)
             {
-                return RemoveComponent(baseArchDef, TComponent::StaticTypeName, outArchDef);
+                return RemoveComponent(baseArchDef, StaticTypeName<TComponent>::TypeId, outArchDef);
             }
 
             constexpr FName GetId() const

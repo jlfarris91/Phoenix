@@ -10,12 +10,6 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::Steering;
 
-FeatureSteering::FeatureSteering()
-{
-    FEATURE_WORLD_BLOCK(FeatureSteeringScratchBlock, EBufferBlockType::Scratch)
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-}
-
 bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, const Vec2& target, Distance range)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);

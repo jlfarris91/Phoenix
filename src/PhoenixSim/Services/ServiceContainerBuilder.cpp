@@ -26,7 +26,7 @@ ServiceRegistrar ServiceContainerBuilder::RegisterService(const std::shared_ptr<
 {
     const TypeDescriptor& typeDescriptor = service->GetTypeDescriptor();
     Container.Services.push_back(service);
-    Container.ServiceMap.emplace(typeDescriptor.GetFName(), service);
+    Container.ServiceMap.emplace(typeDescriptor.GetTypeId(), service);
     return { this, service };
 }
 
@@ -42,8 +42,8 @@ void ServiceContainerBuilder::RegisterServiceAs(const std::shared_ptr<IService>&
 
 void ServiceContainerBuilder::RegisterServiceAsInterfaces(const std::shared_ptr<IService>& service)
 {
-    service->GetTypeDescriptor().ForEachBaseClass([&](const TypeDescriptor& interface)
+    TypeRegistry::ForEachBaseClass(service->GetTypeDescriptor().GetTypeId(), [&](const TypeDescriptor& interface)
     {
-        RegisterServiceAs(service, interface.GetFName());
+        RegisterServiceAs(service, interface.GetTypeId());
     });
 }

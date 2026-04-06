@@ -43,7 +43,7 @@ namespace Phoenix::RTS
 
     class PHOENIX_RTS_API AttackAbilityHandler : public IAbilityHandler
     {
-        PHX_ENABLE_TYPE(AttackAbilityHandler, IAbilityHandler)
+        PHX_DECLARE_TYPE(AttackAbilityHandler, IAbilityHandler)
 
     public:
 

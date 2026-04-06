@@ -58,3 +58,19 @@ namespace Phoenix::Physics
         Vec2 PreviousPos;
     };
 }
+
+PHX_DEFINE_TYPE(Phoenix::Physics::BodyComponent)
+{
+    registration
+        .Field("Flags", &Physics::BodyComponent::Flags)
+        .Field("CollisionMask", &Physics::BodyComponent::CollisionMask)
+        .Field("Movement", &Physics::BodyComponent::Movement)
+        .Field("Radius", &Physics::BodyComponent::Radius)
+        .Field("Force", &Physics::BodyComponent::Force)
+        .Field("LinearVelocity", &Physics::BodyComponent::LinearVelocity)
+        .Field("MaxLinearVelocity", &Physics::BodyComponent::MaxLinearVelocity)
+        .Field("LinearDamping", &Physics::BodyComponent::LinearDamping)
+        .Field("InvMass", &Physics::BodyComponent::InvMass)
+        .Field("SleepTimer", &Physics::BodyComponent::SleepTimer)
+        .Field("PreviousPos", &Physics::BodyComponent::PreviousPos);
+}

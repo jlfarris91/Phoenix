@@ -77,3 +77,29 @@ namespace Phoenix::Steering
         Value SeparationStrength;
     };
 }
+
+PHX_DEFINE_TYPE(Phoenix::Steering::SteeringComponent)
+{
+    registration
+        .Field("Mode",              &Steering::SteeringComponent::Mode)
+        .Field("Flags",             &Steering::SteeringComponent::Flags)
+        .Field("CollisionMask",     &Steering::SteeringComponent::CollisionMask)
+        .Field("GoalEntity",        &Steering::SteeringComponent::GoalEntity)
+        .Field("GoalPos",           &Steering::SteeringComponent::GoalPos)
+        .Field("Slack",             &Steering::SteeringComponent::Slack)
+        .Field("Velocity",          &Steering::SteeringComponent::Velocity)
+        .Field("PreviousPos",       &Steering::SteeringComponent::PreviousPos)
+        .Field("BestPos",           &Steering::SteeringComponent::BestPos)
+        .Field("InnerRadius",       &Steering::SteeringComponent::InnerRadius)
+        .Field("OuterRadius",       &Steering::SteeringComponent::OuterRadius)
+        .Field("ArrivalRange",      &Steering::SteeringComponent::ArrivalRange)
+        .Field("MaxSpeed",          &Steering::SteeringComponent::MaxSpeed)
+        .Field("TurnRateIdle",      &Steering::SteeringComponent::TurnRateIdle)
+        .Field("TurnRateMoving",    &Steering::SteeringComponent::TurnRateMoving)
+        .Field("AccelerationTime",  &Steering::SteeringComponent::AccelerationTime)
+        .Field("DecelerationTime",  &Steering::SteeringComponent::DecelerationTime)
+        .Field("AvoidanceRadius",   &Steering::SteeringComponent::AvoidanceRadius)
+        .Field("SeparationDelay",   &Steering::SteeringComponent::SeparationDelay)
+        .Field("SeparationRadius",  &Steering::SteeringComponent::SeparationRadius)
+        .Field("SeparationStrength",&Steering::SteeringComponent::SeparationStrength);
+}

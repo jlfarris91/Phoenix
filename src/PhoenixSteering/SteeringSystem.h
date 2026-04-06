@@ -9,7 +9,7 @@ namespace Phoenix::Steering
     class PHOENIX_STEERING_API SteeringSystem : public ECS::ISystem
     {
     public:
-        PHX_DECLARE_TYPE(SteeringSystem, Phoenix::ECS::ISystem)
+        PHX_DECLARE_TYPE_DERIVED(SteeringSystem, Phoenix::ECS::ISystem)
 
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -30,4 +30,21 @@ namespace Phoenix::Steering
         double SlackRateDivisorSlow = 32.0;
         double MaxSlack = 400.0;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::Steering::SteeringSystem)
+{
+    registration
+        .ScriptHidden()
+        .Field("MoveTowardsGoal", &Steering::SteeringSystem::MoveTowardsGoal)
+        .Field("DensityScalar", &Steering::SteeringSystem::DensityScalar)
+        .Field("DensityRadiusScalar", &Steering::SteeringSystem::DensityRadiusScalar)
+        .Field("AvoidanceScalar", &Steering::SteeringSystem::AvoidanceScalar)
+        .Field("AvoidanceRadiusScalar", &Steering::SteeringSystem::AvoidanceRadiusScalar)
+        .Field("ArrivalThreshold", &Steering::SteeringSystem::ArrivalThreshold)
+        .Field("SlackIncreaseRate", &Steering::SteeringSystem::SlackIncreaseRate)
+        .Field("SlackIncreaseRateFast", &Steering::SteeringSystem::SlackIncreaseRateFast)
+        .Field("SlackRateDivisor", &Steering::SteeringSystem::SlackRateDivisor)
+        .Field("SlackRateDivisorSlow", &Steering::SteeringSystem::SlackRateDivisorSlow)
+        .Field("MaxSlack", &Steering::SteeringSystem::MaxSlack);
 }

@@ -263,12 +263,10 @@ void Session::LoadConfig() const
 
 void Session::ApplyConfig() const
 {
-    for (const Phoenix::FeatureSharedPtr& feature : FeatureSet->GetFeatures())
+    for (const FeatureSharedPtr& feature : FeatureSet->GetFeatures())
     {
-        const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
-
         feature->Config.clear();
-        if (const FeatureJsonConfig* featureConfig = ConfigService->GetSessionFeatureConfig(typeDescriptor.GetFName()))
+        if (const FeatureJsonConfig* featureConfig = ConfigService->GetSessionFeatureConfig(feature->GetFeatureId()))
         {
             feature->Config = featureConfig->GetData();
         }

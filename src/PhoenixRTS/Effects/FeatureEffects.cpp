@@ -40,12 +40,6 @@ void FeatureEffectsDynamicBlock::Construct(void* dest, BlockBufferAllocator& all
     new (dest) FeatureEffectsDynamicBlock(allocator, config);
 }
 
-FeatureEffects::FeatureEffects()
-{
-    FEATURE_WORLD_BLOCK(FeatureEffectsScratchBlock, EBufferBlockType::Scratch)
-    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-}
-
 void FeatureEffects::RegisterEffectHandler(const std::shared_ptr<IEffectHandler>& handler)
 {
     EffectIdToHandlerMap.emplace(handler->GetEffectTypeId(), handler);
@@ -627,7 +621,7 @@ void FeatureEffects::OnWorldLayout(const WorldLayoutContext& context, BlockBuffe
     FeatureEffectsDynamicBlock::Config dynamicBlockConfig;
     dynamicBlockConfig.MaxEffectResponses = PHX_RTS_MAX_RESPONSES;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         dynamicBlockConfig.MaxEffectResponses = featureConfigData.value("max_effect_responses", dynamicBlockConfig.MaxEffectResponses);

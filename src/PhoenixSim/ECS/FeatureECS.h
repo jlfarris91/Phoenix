@@ -80,11 +80,6 @@ namespace Phoenix::ECS
         std::atomic<uint32> SortedEntityCount = 0;
     };
 
-    struct PHOENIX_SIM_API FeatureECSCtorArgs
-    {
-        std::vector<std::shared_ptr<ISystem>> Systems;
-    };
-
     struct EntityRangeQueryArgs
     {
         TOptional<std::unordered_set<FName>> Kinds;
@@ -97,12 +92,20 @@ namespace Phoenix::ECS
 
     class PHOENIX_SIM_API FeatureECS final : public IFeature
     {
-        PHX_DECLARE_TYPE(FeatureECS, Phoenix::IFeature)
+        PHX_DECLARE_FEATURE_TYPE(FeatureECS)
+        {
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
+            FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
+            FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+            FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::DebugRender)
+        }
 
     public:
-
-        FeatureECS();
-        FeatureECS(const FeatureECSCtorArgs& args);
 
         void OnPreUpdate(const FeatureUpdateArgs& args) override;
         void OnUpdate(const FeatureUpdateArgs& args) override;
@@ -318,7 +321,7 @@ namespace Phoenix::ECS
         template <class TComponent>
         static bool UnregisterComponentDefinition(WorldRef world)
         {
-            return UnregisterComponentDefinition(world, TComponent::StaticTypeName);
+            return UnregisterComponentDefinition(world, StaticTypeName<TComponent>::TypeId);
         }
 
         static bool HasComponentDefinition(WorldRef world, const FName& componentType);
@@ -339,7 +342,7 @@ namespace Phoenix::ECS
         template <class T>
         static T* GetComponent(WorldRef world, EntityId entityId)
         {
-            IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+            IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<T*>(comp);
         }
 
@@ -347,7 +350,7 @@ namespace Phoenix::ECS
         template <class T>
         static const T* GetComponent(WorldConstRef world, EntityId entityId)
         {
-            const IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+            const IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<const T*>(comp);
         }
 
@@ -355,7 +358,7 @@ namespace Phoenix::ECS
         template <class T>
         static T* GetOrAddComponent(WorldRef world, EntityId entityId)
         {
-            IComponent* comp = GetComponent(world, entityId, T::StaticTypeName);
+            IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
             if (!comp)
             {
                 comp = AddComponent<T>(world, entityId);
@@ -367,7 +370,7 @@ namespace Phoenix::ECS
         template <class T>
         static T& GetComponentRef(WorldRef world, EntityId entityId)
         {
-            IComponent& comp = GetComponentRef(world, entityId, T::StaticTypeName);
+            IComponent& comp = GetComponentRef(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<T&>(comp);
         }
 
@@ -375,7 +378,7 @@ namespace Phoenix::ECS
         template <class T>
         static const T& GetComponentRef(WorldConstRef world, EntityId entityId)
         {
-            const IComponent& comp = GetComponentRef(world, entityId, T::StaticTypeName);
+            const IComponent& comp = GetComponentRef(world, entityId, StaticTypeName<T>::TypeId);
             return static_cast<const T&>(comp);
         }
 
@@ -417,7 +420,7 @@ namespace Phoenix::ECS
         template <class TComponent>
         static bool RemoveComponent(WorldRef world, EntityId entityId)
         {
-            return RemoveComponent(world, entityId, TComponent::StaticTypeName);
+            return RemoveComponent(world, entityId, StaticTypeName<TComponent>::TypeId);
         }
 
         // Removes all components from an entity, effectively releasing the associated archetype.
@@ -680,12 +683,18 @@ namespace Phoenix::ECS
         }
 
         static const Transform2D* GetLocalTransformPtr(WorldConstRef world, EntityId entityId);
-        
         static const Transform2D* GetWorldTransformPtr(WorldConstRef world, EntityId entityId);
 
+        static Vec2 GetLocalPosition(WorldConstRef world, EntityId entityId);
         static Vec2 GetWorldPosition(WorldConstRef world, EntityId entityId);
 
+        static Angle GetLocalFacing(WorldConstRef world, EntityId entityId);
         static Angle GetWorldFacing(WorldConstRef world, EntityId entityId);
+
+        static Value GetLocalScale(WorldConstRef world, EntityId entityId);
+        static Value GetWorldScale(WorldConstRef world, EntityId entityId);
+
+        static EntityId GetParent(WorldConstRef world, EntityId entityId);
 
         // Returns true if the entity is within range of the target entity.
         static bool IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range);
@@ -731,4 +740,48 @@ namespace Phoenix::ECS
         FOnEntityReleasing EntityReleasedEvent;
         FOnEntityReleased EntityDestroyedEvent;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::ECS::FeatureECS)
+{
+    registration
+        .Namespace("Phoenix.ECS")
+        .Field("bDebugDrawMortonCodeBoundaries",                                &ECS::FeatureECS::bDebugDrawMortonCodeBoundaries)
+        .Field("bDebugDrawEntityZCodes",                                        &ECS::FeatureECS::bDebugDrawEntityZCodes)
+        // Entity Management
+        .StaticMethod("AcquireEntity(world, kind)",                         &ECS::FeatureECS::StaticAcquireEntity)
+        .StaticMethod("ReleaseEntity(world, entity)",                       &ECS::FeatureECS::StaticReleaseEntity)
+        .StaticMethod("SetEntityKind(world, entity, kind)",                 &ECS::FeatureECS::SetEntityKind)
+        // Tags
+        .StaticMethod("HasTag(world, entity, tag)",                         &ECS::FeatureECS::HasTag)
+        .StaticMethod("AddTag(world, entity, tag)",                         &ECS::FeatureECS::AddTag)
+        .StaticMethod("RemoveTag(world, entity, tag)",                      &ECS::FeatureECS::RemoveTag)
+        .StaticMethod("RemoveAllTags(world, entity)",                       &ECS::FeatureECS::RemoveAllTags)
+        // Groups
+        .StaticMethod("GroupContainsEntity(world, group, entity)",          &ECS::FeatureECS::GroupContainsEntity)
+        .StaticMethod("AddEntityToGroup(world, group, entity)",             &ECS::FeatureECS::AddEntityToGroup)
+        .StaticMethod("RemoveEntityFromGroup(world, group, entity)",        &ECS::FeatureECS::RemoveEntityFromGroup)
+        .StaticMethod("RemoveEntityFromAllGroups(world, entity)",           &ECS::FeatureECS::RemoveEntityFromAllGroups)
+        .StaticMethod("ClearGroup(world, group)",                           &ECS::FeatureECS::ClearGroup)
+        .StaticMethod("GetGroupSize(world, group)",                         &ECS::FeatureECS::GetGroupSize)
+        // Blackboard
+        .StaticMethod("CreateBlackboardKey(id, key, type)",                 &ECS::FeatureECS::CreateBlackboardKey)
+        .StaticMethod("HasBlackboardValue(world, id, key, type)",           StaticMethodCast<bool, WorldConstRef, const ECS::EntityId&, const FName&, Blackboard::blackboard_type_t>(&ECS::FeatureECS::HasBlackboardValue))
+        .StaticMethod("SetBlackboardValue(world, id, key, value)",          &ECS::FeatureECS::SetBlackboardValue<Distance>)
+        .StaticMethod("GetBlackboardValue(world, id, key, defaultValue)",   &ECS::FeatureECS::GetBlackboardValue<Distance>)
+        .StaticMethod("RemoveBlackboardValue(world, id, key, bool)",        &ECS::FeatureECS::RemoveBlackboardValue<Distance>)
+        // Transforms
+        .StaticMethod("GetLocalPosition(world, entity)",                    &ECS::FeatureECS::GetLocalPosition)
+        .StaticMethod("GetLocalFacing(world, entity)",                      &ECS::FeatureECS::GetLocalFacing)
+        .StaticMethod("GetLocalScale(world, entity)",                       &ECS::FeatureECS::GetLocalScale)
+        .StaticMethod("GetWorldPosition(world, entity)",                    &ECS::FeatureECS::GetWorldPosition)
+        .StaticMethod("GetWorldFacing(world, entity)",                      &ECS::FeatureECS::GetWorldFacing)
+        .StaticMethod("GetWorldScale(world, entity)",                       &ECS::FeatureECS::GetWorldScale)
+        .StaticMethod("GetParent(world, entity)",                           &ECS::FeatureECS::GetParent)
+        // Utility
+        .StaticMethod("IsInRangeOfEntity(world, entity, target, range)",    StaticMethodCast<bool, WorldConstRef, ECS::EntityId, ECS::EntityId, Distance>(&ECS::FeatureECS::IsInRange))
+        .StaticMethod("IsInRangeOfPos(world, entity, target, range)",       StaticMethodCast<bool, WorldConstRef, ECS::EntityId, const Vec2&, Distance>(&ECS::FeatureECS::IsInRange))
+        .StaticMethod("IsFacingEntity(world, entity, target, threshold)",   StaticMethodCast<bool, WorldConstRef, ECS::EntityId, ECS::EntityId, Angle>(&ECS::FeatureECS::IsFacing))
+        .StaticMethod("IsFacingPos(world, entity, target, threshold)",      StaticMethodCast<bool, WorldConstRef, ECS::EntityId, const Vec2&, Angle>(&ECS::FeatureECS::IsFacing))
+    ;
 }

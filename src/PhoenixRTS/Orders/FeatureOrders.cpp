@@ -1,4 +1,5 @@
 #include "PhoenixRTS/Orders/FeatureOrders.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/Flags.h"
@@ -42,12 +43,6 @@ BufferBlockLayout FeatureOrdersDynamicBlock::Layout(Config config)
 void FeatureOrdersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
 {
     new (dest) FeatureOrdersDynamicBlock(allocator, config);
-}
-
-FeatureOrders::FeatureOrders()
-{
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
 }
 
 void FeatureOrders::RegisterCommandHandler(const std::shared_ptr<ICommandHandler>& handler)
@@ -352,7 +347,7 @@ void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, BlockBuffer
     FeatureOrdersDynamicBlock::Config dynamicBlockConfig;
     dynamicBlockConfig.MaxOrders = PHX_RTS_ORDER_QUEUE_MAX_ORDERS;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         dynamicBlockConfig.MaxOrders = featureConfigData.value("max_orders", dynamicBlockConfig.MaxOrders);

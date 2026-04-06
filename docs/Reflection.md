@@ -187,13 +187,13 @@ class FeatureUnit : public IFeature {
 
 `GetStaticTypeDescriptor()` is **declared** here and **defined** by `PHX_TYPE_REGISTRATION`. That non-inline definition is an exported symbol — the linker must include the registration TU whenever `FeatureUnit::GetStaticTypeDescriptor()` is referenced.
 
-### `PHX_ENABLE_TYPE(Type, ...Bases)`
+### `PHX_DECLARE_TYPE(Type, ...Bases)`
 
 Use when no `.cpp` registration block is needed (interfaces, simple inline types).
 
 ```cpp
 class IFeature : public IService {
-    PHX_ENABLE_TYPE(IFeature, IService)
+    PHX_DECLARE_TYPE(IFeature, IService)
 };
 ```
 
@@ -379,9 +379,9 @@ Cast<IMyBase>(sharedPtr)   // shared_ptr<T> or nullptr
 
 `PHX_DECLARE_TYPE` declares `GetStaticTypeDescriptor()` as a non-inline extern. `PHX_TYPE_REGISTRATION` defines it. Any reference to `GetStaticTypeDescriptor()` (e.g. from ECS queries, `IsA`, script bindings) forces the linker to include the registration TU, so static initializers always run.
 
-### PHX_ENABLE_TYPE — may be stripped from static libraries
+### PHX_DECLARE_TYPE — may be stripped from static libraries
 
-`PHX_ENABLE_TYPE` generates an inline `GetStaticTypeDescriptor()`. If the only content in a TU is static initializers with internal linkage (e.g. external-type registrations in `FixedTypeRegistrations.cpp`), MSVC may dead-strip the entire TU from the final binary.
+`PHX_DECLARE_TYPE` generates an inline `GetStaticTypeDescriptor()`. If the only content in a TU is static initializers with internal linkage (e.g. external-type registrations in `FixedTypeRegistrations.cpp`), MSVC may dead-strip the entire TU from the final binary.
 
 For test executables that link `PhoenixSim.lib`, use `/WHOLEARCHIVE` to force all object files:
 
