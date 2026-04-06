@@ -40,7 +40,7 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/wd4100>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4101>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-changes-meaning>
+    $<$<AND:$<CXX_COMPILER_ID:Clang,AppleClang>,$<NOT:$<BOOL:${EMSCRIPTEN}>>>:-Wno-changes-meaning>
     $<$<CXX_COMPILER_ID:GNU>:-fpermissive>
 )
 

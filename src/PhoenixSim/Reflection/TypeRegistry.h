@@ -15,6 +15,12 @@ namespace Phoenix
 {
     class TypeDescriptor;
 
+    // Forward declaration to break circular dependency with TypeDescriptorBuilder.h.
+    // Full definition is provided by Registration.h / TypeDescriptorBuilder.h at
+    // instantiation time.
+    template <class T>
+    class TypeDescriptorBuilder;
+
     template <class T>
     struct TypeRegistrar;
 

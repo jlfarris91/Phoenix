@@ -12,6 +12,7 @@
 // these types transitively.
 
 #include <cstddef>
+#include <cstring>
 
 #include "PhoenixSim/Flags.h"
 #include "PhoenixSim/Name.h"
