@@ -1,4 +1,5 @@
 #include <doctest/doctest.h>
+#include <cmath>
 #include <PhoenixSim/Reflection/Registration.h>
 #include <PhoenixSim/Reflection/TypeRegistry.h>
 #include <PhoenixSim/FixedPoint/FixedTransform.h>   // Vec2 (external type)

@@ -27,14 +27,30 @@ target_link_libraries(PhoenixAPIGen PRIVATE
     nlohmann_json::nlohmann_json
 )
 
-# MSVC: /WHOLEARCHIVE:<lib> forces all .obj files from each static library to
-# be included, regardless of whether their symbols are directly referenced.
-target_link_options(PhoenixAPIGen PRIVATE
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixRTS>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixPhysics>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSteering>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
-)
+if(MSVC)
+    target_link_options(PhoenixAPIGen PRIVATE
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixRTS>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixPhysics>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSteering>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
+    )
+elseif(APPLE)
+    target_link_options(PhoenixAPIGen PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:PhoenixRTS>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixPhysics>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixSteering>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixSim>
+    )
+else()
+    target_link_options(PhoenixAPIGen PRIVATE
+        -Wl,--whole-archive
+        $<TARGET_FILE:PhoenixRTS>
+        $<TARGET_FILE:PhoenixPhysics>
+        $<TARGET_FILE:PhoenixSteering>
+        $<TARGET_FILE:PhoenixSim>
+        -Wl,--no-whole-archive
+    )
+endif()
 
 set_property(TARGET PhoenixAPIGen PROPERTY FOLDER "Tools")
 

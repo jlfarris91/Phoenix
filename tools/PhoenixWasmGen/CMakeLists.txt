@@ -30,14 +30,32 @@ target_link_libraries(PhoenixWasmGen PRIVATE
     pantor::inja
 )
 
-# MSVC: /WHOLEARCHIVE:<lib> forces all .obj files from each static library to
-# be included, regardless of whether their symbols are directly referenced.
-target_link_options(PhoenixWasmGen PRIVATE
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixRTS>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixPhysics>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSteering>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
-    /WHOLEARCHIVE:$<TARGET_FILE:PhoenixScript>
-)
+if(MSVC)
+    target_link_options(PhoenixWasmGen PRIVATE
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixRTS>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixPhysics>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSteering>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
+        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixScript>
+    )
+elseif(APPLE)
+    target_link_options(PhoenixWasmGen PRIVATE
+        -Wl,-force_load,$<TARGET_FILE:PhoenixRTS>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixPhysics>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixSteering>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixSim>
+        -Wl,-force_load,$<TARGET_FILE:PhoenixScript>
+    )
+else()
+    target_link_options(PhoenixWasmGen PRIVATE
+        -Wl,--whole-archive
+        $<TARGET_FILE:PhoenixRTS>
+        $<TARGET_FILE:PhoenixPhysics>
+        $<TARGET_FILE:PhoenixSteering>
+        $<TARGET_FILE:PhoenixSim>
+        $<TARGET_FILE:PhoenixScript>
+        -Wl,--no-whole-archive
+    )
+endif()
 
 set_property(TARGET PhoenixWasmGen PROPERTY FOLDER "Tools")
