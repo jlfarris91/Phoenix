@@ -479,7 +479,9 @@ WasmEnvironment::WasmEnvironment(
     const auto& hostEntries = wasmRuntime->GetRegistrations();
     CallContexts.reserve(hostEntries.size());
     for (const auto& entry : hostEntries)
+    {
         CallContexts.push_back({ this, entry.Method });
+    }
 
     for (size_t i = 0; i < hostEntries.size(); ++i)
     {
@@ -530,9 +532,13 @@ WasmEnvironment::WasmEnvironment(
         LogInfo("[PhoenixScript] Calling _initialize...");
         const M3Result initErr = m3_CallV(initFn);
         if (initErr)
+        {
             LogError("[PhoenixScript] _initialize failed: {}", initErr);
+        }
         else
+        {
             LogInfo("[PhoenixScript] _initialize OK");
+        }
     }
     else
     {
@@ -559,7 +565,9 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
 {
     auto* fn = static_cast<IM3Function>(FindExport(name));
     if (!fn)
+    {
         return false;
+    }
 
     IM3Runtime fnRuntime = fn->module ? fn->module->runtime : nullptr;
 
@@ -573,9 +581,13 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
 
     static DWORD s_lastExceptionCode = 0;
     M3Result err = nullptr;
-    __try {
+    __try
+    {
         err = m3_Call(fn, argc, argPtrs);
-    } __except([](EXCEPTION_POINTERS* ep) -> int {
+    }
+    __except(
+        [](EXCEPTION_POINTERS* ep) -> int
+        {
             s_lastExceptionCode = ep->ExceptionRecord->ExceptionCode;
             if (s_lastExceptionCode == 0xC0000005 && ep->ExceptionRecord->NumberParameters >= 2)
             {
@@ -585,7 +597,9 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
                 fflush(stderr);
             }
             return EXCEPTION_EXECUTE_HANDLER;
-        }(GetExceptionInformation())) {
+        }
+        (GetExceptionInformation()))
+    {
         LogError("[PhoenixScript] SEH exception 0x{:08X} ({}) calling '{}'",
                  s_lastExceptionCode,
                  s_lastExceptionCode == 0xC0000005 ? "ACCESS_VIOLATION" :
@@ -593,7 +607,9 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
                  s_lastExceptionCode == 0xC0000374 ? "HEAP_CORRUPTION" : "other",
                  name);
         if (s_lastExceptionCode == 0xC00000FD)
+        {
             _resetstkoflw();
+        }
 
         if (fnRuntime)
         {
@@ -638,8 +654,9 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
             M3ErrorInfo ei{};
             m3_GetErrorInfo(fnRuntime, &ei);
             if (ei.message && ei.message != err)
-                LogError("[PhoenixScript] wasm3 detail: {} ({}:{})", ei.message,
-                         ei.file ? ei.file : "?", ei.line);
+            {
+                LogError("[PhoenixScript] wasm3 detail: {} ({}:{})", ei.message, ei.file ? ei.file : "?", ei.line);
+            }
         }
 
         if (fnRuntime)
@@ -655,8 +672,9 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
                     uint32_t memSize = 0;
                     const uint8_t* mem = m3_GetMemory(fnRuntime, &memSize, 0);
                     if (wasmPtr && mem && wasmPtr < memSize)
-                        LogError("[PhoenixScript] Lua error: {}",
-                                 reinterpret_cast<const char*>(mem + wasmPtr));
+                    {
+                        LogError("[PhoenixScript] Lua error: {}", reinterpret_cast<const char*>(mem + wasmPtr));
+                    }
                 }
             }
         }
@@ -664,7 +682,9 @@ bool WasmEnvironment::CallExport(const char* name, int argc, const void** argPtr
     }
 
     if (retc > 0 && retPtrs)
+    {
         m3_GetResults(fn, retc, retPtrs);
+    }
 
 #if PHX_WASM_VERBOSE
     LogVerbose("[PhoenixScript] '{}' OK", name);
@@ -677,7 +697,9 @@ uint8_t* WasmEnvironment::GetMemory(uint32_t* outSize) const
     uint32_t size = 0;
     uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &size, 0);
     if (outSize)
+    {
         *outSize = size;
+    }
     return mem;
 }
 
@@ -701,8 +723,7 @@ void WasmEnvironment::Restore()
     uint8_t* mem = m3_GetMemory(static_cast<IM3Runtime>(Runtime), &size, 0);
     if (!mem || size == 0) return;
 
-    const uint32_t restoreSize =
-        static_cast<uint32_t>(std::min(MemorySnapshot.size(), static_cast<size_t>(size)));
+    const uint32_t restoreSize = static_cast<uint32_t>(std::min(MemorySnapshot.size(), static_cast<size_t>(size)));
     std::memcpy(mem, MemorySnapshot.data(), restoreSize);
 }
 

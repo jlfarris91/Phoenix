@@ -3,9 +3,7 @@
   "version-string": "1.0.0",
   "dependencies": [
     "nlohmann-json",
-    "inja",
-    "sol2",
-    "lua"
+    "inja"
   ],
   "features": {
     "tests": {

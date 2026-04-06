@@ -53,10 +53,10 @@ find_package(inja CONFIG REQUIRED)
 add_subdirectory(src/PhoenixSim)
 add_subdirectory(src/PhoenixPhysics)
 add_subdirectory(src/PhoenixSteering)
-add_subdirectory(src/PhoenixLua)
 add_subdirectory(src/PhoenixRTS)
+add_subdirectory(src/PhoenixScript)
+add_subdirectory(src/PhoenixLua)
 if(NOT EMSCRIPTEN)
-    add_subdirectory(src/PhoenixScript)
     add_subdirectory(tools/PhoenixAPIGen)   # dumps api.json; consumed by downstream generators
     add_subdirectory(tools/PhoenixWasmGen)  # generates host_api.h
     add_subdirectory(tools/PhoenixLuaGen)      # generates lua_bridge.c

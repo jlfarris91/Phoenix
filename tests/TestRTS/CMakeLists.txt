@@ -3,13 +3,6 @@ file(GLOB_RECURSE TESTRTS_SRC "*.cpp" "*.h" "*.inl" "*.json", "*.lua")
 
 add_executable(TestRTS ${TESTRTS_SRC})
 
-find_package(sol2 CONFIG REQUIRED)
-target_link_libraries(TestRTS PRIVATE sol2::sol2)
-
-find_package(Lua REQUIRED)
-target_include_directories(TestRTS PRIVATE ${LUA_INCLUDE_DIR})
-target_link_libraries(TestRTS PRIVATE ${LUA_LIBRARIES})
-
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(TestRTS PRIVATE imgui::imgui)
 
@@ -27,7 +20,6 @@ if(MSVC)
     target_compile_options(TestRTS PRIVATE /bigobj)
 endif()
 target_include_directories(TestRTS PUBLIC ../../src)
-target_include_directories(TestRTS PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include")
 target_link_libraries(TestRTS PUBLIC PhoenixSim PhoenixPhysics PhoenixSteering PhoenixLua PhoenixRTS PhoenixScript)
 
 # Force the linker to include all object files from libs that self-register via
