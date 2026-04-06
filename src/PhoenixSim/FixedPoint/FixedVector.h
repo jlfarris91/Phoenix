@@ -79,15 +79,17 @@ namespace Phoenix
         }
 
         template <class U = Fixed32_12>
+            requires (!std::is_same_v<U, TVec2>)
         constexpr TVec2 operator*(const U& rhs) const
         {
-            return { X * rhs, Y * rhs }; 
+            return { X * rhs, Y * rhs };
         }
 
         template <class U = Fixed32_12>
+            requires (!std::is_same_v<U, TVec2>)
         friend TVec2 operator*(const U& lhs, const TVec2& rhs)
         {
-            return { lhs * rhs.X, lhs * rhs.Y }; 
+            return { lhs * rhs.X, lhs * rhs.Y };
         }
 
         TVec2& operator*=(const TVec2& rhs)
@@ -111,15 +113,17 @@ namespace Phoenix
         }
 
         template <class U>
+            requires (!std::is_same_v<U, TVec2>)
         constexpr TVec2 operator/(const U& rhs) const
         {
-            return { X / rhs, Y / rhs }; 
+            return { X / rhs, Y / rhs };
         }
 
         template <class U = Fixed32_12>
+            requires (!std::is_same_v<U, TVec2>)
         friend TVec2 operator/(const U& lhs, const TVec2& rhs)
         {
-            return { lhs / rhs.X, lhs / rhs.Y }; 
+            return { lhs / rhs.X, lhs / rhs.Y };
         }
 
         TVec2& operator/=(const TVec2& rhs)

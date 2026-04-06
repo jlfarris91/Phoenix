@@ -36,7 +36,7 @@ namespace Phoenix
 #define _PHX_TYPE_COMMON(type, ...) \
     private: \
         inline static const bool _s_phx_type_init_ = ( \
-            [] { Phoenix::TypeDescriptorBuilder<type>{}.Bases<__VA_ARGS__>(); }(), true); \
+            [] { Phoenix::TypeDescriptorBuilder<type>{}.template Bases<__VA_ARGS__>(); }(), true); \
     public:
 
     // Use this in the declaration of a type with no virtual bases and no derivations.

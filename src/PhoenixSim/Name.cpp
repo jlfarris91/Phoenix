@@ -91,13 +91,16 @@ namespace
         }
         return true;
     }();
+}
 
+#endif // _WIN32
+
+namespace
+{
     std::recursive_mutex g_nameEntryMutex;
 }
 
-#endif
-
-#endif
+#endif // PHOENIX_SIM_NAME_ENTRIES
 
 const char* FName::GetNameEntry(hash32_t hash)
 {

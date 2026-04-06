@@ -1,4 +1,10 @@
 include(FetchContent)
+# CMP0169: FetchContent_Populate(name) with declared details is deprecated in
+# CMake 3.30+. Set OLD to suppress the warning while we bypass wasm3's
+# top-level CMakeLists.txt (see comment below).
+if(POLICY CMP0169)
+    cmake_policy(SET CMP0169 OLD)
+endif()
 
 # ── wasm3 — lightweight WASM interpreter ─────────────────────────────────────
 #
@@ -16,15 +22,15 @@ FetchContent_Declare(
     DOWNLOAD_EXTRACT_TIMESTAMP ON
 )
 
-# Disable wasm3's own tests and WASI support before making it available.
-# BUILD_WASI=none prevents wasm3 from fetching uvwasi/libuv (only needed for
-# the standalone wasm3 binary, not for embedding).
-set(BUILD_WASM3_TESTS   OFF CACHE BOOL   "" FORCE)
-set(BUILD_WASM3_APPS    OFF CACHE BOOL   "" FORCE)
-set(BUILD_WASI          "none" CACHE STRING "" FORCE)
-
-
-FetchContent_MakeAvailable(wasm3)
+# Bypass wasm3's top-level CMakeLists.txt: it calls project(wasm3) which
+# re-runs compiler detection and fails on Windows when emcc is not in PATH
+# as a native executable. The source/CMakeLists.txt is a minimal add_library
+# with no project() call, so we use that directly.
+FetchContent_GetProperties(wasm3)
+if(NOT wasm3_POPULATED)
+    FetchContent_Populate(wasm3)
+    add_subdirectory(${wasm3_SOURCE_DIR}/source ${wasm3_BINARY_DIR}/source)
+endif()
 
 # Enable wasm3 call-stack recording so m3_GetBacktrace() returns useful info.
 # Restricted to Release builds — in Debug, backtrace recording calls
