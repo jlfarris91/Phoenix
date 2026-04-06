@@ -1,20 +1,11 @@
 {
   "mcpServers": {
     "testrts": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["tsx", "mcp/server.ts"],
-      "env": {
-        "TESTRTS_URL": "http://127.0.0.1:8765"
-      }
-    },
-    "github": {
-      "type": "stdio",
-      "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-github"],
-      "env": {
-        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
-      }
+      "command": "node",
+      "args": [
+        "c:/Users/jlfar/OneDrive/Documents/Projects/Phoenix/PhoenixSim/mcp/node_modules/tsx/dist/cli.mjs",
+        "c:/Users/jlfar/OneDrive/Documents/Projects/Phoenix/PhoenixSim/mcp/server.ts"
+      ]
     }
   }
 }

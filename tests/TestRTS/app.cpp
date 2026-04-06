@@ -37,9 +37,6 @@
 // Lua scripting
 #include <PhoenixLua/FeatureLua.h>
 
-// RTS Script Registrations (force-link)
-#include <PhoenixRTS/Scripting/RTSScriptRegistration.h>
-
 // RTS Features
 #include <PhoenixRTS/Units/FeatureUnit.h>
 #include <PhoenixRTS/Abilities/FeatureAbilities.h>
@@ -169,9 +166,6 @@ void OnPostWorldUpdate(WorldConstRef world);
 
 void InitSession()
 {
-    // Ensure static script registrations are linked in from static libraries.
-    RTS::EnsureScriptRegistrations();
-
     std::shared_ptr<ServiceContainerBuilder> serviceContainerBuilder = std::make_shared<ServiceContainerBuilder>();
 
     // Register features
@@ -184,11 +178,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
-    {
-        auto lua = std::make_shared<FeatureLua>();
-        lua->SetScriptPath("./Data/Maps/TestMap/test_script.lua");
-        serviceContainerBuilder->RegisterService(lua).AsInterfaces();
-    }
+    serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
@@ -274,7 +264,7 @@ void OnPostWorldUpdate(WorldConstRef world)
         // Sync only dirty pages from the sim world into the render view.
         // On Windows this uses MEM_WRITE_WATCH to find pages written since the last
         // sync and copies only those, making it ~0.13ms for typical sparse scenes.
-        world.SyncTo(*GRenderView);
+        world.CopyTo(*GRenderView);
     }
 
     GWorldViewUpdateCalc.Tick();
