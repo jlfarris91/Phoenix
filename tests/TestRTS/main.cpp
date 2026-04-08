@@ -15,6 +15,8 @@
 #include "../libs/emscripten/emscripten_mainloop_stub.h"
 #endif
 
+extern bool GGameWindowHovered;
+
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer);
 void OnAppRenderWorld();
 void OnAppRenderUI();
@@ -124,12 +126,12 @@ int main(int, char**)
             if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(window))
                 done = true;
 
-            if (io.WantCaptureKeyboard && (event.type == SDL_EVENT_KEY_UP || event.type == SDL_EVENT_KEY_DOWN))
+            if (io.WantCaptureKeyboard && !GGameWindowHovered && (event.type == SDL_EVENT_KEY_UP || event.type == SDL_EVENT_KEY_DOWN))
             {
                 continue;
             }
 
-            if (io.WantCaptureMouse &&
+            if (io.WantCaptureMouse && !GGameWindowHovered &&
                 (event.type == SDL_EVENT_MOUSE_BUTTON_DOWN ||
                  event.type == SDL_EVENT_MOUSE_BUTTON_UP ||
                  event.type == SDL_EVENT_MOUSE_WHEEL ||
@@ -163,20 +165,41 @@ int main(int, char**)
             ImGuiID dockspaceId = ImGui::GetID("My Dockspace");
             ImGuiViewport* imguiViewport = ImGui::GetMainViewport();
 
-            // Create settings
+            // Build default layout when no saved state exists (e.g. first run).
             if (ImGui::DockBuilderGetNode(dockspaceId) == nullptr)
             {
                 ImGui::DockBuilderAddNode(dockspaceId, ImGuiDockNodeFlags_DockSpace);
                 ImGui::DockBuilderSetNodeSize(dockspaceId, imguiViewport->Size);
-                ImGuiID dock_id_left = 0;
-                ImGuiID dock_id_main = dockspaceId;
-                ImGui::DockBuilderSplitNode(dock_id_main, ImGuiDir_Left, 0.20f, &dock_id_left, &dock_id_main);
-                ImGuiID dock_id_left_top = 0;
-                ImGuiID dock_id_left_bottom = 0;
-                ImGui::DockBuilderSplitNode(dock_id_left, ImGuiDir_Up, 0.50f, &dock_id_left_top, &dock_id_left_bottom);
-                ImGui::DockBuilderDockWindow("Game", dock_id_main);
-                ImGui::DockBuilderDockWindow("Properties", dock_id_left_top);
-                ImGui::DockBuilderDockWindow("Scene", dock_id_left_bottom);
+
+                ImGuiID node_top, node_console;
+                ImGui::DockBuilderSplitNode(dockspaceId, ImGuiDir_Up, 819.0f / 1082.0f, &node_top, &node_console);
+
+                ImGuiID node_left, node_mid;
+                ImGui::DockBuilderSplitNode(node_top, ImGuiDir_Left, 397.0f / 1922.0f, &node_left, &node_mid);
+
+                ImGuiID node_debug, node_tools;
+                ImGui::DockBuilderSplitNode(node_left, ImGuiDir_Up, 416.0f / 817.0f, &node_debug, &node_tools);
+
+                ImGuiID node_props, node_game;
+                ImGui::DockBuilderSplitNode(node_mid, ImGuiDir_Left, 384.0f / 1920.0f, &node_props, &node_game);
+
+                ImGuiID node_properties, node_scene;
+                ImGui::DockBuilderSplitNode(node_props, ImGuiDir_Up, 0.5f, &node_properties, &node_scene);
+
+                ImGuiID node_inspector, node_viewport;
+                ImGui::DockBuilderSplitNode(node_game, ImGuiDir_Right, 225.0f / 1521.0f, &node_inspector, &node_viewport);
+
+                ImGui::DockBuilderDockWindow("Game",        node_viewport);
+                ImGui::DockBuilderDockWindow("Properties",  node_properties);
+                ImGui::DockBuilderDockWindow("Scene",       node_scene);
+                ImGui::DockBuilderDockWindow("Sync Stack",  node_debug);
+                ImGui::DockBuilderDockWindow("Debug",       node_debug);
+                ImGui::DockBuilderDockWindow("Tools",       node_tools);
+                ImGui::DockBuilderDockWindow("Inspector",   node_inspector);
+                ImGui::DockBuilderDockWindow("Blackboard",  node_inspector);
+                ImGui::DockBuilderDockWindow("ECS",         node_inspector);
+                ImGui::DockBuilderDockWindow("Console",     node_console);
+
                 ImGui::DockBuilderFinish(dockspaceId);
             }
 

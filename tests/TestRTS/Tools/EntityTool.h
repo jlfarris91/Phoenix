@@ -1,30 +1,43 @@
 
 #pragma once
 
-#include "../SDL/SDLTool.h"
+#include "../sdl/SDLTool.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
     class Session;
+}
 
-    struct EntityTool : ISDLTool
-    {
-        PHX_DECLARE_TYPE_DERIVED(EntityTool, ISDLTool);
+struct EntityTool : public ISDLTool
+{
+    PHX_DECLARE_TYPE_DERIVED(EntityTool, ISDLTool)
 
-        EntityTool(const std::shared_ptr<Session>& session);
+    const char* GetDescription() const override { return "Spawn and manipulate entities in the world using brush-based placement."; }
 
-        void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
-        void OnAppRenderUI(ImGuiIO& io) override;
-        void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+    EntityTool(const std::shared_ptr<Phoenix::Session>& session);
 
-        std::shared_ptr<Session> Session;
-        float BrushSize = 10.0f;
-        uint32 SpawnCount = 1;
-        uint8 Player = 0;
-        float MoveSpeed = 10.0f;
-        float PushForce = 100.0f;
+    void OnAppRenderWorld(Phoenix::WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
+    void OnAppRenderUI(ImGuiIO& io) override;
+    void OnAppEvent(Phoenix::WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
 
-        size_t SelectedUnitIndex = 0;
-        std::vector<std::string> UnitLabels;
-    };
+    std::shared_ptr<Phoenix::Session> Session;
+    float BrushSize = 10.0f;
+    uint32_t SpawnCount = 1;
+    uint8_t Player = 0;
+    float MoveSpeed = 10.0f;
+    float PushForce = 100.0f;
+
+    size_t SelectedUnitIndex = 0;
+    std::vector<std::string> UnitLabels;
+};
+
+PHX_DEFINE_TYPE(EntityTool)
+{
+    registration
+        .Field("BrushSize", &EntityTool::BrushSize)
+        .Field("SpawnCount", &EntityTool::SpawnCount)
+        .Field("Player", &EntityTool::Player)
+        .Field("MoveSpeed", &EntityTool::MoveSpeed)
+        .Field("PushForce", &EntityTool::PushForce);
 }

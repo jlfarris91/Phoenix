@@ -9,30 +9,27 @@
 
 #include "SDLViewport.h"
 
-namespace Phoenix
+struct SDLDebugState : Phoenix::IDebugState
 {
-    struct SDLDebugState : IDebugState
-    {
-        SDLDebugState(SDLViewport* viewport);
+    SDLDebugState(SDLViewport* viewport);
 
-        bool KeyDown(uint32 keycode) const override;
-        bool KeyUp(uint32 keycode) const override;
-        bool KeyPressed(uint32 keycode) const override;
-        bool KeyReleased(uint32 keycode) const override;
+    bool KeyDown(uint32_t keycode) const override;
+    bool KeyUp(uint32_t keycode) const override;
+    bool KeyPressed(uint32_t keycode) const override;
+    bool KeyReleased(uint32_t keycode) const override;
 
-        bool MouseButtonDown(uint8 button) const override;
-        bool MouseButtonUp(uint8 button) const override;
-        bool MouseButtonPressed(uint8 button) const override;
-        bool MouseButtonReleased(uint8 button) const override;
+    bool MouseButtonDown(uint8_t button) const override;
+    bool MouseButtonUp(uint8_t button) const override;
+    bool MouseButtonPressed(uint8_t button) const override;
+    bool MouseButtonReleased(uint8_t button) const override;
 
-        Vec2 GetWorldMousePos() const override;
+    Phoenix::Vec2 GetWorldMousePos() const override;
 
-        void ProcessAppEvent(SDL_Event* event);
+    void ProcessAppEvent(SDL_Event* event);
 
-        SDLViewport* Viewport;
-        std::map<uint8, bool> MouseButtonStates;
-        std::map<uint8, bool> PrevMouseButtonStates;
-        std::map<SDL_Keycode, bool> KeyStates;
-        std::map<SDL_Keycode, bool> PrevKeyStates;
-    };
-}
+    SDLViewport* Viewport;
+    std::map<uint8_t, bool> MouseButtonStates;
+    std::map<uint8_t, bool> PrevMouseButtonStates;
+    std::map<SDL_Keycode, bool> KeyStates;
+    std::map<SDL_Keycode, bool> PrevKeyStates;
+};

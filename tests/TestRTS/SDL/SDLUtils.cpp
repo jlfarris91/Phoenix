@@ -119,6 +119,6 @@ void DrawSelectionCircle(
     const LDS::ILDSQueryContext& lds = *LDS::FeatureLDS::StaticGetWorldQueryContext(world);
     RTS::Data::UnitPtr unitData = RTS::FeatureUnit::GetUnitData(world, RTS::UnitId(entityId));
     Value selectionCircleScale = unitData.SelectionCircleScale().GetValue(lds, 1.0f);
-    Vec2 radius = { selectionCircleScale, selectionCircleScale * 0.75 };
+    Vec2 radius = { selectionCircleScale, selectionCircleScale };
     renderer.DrawEllipse(pos, radius, PhoenixColor::Green);
 }

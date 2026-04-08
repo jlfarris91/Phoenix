@@ -4,12 +4,12 @@
 
 using namespace tracy;
 
-void Phoenix::Profiling::TracyProfiler::SetThreadName(const char* txt, int32_t hint)
+void TracyProfiler::SetThreadName(const char* txt, int32_t hint)
 {
     SetThreadNameWithHint(txt, hint);
 }
 
-void Phoenix::Profiling::TracyProfiler::BeginZone(const SourceLocation* srcLoc, int32 depth)
+void TracyProfiler::BeginZone(const Phoenix::Profiling::SourceLocation* srcLoc, int32_t depth)
 {
     auto zoneQueue = QueueType::ZoneBegin;
     if( depth > 0 && has_callstack() )
@@ -23,14 +23,14 @@ void Phoenix::Profiling::TracyProfiler::BeginZone(const SourceLocation* srcLoc, 
     TracyQueueCommit( zoneBeginThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::EndZone()
+void TracyProfiler::EndZone()
 {
     TracyQueuePrepare( QueueType::ZoneEnd );
     MemWrite( &item->zoneEnd.time, Profiler::GetTime() );
     TracyQueueCommit( zoneEndThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::Text(const char* txt, size_t size)
+void TracyProfiler::Text(const char* txt, size_t size)
 {
     assert( size < (std::numeric_limits<uint16_t>::max)() );
     auto ptr = (char*)tracy_malloc( size );
@@ -41,7 +41,7 @@ void Phoenix::Profiling::TracyProfiler::Text(const char* txt, size_t size)
     TracyQueueCommit( zoneTextFatThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::TextFmt(const char* fmt, ...)
+void TracyProfiler::TextFmt(const char* fmt, ...)
 {
     va_list args;
     va_start( args, fmt );
@@ -61,7 +61,7 @@ void Phoenix::Profiling::TracyProfiler::TextFmt(const char* fmt, ...)
     TracyQueueCommit( zoneTextFatThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::Name(const char* txt, size_t size)
+void TracyProfiler::Name(const char* txt, size_t size)
 {
     auto ptr = (char*)tracy_malloc( size );
     memcpy( ptr, txt, size );
@@ -71,7 +71,7 @@ void Phoenix::Profiling::TracyProfiler::Name(const char* txt, size_t size)
     TracyQueueCommit( zoneTextFatThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::NameFmt(const char* fmt, ...)
+void TracyProfiler::NameFmt(const char* fmt, ...)
 {
     va_list args;
     va_start( args, fmt );
@@ -91,7 +91,7 @@ void Phoenix::Profiling::TracyProfiler::NameFmt(const char* fmt, ...)
     TracyQueueCommit( zoneTextFatThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::Color(uint32 color)
+void TracyProfiler::Color(uint32_t color)
 {
     TracyQueuePrepare( QueueType::ZoneColor );
     MemWrite( &item->zoneColor.b, uint8_t( ( color       ) & 0xFF ) );
@@ -100,7 +100,7 @@ void Phoenix::Profiling::TracyProfiler::Color(uint32 color)
     TracyQueueCommit( zoneColorThread );
 }
 
-void Phoenix::Profiling::TracyProfiler::Value(uint64 value)
+void TracyProfiler::Value(uint64_t value)
 {
     TracyQueuePrepare( QueueType::ZoneValue );
     MemWrite( &item->zoneValue.value, value );
