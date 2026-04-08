@@ -5,67 +5,95 @@
 #include <PhoenixSim/Containers/Optional.h>
 #include <PhoenixSim/Navigation/FeatureNavigation.h>
 
-#include "../SDL/SDLTool.h"
+#include "../sdl/SDLTool.h"
 
 namespace Phoenix
 {
     class Session;
+}
 
-    struct NavMeshTool : ISDLTool
-    {
-        PHX_DECLARE_TYPE_DERIVED(NavMeshTool, ISDLTool);
+struct NavMeshTool : public ISDLTool
+{
+    PHX_DECLARE_TYPE_DERIVED(NavMeshTool, ISDLTool)
 
-        NavMeshTool(std::shared_ptr<Session> session);
+    const char* GetDescription() const override { return "Visualize and edit the navigation mesh used for pathfinding."; }
 
-        void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
-        void OnAppRenderUI(ImGuiIO& io) override;
-        void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+    NavMeshTool(std::shared_ptr<Phoenix::Session> session);
 
-        void RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, const Pathfinding::NavMesh& mesh);
+    void OnAppRenderWorld(Phoenix::WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
+    void OnAppRenderUI(ImGuiIO& io) override;
+    void OnAppEvent(Phoenix::WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
 
-        void RenderPath(
-            SDLDebugState& state,
-            SDLDebugRenderer& renderer,
-            const Pathfinding::NavMesh& mesh,
-            const TMeshPath<Pathfinding::NavMesh>& meshPath);
+    void RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, const Phoenix::Pathfinding::NavMesh& mesh);
 
-        static void RenderCircumcircle(SDLDebugRenderer& renderer, const Vec2& a, const Vec2& b, const Vec2& c, const Color& color);
+    void RenderPath(
+        SDLDebugState& state,
+        SDLDebugRenderer& renderer,
+        const Phoenix::Pathfinding::NavMesh& mesh,
+        const Phoenix::TMeshPath<Phoenix::Pathfinding::NavMesh>& meshPath);
 
-        void LoadMeshFromFile();
+    static void RenderCircumcircle(
+        SDLDebugRenderer& renderer,
+        const Phoenix::Vec2& a,
+        const Phoenix::Vec2& b,
+        const Phoenix::Vec2& c,
+        const Phoenix::Color& color);
 
-        void Step();
-        void Step10();
+    void LoadMeshFromFile();
 
-        bool GetIsStepping() const;
-        void SetIsStepping(const bool& v);
+    void Step();
+    void Step10();
 
-        bool GetFixDelaunayTriangulation() const;
-        void SetFixDelaunayTriangulation(const bool& v);
+    bool GetIsStepping() const;
+    void SetIsStepping(const bool& v);
 
-        std::shared_ptr<Session> Session;
+    bool GetFixDelaunayTriangulation() const;
+    void SetFixDelaunayTriangulation(const bool& v);
 
-        float BrushSize = 10.0f;
-        bool bDrawVertCircles = false;
-        bool bDrawOpenSet = false;
-        bool bDrawVertIds = false;
-        bool bDrawHalfEdgeIds = false;
-        bool bDrawFaceIds = false;
-        bool bDrawFaceCircumcircles = false;
-        bool bDrawPathPortals = false;
+    std::shared_ptr<Phoenix::Session> Session;
 
-        Vec2 CursorPos;
-        float SnapRadius = 1.0f;
+    float BrushSize = 10.0f;
+    bool bDrawVertCircles = false;
+    bool bDrawOpenSet = false;
+    bool bDrawVertIds = false;
+    bool bDrawHalfEdgeIds = false;
+    bool bDrawFaceIds = false;
+    bool bDrawFaceCircumcircles = false;
+    bool bDrawPathPortals = false;
 
-        TOptional<Vec2> LineStart, LineEnd;
+    Phoenix::Vec2 CursorPos;
+    float SnapRadius = 1.0f;
 
-        TOptional<Vec2> PathStart, PathGoal;
-        float AgentRadius = 0.7f;
+    Phoenix::TOptional<Phoenix::Vec2> LineStart, LineEnd;
 
-        using SGDistance = TFixed<14>;
-        using SGVec2 = TVec2<SGDistance>;
+    Phoenix::TOptional<Phoenix::Vec2> PathStart, PathGoal;
+    float AgentRadius = 0.7f;
 
-        std::string MapDir = "C:\\Pegasus\\pegasus-main-1\\PegasusGame\\Pegasus\\Content\\data\\maps\\TitansCausewayV2";
-        std::vector<SGVec2> LoadedVerts;
-        uint32 LoadedVertIndex = 0;
-    };
+    using SGDistance = Phoenix::TFixed<14>;
+    using SGVec2 = Phoenix::TVec2<SGDistance>;
+
+    std::string MapDir = "C:\\Pegasus\\pegasus-main-1\\PegasusGame\\Pegasus\\Content\\data\\maps\\TitansCausewayV2";
+    std::vector<SGVec2> LoadedVerts;
+    uint32_t LoadedVertIndex = 0;
+};
+
+PHX_DEFINE_TYPE(NavMeshTool)
+{
+    registration
+        .Field("BrushSize", &NavMeshTool::BrushSize)
+        .Field("DrawVertCircles", &NavMeshTool::bDrawVertCircles)
+        .Field("DrawOpenSet", &NavMeshTool::bDrawOpenSet)
+        .Field("DrawVertIds", &NavMeshTool::bDrawVertIds)
+        .Field("DrawHalfEdgeIds", &NavMeshTool::bDrawHalfEdgeIds)
+        .Field("DrawFaceIds", &NavMeshTool::bDrawFaceIds)
+        .Field("DrawFaceCircumcircles", &NavMeshTool::bDrawFaceCircumcircles)
+        .Field("DrawPathPortals", &NavMeshTool::bDrawPathPortals)
+        .Field("SnapRadius", &NavMeshTool::SnapRadius)
+        .Field("AgentRadius", &NavMeshTool::AgentRadius)
+        .Field("MapDir", &NavMeshTool::MapDir)
+        .Method("LoadMeshFromFile", &NavMeshTool::LoadMeshFromFile)
+        .Method("Step", &NavMeshTool::Step)
+        .Method("Step10", &NavMeshTool::Step10)
+        .Property("IsStepping", &NavMeshTool::GetIsStepping, &NavMeshTool::SetIsStepping)
+        .Property("FixDelaunayTriangulation", &NavMeshTool::GetFixDelaunayTriangulation, &NavMeshTool::SetFixDelaunayTriangulation);
 }

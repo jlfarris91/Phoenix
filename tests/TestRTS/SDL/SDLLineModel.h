@@ -9,9 +9,10 @@
 
 namespace Phoenix
 {
-    struct SDLDebugRenderer;
     class ILogger;
 }
+
+struct SDLDebugRenderer;
 
 struct LineModel
 {
@@ -26,7 +27,7 @@ bool LoadLineModel(
     Phoenix::ILogger* logger = nullptr);
 
 void DrawLineModel(
-    Phoenix::SDLDebugRenderer* renderer,
+    SDLDebugRenderer* renderer,
     const LineModel& model,
     const Phoenix::Transform2D& worldTransform,
     Phoenix::Angle assetScale = 1.0,

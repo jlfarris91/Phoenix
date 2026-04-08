@@ -1,6 +1,5 @@
 
 #include "EntityTool.h"
-#include <PhoenixSim/Reflection/Registration.h>
 
 #include <SDL3/SDL_events.h>
 
@@ -8,9 +7,9 @@
 #include <PhoenixSim/Session.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 
-#include "../ImGuiUtils.h"
-#include "../SDL/SDLDebugState.h"
-#include "../SDL/SDLDebugRenderer.h"
+#include "../imgui/ImGuiUtils.h"
+#include "../sdl/SDLDebugState.h"
+#include "../sdl/SDLDebugRenderer.h"
 
 using namespace Phoenix;
 
@@ -37,6 +36,8 @@ void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDL
 
 void EntityTool::OnAppRenderUI(ImGuiIO& io)
 {
+    ImGui::TextDisabled("Units:");
+    ImGui::Spacing();
     WrapPanel(UnitLabels, SelectedUnitIndex);
 }
 
@@ -80,18 +81,4 @@ void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
         action.Args[3].AsValue = PushForce;
         Session->EnqueueAction(action);
     }
-}
-
-// ── Type registration ──────────────────────────────────────────────────────────
-
-using namespace Phoenix;
-
-PHX_DEFINE_TYPE(EntityTool)
-{
-    registration
-        .Field("BrushSize",  &EntityTool::BrushSize)
-        .Field("SpawnCount", &EntityTool::SpawnCount)
-        .Field("Player",     &EntityTool::Player)
-        .Field("MoveSpeed",  &EntityTool::MoveSpeed)
-        .Field("PushForce",  &EntityTool::PushForce);
 }

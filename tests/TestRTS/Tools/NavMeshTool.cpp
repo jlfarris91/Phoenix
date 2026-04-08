@@ -1,5 +1,4 @@
 #include "NavMeshTool.h"
-#include <PhoenixSim/Reflection/Registration.h>
 
 #include <fstream>
 #include <SDL3/SDL_events.h>
@@ -10,8 +9,8 @@
 #include <PhoenixSim/Session.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 
-#include "../SDL/SDLDebugState.h"
-#include "../SDL/SDLDebugRenderer.h"
+#include "../sdl/SDLDebugState.h"
+#include "../sdl/SDLDebugRenderer.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;
@@ -216,7 +215,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
                 Vec2 pt = center + normal * 1.0;
 
                 char str[256] = { '\0' };
-                size_t len = sprintf_s(str, _countof(str), "%hu", halfEdgeIndex);
+                size_t len = snprintf(str, sizeof(str), "%hu", halfEdgeIndex);
                 renderer.DrawDebugText(pt, str, len, color); 
             });
 
@@ -234,7 +233,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
             const Vec2& pt = mesh.GetVertices()[i];
 
             char str[256];
-            size_t len = sprintf_s(str, _countof(str), "%lu", i);
+            size_t len = snprintf(str, sizeof(str), "%lu", i);
             renderer.DrawDebugText(pt, str, len, Color::White);
         }
     }
@@ -256,7 +255,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
             mesh.GetFaceCenter(i, center);
 
             char str[256] = { '\0' };
-            size_t len = sprintf_s(str, _countof(str), "%hu", i);
+            size_t len = snprintf(str, sizeof(str), "%hu", i);
             renderer.DrawDebugText(center, str, len, color);
         }
     }
@@ -519,29 +518,4 @@ void NavMeshTool::SetFixDelaunayTriangulation(const bool& v)
     action.Verb = "mesh_set_fix_delaunay_triangulations"_n;
     action.Args[0].AsBool = v;
     Session->EnqueueAction(action);
-}
-
-// ── Type registration ──────────────────────────────────────────────────────────
-
-using namespace Phoenix;
-
-PHX_DEFINE_TYPE(NavMeshTool)
-{
-    registration
-        .Field("BrushSize",                   &NavMeshTool::BrushSize)
-        .Field("bDrawVertCircles",             &NavMeshTool::bDrawVertCircles)
-        .Field("bDrawOpenSet",                 &NavMeshTool::bDrawOpenSet)
-        .Field("bDrawVertIds",                 &NavMeshTool::bDrawVertIds)
-        .Field("bDrawHalfEdgeIds",             &NavMeshTool::bDrawHalfEdgeIds)
-        .Field("bDrawFaceIds",                 &NavMeshTool::bDrawFaceIds)
-        .Field("bDrawFaceCircumcircles",       &NavMeshTool::bDrawFaceCircumcircles)
-        .Field("bDrawPathPortals",             &NavMeshTool::bDrawPathPortals)
-        .Field("SnapRadius",                   &NavMeshTool::SnapRadius)
-        .Field("AgentRadius",                  &NavMeshTool::AgentRadius)
-        .Field("MapDir",                       &NavMeshTool::MapDir)
-        .Method("LoadMeshFromFile",            &NavMeshTool::LoadMeshFromFile)
-        .Method("Step",                        &NavMeshTool::Step)
-        .Method("Step10",                      &NavMeshTool::Step10)
-        .Property("IsStepping",                &NavMeshTool::GetIsStepping,                &NavMeshTool::SetIsStepping)
-        .Property("FixDelaunayTriangulation",  &NavMeshTool::GetFixDelaunayTriangulation,  &NavMeshTool::SetFixDelaunayTriangulation);
 }
