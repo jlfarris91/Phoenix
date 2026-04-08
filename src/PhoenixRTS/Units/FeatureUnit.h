@@ -126,7 +126,7 @@ namespace Phoenix::RTS
         static int32 GetAttackTargetPriority(WorldConstRef world, UnitId unit);
 
         // Returns the time that the unit will expire.
-        static Time GetExpirationTime(WorldRef world, UnitId unit);
+        static Time GetExpirationTime(WorldConstRef world, UnitId unit);
 
         // Sets a timer for a unit to expire.
         static bool SetExpirationTimer(WorldRef world, UnitId unit, Time expirationTime);
@@ -135,7 +135,7 @@ namespace Phoenix::RTS
         static bool ClearExpirationTimer(WorldRef world, UnitId unit);
 
         // Returns true if the unit had an expiration timer set and the timer has expired.
-        static bool HasExpired(WorldRef world, UnitId unit);
+        static bool HasExpired(WorldConstRef world, UnitId unit);
 
         static uint32 QueryUnitsInRange(
             WorldConstRef world,

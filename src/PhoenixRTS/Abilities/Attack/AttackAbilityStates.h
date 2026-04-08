@@ -52,37 +52,37 @@ namespace Phoenix::RTS
         } States;
 
         AbilityStateResult Enter(
-            WorldRef world,
+            WorldConstRef world,
             const UnitId& unit,
             const ECS::EntityId& target,
             const Data::WeaponPtr& weapon,
             const Data::AttackAbilityPtr& attackAbility);
 
-        AbilityStateResult Update(WorldRef world, const UnitId& unit);
-        void Interrupt(WorldRef world, const UnitId& unit);
-        void Exit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Update(WorldConstRef world, const UnitId& unit);
+        void Interrupt(WorldConstRef world, const UnitId& unit);
+        void Exit(WorldConstRef world, const UnitId& unit);
 
     private:
 
-        AbilityStateResult SetState(WorldRef world, const UnitId& unit, EActiveState state);
+        AbilityStateResult SetState(WorldConstRef world, const UnitId& unit, EActiveState state);
 
         // Re-evaluates the available weapons and selects the best one for the target.
         // Returns true if a valid weapon was selected.
-        bool ReselectWeapon(WorldRef world, const UnitId& unit, const ECS::EntityId& target);
+        bool ReselectWeapon(WorldConstRef world, const UnitId& unit, const ECS::EntityId& target);
 
-        AbilityStateResult EnterActiveState(WorldRef world, const UnitId& unit);
-        AbilityStateResult UpdateActiveState(WorldRef world, const UnitId& unit);
-        AbilityStateResult HandleActiveStateResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        void InterruptActiveState(WorldRef world, const UnitId& unit);
-        void ExitActiveState(WorldRef world, const UnitId& unit);
+        AbilityStateResult EnterActiveState(WorldConstRef world, const UnitId& unit);
+        AbilityStateResult UpdateActiveState(WorldConstRef world, const UnitId& unit);
+        AbilityStateResult HandleActiveStateResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        void InterruptActiveState(WorldConstRef world, const UnitId& unit);
+        void ExitActiveState(WorldConstRef world, const UnitId& unit);
 
-        AbilityStateResult HandleMoveToEntityResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        AbilityStateResult HandleFaceEntityResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        AbilityStateResult HandleWeaponPreSwingResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        AbilityStateResult HandleWeaponCooldownResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        AbilityStateResult HandleWeaponSwingResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        AbilityStateResult HandleWeaponExecuteResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
-        AbilityStateResult HandleWeaponBackSwingResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleMoveToEntityResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleFaceEntityResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleWeaponPreSwingResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleWeaponCooldownResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleWeaponSwingResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleWeaponExecuteResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
+        AbilityStateResult HandleWeaponBackSwingResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result);
     };
 
     struct PHOENIX_RTS_API AttackLocationState : TargetLocationState
@@ -115,24 +115,24 @@ namespace Phoenix::RTS
         } States;
 
         AbilityStateResult Enter(
-            WorldRef world,
+            WorldConstRef world,
             const UnitId& unit,
             const Vec2& target,
             const Data::WeaponPtr& weapon,
             const Data::AttackAbilityPtr& attackAbility);
 
-        AbilityStateResult Update(WorldRef world, const UnitId& unit);
-        void Interrupt(WorldRef world, const UnitId& unit);
-        void Exit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Update(WorldConstRef world, const UnitId& unit);
+        void Interrupt(WorldConstRef world, const UnitId& unit);
+        void Exit(WorldConstRef world, const UnitId& unit);
 
     private:
 
-        AbilityStateResult SetState(WorldRef world, const UnitId& unit, EActiveState state);
+        AbilityStateResult SetState(WorldConstRef world, const UnitId& unit, EActiveState state);
 
-        AbilityStateResult EnterActiveState(WorldRef world, const UnitId& unit);
-        AbilityStateResult UpdateActiveState(WorldRef world, const UnitId& unit);
-        void InterruptActiveState(WorldRef world, const UnitId& unit);
-        void ExitActiveState(WorldRef world, const UnitId& unit);
+        AbilityStateResult EnterActiveState(WorldConstRef world, const UnitId& unit);
+        AbilityStateResult UpdateActiveState(WorldConstRef world, const UnitId& unit);
+        void InterruptActiveState(WorldConstRef world, const UnitId& unit);
+        void ExitActiveState(WorldConstRef world, const UnitId& unit);
     };
 
     struct PHOENIX_RTS_API AttackMoveState : TargetLocationState
@@ -152,14 +152,14 @@ namespace Phoenix::RTS
         } States;
 
         AbilityStateResult Enter(
-            WorldRef world,
+            WorldConstRef world,
             const UnitId& unit,
             const Vec2& target,
             const Data::WeaponPtr& weapon,
             const Data::AttackAbilityPtr& attackAbility);
 
-        AbilityStateResult Update(WorldRef world, const UnitId& unit);
-        void Interrupt(WorldRef world, const UnitId& unit);
-        void Exit(WorldRef world, const UnitId& unit);
+        AbilityStateResult Update(WorldConstRef world, const UnitId& unit);
+        void Interrupt(WorldConstRef world, const UnitId& unit);
+        void Exit(WorldConstRef world, const UnitId& unit);
     };
 }

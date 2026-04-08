@@ -121,7 +121,7 @@ namespace Phoenix
             }
 
             uint32 offset = Buffer.GetSize();
-            Buffer.Write(str, len);
+            Buffer.Append(str, len);
             Buffer.template Write<uint8>(0); // Null terminator
 
             NameToIndex.Insert(name, offset);

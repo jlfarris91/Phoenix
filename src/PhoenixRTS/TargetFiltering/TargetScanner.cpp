@@ -20,7 +20,7 @@ bool TargetScanResult::IsValid() const
     return Target != EntityId::Invalid;
 }
 
-TargetScanResult TargetScanner::ScanForTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
     TargetScanArgs modifiedArgs = args;
@@ -28,14 +28,14 @@ TargetScanResult TargetScanner::ScanForTarget(WorldRef world, UnitId unit, const
     return ScanForTargetInternal(world, unit, modifiedArgs);
 }
 
-TargetScanResult TargetScanner::ScanForAbilityTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForAbilityTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
     return ScanForAbilityTargetInternal(world, unit, modifiedArgs);
 }
 
-TargetScanResult TargetScanner::ScanForWeaponTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForWeaponTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
@@ -74,7 +74,7 @@ void TargetScanner::PopulateTargetScanArgs(WorldConstRef world, UnitId unit, Tar
     }
 }
 
-TargetScanResult TargetScanner::ScanForTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     // Abilities take the highest priority
     TargetScanResult result = ScanForAbilityTargetInternal(world, unit, args);
@@ -86,7 +86,7 @@ TargetScanResult TargetScanner::ScanForTargetInternal(WorldRef world, UnitId uni
     return ScanForWeaponTargetInternal(world, unit, args);
 }
 
-TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -113,14 +113,20 @@ TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, Uni
         EntityId scanTarget = handler->ScanForTarget(world, abilityTargetScanArgs);
         if (scanTarget != EntityId::Invalid)
         {
-            return { scanTarget, abilityId, {} };
+            return {
+                .Target = scanTarget,
+                .TargetLocation = FeatureECS::GetWorldPosition(world, scanTarget),
+                .AbilityId = abilityId,
+                .WeaponId = {},
+                .AcquireRequest = {}
+            };
         }
     }
 
     return {};
 }
 
-TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     if (args.Level < ETargetScanLevel::Offensive)
     {
@@ -236,16 +242,28 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     }
 
     FName bestWeaponId = weapons[bestWeaponIndex.Get()].GetObjectId();
+    Vec2 targetPos = FeatureECS::GetWorldPosition(world, target);
 
-    if (lastScanTarget != target && HasAnyFlags(args.Flags, ETargetScanFlags::AutoAcquire))
+    if (lastScanTarget != target)
     {
         AcquireRequest request;
         request.Verb = "Attack"_n;
         request.TargetEntity = target;
         request.TargetLocation = FeatureECS::GetWorldPosition(world, target);
         request.Kind = bestWeaponId;
-        FeatureOrders::StaticRequestAcquireOrder(world, unit, request);
+        return{
+            .Target = target,
+            .TargetLocation = targetPos,
+            .AbilityId = {},
+            .WeaponId = bestWeaponId,
+            .AcquireRequest = request
+        };
     }
 
-    return { target, {}, bestWeaponId };
+    return {
+        .Target = target,
+        .TargetLocation = targetPos,
+        .AbilityId = {},
+        .WeaponId = bestWeaponId,
+        .AcquireRequest = {} };
 }

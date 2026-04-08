@@ -12,6 +12,6 @@ namespace Phoenix::RTS
     public:
         PHX_ECS_DECLARE_SYSTEM(UnitSystem)
 
-        void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
+        void OnWorldInitialize(WorldRef world) override;
     };
 }

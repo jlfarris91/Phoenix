@@ -70,20 +70,20 @@ namespace Phoenix::RTS
     {
         Distance Range;
 
-        AbilityStateResult Enter(WorldRef world, const ECS::EntityId& entity, const ECS::EntityId& target, Distance range);
-        AbilityStateResult Update(WorldRef world, const ECS::EntityId& entity);
-        void Interrupt(WorldRef world, const ECS::EntityId& entity);
-        void Exit(WorldRef world, const ECS::EntityId& entity);
+        AbilityStateResult Enter(WorldConstRef world, const ECS::EntityId& entity, const ECS::EntityId& target, Distance range);
+        AbilityStateResult Update(WorldConstRef world, const ECS::EntityId& entity);
+        void Interrupt(WorldConstRef world, const ECS::EntityId& entity);
+        void Exit(WorldConstRef world, const ECS::EntityId& entity);
     };
 
     struct PHOENIX_RTS_API MoveToLocationState : TargetLocationState
     {
         Distance Range;
 
-        AbilityStateResult Enter(WorldRef world, const ECS::EntityId& entity, const Vec2& target, Distance range);
-        AbilityStateResult Update(WorldRef world, const ECS::EntityId& entity);
-        void Interrupt(WorldRef world, const ECS::EntityId& entity);
-        void Exit(WorldRef world, const ECS::EntityId& entity);
+        AbilityStateResult Enter(WorldConstRef world, const ECS::EntityId& entity, const Vec2& target, Distance range);
+        AbilityStateResult Update(WorldConstRef world, const ECS::EntityId& entity);
+        void Interrupt(WorldConstRef world, const ECS::EntityId& entity);
+        void Exit(WorldConstRef world, const ECS::EntityId& entity);
     };
 
     struct PHOENIX_RTS_API FaceEntityState : TargetEntityState
@@ -92,15 +92,15 @@ namespace Phoenix::RTS
         Angle Threshold;
 
         AbilityStateResult Enter(
-            WorldRef world,
+            WorldConstRef world,
             const ECS::EntityId& entity,
             const ECS::EntityId& target,
             Distance range,
             Angle threshold = 5.0);
 
-        AbilityStateResult Update(WorldRef world, const ECS::EntityId& entity);
-        void Interrupt(WorldRef world, const ECS::EntityId& entity);
-        void Exit(WorldRef world, const ECS::EntityId& entity);
+        AbilityStateResult Update(WorldConstRef world, const ECS::EntityId& entity);
+        void Interrupt(WorldConstRef world, const ECS::EntityId& entity);
+        void Exit(WorldConstRef world, const ECS::EntityId& entity);
     };
 
     struct PHOENIX_RTS_API FaceLocationState : TargetLocationState
@@ -109,15 +109,15 @@ namespace Phoenix::RTS
         Angle Threshold;
 
         AbilityStateResult Enter(
-            WorldRef world,
+            WorldConstRef world,
             const ECS::EntityId& entity,
             const Vec2& target,
             Distance range,
             Angle threshold = 5.0);
 
-        AbilityStateResult Update(WorldRef world, const ECS::EntityId& entity);
-        void Interrupt(WorldRef world, const ECS::EntityId& entity);
-        void Exit(WorldRef world, const ECS::EntityId& entity);
+        AbilityStateResult Update(WorldConstRef world, const ECS::EntityId& entity);
+        void Interrupt(WorldConstRef world, const ECS::EntityId& entity);
+        void Exit(WorldConstRef world, const ECS::EntityId& entity);
     };
 
     struct PHOENIX_RTS_API FollowEntityState : TargetEntityState
@@ -131,11 +131,11 @@ namespace Phoenix::RTS
             Moving
         } SubState;
 
-        AbilityStateResult Enter(WorldRef world, const ECS::EntityId& entity, const ECS::EntityId& target, Distance range);
-        AbilityStateResult Update(WorldRef world, const ECS::EntityId& entity);
-        void Interrupt(WorldRef world, const ECS::EntityId& entity);
-        void Exit(WorldRef world, const ECS::EntityId& entity);
+        AbilityStateResult Enter(WorldConstRef world, const ECS::EntityId& entity, const ECS::EntityId& target, Distance range);
+        AbilityStateResult Update(WorldConstRef world, const ECS::EntityId& entity);
+        void Interrupt(WorldConstRef world, const ECS::EntityId& entity);
+        void Exit(WorldConstRef world, const ECS::EntityId& entity);
 
-        AbilityStateResult SetSubState(WorldRef world, const ECS::EntityId& unit, ESubState subState);
+        AbilityStateResult SetSubState(WorldConstRef world, const ECS::EntityId& unit, ESubState subState);
     };
 }

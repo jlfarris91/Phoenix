@@ -5,6 +5,7 @@
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/WorldsFwd.h"
 
+#include "PhoenixRTS/Orders/Commands.h"
 #include "PhoenixRTS/TargetFiltering/TargetScanLevel.h"
 #include "PhoenixRTS/Units/UnitId.h"
 
@@ -18,8 +19,7 @@ namespace Phoenix::RTS
     enum class PHOENIX_RTS_API ETargetScanFlags : uint8
     {
         None,
-        UnitCannotMove = 1,
-        AutoAcquire = 2,
+        UnitCannotMove = 1
     };
 
     struct PHOENIX_RTS_API TargetScanArgs
@@ -35,28 +35,30 @@ namespace Phoenix::RTS
     struct PHOENIX_RTS_API TargetScanResult
     {
         ECS::EntityId Target = ECS::EntityId::Invalid;
+        Vec2 TargetLocation;
         TOptional<FName> AbilityId;
         TOptional<FName> WeaponId;
+        TOptional<AcquireRequest> AcquireRequest;
 
         bool IsValid() const;
     };
 
     struct PHOENIX_RTS_API TargetScanner
     {
-        static TargetScanResult ScanForTarget(WorldRef world, UnitId unit, const TargetScanArgs& args);
+        static TargetScanResult ScanForTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args);
 
-        static TargetScanResult ScanForAbilityTarget(WorldRef world, UnitId unit, const TargetScanArgs& args);
+        static TargetScanResult ScanForAbilityTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args);
 
-        static TargetScanResult ScanForWeaponTarget(WorldRef world, UnitId unit, const TargetScanArgs& args);
+        static TargetScanResult ScanForWeaponTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args);
 
     private:
 
         static void PopulateTargetScanArgs(WorldConstRef world, UnitId unit, TargetScanArgs& args);
 
-        static TargetScanResult ScanForTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args);
+        static TargetScanResult ScanForTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args);
 
-        static TargetScanResult ScanForAbilityTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args);
+        static TargetScanResult ScanForAbilityTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args);
 
-        static TargetScanResult ScanForWeaponTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args);
+        static TargetScanResult ScanForWeaponTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args);
     };
 }

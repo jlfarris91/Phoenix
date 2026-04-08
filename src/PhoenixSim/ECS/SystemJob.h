@@ -1,106 +1,136 @@
-﻿#pragma once
+#pragma once
+
+#include <utility>
 
 #include "PhoenixSim/ECS/ArchetypeList.h"
-#include "PhoenixSim/ECS/ArchetypeManager.h"
+#include "PhoenixSim/ECS/CommandBuffer.h"
 #include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "PhoenixSim/ECS/EntityQuery.h"
+#include "PhoenixSim/ECS/JobBatch.h"
 
 namespace Phoenix::ECS
 {
-    struct PHOENIX_SIM_API IEntityJobBase
+    struct ComponentAccessEntry
     {
-        virtual ~IEntityJobBase() = default;
-
-        const EntityQuery& GetQuery() const
-        {
-            return Query;
-        }
-        
-        virtual void Execute(WorldRef world, FixedArchetypeList& list, uint32 startIndex)
-        {
-            World = &world;
-        }
-
-    protected:
-
-        WorldPtr World = nullptr;
-        EntityQuery Query;
+        FName ComponentId;
+        EComponentAccess Access;
     };
 
-    template <class ...TComponents>
-    struct IEntityJob : IEntityJobBase
+    struct SystemAccessDescriptor
     {
-        IEntityJob()
-        {
-            EntityQueryBuilder builder;
-            builder.RequireAllComponents<TComponents...>();
-            Query = builder.GetQuery();
-        }
+        std::vector<ComponentAccessEntry> Components;
 
-        void Execute(WorldRef world, FixedArchetypeList& list, uint32 startIndex) final
+        bool ConflictsWith(const SystemAccessDescriptor& other) const
         {
-            IEntityJobBase::Execute(world, list, startIndex);
-
-            auto span = EntityComponentSpan<TComponents...>::FromList(list, startIndex);
-            for (const auto& tuple : span)
+            for (const ComponentAccessEntry& a : Components)
             {
-                std::apply(&Execute, tuple);
+                for (const ComponentAccessEntry& b : other.Components)
+                {
+                    if (a.ComponentId == b.ComponentId)
+                    {
+                        if (a.Access != EComponentAccess::Read || b.Access != EComponentAccess::Read)
+                            return true;
+                    }
+                }
             }
+            return false;
         }
-        
-        virtual void Execute(EntityId entityId, TComponents&& ...components) = 0;
     };
 
-    template <class ...TComponents>
-    struct IBufferJob : IEntityJobBase
+    template <class... TComponents>
+    void BuildAccessDescriptor(SystemAccessDescriptor& desc)
     {
-        IBufferJob()
-        {
-            EntityQueryBuilder builder;
-            builder.RequireAllComponents<TComponents...>();
-            Query = builder.GetQuery();
-        }
-        
-        void Execute(WorldRef world, FixedArchetypeList& list, uint32 startIndex) final
-        {
-            IEntityJobBase::Execute(world, list, startIndex);
+        desc.Components = {
+            ComponentAccessEntry{
+                StaticTypeName<Underlying_T<TComponents>>::TypeId,
+                ComponentAccessFromT<TComponents>::ComponentAccess
+            }...
+        };
+    }
 
-            auto span = EntityComponentSpan<TComponents...>::FromList(list, startIndex);
-            Execute(span);
-        }
-        
-        virtual void Execute(const EntityComponentSpan<TComponents...>&) = 0;
-    };
-    
-    template <class ...TComponents>
-    using TJobFunction = std::function<void(WorldRef, EntityId, TComponents...)>;
-
-    template <class ...TComponents>
-    struct FunctionJob : IEntityJob<TComponents...>
+    class PHOENIX_SIM_API IJobBase
     {
-        FunctionJob(const TJobFunction<TComponents...>& func) : Func(func) {}
-
-        void Execute(EntityId entityId, TComponents&& ...components) override
-        {
-            Func(*this->World, entityId, std::forward<TComponents>(components)...);
-        }
-
-        TJobFunction<TComponents...> Func;
+    public:
+        virtual ~IJobBase() = default;
+        virtual void RunBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) = 0;
+        virtual const SystemAccessDescriptor& GetAccessDescriptor() const = 0;
+        virtual FName GetName() const { return FName::None; }
     };
 
-    template <class ...TComponents>
-    using TBufferJobFunction = std::function<void(WorldRef world, const EntityComponentSpan<TComponents...>&)>;
-
-    template <class ...TComponents>
-    struct FunctionBufferJob : IBufferJob<TComponents...>
+    // Single-execution task: participates in the job dependency graph but runs
+    // once per scheduler execution rather than once per matching archetype batch.
+    // Use for setup/teardown work that must be ordered relative to IJob jobs.
+    class PHOENIX_SIM_API ITask : public IJobBase
     {
-        FunctionBufferJob(const TBufferJobFunction<TComponents...>& func) : Func(func) {}
+    public:
+        virtual void Run(WorldConstRef world, CommandBuffer& cb) = 0;
 
-        void Execute(const EntityComponentSpan<TComponents...>& span) override
+        void RunBatch(WorldConstRef world, const JobBatch& /*batch*/, CommandBuffer& cb) final
         {
-            Func(*this->World, span);
+            Run(world, cb);
         }
 
-        TBufferJobFunction<TComponents...> Func;
+        const SystemAccessDescriptor& GetAccessDescriptor() const final
+        {
+            return EmptyDescriptor;
+        }
+
+    private:
+        inline static const SystemAccessDescriptor EmptyDescriptor{};
+    };
+
+    template <class... TComponents>
+    class IJob : public IJobBase
+    {
+    public:
+        IJob()
+        {
+            BuildAccessDescriptor<TComponents...>(AccessDescriptor);
+        }
+
+        void RunBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) final
+        {
+            RunBatchImpl(world, batch, cb, std::index_sequence_for<TComponents...>{});
+        }
+
+        const SystemAccessDescriptor& GetAccessDescriptor() const final
+        {
+            return AccessDescriptor;
+        }
+
+        // Called before the entity loop for each matching batch.
+        // Override to snapshot per-batch data (e.g. batch.UserData start offset).
+        virtual void BeginBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) {}
+
+        // Called once for each valid entity in the batch.
+        virtual void Execute(WorldConstRef world, EntityId id, CommandBuffer& cb, TComponents... components) = 0;
+
+        // Called after the entity loop for each matching batch.
+        virtual void EndBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) {}
+
+    private:
+        template <std::size_t... Is>
+        void RunBatchImpl(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb, std::index_sequence<Is...>)
+        {
+            uint8* data = static_cast<uint8*>(batch.List->GetData());
+            const uint32 stride = batch.List->GetEntityTotalSize();
+            const uint32 count = batch.List->GetNumInstances();
+
+            BeginBatch(world, batch, cb);
+
+            for (uint32 i = 0; i < count; ++i)
+            {
+                auto* inst = reinterpret_cast<ArchetypeInstance*>(data + i * stride);
+                if (inst->EntityId == EntityId::Invalid)
+                    continue;
+                uint8* base = reinterpret_cast<uint8*>(inst + 1);
+                Execute(world, inst->EntityId, cb,
+                    *reinterpret_cast<Underlying_T<TComponents>*>(base + batch.ComponentOffsets[Is])...);
+            }
+
+            EndBatch(world, batch, cb);
+        }
+
+        SystemAccessDescriptor AccessDescriptor;
     };
 }

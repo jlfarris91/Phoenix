@@ -394,7 +394,7 @@ ArchetypeManager::TArchetypeList* ArchetypeManager::FindFirstArchetypeList(
     const FName& archetypeIdOrHash,
     bool includeFullLists)
 {
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && (includeFullLists || !list->IsFull()))
@@ -434,7 +434,7 @@ const ArchetypeManager::TArchetypeList* ArchetypeManager::FindOwningArchetypeLis
 void ArchetypeManager::ForEachArchetypeList(const std::function<void(TArchetypeList&)>& func)
 {
     PHX_PROFILE_ZONE_SCOPED;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && InvokeForEachCallbackNoIndex(func, *list))
@@ -447,7 +447,7 @@ void ArchetypeManager::ForEachArchetypeList(const std::function<void(TArchetypeL
 void ArchetypeManager::ForEachArchetypeList(const std::function<void(const TArchetypeList&)>& func) const
 {
     PHX_PROFILE_ZONE_SCOPED;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && InvokeForEachCallbackNoIndex(func, *list))
@@ -461,7 +461,7 @@ void ArchetypeManager::ForEachArchetypeList(const FName& archetypeIdOrHash,
     const std::function<void(TArchetypeList&)>& func)
 {
     PHX_PROFILE_ZONE_SCOPED;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && InvokeForEachCallbackNoIndex(func, *list))
@@ -473,17 +473,30 @@ void ArchetypeManager::ForEachArchetypeList(const FName& archetypeIdOrHash,
 
 void ArchetypeManager::Compact()
 {
+    bool anyDeallocated = false;
+
     // Free any archetype lists with no active instances.
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && list->GetNumActiveInstances() == 0)
         {
             ArchetypeLists.Deallocate(handle);
+            anyDeallocated = true;
         }
     }
 
     ArchetypeLists.Compact();
+
+    if (anyDeallocated)
+    {
+        ++Generation;
+    }
+}
+
+uint32 ArchetypeManager::GetGeneration() const
+{
+    return Generation;
 }
 
 ArchetypeManager::TArchetypeHandle ArchetypeManager::GetHandleForEntity(EntityId entityId) const
@@ -513,6 +526,8 @@ ArchetypeManager::TArchetypeList* ArchetypeManager::FindOrAddArchetypeList(const
     {
         list->SetId(handle.Id);
     }
+
+    ++Generation;
 
     return list;
 }

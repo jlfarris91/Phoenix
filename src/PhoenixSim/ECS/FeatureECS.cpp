@@ -6,6 +6,8 @@
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/Session.h"
 #include "PhoenixSim/WorldTaskQueue.h"
+#include "PhoenixSim/ECS/ECSCommands.h"
+#include "PhoenixSim/ECS/JobScheduler.h"
 #include "PhoenixSim/ECS/System.h"
 #include "PhoenixSim/ECS/SystemJob.h"
 #include "PhoenixSim/Blackboard/FeatureBlackboard.h"
@@ -16,41 +18,87 @@ using namespace Phoenix::Blackboard;
 
 namespace FeatureECSDetail
 {
-    struct PopulateSortedEntitiesJob : IBufferJob<TransformComponent&>
+    // Phase 1: assign non-overlapping write ranges to each batch and pre-size the output array.
+    // Runs once per frame on the world thread before any parallel populate work.
+    struct PrePartitionSortedEntitiesJob : ITask
     {
-        void Execute(const EntityComponentSpan<TransformComponent&>& span) override
+        JobNode* PopulateNode = nullptr;
+        FeatureECSScratchBlock* ScratchBlock = nullptr;
+
+        void Run(WorldConstRef /*world*/, CommandBuffer& /*cb*/) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("PopulateSortedEntitiesJob");
+            PHX_PROFILE_ZONE_SCOPED_N("PrePartitionSortedEntitiesJob");
 
-            FeatureECSScratchBlock& scratchBlock = World->GetBlockRef<FeatureECSScratchBlock>();
-
-            for (auto && [entityId, index, transformComp] : span)
+            uint32 total = 0;
+            for (JobBatch& batch : PopulateNode->Batches)
             {
-                transformComp.ZCode = ToMortonCode(transformComp.Transform.Position);
-
-                uint32 sortedEntityIndex = scratchBlock.SortedEntityCount.fetch_add(1);
-                scratchBlock.SortedEntities[sortedEntityIndex] = EntityTransform(entityId, &transformComp, transformComp.ZCode);
+                batch.UserData = total;
+                total += batch.List ? batch.List->GetNumInstances() : 0;
             }
+
+            ScratchBlock->SortedEntities.SetSize(total);
+            ScratchBlock->SortedEntityCount = 0;
         }
     };
 
-    void SortEntitiesByZCodeTask(WorldRef world)
-    {    
-        PHX_PROFILE_ZONE_SCOPED;
+    // Phase 2: compute Z-codes and write entities into pre-assigned batch ranges.
+    // Batches run in parallel; each thread writes to a non-overlapping slice — no contention.
+    // Skipped (invalid) entities reduce the actual written count tracked via SortedEntityCount.
+    class PopulateSortedEntitiesJob : public IJob<TransformComponent&>
+    {
+    public:
+        FeatureECSScratchBlock* ScratchBlock = nullptr;
 
-        FeatureECSScratchBlock& scratchBlock = world.GetBlockRef<FeatureECSScratchBlock>();
+        void BeginBatch(WorldConstRef /*world*/, const JobBatch& batch, CommandBuffer& /*cb*/) override
+        {
+            tl_BatchStart = batch.UserData;
+            tl_WriteCount = 0;
+        }
 
-        // Calculated from PopulateSortedEntitiesJob
-        scratchBlock.SortedEntities.SetSize(scratchBlock.SortedEntityCount);
+        void Execute(WorldConstRef /*world*/, EntityId id, CommandBuffer& /*cb*/, TransformComponent& t) override
+        {
+            PHX_PROFILE_ZONE_SCOPED_N("PopulateSortedEntitiesJob");
+            t.ZCode = ToMortonCode(t.Transform.Position);
+            ScratchBlock->SortedEntities[tl_BatchStart + tl_WriteCount] = EntityTransform(id, &t, t.ZCode);
+            ++tl_WriteCount;
+        }
 
-        std::sort(
-            scratchBlock.SortedEntities.begin(),
-            scratchBlock.SortedEntities.end(),
-            [](const EntityTransform& a, const EntityTransform& b)
-            {
-                return a.ZCode < b.ZCode;
-            });
-    }
+        void EndBatch(WorldConstRef /*world*/, const JobBatch& /*batch*/, CommandBuffer& /*cb*/) override
+        {
+            // One atomic add per batch (not per entity) to accumulate the actual valid entity count.
+            ScratchBlock->SortedEntityCount.fetch_add(tl_WriteCount, std::memory_order_relaxed);
+        }
+
+    private:
+        // thread_local: each worker thread runs one batch at a time, so these are
+        // independent per-thread — no contention between parallel batches.
+        static thread_local uint32 tl_BatchStart;
+        static thread_local uint32 tl_WriteCount;
+    };
+
+    thread_local uint32 PopulateSortedEntitiesJob::tl_BatchStart = 0;
+    thread_local uint32 PopulateSortedEntitiesJob::tl_WriteCount = 0;
+
+    // Phase 3: trim the output array to the actual valid entity count and sort by Z-code.
+    struct SortEntitiesJob : ITask
+    {
+        FeatureECSScratchBlock* ScratchBlock = nullptr;
+
+        void Run(WorldConstRef /*world*/, CommandBuffer& /*cb*/) override
+        {
+            PHX_PROFILE_ZONE_SCOPED_N("SortEntitiesJob");
+
+            ScratchBlock->SortedEntities.SetSize(ScratchBlock->SortedEntityCount);
+
+            std::sort(
+                ScratchBlock->SortedEntities.begin(),
+                ScratchBlock->SortedEntities.end(),
+                [](const EntityTransform& a, const EntityTransform& b)
+                {
+                    return a.ZCode < b.ZCode;
+                });
+        }
+    };
 }
 
 FeatureECSDynamicBlock::FeatureECSDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
@@ -113,298 +161,6 @@ BufferBlockLayout FeatureECSScratchBlock::Layout(Config config)
 void FeatureECSScratchBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
 {
     new (dest) FeatureECSScratchBlock(allocator, config);
-}
-
-void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnPreUpdate(systemUpdateArgs);
-    }
-}
-
-void FeatureECS::OnUpdate(const FeatureUpdateArgs& args)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnUpdate(systemUpdateArgs);
-    }
-}
-
-void FeatureECS::OnPostUpdate(const FeatureUpdateArgs& args)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnPostUpdate(systemUpdateArgs);
-    }
-}
-
-bool FeatureECS::OnPreHandleAction(const FeatureActionArgs& action)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemActionArgs systemActionArgs;
-    systemActionArgs.SimTime = action.SimTime;
-    systemActionArgs.Action = action.Action;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        if (system->OnPreHandleAction(systemActionArgs))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-bool FeatureECS::OnHandleAction(const FeatureActionArgs& action)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemActionArgs systemActionArgs;
-    systemActionArgs.SimTime = action.SimTime;
-    systemActionArgs.Action = action.Action;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        if (system->OnHandleAction(systemActionArgs))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-bool FeatureECS::OnPostHandleAction(const FeatureActionArgs& action)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemActionArgs systemActionArgs;
-    systemActionArgs.SimTime = action.SimTime;
-    systemActionArgs.Action = action.Action;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        if (system->OnPostHandleAction(systemActionArgs))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
-{
-    IFeature::OnWorldLayout(context, builder);
-
-    FeatureECSDynamicBlock::Config dynamicBlockConfig;
-    dynamicBlockConfig.MaxEntities = PHX_ECS_MAX_ENTITIES;
-    dynamicBlockConfig.MaxTags = PHX_ECS_MAX_TAGS;
-    dynamicBlockConfig.MaxGroups = PHX_ECS_MAX_GROUPS;
-    dynamicBlockConfig.ArchetypeManager.MaxComponentDefs = PHX_ECS_MAX_COMPONENT_DEFS;
-    dynamicBlockConfig.ArchetypeManager.MaxArchetypeDefs = PHX_ECS_MAX_ARCHETYPE_DEFS;
-    dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists = PHX_ECS_MAX_ARCHETYPE_LISTS;
-    dynamicBlockConfig.ArchetypeManager.ArchetypeListSize = PHX_ECS_ARCHETYPE_LIST_SIZE;
-
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
-    {
-        const nlohmann::json& featureConfigData = featureConfig->GetData();
-
-        dynamicBlockConfig.MaxEntities = featureConfigData.value("max_entities", dynamicBlockConfig.MaxEntities);
-        dynamicBlockConfig.MaxTags = featureConfigData.value("max_tags", dynamicBlockConfig.MaxTags);
-        dynamicBlockConfig.MaxGroups = featureConfigData.value("max_groups", dynamicBlockConfig.MaxGroups);
-        dynamicBlockConfig.ArchetypeManager.MaxComponentDefs = featureConfigData.value("max_component_defs", dynamicBlockConfig.ArchetypeManager.MaxComponentDefs);
-        dynamicBlockConfig.ArchetypeManager.MaxArchetypeDefs = featureConfigData.value("max_archetype_defs", dynamicBlockConfig.ArchetypeManager.MaxArchetypeDefs);
-        dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists = featureConfigData.value("max_archetype_lists", dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists);
-        dynamicBlockConfig.ArchetypeManager.ArchetypeListSize = featureConfigData.value("archetype_list_size", dynamicBlockConfig.ArchetypeManager.ArchetypeListSize);
-    }
-
-    dynamicBlockConfig.ArchetypeManager.MaxEntities = dynamicBlockConfig.MaxEntities;
-
-    builder.RegisterBlockWithAlloc<FeatureECSDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
-
-    FeatureECSScratchBlock::Config scratchBlockConfig;
-    scratchBlockConfig.MaxEntities = dynamicBlockConfig.MaxEntities;
-
-    builder.RegisterBlockWithAlloc<FeatureECSScratchBlock>(EBufferBlockType::Scratch, scratchBlockConfig);
-}
-
-void FeatureECS::OnWorldInitialize(WorldRef world)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-    
-    TaskQueue::CreateTaskQueue((uint32)world.GetId());
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnWorldInitialize(world);
-    }
-}
-
-void FeatureECS::OnWorldShutdown(WorldRef world)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnWorldShutdown(world);
-    }
-    
-    TaskQueue::ReleaseTaskQueue((uint32)world.GetId());
-}
-
-void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SortEntitiesByZCode(world);
-
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnPreWorldUpdate(world, systemUpdateArgs);
-    }
-
-    WorldTaskQueue::Flush(world);
-}
-
-void FeatureECS::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-    
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnWorldUpdate(world, systemUpdateArgs);
-    }
-
-    WorldTaskQueue::Flush(world);
-}
-
-void FeatureECS::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-    
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnPostWorldUpdate(world, systemUpdateArgs);
-    }
-
-    WorldTaskQueue::Flush(world);
-
-    SortAndCompact(world);
-}
-
-bool FeatureECS::OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemActionArgs systemActionArgs;
-    systemActionArgs.SimTime = action.SimTime;
-    systemActionArgs.Action = action.Action;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        if (system->OnPreHandleWorldAction(world, systemActionArgs))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    if (action.Action.Verb == "release_entities_in_range"_n)
-    {
-        Vec2 pos = { action.Action.Args[0].AsDistance, action.Action.Args[1].AsDistance };
-        Distance range = action.Action.Args[2].AsDistance;
-
-        std::vector<EntityTransform> outEntities;
-        QueryEntitiesInRange(world, pos, range, outEntities);
-
-        for (const EntityTransform& entity : outEntities)
-        {
-            StaticReleaseEntity(world, entity.EntityId);
-        }
-
-        return true;
-    }
-
-    SystemActionArgs systemActionArgs;
-    systemActionArgs.SimTime = action.SimTime;
-    systemActionArgs.Action = action.Action;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        if (system->OnHandleWorldAction(world, systemActionArgs))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-bool FeatureECS::OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
-{
-    PHX_PROFILE_ZONE_SCOPED;
-
-    SystemActionArgs systemActionArgs;
-    systemActionArgs.SimTime = action.SimTime;
-    systemActionArgs.Action = action.Action;
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        if (system->OnPostHandleWorldAction(world, systemActionArgs))
-        {
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-void FeatureECS::OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer)
-{
-    for (const std::shared_ptr<ISystem>& system : Systems)
-    {
-        system->OnDebugRender(world, state, renderer);
-    }
 }
 
 FOnEntityAcquired& FeatureECS::OnEntityAcquired()
@@ -892,6 +648,30 @@ blackboard_value_t FeatureECS::GetBlackboardValueRaw(
     return value;
 }
 
+CommandBuffer& FeatureECS::GetCommandBuffer(WorldConstRef world)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    return *feature->CommandBuffers[GetCurrentThreadIndex()];
+}
+
+void FeatureECS::RegisterCommandHandler(WorldRef world, FName commandId, TCommandHandler handler)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    feature->CommandHandlers[commandId] = std::move(handler);
+}
+
+JobHandle FeatureECS::RegisterJob(WorldRef world, std::unique_ptr<IJobBase> job, EJobPhase phase)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    return feature->GetScheduler(phase).RegisterJob(std::move(job));
+}
+
+void FeatureECS::AddJobDependency(WorldRef world, EJobPhase phase, JobHandle after, JobHandle before)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    feature->GetScheduler(phase).AddDependency(after, before);
+}
+
 const Transform2D* FeatureECS::GetLocalTransformPtr(WorldConstRef world, EntityId entityId)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -1057,21 +837,353 @@ void FeatureECS::QueryEntitiesInRect(
         });
 }
 
-void FeatureECS::SortEntitiesByZCode(WorldRef world)
+void FeatureECS::Initialize(const std::shared_ptr<Phoenix::Session>& session)
+{
+    IFeature::Initialize(session);
+
+    const uint32 n = HasThreadPool() ? GetThreadPool()->GetNumWorkers() + 1 : 1;
+    for (uint32 i = 0; i < n; ++i)
+    {
+        CommandBuffers.push_back(std::make_unique<CommandBuffer>());
+    }
+}
+
+void FeatureECS::Shutdown()
+{
+    IFeature::Shutdown();
+}
+
+void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
-    
-    FeatureECSScratchBlock& scratchBlock = world.GetBlockRef<FeatureECSScratchBlock>();
-    
-    scratchBlock.SortedEntities.Reset();
-    scratchBlock.SortedEntityCount = 0;
-    
-    // Calculate z-codes in parallel
-    FeatureECSDetail::PopulateSortedEntitiesJob job;
-    ScheduleParallel(world, job);
 
-    WorldTaskQueue::Schedule(world, &FeatureECSDetail::SortEntitiesByZCodeTask);
+    SystemUpdateArgs systemUpdateArgs;
+    systemUpdateArgs.SimTime = args.SimTime;
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnPreUpdate(systemUpdateArgs);
+    }
 }
+
+void FeatureECS::OnUpdate(const FeatureUpdateArgs& args)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemUpdateArgs systemUpdateArgs;
+    systemUpdateArgs.SimTime = args.SimTime;
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnUpdate(systemUpdateArgs);
+    }
+}
+
+void FeatureECS::OnPostUpdate(const FeatureUpdateArgs& args)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemUpdateArgs systemUpdateArgs;
+    systemUpdateArgs.SimTime = args.SimTime;
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnPostUpdate(systemUpdateArgs);
+    }
+}
+
+bool FeatureECS::OnPreHandleAction(const FeatureActionArgs& action)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemActionArgs systemActionArgs;
+    systemActionArgs.SimTime = action.SimTime;
+    systemActionArgs.Action = action.Action;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        if (system->OnPreHandleAction(systemActionArgs))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool FeatureECS::OnHandleAction(const FeatureActionArgs& action)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemActionArgs systemActionArgs;
+    systemActionArgs.SimTime = action.SimTime;
+    systemActionArgs.Action = action.Action;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        if (system->OnHandleAction(systemActionArgs))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool FeatureECS::OnPostHandleAction(const FeatureActionArgs& action)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemActionArgs systemActionArgs;
+    systemActionArgs.SimTime = action.SimTime;
+    systemActionArgs.Action = action.Action;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        if (system->OnPostHandleAction(systemActionArgs))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+{
+    IFeature::OnWorldLayout(context, builder);
+
+    FeatureECSDynamicBlock::Config dynamicBlockConfig;
+    dynamicBlockConfig.MaxEntities = PHX_ECS_MAX_ENTITIES;
+    dynamicBlockConfig.MaxTags = PHX_ECS_MAX_TAGS;
+    dynamicBlockConfig.MaxGroups = PHX_ECS_MAX_GROUPS;
+    dynamicBlockConfig.ArchetypeManager.MaxComponentDefs = PHX_ECS_MAX_COMPONENT_DEFS;
+    dynamicBlockConfig.ArchetypeManager.MaxArchetypeDefs = PHX_ECS_MAX_ARCHETYPE_DEFS;
+    dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists = PHX_ECS_MAX_ARCHETYPE_LISTS;
+    dynamicBlockConfig.ArchetypeManager.ArchetypeListSize = PHX_ECS_ARCHETYPE_LIST_SIZE;
+
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
+    {
+        const nlohmann::json& featureConfigData = featureConfig->GetData();
+
+        dynamicBlockConfig.MaxEntities = featureConfigData.value("max_entities", dynamicBlockConfig.MaxEntities);
+        dynamicBlockConfig.MaxTags = featureConfigData.value("max_tags", dynamicBlockConfig.MaxTags);
+        dynamicBlockConfig.MaxGroups = featureConfigData.value("max_groups", dynamicBlockConfig.MaxGroups);
+        dynamicBlockConfig.ArchetypeManager.MaxComponentDefs = featureConfigData.value("max_component_defs", dynamicBlockConfig.ArchetypeManager.MaxComponentDefs);
+        dynamicBlockConfig.ArchetypeManager.MaxArchetypeDefs = featureConfigData.value("max_archetype_defs", dynamicBlockConfig.ArchetypeManager.MaxArchetypeDefs);
+        dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists = featureConfigData.value("max_archetype_lists", dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists);
+        dynamicBlockConfig.ArchetypeManager.ArchetypeListSize = featureConfigData.value("archetype_list_size", dynamicBlockConfig.ArchetypeManager.ArchetypeListSize);
+    }
+
+    dynamicBlockConfig.ArchetypeManager.MaxEntities = dynamicBlockConfig.MaxEntities;
+
+    builder.RegisterBlockWithAlloc<FeatureECSDynamicBlock>(EBufferBlockType::Dynamic, dynamicBlockConfig);
+
+    FeatureECSScratchBlock::Config scratchBlockConfig;
+    scratchBlockConfig.MaxEntities = dynamicBlockConfig.MaxEntities;
+
+    builder.RegisterBlockWithAlloc<FeatureECSScratchBlock>(EBufferBlockType::Scratch, scratchBlockConfig);
+}
+
+void FeatureECS::OnWorldInitialize(WorldRef world)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    TaskQueue::CreateTaskQueue((uint32)world.GetId());
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnWorldInitialize(world);
+    }
+
+    RegisterECSCommandHandlers();
+
+    // Register pre-update sort pipeline: PrePartition → Populate (parallel) → Sort
+    FeatureECSScratchBlock& scratchBlock = world.GetBlockRef<FeatureECSScratchBlock>();
+
+    auto prePartition = std::make_unique<FeatureECSDetail::PrePartitionSortedEntitiesJob>();
+    auto populate     = std::make_unique<FeatureECSDetail::PopulateSortedEntitiesJob>();
+    auto sort         = std::make_unique<FeatureECSDetail::SortEntitiesJob>();
+
+    populate->ScratchBlock = &scratchBlock;
+    sort->ScratchBlock     = &scratchBlock;
+
+    JobHandle hPrePartition = PreUpdateScheduler.RegisterJob(std::move(prePartition));
+    JobHandle hPopulate     = PreUpdateScheduler.RegisterJob(std::move(populate));
+    JobHandle hSort         = PreUpdateScheduler.RegisterJob(std::move(sort));
+
+    PreUpdateScheduler.AddDependency(hPopulate, hPrePartition);
+    PreUpdateScheduler.AddDependency(hSort,     hPopulate);
+
+    // Build all schedulers — must happen after all RegisterJob/AddDependency calls.
+    const FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
+    BuildAllSchedulers(dynamicBlock.ArchetypeManager);
+
+    // PrePartition needs a pointer to Populate's node to read its pre-built Batches.
+    // Resolved after Build() since Nodes are stable post-build.
+    static_cast<FeatureECSDetail::PrePartitionSortedEntitiesJob*>(
+        PreUpdateScheduler.GetNode(hPrePartition).Job)->PopulateNode =
+            &PreUpdateScheduler.GetNode(hPopulate);
+}
+
+void FeatureECS::OnWorldShutdown(WorldRef world)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnWorldShutdown(world);
+    }
+    
+    TaskQueue::ReleaseTaskQueue((uint32)world.GetId());
+}
+
+void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    const FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
+    RebuildAllSchedulersIfDirty(dynamicBlock.ArchetypeManager);
+
+    ExecuteScheduler(world, EJobPhase::PreUpdate);
+    ApplyCommandBuffers(world);
+
+    SystemUpdateArgs systemUpdateArgs;
+    systemUpdateArgs.SimTime = args.SimTime;
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnPreWorldUpdate(world, systemUpdateArgs);
+    }
+
+    WorldTaskQueue::Flush(world);
+}
+
+void FeatureECS::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    ExecuteScheduler(world, EJobPhase::Update);
+    ApplyCommandBuffers(world);
+
+    SystemUpdateArgs systemUpdateArgs;
+    systemUpdateArgs.SimTime = args.SimTime;
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnWorldUpdate(world, systemUpdateArgs);
+    }
+
+    WorldTaskQueue::Flush(world);
+}
+
+void FeatureECS::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    ExecuteScheduler(world, EJobPhase::PostUpdate);
+    ApplyCommandBuffers(world);
+
+    SystemUpdateArgs systemUpdateArgs;
+    systemUpdateArgs.SimTime = args.SimTime;
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnPostWorldUpdate(world, systemUpdateArgs);
+    }
+
+    WorldTaskQueue::Flush(world);
+
+    SortAndCompact(world);
+}
+
+bool FeatureECS::OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemActionArgs systemActionArgs;
+    systemActionArgs.SimTime = action.SimTime;
+    systemActionArgs.Action = action.Action;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        if (system->OnPreHandleWorldAction(world, systemActionArgs))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool FeatureECS::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    if (action.Action.Verb == "release_entities_in_range"_n)
+    {
+        Vec2 pos = { action.Action.Args[0].AsDistance, action.Action.Args[1].AsDistance };
+        Distance range = action.Action.Args[2].AsDistance;
+
+        std::vector<EntityTransform> outEntities;
+        QueryEntitiesInRange(world, pos, range, outEntities);
+
+        for (const EntityTransform& entity : outEntities)
+        {
+            StaticReleaseEntity(world, entity.EntityId);
+        }
+
+        return true;
+    }
+
+    SystemActionArgs systemActionArgs;
+    systemActionArgs.SimTime = action.SimTime;
+    systemActionArgs.Action = action.Action;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        if (system->OnHandleWorldAction(world, systemActionArgs))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+bool FeatureECS::OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& action)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    SystemActionArgs systemActionArgs;
+    systemActionArgs.SimTime = action.SimTime;
+    systemActionArgs.Action = action.Action;
+
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        if (system->OnPostHandleWorldAction(world, systemActionArgs))
+        {
+            return true;
+        }
+    }
+    
+    return false;
+}
+
+void FeatureECS::OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer)
+{
+    for (const std::shared_ptr<ISystem>& system : Systems)
+    {
+        system->OnDebugRender(world, state, renderer);
+    }
+}
+
 
 void FeatureECS::SortAndCompact(WorldRef world)
 {
@@ -1125,4 +1237,127 @@ void FeatureECS::OnReclaimEntity(WorldRef world, const EntityId& entityId) const
     FeatureBlackboard::GetBlackboard(world).RemoveAll(query);
 
     EntityDestroyedEvent.Broadcast(world, entityId);
+}
+void FeatureECS::ApplyCommandBuffers(WorldRef world)
+{
+    for (const std::unique_ptr<CommandBuffer>& cb : CommandBuffers)
+    {
+        if (!cb || cb->IsEmpty())
+        {
+            continue;
+        }
+        for (CommandBuffer::Command cmd : *cb)
+        {
+            auto it = CommandHandlers.find(cmd.Id);
+            PHX_ASSERT(it != CommandHandlers.end());
+            if (it != CommandHandlers.end())
+            {
+                it->second(world, cmd);
+            }
+        }
+        cb->Reset();
+    }
+}
+
+JobScheduler& FeatureECS::GetScheduler(EJobPhase phase)
+{
+    switch (phase)
+    {
+        case EJobPhase::PreUpdate:  return PreUpdateScheduler;
+        case EJobPhase::Update:     return UpdateScheduler;
+        case EJobPhase::PostUpdate: return PostUpdateScheduler;
+    }
+    return UpdateScheduler;
+}
+
+void FeatureECS::BuildAllSchedulers(const ArchetypeManager& archetypes)
+{
+    PreUpdateScheduler.Build(archetypes);
+    UpdateScheduler.Build(archetypes);
+    PostUpdateScheduler.Build(archetypes);
+}
+
+void FeatureECS::RebuildAllSchedulersIfDirty(const ArchetypeManager& archetypes)
+{
+    PreUpdateScheduler.RebuildBatchesIfDirty(archetypes);
+    UpdateScheduler.RebuildBatchesIfDirty(archetypes);
+    PostUpdateScheduler.RebuildBatchesIfDirty(archetypes);
+}
+
+void FeatureECS::ExecuteScheduler(WorldRef world, EJobPhase phase)
+{
+    JobScheduler& scheduler = GetScheduler(phase);
+
+    std::vector<CommandBuffer*> threadCbs;
+    threadCbs.reserve(CommandBuffers.size());
+    for (const std::unique_ptr<CommandBuffer>& cb : CommandBuffers)
+        threadCbs.push_back(cb.get());
+
+    if (bAllowParallelJobs)
+    {
+        std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
+        scheduler.Execute(world, *taskQueue, threadCbs);
+    }
+    else
+    {
+        scheduler.ExecuteSerial(world, threadCbs);
+    }
+}
+
+void FeatureECS::RegisterECSCommandHandlers()
+{
+    // Register built-in command handlers (using this-> directly since we're a member fn)
+    CommandHandlers[Commands::ReleaseEntity::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::ReleaseEntity*>(cmd.Data);
+        StaticReleaseEntity(w, data->Target);
+    };
+
+    CommandHandlers[Commands::SetEntityKind::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::SetEntityKind*>(cmd.Data);
+        SetEntityKind(w, data->Target, data->Kind);
+    };
+
+    CommandHandlers[Commands::AddTag::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::AddTag*>(cmd.Data);
+        AddTag(w, data->Target, data->Tag);
+    };
+
+    CommandHandlers[Commands::RemoveTag::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::RemoveTag*>(cmd.Data);
+        RemoveTag(w, data->Target, data->Tag);
+    };
+
+    CommandHandlers[Commands::RemoveAllTags::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::RemoveAllTags*>(cmd.Data);
+        RemoveAllTags(w, data->Target);
+    };
+
+    CommandHandlers[Commands::AddEntityToGroup::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::AddEntityToGroup*>(cmd.Data);
+        AddEntityToGroup(w, data->Group, data->EntityToAdd);
+    };
+
+    CommandHandlers[Commands::RemoveEntityFromGroup::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::RemoveEntityFromGroup*>(cmd.Data);
+        RemoveEntityFromGroup(w, data->Group, data->EntityToRemove);
+    };
+
+    CommandHandlers[Commands::RemoveEntityFromAllGroups::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::RemoveEntityFromAllGroups*>(cmd.Data);
+        RemoveEntityFromAllGroups(w, data->Target);
+    };
+
+    CommandHandlers[Commands::ClearGroup::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::ClearGroup*>(cmd.Data);
+        ClearGroup(w, data->Target);
+    };
 }

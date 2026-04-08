@@ -426,6 +426,8 @@ namespace Phoenix
 
             void Compact();
 
+            uint32 GetGeneration() const;
+
         private:
 
             TArchetypeHandle GetHandleForEntity(EntityId entityId) const;
@@ -443,6 +445,8 @@ namespace Phoenix
             TEntityHandleMap EntityHandles;
 
             Config Configuration;
+
+            uint32 Generation = 0;
         };
     }
 }

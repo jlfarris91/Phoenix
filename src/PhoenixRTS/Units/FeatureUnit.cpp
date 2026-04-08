@@ -246,7 +246,7 @@ int32 FeatureUnit::GetAttackTargetPriority(WorldConstRef world, UnitId unit)
     return 0;
 }
 
-Time FeatureUnit::GetExpirationTime(WorldRef world, UnitId unit)
+Time FeatureUnit::GetExpirationTime(WorldConstRef world, UnitId unit)
 {
     return FeatureECS::GetBlackboardValue<Time>(world, unit, "expiration_time"_n);
 }
@@ -261,7 +261,7 @@ bool FeatureUnit::ClearExpirationTimer(WorldRef world, UnitId unit)
     return FeatureECS::RemoveBlackboardValue(world, unit, "expiration_time"_n);
 }
 
-bool FeatureUnit::HasExpired(WorldRef world, UnitId unit)
+bool FeatureUnit::HasExpired(WorldConstRef world, UnitId unit)
 {
     Time expirationTime = GetExpirationTime(world, unit);
     return expirationTime > 0 && world.GetSimTime() >= expirationTime;
