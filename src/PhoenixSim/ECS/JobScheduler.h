@@ -24,11 +24,30 @@ namespace Phoenix::ECS
 
     struct JobNode
     {
-        IJobBase*               Job;
+        IJobBase*               Job = nullptr;
         std::vector<JobBatch>   Batches;
         std::vector<uint32>     Successors;
         uint32                  TotalPredecessors = 0;
         std::atomic<uint32>     RemainingPredecessors = 0;
+
+        JobNode() = default;
+        JobNode(JobNode&& other) noexcept
+            : Job(other.Job)
+            , Batches(std::move(other.Batches))
+            , Successors(std::move(other.Successors))
+            , TotalPredecessors(other.TotalPredecessors)
+            , RemainingPredecessors(other.RemainingPredecessors.load(std::memory_order_relaxed))
+        {}
+        JobNode& operator=(JobNode&& other) noexcept
+        {
+            Job = other.Job;
+            Batches = std::move(other.Batches);
+            Successors = std::move(other.Successors);
+            TotalPredecessors = other.TotalPredecessors;
+            RemainingPredecessors.store(other.RemainingPredecessors.load(std::memory_order_relaxed),
+                                        std::memory_order_relaxed);
+            return *this;
+        }
     };
 
     class JobScheduler

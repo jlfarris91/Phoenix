@@ -101,6 +101,10 @@ namespace FeatureECSDetail
     };
 }
 
+// ============================================================================
+// FeatureECSDynamicBlock
+// ============================================================================
+
 FeatureECSDynamicBlock::FeatureECSDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
     : Entities(allocator, config.MaxEntities)
     , Tags(allocator, config.MaxTags)
@@ -197,7 +201,7 @@ const std::vector<std::shared_ptr<ISystem>>& FeatureECS::GetSystems() const
     return Systems;
 }
 
-const decltype(FeatureECSDynamicBlock::Entities)* FeatureECS::GetEntities(WorldConstRef world)
+const FixedEntityList* FeatureECS::GetEntities(WorldConstRef world)
 {
     const FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
     return block ? &block->Entities : nullptr;
@@ -454,7 +458,8 @@ bool FeatureECS::HasComponent(WorldConstRef world, EntityId entityId, const FNam
 IComponent* FeatureECS::AddComponent(
     WorldRef world,
     EntityId entityId,
-    const FName& componentType)
+    const FName& componentType,
+    const void* componentData)
 {
     FeatureECSDynamicBlock* block = world.GetBlock<FeatureECSDynamicBlock>();
     if (!block)
@@ -468,7 +473,7 @@ IComponent* FeatureECS::AddComponent(
         return nullptr;
     }
 
-    return static_cast<IComponent*>(block->ArchetypeManager.AddComponent(entity->Id, componentType));
+    return static_cast<IComponent*>(block->ArchetypeManager.AddComponent(entity->Id, componentType, componentData));
 }
 
 bool FeatureECS::RemoveComponent(WorldRef world, EntityId entityId, const FName& componentType)
@@ -670,6 +675,31 @@ void FeatureECS::AddJobDependency(WorldRef world, EJobPhase phase, JobHandle aft
 {
     std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
     feature->GetScheduler(phase).AddDependency(after, before);
+}
+
+void FeatureECS::ExecuteScheduler(WorldRef world, JobScheduler& scheduler)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    if (!feature)
+        return;
+
+    const FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
+    scheduler.RebuildBatchesIfDirty(dynamicBlock.ArchetypeManager);
+
+    std::vector<CommandBuffer*> threadCbs;
+    threadCbs.reserve(feature->CommandBuffers.size());
+    for (const std::unique_ptr<CommandBuffer>& cb : feature->CommandBuffers)
+        threadCbs.push_back(cb.get());
+
+    if (feature->bAllowParallelJobs)
+    {
+        std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
+        scheduler.Execute(world, *taskQueue, threadCbs);
+    }
+    else
+    {
+        scheduler.ExecuteSerial(world, threadCbs);
+    }
 }
 
 const Transform2D* FeatureECS::GetLocalTransformPtr(WorldConstRef world, EntityId entityId)
@@ -1008,6 +1038,7 @@ void FeatureECS::OnWorldInitialize(WorldRef world)
     auto populate     = std::make_unique<FeatureECSDetail::PopulateSortedEntitiesJob>();
     auto sort         = std::make_unique<FeatureECSDetail::SortEntitiesJob>();
 
+    prePartition->ScratchBlock = &scratchBlock;
     populate->ScratchBlock = &scratchBlock;
     sort->ScratchBlock     = &scratchBlock;
 
@@ -1306,7 +1337,12 @@ void FeatureECS::ExecuteScheduler(WorldRef world, EJobPhase phase)
 
 void FeatureECS::RegisterECSCommandHandlers()
 {
-    // Register built-in command handlers (using this-> directly since we're a member fn)
+    CommandHandlers[Commands::AcquireEntity::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::AcquireEntity*>(cmd.Data);
+        StaticAcquireEntity(w, data->Kind);
+    };
+
     CommandHandlers[Commands::ReleaseEntity::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
     {
         const auto* data = static_cast<const Commands::ReleaseEntity*>(cmd.Data);
@@ -1317,6 +1353,19 @@ void FeatureECS::RegisterECSCommandHandlers()
     {
         const auto* data = static_cast<const Commands::SetEntityKind*>(cmd.Data);
         SetEntityKind(w, data->Target, data->Kind);
+    };
+
+    CommandHandlers[Commands::AddComponentBase::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::AddComponentBase*>(cmd.Data);
+        const void* componentPtr = data->GetComponentPtr();
+        AddComponent(w, data->Target, data->ComponentType, componentPtr);
+    };
+
+    CommandHandlers[Commands::RemoveComponent::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::RemoveComponent*>(cmd.Data);
+        RemoveComponent(w, data->Target, data->ComponentType);
     };
 
     CommandHandlers[Commands::AddTag::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
@@ -1359,5 +1408,12 @@ void FeatureECS::RegisterECSCommandHandlers()
     {
         const auto* data = static_cast<const Commands::ClearGroup*>(cmd.Data);
         ClearGroup(w, data->Target);
+    };
+
+    CommandHandlers[Commands::SetBlackboardValueBase::StaticId] = [](WorldRef w, const CommandBuffer::Command& cmd)
+    {
+        const auto* data = static_cast<const Commands::SetBlackboardValueBase*>(cmd.Data);
+        const void* valuePtr = data->GetValuePtr();
+        SetBlackboardValueRaw(w, data->Target, data->Key, *static_cast<const blackboard_value_t*>(valuePtr));
     };
 }

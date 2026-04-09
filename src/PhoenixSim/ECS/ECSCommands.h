@@ -29,39 +29,46 @@ namespace Phoenix::ECS::Commands
 
     // Adds a new component to a target entity.
     // Fails if the entity already has a component of the same type.
-    template <class TComponent>
-    struct AddComponent
+    struct AddComponentBase
     {
         static constexpr FName StaticId = "ECS_AddComponent"_n;
 
-        AddComponent(EntityId target, TComponent component)
-            : Target(target)
-            , ComponentType(StaticTypeName<TComponent>::TypeId)
-            , Component(std::move(component))
+        const void* GetComponentPtr() const
         {
+            // TODO (jfarris): this feels like a hack
+            return this + 1;
+        }
+
+        template <class TComponent>
+        const TComponent& GetComponent() const
+        {
+            PHX_ASSERT(IsA<TComponent>(ComponentType));
+            return *static_cast<const TComponent*>(GetComponentPtr());
         }
 
         EntityId Target;
         FName ComponentType;
-        TComponent Component;
+
+    protected:
+
+        AddComponentBase(EntityId target, FName componentType)
+            : Target(target)
+            , ComponentType(componentType)
+        {
+        }
     };
 
-    // Updates an existing component on a target entity.
-    // Fails if the entity doesn't already have a component of the same type.
+    // Adds a new component to a target entity.
+    // Fails if the entity already has a component of the same type.
     template <class TComponent>
-    struct SetComponent
+    struct AddComponent : AddComponentBase
     {
-        static constexpr FName StaticId = "ECS_SetComponent"_n;
-
-        SetComponent(EntityId target, TComponent component)
-            : Target(target)
-            , ComponentType(StaticTypeName<TComponent>::TypeId)
+        AddComponent(EntityId target, TComponent component)
+            : AddComponentBase(target, StaticTypeName<TComponent>::TypeId)
             , Component(std::move(component))
         {
         }
 
-        EntityId Target;
-        FName ComponentType;
         TComponent Component;
     };
 
@@ -127,23 +134,47 @@ namespace Phoenix::ECS::Commands
         EntityId Target;
     };
 
-    // Sets the value of a blackboard entry for an entity.
-    template <class T>
-    struct SetBlackboardValue
+    struct SetBlackboardValueBase
     {
         static constexpr FName StaticId = "ECS_SetBlackboardValue"_n;
 
-        SetBlackboardValue(EntityId target, FName key, T value)
-            : Target(target)
-            , Key(key)
-            , ValueType(StaticTypeName<T>::TypeId)
-            , Value(std::move(value))
+        const void* GetValuePtr() const
         {
+            // TODO (jfarris): this feels like a hack
+            return this + 1;
+        }
+
+        template <class T>
+        const T& GetValue() const
+        {
+            PHX_ASSERT(IsA<T>(ValueType));
+            return *static_cast<const T*>(GetValuePtr());
         }
 
         EntityId Target;
         FName Key;
         FName ValueType;
+
+    protected:
+
+        SetBlackboardValueBase(EntityId target, FName key, FName valueType)
+            : Target(target)
+            , Key(key)
+            , ValueType(valueType)
+        {
+        }
+    };
+
+    // Sets the value of a blackboard entry for an entity.
+    template <class T>
+    struct SetBlackboardValue : SetBlackboardValueBase
+    {
+        SetBlackboardValue(EntityId target, FName key, T value)
+            : SetBlackboardValueBase(target, key, StaticTypeName<T>::TypeId)
+            , Value(std::move(value))
+        {
+        }
+
         T Value;
     };
 

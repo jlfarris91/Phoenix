@@ -25,7 +25,7 @@ namespace Phoenix::ECS
             std::scoped_lock lock(WriteMutex);
             const uint32 offset = static_cast<uint32>(EventData.size());
             EventData.insert(EventData.end(), sizeof(T), 0);
-            new (EventData.data() + offset) T(std::forward<T>(data));
+            *reinterpret_cast<T*>(EventData.data() + offset) = data;
             Events.emplace_back(id, offset, sizeof(T));
         }
 
@@ -42,7 +42,11 @@ namespace Phoenix::ECS
         template <class TCommand, class ...TArgs>
         void Append(TArgs&& ...args)
         {
-            this->Append(TCommand::StaticId, std::forward<TArgs>(args)...);
+            std::scoped_lock lock(WriteMutex);
+            const uint32 offset = static_cast<uint32>(EventData.size());
+            EventData.insert(EventData.end(), sizeof(TCommand), 0);
+            new (EventData.data() + offset) TCommand(std::forward<TArgs>(args)...);
+            Events.emplace_back(TCommand::StaticId, offset, sizeof(TCommand));
         }
 
         template <class TCommand>

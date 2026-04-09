@@ -11,7 +11,7 @@ using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
 AbilityStateResult AttackTargetState::Enter(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const EntityId& target,
     const Data::WeaponPtr& weapon,
@@ -26,22 +26,22 @@ AbilityStateResult AttackTargetState::Enter(
     return SetState(world, unit, EActiveState::MoveToEntity);
 }
 
-AbilityStateResult AttackTargetState::Update(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackTargetState::Update(WorldRef world, const UnitId& unit)
 {
     return UpdateActiveState(world, unit);
 }
 
-void AttackTargetState::Interrupt(WorldConstRef world, const UnitId& unit)
+void AttackTargetState::Interrupt(WorldRef world, const UnitId& unit)
 {
     InterruptActiveState(world, unit);
 }
 
-void AttackTargetState::Exit(WorldConstRef world, const UnitId& unit)
+void AttackTargetState::Exit(WorldRef world, const UnitId& unit)
 {
     ExitActiveState(world, unit);
 }
 
-AbilityStateResult AttackTargetState::SetState(WorldConstRef world, const UnitId& unit, EActiveState state)
+AbilityStateResult AttackTargetState::SetState(WorldRef world, const UnitId& unit, EActiveState state)
 {
     if (state == ActiveState)
     {
@@ -55,7 +55,7 @@ AbilityStateResult AttackTargetState::SetState(WorldConstRef world, const UnitId
     return EnterActiveState(world, unit);
 }
 
-bool AttackTargetState::ReselectWeapon(WorldConstRef world, const UnitId& unit, const EntityId& target)
+bool AttackTargetState::ReselectWeapon(WorldRef world, const UnitId& unit, const EntityId& target)
 {
     bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
     Data::WeaponPtr newWeapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);
@@ -63,7 +63,7 @@ bool AttackTargetState::ReselectWeapon(WorldConstRef world, const UnitId& unit, 
     return newWeapon.IsValid();
 }
 
-AbilityStateResult AttackTargetState::EnterActiveState(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackTargetState::EnterActiveState(WorldRef world, const UnitId& unit)
 {
     Data::WeaponPtr weaponPtr(WeaponId);
     AbilityStateResult result;
@@ -83,7 +83,7 @@ AbilityStateResult AttackTargetState::EnterActiveState(WorldConstRef world, cons
     return HandleActiveStateResult(world, unit, result);
 }
 
-AbilityStateResult AttackTargetState::UpdateActiveState(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackTargetState::UpdateActiveState(WorldRef world, const UnitId& unit)
 {
     AbilityStateResult result;
 
@@ -103,7 +103,7 @@ AbilityStateResult AttackTargetState::UpdateActiveState(WorldConstRef world, con
 }
 
 AbilityStateResult AttackTargetState::HandleActiveStateResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -159,7 +159,7 @@ AbilityStateResult AttackTargetState::HandleActiveStateResult(
     return newResult;
 }
 
-void AttackTargetState::InterruptActiveState(WorldConstRef world, const UnitId& unit)
+void AttackTargetState::InterruptActiveState(WorldRef world, const UnitId& unit)
 {
     switch (ActiveState)
     {
@@ -174,7 +174,7 @@ void AttackTargetState::InterruptActiveState(WorldConstRef world, const UnitId& 
     }
 }
 
-void AttackTargetState::ExitActiveState(WorldConstRef world, const UnitId& unit)
+void AttackTargetState::ExitActiveState(WorldRef world, const UnitId& unit)
 {
     switch (ActiveState)
     {
@@ -190,7 +190,7 @@ void AttackTargetState::ExitActiveState(WorldConstRef world, const UnitId& unit)
     ActiveState = EActiveState::None;
 }
 
-AbilityStateResult AttackTargetState::HandleMoveToEntityResult(WorldConstRef world, const UnitId& unit, const AbilityStateResult& result)
+AbilityStateResult AttackTargetState::HandleMoveToEntityResult(WorldRef world, const UnitId& unit, const AbilityStateResult& result)
 {
     if (result.Result == EAbilityStateResult::Complete)
     {
@@ -201,7 +201,7 @@ AbilityStateResult AttackTargetState::HandleMoveToEntityResult(WorldConstRef wor
 }
 
 AbilityStateResult AttackTargetState::HandleFaceEntityResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -214,7 +214,7 @@ AbilityStateResult AttackTargetState::HandleFaceEntityResult(
 }
 
 AbilityStateResult AttackTargetState::HandleWeaponPreSwingResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -227,7 +227,7 @@ AbilityStateResult AttackTargetState::HandleWeaponPreSwingResult(
 }
 
 AbilityStateResult AttackTargetState::HandleWeaponCooldownResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -240,7 +240,7 @@ AbilityStateResult AttackTargetState::HandleWeaponCooldownResult(
 }
 
 AbilityStateResult AttackTargetState::HandleWeaponSwingResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -253,7 +253,7 @@ AbilityStateResult AttackTargetState::HandleWeaponSwingResult(
 }
 
 AbilityStateResult AttackTargetState::HandleWeaponExecuteResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -266,7 +266,7 @@ AbilityStateResult AttackTargetState::HandleWeaponExecuteResult(
 }
 
 AbilityStateResult AttackTargetState::HandleWeaponBackSwingResult(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const AbilityStateResult& result)
 {
@@ -283,7 +283,7 @@ AbilityStateResult AttackTargetState::HandleWeaponBackSwingResult(
 }
 
 AbilityStateResult AttackLocationState::Enter(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const Vec2& target,
     const Data::WeaponPtr& weapon,
@@ -292,44 +292,44 @@ AbilityStateResult AttackLocationState::Enter(
     return EAbilityStateResult::Complete;
 }
 
-AbilityStateResult AttackLocationState::Update(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackLocationState::Update(WorldRef world, const UnitId& unit)
 {
     return EAbilityStateResult::Complete;
 }
 
-void AttackLocationState::Interrupt(WorldConstRef world, const UnitId& unit)
+void AttackLocationState::Interrupt(WorldRef world, const UnitId& unit)
 {
 }
 
-void AttackLocationState::Exit(WorldConstRef world, const UnitId& unit)
+void AttackLocationState::Exit(WorldRef world, const UnitId& unit)
 {
 }
 
-AbilityStateResult AttackLocationState::SetState(WorldConstRef world, const UnitId& unit, EActiveState state)
-{
-    return EAbilityStateResult::Complete;
-}
-
-AbilityStateResult AttackLocationState::EnterActiveState(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackLocationState::SetState(WorldRef world, const UnitId& unit, EActiveState state)
 {
     return EAbilityStateResult::Complete;
 }
 
-AbilityStateResult AttackLocationState::UpdateActiveState(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackLocationState::EnterActiveState(WorldRef world, const UnitId& unit)
 {
     return EAbilityStateResult::Complete;
 }
 
-void AttackLocationState::InterruptActiveState(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackLocationState::UpdateActiveState(WorldRef world, const UnitId& unit)
+{
+    return EAbilityStateResult::Complete;
+}
+
+void AttackLocationState::InterruptActiveState(WorldRef world, const UnitId& unit)
 {
 }
 
-void AttackLocationState::ExitActiveState(WorldConstRef world, const UnitId& unit)
+void AttackLocationState::ExitActiveState(WorldRef world, const UnitId& unit)
 {
 }
 
 AbilityStateResult AttackMoveState::Enter(
-    WorldConstRef world,
+    WorldRef world,
     const UnitId& unit,
     const Vec2& target,
     const Data::WeaponPtr& weapon,
@@ -340,17 +340,17 @@ AbilityStateResult AttackMoveState::Enter(
     return States.MoveToLocation.Enter(world, unit, target, 0);
 }
 
-AbilityStateResult AttackMoveState::Update(WorldConstRef world, const UnitId& unit)
+AbilityStateResult AttackMoveState::Update(WorldRef world, const UnitId& unit)
 {
     return States.MoveToLocation.Update(world, unit);
 }
 
-void AttackMoveState::Interrupt(WorldConstRef world, const UnitId& unit)
+void AttackMoveState::Interrupt(WorldRef world, const UnitId& unit)
 {
     States.MoveToLocation.Interrupt(world, unit);
 }
 
-void AttackMoveState::Exit(WorldConstRef world, const UnitId& unit)
+void AttackMoveState::Exit(WorldRef world, const UnitId& unit)
 {
     States.MoveToLocation.Exit(world, unit);
 }

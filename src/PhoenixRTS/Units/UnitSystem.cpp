@@ -1,15 +1,15 @@
 #include "PhoenixRTS/Units/UnitSystem.h"
 
-#include "PhoenixRTS/ECS/ECSCommands.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
+#include "PhoenixSim/ECS/ECSCommands.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
+#include "PhoenixSim/LDS/FeatureLDS.h"
 
+#include "PhoenixRTS/ECS/ECSCommands.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/TargetFiltering/TargetScanner.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
-#include "PhoenixSim/ECS/ECSCommands.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -18,7 +18,7 @@ using namespace Phoenix::RTS;
 
 namespace UnitSystemDetail
 {
-    class UpdateUnitsJob : public IJob<UnitComponent&>
+    class UpdateUnitsJob : public IJob<const UnitComponent&>
     {
     public:
 
@@ -32,7 +32,7 @@ namespace UnitSystemDetail
             LDSQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
         }
 
-        void Execute(WorldConstRef world, EntityId id, CommandBuffer& cb, UnitComponent&) override
+        void Execute(WorldConstRef world, EntityId id, CommandBuffer& cb, const UnitComponent&) override
         {
             UnitId unit = UnitId(id);
 

@@ -10,6 +10,8 @@ const FName FName::Empty = ""_n;
 
 #if PHOENIX_SIM_NAME_ENTRIES
 
+#define PHOENIX_DUMP_SIM_NAMES 0
+
 namespace
 {
     std::unordered_map<hash32_t, std::string>& NameToString()
@@ -21,8 +23,8 @@ namespace
 
 #ifdef _WIN32
 #include <windows.h>
-#include <vector>
 #include <string>
+#include <fstream>
 
 namespace
 {
@@ -89,6 +91,13 @@ namespace
             hash32_t hash = FName(str);
             NameToString()[hash] = str;
         }
+#if PHOENIX_DUMP_SIM_NAMES
+        std::ofstream out("Names.txt");
+        for (const auto& [hash, str] : NameToString())
+        {
+            out << std::hex << hash << " (" << hash << ") : " << str << "\n";
+        }
+#endif
         return true;
     }();
 }

@@ -164,25 +164,33 @@ namespace Phoenix
             // Data for any components shared between the current archetype and the new archetype are preserved.
             TArchetypeHandle SetArchetype(EntityId entityId, const FName& archetypeIdOrHash);
 
-            void* AddComponent(TArchetypeHandle& inOutHandle, const ComponentDefinition& componentDef);
-            void* AddComponent(EntityId entityId, const ComponentDefinition& componentDef);
+            void* AddComponent(
+                TArchetypeHandle& inOutHandle,
+                const ComponentDefinition& componentDef,
+                const void* componentData = nullptr);
 
-            void* AddComponent(TArchetypeHandle& inOutHandle, const FName& componentId);
-            void* AddComponent(EntityId entityId, const FName& componentId);
+            void* AddComponent(
+                EntityId entityId,
+                const ComponentDefinition& componentDef,
+                const void* componentData = nullptr);
+
+            void* AddComponent(
+                TArchetypeHandle& inOutHandle,
+                const FName& componentId,
+                const void* componentData = nullptr);
+
+            void* AddComponent(
+                EntityId entityId,
+                const FName& componentId,
+                const void* componentData = nullptr);
 
             template <class T>
             T* AddComponent(TArchetypeHandle& inOutHandle, const T& defaultValue = {})
             {
                 ComponentDefinition compDef = ComponentDefinition::Create<T>();
-                T* compPtr = static_cast<T*>(AddComponent(inOutHandle, compDef));
-                if (!compPtr)
-                {
-                    return nullptr;
-                }
-                *compPtr = defaultValue;
-                return compPtr;
+                return static_cast<T*>(AddComponent(inOutHandle, compDef, &defaultValue));
             }
-            
+
             template <class T>
             T* AddComponent(EntityId entityId, const T& defaultValue = {})
             {

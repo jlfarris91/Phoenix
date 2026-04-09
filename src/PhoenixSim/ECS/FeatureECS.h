@@ -137,7 +137,7 @@ namespace Phoenix::ECS
         //
 
         // Gets a pointer to the entities array for a given world.
-        static const decltype(FeatureECSDynamicBlock::Entities)* GetEntities(WorldConstRef world);
+        static const FixedEntityList* GetEntities(WorldConstRef world);
         
         static bool IsEntityValid(WorldConstRef world, EntityId entityId);
         
@@ -369,7 +369,11 @@ namespace Phoenix::ECS
         static bool HasComponent(WorldConstRef world, EntityId entityId, const FName& componentType);
 
         // Adds a new component to an entity.
-        static IComponent* AddComponent(WorldRef world, EntityId entityId, const FName& componentType);
+        static IComponent* AddComponent(
+            WorldRef world,
+            EntityId entityId,
+            const FName& componentType,
+            const void* componentData);
 
         // Adds a new component to an entity.
         template <class T>
@@ -611,7 +615,7 @@ namespace Phoenix::ECS
         template <class TCommand>
         static void RegisterCommandHandler(WorldRef world, std::function<void(WorldRef, const TCommand&)> handler)
         {
-            RegisterCommandHandler(world, [handler](WorldRef world, const CommandBuffer::Command& command)
+            RegisterCommandHandler(world, TCommand::StaticId, [handler](WorldRef world, const CommandBuffer::Command& command)
             {
                 handler(world, *static_cast<const TCommand*>(command.Data));
             });
@@ -623,6 +627,11 @@ namespace Phoenix::ECS
 
         // Declare that 'after' must not start until 'before' completes within the same phase.
         static void AddJobDependency(WorldRef world, EJobPhase phase, JobHandle after, JobHandle before);
+
+        // Execute a caller-owned JobScheduler using this world's task queue and command buffers.
+        // Rebuilds archetype batches if the archetype generation has changed since the last build.
+        // Call from ISystem::OnXxxWorldUpdate to run system-owned job graphs with full parallelism.
+        static void ExecuteScheduler(WorldRef world, JobScheduler& scheduler);
 
         bool bAllowParallelJobs = true;
 

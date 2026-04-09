@@ -247,7 +247,10 @@ ArchetypeManager::TArchetypeHandle ArchetypeManager::SetArchetype(EntityId entit
     return SetArchetype(handle, archetypeIdOrHash);
 }
 
-void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const ComponentDefinition& componentDef)
+void* ArchetypeManager::AddComponent(
+    TArchetypeHandle& inOutHandle,
+    const ComponentDefinition& componentDef,
+    const void* componentData)
 {
     ArchetypeDefinition currArchDef;
 
@@ -273,16 +276,23 @@ void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const Compon
 
     SetArchetype(inOutHandle, archDef->GetArchetypeHash());
 
-    return GetComponent(inOutHandle, componentDef.Id);
+    void* component = GetComponent(inOutHandle, componentDef.Id);
+
+    if (component && componentData)
+    {
+        std::memcpy(component, componentData, componentDef.Size);
+    }
+
+    return component;
 }
 
-void* ArchetypeManager::AddComponent(EntityId entityId, const ComponentDefinition& componentDef)
+void* ArchetypeManager::AddComponent(EntityId entityId, const ComponentDefinition& componentDef, const void* componentData)
 {
     TArchetypeHandle handle = GetHandleForEntity(entityId);
-    return AddComponent(handle, componentDef);
+    return AddComponent(handle, componentDef, componentData);
 }
 
-void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const FName& componentId)
+void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const FName& componentId, const void* componentData)
 {
     const ComponentDefinition* compDef = ComponentDefinitions.GetPtr(componentId);
     if (!compDef)
@@ -290,13 +300,13 @@ void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const FName&
         return nullptr;
     }
 
-    return AddComponent(inOutHandle, *compDef);
+    return AddComponent(inOutHandle, *compDef, componentData);
 }
 
-void* ArchetypeManager::AddComponent(EntityId entityId, const FName& componentId)
+void* ArchetypeManager::AddComponent(EntityId entityId, const FName& componentId, const void* componentData)
 {
     TArchetypeHandle handle = GetHandleForEntity(entityId);
-    return AddComponent(handle, componentId);
+    return AddComponent(handle, componentId, componentData);
 }
 
 bool ArchetypeManager::RemoveComponent(TArchetypeHandle& inOutHandle, const FName& componentId)
