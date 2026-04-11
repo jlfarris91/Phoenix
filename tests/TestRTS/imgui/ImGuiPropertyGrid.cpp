@@ -194,7 +194,7 @@ void DrawPropertyDescriptor(void* obj, const PropertyDescriptor& property, uint3
     else
     {
         tempObject.reserve(property.GetType()->GetSize());
-        property.Get(obj, tempObject.data(), tempObject.size());
+        property.Get(obj, tempObject.data());
         propertyObj = tempObject.data();
     }
 

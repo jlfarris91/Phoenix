@@ -36,21 +36,22 @@ namespace Phoenix
             return result;
         }
 
-        void Get(const void* obj, void* value, size_t len) const;
-        void Set(void* obj, const void* value, size_t len) const;
+        void Get(const void* obj, void* value) const;
+        void Set(void* obj, void* value) const;
+        void Set(void* obj, const void* value) const;
 
         template <class T>
         T Get(const void* obj) const
         {
             T value;
-            Get(obj, &value, sizeof(T));
+            Get(obj, &value);
             return value;
         }
 
         template <class T>
         void Set(void* obj, const T& value) const
         {
-            Set(obj, &value, sizeof(T));
+            Set(obj, static_cast<const void*>(&value));
         }
 
     private:

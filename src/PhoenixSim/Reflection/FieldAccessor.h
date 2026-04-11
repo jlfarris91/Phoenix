@@ -17,24 +17,10 @@ namespace Phoenix
         virtual bool GetPtr(void* obj, void** value) const = 0;
         virtual bool GetPtr(const void* obj, const void** value) const = 0;
 
-        virtual void Get(const void* obj, void* value, size_t len) const = 0;
-        virtual void Set(void* obj, const void* value, size_t len) const = 0;
+        virtual void Get(const void* obj, void* value) const = 0;
+        virtual void Set(void* obj, const void* value) const = 0;
 
         virtual void Initialize(void* memory) const = 0;
-
-        template <class T>
-        T Get(const void* obj) const
-        {
-            T value;
-            Get(obj, &value, sizeof(T));
-            return value;
-        }
-
-        template <class T>
-        void Set(void* obj, const T& value) const
-        {
-            Set(obj, &value, sizeof(T));
-        }
     };
 
     template <class T, class TValue>
@@ -95,13 +81,13 @@ namespace Phoenix
             return false;
         }
 
-        void Get(const void* obj, void* value, size_t len) const override
+        void Get(const void* obj, void* value) const override
         {
             TValue* typedValue = static_cast<TValue*>(value);
             *typedValue = Get(obj);
         }
 
-        void Set(void* obj, const void* value, size_t len) const override
+        void Set(void* obj, const void* value) const override
         {
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(obj, *typedValue);
@@ -174,14 +160,14 @@ namespace Phoenix
             return true;
         }
 
-        void Get(const void* obj, void* value, size_t len) const override
+        void Get(const void* obj, void* value) const override
         {
             PHX_ASSERT(obj == nullptr);
             TDecay* typedValue = static_cast<TDecay*>(value);
             *typedValue = Get();
         }
 
-        void Set(void* obj, const void* value, size_t len) const override
+        void Set(void* obj, const void* value) const override
         {
             PHX_ASSERT(obj == nullptr);
             const TDecay* typedValue = static_cast<const TDecay*>(value);

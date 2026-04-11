@@ -275,7 +275,7 @@ uint32 WriteStructToWasmMemory(IM3Runtime rt, uint32_t sretPtr, const Variant& v
         if (Script::ToWasmTypeChar(*type, c))
         {
             Variant fieldGv(*type);
-            field.Get(val.GetData(), fieldGv.GetData(), type->GetSize());
+            field.Get(val.GetData(), fieldGv.GetData());
             uint64_t slot = 0;
             Script::WriteWasmReturn(&slot, fieldGv);
             const size_t sz = (c == 'I' || c == 'F') ? 8 : 4;
@@ -289,7 +289,7 @@ uint32 WriteStructToWasmMemory(IM3Runtime rt, uint32_t sretPtr, const Variant& v
         {
             // Nested struct — read out of parent buffer, recurse.
             Variant nested(*type);
-            field.Get(val.GetData(), nested.GetData(), type->GetSize());
+            field.Get(val.GetData(), nested.GetData());
             offset += WriteStructToWasmMemory(rt, sretPtr + offset, nested, *type);
         }
     }
