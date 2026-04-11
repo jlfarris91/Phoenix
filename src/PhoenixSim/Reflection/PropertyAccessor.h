@@ -13,41 +13,13 @@ namespace Phoenix
         virtual bool IsStatic() const = 0;
         virtual bool RequiresWorld() const = 0;
 
-        virtual void Get(const void* obj, void* value, size_t len) const = 0;
-        virtual void Set(void* obj, const void* value, size_t len) const = 0;
+        virtual void Get(const void* obj, void* value) const = 0;
+        virtual void Set(void* obj, const void* value) const = 0;
 
-        virtual void Get(const World& world, const void* obj, void* value, size_t len) const = 0;
-        virtual void Set(World& world, void* obj, const void* value, size_t len) const = 0;
+        virtual void Get(const World& world, const void* obj, void* value) const = 0;
+        virtual void Set(World& world, void* obj, const void* value) const = 0;
 
         virtual void Initialize(void* memory) const = 0;
-
-        template <class T>
-        T Get(const void* obj) const
-        {
-            T value;
-            Get(obj, &value, sizeof(T));
-            return value;
-        }
-
-        template <class T>
-        void Set(void* obj, const T& value) const
-        {
-            Set(obj, &value, sizeof(T));
-        }
-
-        template <class T>
-        T Get(const World& world, const void* obj) const
-        {
-            T value;
-            Get(world, obj, &value, sizeof(T));
-            return value;
-        }
-
-        template <class T>
-        void Set(World& world, void* obj, const T& value) const
-        {
-            Set(world, obj, &value, sizeof(T));
-        }
     };
 
     template <class T, class TValue, class TSetterValue = const TValue&>
@@ -89,24 +61,24 @@ namespace Phoenix
             return false;
         }
 
-        void Get(const void* obj, void* value, size_t len) const override
+        void Get(const void* obj, void* value) const override
         {
             TValue* typedValue = static_cast<TValue*>(value);
             *typedValue = Get(obj);
         }
 
-        void Set(void* obj, const void* value, size_t len) const override
+        void Set(void* obj, const void* value) const override
         {
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(obj, *typedValue);
         }
 
-        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        void Get(const World& world, const void* obj, void* value) const override
         {
             PHX_ASSERT(false);
         }
 
-        void Set(World& world, void* obj, const void* value, size_t len) const override
+        void Set(World& world, void* obj, const void* value) const override
         {
             PHX_ASSERT(false);
         }
@@ -156,26 +128,26 @@ namespace Phoenix
             return false;
         }
 
-        void Get(const void* obj, void* value, size_t len) const override
+        void Get(const void* obj, void* value) const override
         {
             PHX_ASSERT(obj == nullptr);
             TValue* typedValue = static_cast<TValue*>(value);
             *typedValue = Get();
         }
 
-        void Set(void* obj, const void* value, size_t len) const override
+        void Set(void* obj, const void* value) const override
         {
             PHX_ASSERT(obj == nullptr);
             const TValue* typedValue = static_cast<const TValue*>(value);
             Set(*typedValue);
         }
 
-        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        void Get(const World& world, const void* obj, void* value) const override
         {
             PHX_ASSERT(false);
         }
 
-        void Set(World& world, void* obj, const void* value, size_t len) const override
+        void Set(World& world, void* obj, const void* value) const override
         {
             PHX_ASSERT(false);
         }
@@ -225,24 +197,24 @@ namespace Phoenix
             return true;
         }
 
-        void Get(const void* obj, void* value, size_t len) const override
+        void Get(const void* obj, void* value) const override
         {
             PHX_ASSERT(false);
         }
 
-        void Set(void* obj, const void* value, size_t len) const override
+        void Set(void* obj, const void* value) const override
         {
             PHX_ASSERT(false);
         }
 
-        void Get(const World& world, const void* obj, void* value, size_t len) const override
+        void Get(const World& world, const void* obj, void* value) const override
         {
             PHX_ASSERT(obj == nullptr);
             TValue* typedValue = static_cast<TValue*>(value);
             *typedValue = Get(world);
         }
 
-        void Set(World& world, void* obj, const void* value, size_t len) const override
+        void Set(World& world, void* obj, const void* value) const override
         {
             PHX_ASSERT(obj == nullptr);
             const TValue* typedValue = static_cast<const TValue*>(value);

@@ -95,7 +95,7 @@ Variant Script::ReadWasmArg(uint64_t*& sp, const TypeDescriptor& type)
 {
     const uint64_t slot = *sp++;
 
-    if (FName(type.GetTypeName().GetTemplateName()) == "TFixed"_n)
+    if (type.IsTemplate("Phoenix::TFixed"))
     {
         // TFixed stores a raw int32_t. Pass it through as-is.
         Variant gv(type);
@@ -158,7 +158,7 @@ void Script::WriteWasmReturn(uint64_t* sp, const Variant& val)
     const TypeDescriptor* type = val.GetType();
     assert(type != nullptr);
 
-    if (type->GetTypeName().GetTemplateName() == "TFixed")
+    if (type->IsTemplate("Phoenix::TFixed"))
     {
         // Raw int32 bits — pass through without float reinterpretation.
         int32_t raw;
@@ -289,13 +289,13 @@ Variant Script::ReadStructArg(uint64_t*& sp, const TypeDescriptor& desc)
         if (Script::IsSupportedWasmType(*type))
         {
             Variant fieldGv = Script::ReadWasmArg(sp, *type);
-            field.Set(resultData, fieldGv.GetData(), type->GetSize());
+            field.Set(resultData, fieldGv.GetData());
         }
         else if (IsExpandableStruct(*type))
         {
             // Nested struct — read its fields recursively, then copy bytes into parent.
             Variant nested = ReadStructArg(sp, *type);
-            field.Set(resultData, nested.GetData(), type->GetSize());
+            field.Set(resultData, nested.GetData());
         }
     }
     return result;

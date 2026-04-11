@@ -22,12 +22,17 @@ bool Phoenix::FieldDescriptor::GetPointer(const void* object, const void** outVa
     return Accessor->GetPtr(object, outValue);
 }
 
-void Phoenix::FieldDescriptor::Get(const void* obj, void* value, size_t len) const
+void Phoenix::FieldDescriptor::Get(const void* obj, void* value) const
 {
-    return Accessor->Get(obj, value, len);
+    return Accessor->Get(obj, value);
 }
 
-void Phoenix::FieldDescriptor::Set(void* obj, const void* value, size_t len) const
+void Phoenix::FieldDescriptor::Set(void* obj, void* value) const
 {
-    return Accessor->Set(obj, value, len);
+    return Accessor->Set(obj, value);
+}
+
+void Phoenix::FieldDescriptor::Set(void* obj, const void* value) const
+{
+    return Accessor->Set(obj, value);
 }
