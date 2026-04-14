@@ -21,11 +21,10 @@
     {
       "name": "windows-ci",
       "displayName": "Windows CI",
-      "generator": "Visual Studio 17 2022",
+      "generator": "Ninja",
       "binaryDir": "${sourceDir}/.build/windows-ci",
-      "architecture": "x64",
-      "toolset": "host=x64",
       "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
         "PHX_BUILD_TESTAPP": "OFF",
         "PHX_BUILD_TESTS": "ON",
         "PHX_USE_PCH": "OFF",

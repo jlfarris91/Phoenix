@@ -44,11 +44,27 @@ jobs:
       - name: Set up vcpkg
         uses: lukka/run-vcpkg@v11
 
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Cache sccache store
+        uses: actions/cache@v4
+        with:
+          path: .sccache
+          key: sccache-linux-${{ github.run_id }}
+          restore-keys: sccache-linux-
+
       - name: Configure
-        run: cmake --preset linux-ci
+        run: cmake --preset linux-ci -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_C_COMPILER_LAUNCHER=sccache
+        env:
+          SCCACHE_GHA_ENABLED: "false"
+          SCCACHE_DIR: ${{ github.workspace }}/.sccache
 
       - name: Build
         run: cmake --build .build/linux-ci --parallel
+        env:
+          SCCACHE_GHA_ENABLED: "false"
+          SCCACHE_DIR: ${{ github.workspace }}/.sccache
 
       - name: Test
         run: ctest --test-dir .build/linux-ci --output-on-failure
