@@ -27,7 +27,6 @@
         "CMAKE_BUILD_TYPE": "Release",
         "PHX_BUILD_TESTAPP": "OFF",
         "PHX_BUILD_TESTS": "ON",
-        "PHX_USE_PCH": "OFF",
         "VCPKG_MANIFEST_FEATURES": "tests"
       }
     },
