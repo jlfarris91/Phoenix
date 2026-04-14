@@ -249,7 +249,7 @@ namespace Phoenix::ECS
         EntityQueryBuilder& RequireAllComponents(EComponentAccess access = EComponentAccess::ReadWrite)
         {
             EntityQueryFilterComponentSet set;
-            ((set.Items.push_back(std::make_tuple(Underlying_T<TComponents>::StaticTypeName, access))), ...);
+            ((set.Items.push_back(std::make_tuple(StaticTypeName<Underlying_T<TComponents>>::TypeId, access))), ...);
             return RequireAllComponents(set);
         }
 
@@ -265,7 +265,7 @@ namespace Phoenix::ECS
         EntityQueryBuilder& RequireAnyComponents(EComponentAccess access = EComponentAccess::ReadWrite)
         {
             EntityQueryFilterComponentSet set;
-            ((set.Items.push_back(std::make_tuple(Underlying_T<TComponents>::StaticTypeName, access))), ...);
+            ((set.Items.push_back(std::make_tuple(StaticTypeName<Underlying_T<TComponents>>::TypeId, access))), ...);
             return RequireAnyComponents(set);
         }
 
@@ -281,7 +281,7 @@ namespace Phoenix::ECS
         EntityQueryBuilder& RequireNoneComponents(EComponentAccess access = EComponentAccess::ReadWrite)
         {
             EntityQueryFilterComponentSet set;
-            ((set.Items.push_back(std::make_tuple(Underlying_T<TComponents>::StaticTypeName, access))), ...);
+            ((set.Items.push_back(std::make_tuple(StaticTypeName<Underlying_T<TComponents>>::TypeId, access))), ...);
             return RequireAnyComponents(set);
         }
 

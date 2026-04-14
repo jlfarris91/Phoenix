@@ -33,11 +33,6 @@ void FeatureBlackboardBlock::Construct(void* dest, BlockBufferAllocator& allocat
     new (dest) FeatureBlackboardBlock(allocator, config);
 }
 
-FeatureBlackboard::FeatureBlackboard()
-{
-    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-}
-
 void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
@@ -45,7 +40,7 @@ void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, BlockBu
     FeatureBlackboardBlock::Config blockConfig;
     blockConfig.MaxBlackboardItems = PHX_BLACKBOARD_MAX_WORLD_SIZE;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         blockConfig.MaxBlackboardItems = featureConfigData.value("max_blackboard_items", blockConfig.MaxBlackboardItems);

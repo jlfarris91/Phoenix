@@ -1,18 +1,23 @@
+
 #include <ranges>
-#include <fstream>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+#include <cinttypes>
+#include <cstdio>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+#include <map>
+#include <set>
 
-// Tracy
-#include "PhoenixTracyImpl.h"
-#include <tracy/tracy/Tracy.hpp>
+#ifndef __EMSCRIPTEN__
+#include <tracy/Tracy.hpp>
+#endif
 
-// ImGui
+#include "SDL3/SDL.h"
 #include "imgui.h"
-#include "imgui_internal.h"
-
-// SDL3
-#include <SDL3/SDL_render.h>
-#include <SDL3/SDL_video.h>
-#include <SDL3/SDL_timer.h>
 
 // Phoenix
 #include <PhoenixSim/Color.h>
@@ -32,6 +37,7 @@
 #include <PhoenixSim/Navigation/FeatureNavigation.h>
 #include "PhoenixSim/Services/ServiceContainerBuilder.h"
 #include <PhoenixPhysics/FeaturePhysics.h>
+#include <PhoenixPhysics/BodyComponent.h>
 #include <PhoenixSteering/FeatureSteering.h>
 
 // RTS Features
@@ -39,43 +45,43 @@
 #include <PhoenixRTS/Abilities/FeatureAbilities.h>
 #include <PhoenixRTS/Effects/FeatureEffects.h>
 #include <PhoenixRTS/Orders/FeatureOrders.h>
+#include <PhoenixRTS/Projectiles/FeatureProjectile.h>
 #include <PhoenixRTS/Selection/FeatureSelection.h>
-#include "FeatureSpawner.h"
 
-// RTS Abilities, Effects, Responses
+// RTS Misc
 #include <PhoenixRTS/Abilities/Move/MoveAbilityHandler.h>
-#include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
+#include <PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h>
 #include <PhoenixRTS/Effects/EffectDamageHandler.h>
-#include "PhoenixRTS/Effects/EffectLaunchProjectileHandler.h"
+#include <PhoenixRTS/Effects/EffectLaunchProjectileHandler.h>
 #include <PhoenixRTS/Effects/ResponseDamageHandler.h>
-
-#include "PhoenixRTS/Data/DataProjectile.h"
-#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
-#include "PhoenixRTS/Projectiles/ProjectileComponent.h"
-
-// Remove Me
-#include <PhoenixSim/LDS/Json/LDSJsonTests.h>
-#include <PhoenixPhysics/BodyComponent.h>
+#include <PhoenixRTS/Data/DataProjectile.h>
+#include <PhoenixRTS/Projectiles/ProjectileComponent.h>
+#include <PhoenixRTS/Data/DataUnit.h>
+#include <PhoenixRTS/Units/UnitComponent.h>
 
 // SDL impl
 #include "SDL/SDLCamera.h"
-#include "SDL/SDLDebugRenderer.h"
-#include "SDL/SDLDebugState.h"
-#include "SDL/SDLTool.h"
 #include "SDL/SDLViewport.h"
-
-// Test App Tools
-#include "Console.h"
-#include "Logger.h"
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Units/UnitComponent.h"
+#include "SDL/SDLDebugState.h"
+#include "SDL/SDLDebugRenderer.h"
 #include "SDL/SDLLineModel.h"
 #include "SDL/SDLUtils.h"
+
+// Tools
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
-#include "Tools/ImGuiPropertyGrid.h"
 #include "Tools/NavMeshTool.h"
 #include "Tools/PlayerController.h"
+
+// ImGui
+#include "imgui/ImGuiPropertyGrid.h"
+#include "imgui/Console.h"
+#include "imgui/Logger.h"
+
+// Profiling
+#include "PhoenixLua/FeatureLua.h"
+#include "PhoenixScript/FeatureScript.h"
+#include "tracy/PhoenixTracyImpl.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -87,28 +93,46 @@ using namespace Phoenix::Steering;
 
 using PhoenixColor = Phoenix::Color;
 
-SDL_Window* GWindow;
-SDL_Renderer* GRenderer;
-
-FPSCalc GRendererFPS;
-
-Profiling::TracyProfiler GTracyProfiler;
-std::shared_ptr<Logger> GLogger;
-bool GShowConsoleWindow = true;
-
+// ===== Phoenix Session Globals =====
 std::shared_ptr<Session> GSession;
 bool GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
+std::mutex GWorldViewUpdateMutex;
+World* GLatestWorldView = nullptr;
 
-SDLDebugState* GDebugState;
-SDLDebugRenderer* GDebugRenderer;
-
+// ===== Rendering Globals =====
+SDL_Window* GWindow;
+SDL_Renderer* GRenderer;
+FPSCalc GRendererFPS;
 SDLCamera* GCamera;
 SDLViewport* GViewport;
+SDLDebugState* GDebugState;
+SDLDebugRenderer* GDebugRenderer;
+ImVec4 g_RenderTargetClearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+// ===== World Render Texture =====
+SDL_Texture* GWorldRenderTexture = nullptr;
+int GWorldRenderTextureW = 0;
+int GWorldRenderTextureH = 0;
+ImVec2 GWorldRenderSize = { 800.0f, 600.0f };
+bool GGameWindowHovered = false;
+
+// ===== Profiling =====
+TracyProfiler GTracyProfiler;
+
+// ===== Logging =====
+std::shared_ptr<Logger> GLogger;
+bool GShowConsoleWindow = true;
+
+// ===== Tools =====
 std::vector<std::shared_ptr<ISDLTool>> GTools;
-std::vector<std::shared_ptr<ISDLTool>> GActiveTools;
+std::set<std::shared_ptr<ISDLTool>> GActiveTools;
 std::shared_ptr<ISDLTool> GPlayerController;
+std::shared_ptr<ISDLTool> GCameraTool;
+std::shared_ptr<ISDLTool> GEntityTool;
+std::shared_ptr<ISDLTool> GNavMeshTool;
+
+// ===== World View =====
 
 // Single render-view buffer. The sim thread writes into this via SyncTo at the end of each
 // world update; the render thread reads from it throughout its frame. SyncTo is ~0.13ms so
@@ -120,6 +144,7 @@ World* GCurrWorldView = nullptr;
 bool GCopyWorld = true;
 FPSCalc GWorldViewUpdateCalc;
 
+// ===== Client State
 struct EntityBodyShape
 {
     EntityId EntityId;
@@ -153,7 +178,7 @@ bool GDrawGrid = false;
 
 uint32 GSimStepHz = Time::D;
 
-void UpdateSessionWorker();
+void SessionWorker();
 void OnPostWorldUpdate(WorldConstRef world);
 
 void InitSession()
@@ -170,16 +195,14 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
-    //serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().AsInterfaces();
     serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
-
-    // Register game-specific features
-    serviceContainerBuilder->RegisterService<FeatureSpawner>().AsInterfaces();
 
     // Register ability handlers
     serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
@@ -207,31 +230,36 @@ void InitSession()
 
     auto primaryWorld = worldManager->NewWorld({ "DefaultWorld"_n, "TestWorld"_n });
 
-    FeatureECS::RegisterArchetypeDefinition<TransformComponent, SteeringComponent>(*primaryWorld, "Unit"_n);
-    
-    GSessionThread = new std::thread(UpdateSessionWorker);
+#ifndef __EMSCRIPTEN__
+    GSessionThread = new std::thread(SessionWorker);
+#endif
 }
 
-void UpdateSessionWorker()
+void TickSession()
 {
-#if _WIN32
-    SetThreadDescription(GetCurrentThread(), L"Sim");
+    if (!GSession)
+        return;
+
+#ifndef __EMSCRIPTEN__
+    // TODO (jfarris): this can cause a crash for some reason
+    // FrameMarkNamed("Sim");
 #endif
 
+    SessionStepArgs stepArgs;
+    stepArgs.StepHz = GSimStepHz;
+
+    GSession->Tick(stepArgs);
+}
+
+void SessionWorker()
+{
     PHX_PROFILE_SET_THREAD_NAME("Sim", 0);
 
     GSessionThreadWantsExit = false;
-
     while (!GSessionThreadWantsExit)
     {
-        //FrameMarkNamed("Sim");
-
-        SessionStepArgs stepArgs;
-        stepArgs.StepHz = GSimStepHz;
-        GSession->Tick(stepArgs);
-
-        // Sleep(10);
-        // std::this_thread::yield();
+        TickSession();
+        //Sleep(10);
     }
 }
 
@@ -281,21 +309,21 @@ bool LoadLineModel(
 
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 {
-    SetProfiler(&GTracyProfiler);
+#ifndef __EMSCRIPTEN__
+    Profiling::SetProfiler(&GTracyProfiler);
 
     unsigned int numThreads = std::min(std::thread::hardware_concurrency(), 8u);
     if (numThreads > 1)
     {
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
+#endif
 
     GLogger = std::make_shared<Logger>("./Phoenix.log"); 
     SetLogger(GLogger);
     InitConsole(GLogger);
 
-    BlockBufferRunTests();
-    Json::RunLDSJsonTests();
-
+    // Initialize Phoenix session
     InitSession();
 
     GWindow = window;
@@ -304,23 +332,22 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
     GCamera = new SDLCamera();
     GCamera->Zoom = 20.0f;
 
-    GViewport = new SDLViewport(window, GCamera);
+    GViewport = new SDLViewport(window, renderer, GCamera);
 
     GDebugState = new SDLDebugState(GViewport);
     GDebugRenderer = new SDLDebugRenderer(renderer, GViewport);
 
-    auto cameraTool = std::make_shared<CameraTool>(GSession, GCamera, GViewport);
-    auto entityTool = std::make_shared<EntityTool>(GSession);
-    auto navMeshTool = std::make_shared<NavMeshTool>(GSession);
-
+    GCameraTool     = std::make_shared<CameraTool>(GSession, GCamera, GViewport);
+    GEntityTool     = std::make_shared<EntityTool>(GSession);
+    GNavMeshTool    = std::make_shared<NavMeshTool>(GSession);
     GPlayerController = std::make_shared<PlayerController>(GSession, GCamera, GViewport);
 
-    GTools.push_back(cameraTool);
-    GTools.push_back(entityTool);
-    GTools.push_back(navMeshTool);
+    GTools.push_back(GCameraTool);
+    GTools.push_back(GEntityTool);
+    GTools.push_back(GNavMeshTool);
     GTools.push_back(GPlayerController);
 
-    GActiveTools.push_back(GPlayerController);
+    GActiveTools.insert(GPlayerController);
 
     Vec2 pt1 = Vec2::XAxis;
     Vec2 pt2 = pt1.Rotate(Deg2Rad(-135));
@@ -343,10 +370,35 @@ void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 
 void OnAppRenderWorld()
 {
+#ifdef __EMSCRIPTEN__
+    TickSession();
+#endif
+
     float mx, my;
     SDL_GetMouseState(&mx, &my);
 
     GRendererFPS.Tick();
+
+    // Create or resize the world render texture to match the current Game window size
+    {
+        int w = (int)GWorldRenderSize.x;
+        int h = (int)GWorldRenderSize.y;
+        if (w < 1) w = 1;
+        if (h < 1) h = 1;
+        if (!GWorldRenderTexture || w != GWorldRenderTextureW || h != GWorldRenderTextureH)
+        {
+            if (GWorldRenderTexture)
+                SDL_DestroyTexture(GWorldRenderTexture);
+            GWorldRenderTexture = SDL_CreateTexture(GRenderer, SDL_PIXELFORMAT_RGBA8888,
+                SDL_TEXTUREACCESS_TARGET, w, h);
+            GWorldRenderTextureW = w;
+            GWorldRenderTextureH = h;
+        }
+    }
+
+    SDL_SetRenderTarget(GRenderer, GWorldRenderTexture);
+    SDL_SetRenderDrawColor(GRenderer, (Uint8)(g_RenderTargetClearColor.x * 255), (Uint8)(g_RenderTargetClearColor.y * 255), (Uint8)(g_RenderTargetClearColor.z * 255), (Uint8)(g_RenderTargetClearColor.w * 255));
+    SDL_RenderClear(GRenderer);
 
     GDebugRenderer->Reset();
 
@@ -481,7 +533,18 @@ void OnAppRenderWorld()
                 }
             }
 
+            auto scaleY = GViewport->Scale.y;
+            if (entityBodyShape.Asset == "Units/Human/Tower/Tower.json"_n)
+            {
+                GViewport->Scale.y = 1.0f;
+            }
+
             DrawLineModel(GDebugRenderer, *lineModel, entityBodyShape.Transform, entityBodyShape.AssetScale, entityBodyShape.AssetTint);
+            
+            if (entityBodyShape.Asset == "Units/Human/Tower/Tower.json"_n)
+            {
+                GViewport->Scale.y = scaleY;
+            }
         }
 
         for (const ProjectileEntity& projectileEntity : GProjectileEntities)
@@ -513,15 +576,35 @@ void OnAppRenderWorld()
             tool->OnAppRenderWorld(world, *GDebugState, *GDebugRenderer);
         }
     }
+
+    SDL_SetRenderTarget(GRenderer, nullptr);
 }
 
-void OnAppRenderUI()
+void RenderPhoenixUI()
 {
     ImGuiIO& io = ImGui::GetIO();
 
     SDL_FPoint mousePos;
     SDL_GetMouseState(&mousePos.x, &mousePos.y);
-    Vec2 worldMousePos = GViewport->ViewportPosToWorldPos(mousePos);
+    Vec2 worldMousePos = GViewport->ViewportPosToWorldPos(GViewport->WindowPosToViewportPos(mousePos));
+
+    // Game viewport window — displays the world render texture
+    ImGui::Begin("Game");
+    {
+        GGameWindowHovered = ImGui::IsWindowHovered();
+        ImVec2 contentSize = ImGui::GetContentRegionAvail();
+        if (contentSize.x > 0 && contentSize.y > 0)
+        {
+            GWorldRenderSize = contentSize;
+            ImVec2 contentPos = ImGui::GetCursorScreenPos();
+            GViewport->Offset = { contentPos.x, contentPos.y };
+            GViewport->Width  = (int)contentSize.x;
+            GViewport->Height = (int)contentSize.y;
+            if (GWorldRenderTexture)
+                ImGui::Image((ImTextureID)(intptr_t)GWorldRenderTexture, contentSize);
+        }
+    }
+    ImGui::End();
 
     ImGui::Begin("Debug");
     {
@@ -569,6 +652,8 @@ void OnAppRenderUI()
         ImGui::Checkbox("Copy World", &GCopyWorld);
         ImGui::Checkbox("Draw Grid", &GDrawGrid);
 
+        ImGui::SliderFloat2("Scale", &GViewport->Scale.x, 0.01f, 2.0f);
+
         if (ImGui::CollapsingHeader("Features"))
         {
             for (const auto& feature : GSession->GetFeatureSet()->GetFeatures())
@@ -576,7 +661,7 @@ void OnAppRenderUI()
                 const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
                 const FeatureDefinition& featureDefinition = feature->GetFeatureDefinition();
 
-                if (ImGui::CollapsingHeader(typeDescriptor.DisplayName))
+                if (ImGui::CollapsingHeader(typeDescriptor.GetDisplayName().c_str()))
                 {
                     if (ImGui::TreeNode("Properties:"))
                     {
@@ -595,7 +680,7 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            if (ImGui::TreeNode(blockDef.Type->GetDisplayName().c_str()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
@@ -615,7 +700,7 @@ void OnAppRenderUI()
                                 continue;
                             }
 
-                            if (ImGui::TreeNode(blockDef.Type->CName))
+                            if (ImGui::TreeNode(blockDef.Type->GetDisplayName().c_str()))
                             {
                                 DrawPropertyGrid(block, *blockDef.Type);
                                 ImGui::TreePop();
@@ -630,25 +715,73 @@ void OnAppRenderUI()
     }
     ImGui::End();
 
+    // TODO (jfarris): The tools system sucks. Actually most of this file sucks big time. Refactor later.
     ImGui::Begin("Tools");
     {
-        GActiveTools.clear();
-
+        // Toggle buttons — one per tool
         for (const auto& tool : GTools)
         {
             const auto& descriptor = tool->GetTypeDescriptor();
+            bool active = GActiveTools.count(tool) > 0;
 
-            if (ImGui::CollapsingHeader(descriptor.DisplayName))
+            if (active)
+                ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
+
+            std::string buttonId = std::string(descriptor.GetDisplayName().c_str()) + "##toggle";
+            if (ImGui::Button(buttonId.c_str()))
             {
-                GActiveTools.push_back(tool);
+                if (active)
+                {
+                    GActiveTools.erase(tool);
+                }
+                else
+                {
+                    GActiveTools.insert(tool);
+
+                    // PlayerController is exclusive — disable everything else
+                    if (tool == GPlayerController)
+                    {
+                        GActiveTools.clear();
+                        GActiveTools.insert(GPlayerController);
+                    }
+                    else
+                    {
+                        // Any non-PlayerController tool deactivates PlayerController
+                        GActiveTools.erase(GPlayerController);
+
+                        // EntityTool and NavMeshTool require CameraTool
+                        if (tool == GEntityTool || tool == GNavMeshTool)
+                            GActiveTools.insert(GCameraTool);
+                    }
+                }
+            }
+            if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && tool->GetDescription()[0] != '\0')
+                ImGui::SetTooltip("%s", tool->GetDescription());
+
+            if (active)
+                ImGui::PopStyleColor();
+
+            ImGui::SameLine();
+        }
+        ImGui::NewLine();
+
+        // Property foldouts for each active tool
+        for (const auto& tool : GTools)
+        {
+            if (GActiveTools.count(tool) == 0)
+                continue;
+
+            const auto& descriptor = tool->GetTypeDescriptor();
+            if (ImGui::CollapsingHeader(descriptor.GetDisplayName().c_str()))
+            {
+                if (tool->GetDescription()[0] != '\0')
+                {
+                    ImGui::TextDisabled("%s", tool->GetDescription());
+                    ImGui::Spacing();
+                }
                 DrawPropertyGrid(tool.get(), descriptor);
                 tool->OnAppRenderUI(io);
             }
-        }
-
-        if (GActiveTools.empty())
-        {
-            GActiveTools.push_back(GPlayerController);
         }
     }
     ImGui::End();
@@ -691,7 +824,7 @@ void OnAppRenderUI()
                 for (const std::shared_ptr<ISystem>& system : featureECS->GetSystems())
                 {
                     const auto& systemDescriptor = system->GetTypeDescriptor();
-                    if (ImGui::CollapsingHeader(systemDescriptor.DisplayName))
+                    if (ImGui::CollapsingHeader(systemDescriptor.GetDisplayName().c_str()))
                     {
                         DrawPropertyGrid(system.get(), systemDescriptor);
                     }
@@ -725,7 +858,7 @@ void OnAppRenderUI()
                     for (auto && [id, archDef] : ecsDynamicBlock.ArchetypeManager.GetArchetypeDefinitions())
                     {
                         char treeNodeId[64];
-                        sprintf_s(treeNodeId, _countof(treeNodeId), "[%u] %u", index, (hash32_t)id);
+                        snprintf(treeNodeId, sizeof(treeNodeId), "[%u] %u", index, (hash32_t)id);
 
                         if (ImGui::TreeNode(treeNodeId))
                         {
@@ -751,7 +884,7 @@ void OnAppRenderUI()
                                 {
                                     const ComponentDefinition& compDef = archDef[i];
                                     
-                                    if (ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                                    if (ImGui::TreeNode(compDef.TypeDescriptor->GetDisplayName().c_str()))
                                     {
                                         if (ImGui::BeginTable("Props", 2, ImGuiTableFlags_SizingFixedFit))
                                         {                                
@@ -781,7 +914,7 @@ void OnAppRenderUI()
                     archetypeManager.ForEachArchetypeList([&listIndex](const FixedArchetypeList& list)
                     {
                         char treeNodeId[64];
-                        sprintf_s(treeNodeId, _countof(treeNodeId), "[%u] %u (%u)", listIndex, list.GetId(), (hash32_t)list.GetDefinition().GetId());
+                        snprintf(treeNodeId, sizeof(treeNodeId), "[%u] %u (%u)", listIndex, list.GetId(), (hash32_t)list.GetDefinition().GetId());
 
                         if (ImGui::TreeNode(treeNodeId))
                         {
@@ -806,13 +939,13 @@ void OnAppRenderUI()
                                 list.ForEachInstance([&](const ArchetypeHandle& handle)
                                 {
                                     char instanceTreeNodeId[64];
-                                    sprintf_s(instanceTreeNodeId, _countof(treeNodeId), "[%u] %u", instanceIndex, (hash32_t)handle.GetEntityId());
+                                    snprintf(instanceTreeNodeId, sizeof(instanceTreeNodeId), "[%u] %u", instanceIndex, (hash32_t)handle.GetEntityId());
 
                                     if (ImGui::TreeNode(instanceTreeNodeId))
                                     {
                                         list.ForEachComponent(handle, [](const ComponentDefinition& compDef, const void* comp)
                                         {
-                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                                            if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetDisplayName().c_str()))
                                             {
                                                 DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                                                 ImGui::TreePop();
@@ -972,7 +1105,7 @@ void OnAppRenderUI()
                 {
                     FeatureECS::ForEachComponent(world, selectedEntityId, [&](const ComponentDefinition& compDef, const void* comp)
                     {
-                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->CName))
+                        if (compDef.TypeDescriptor && ImGui::TreeNode(compDef.TypeDescriptor->GetDisplayName().c_str()))
                         {
                             DrawPropertyGrid(comp, *compDef.TypeDescriptor);
                             ImGui::TreePop();
@@ -1017,6 +1150,11 @@ void OnAppRenderUI()
     ShowConsole(&GShowConsoleWindow);
 }
 
+void OnAppRenderUI()
+{
+    RenderPhoenixUI();
+}
+
 void OnAppEvent(SDL_Event* event)
 {
     GDebugState->ProcessAppEvent(event);
@@ -1032,14 +1170,20 @@ void OnAppEvent(SDL_Event* event)
 
 void OnAppShutdown()
 {
+#ifndef __EMSCRIPTEN__
     GSessionThreadWantsExit = true;
-    GSessionThread->join();
+    if (GSessionThread)
+    {
+        GSessionThread->join();
+        delete GSessionThread;
+        GSessionThread = nullptr;
+    }
+#endif
 
-    GLogger.reset();
+    if (GSession)
+    {
+        GSession->Shutdown();
+        GSession.reset();
+    }
 }
-
-
-
-
-
 

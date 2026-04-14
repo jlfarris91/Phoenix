@@ -6,20 +6,17 @@
 #include "PhoenixSim/WorldsFwd.h"
 #include "PhoenixSim/ECS/EntityId.h"
 
-namespace Phoenix
-{
-    struct SDLCamera;
-    struct SDLViewport;
-    struct SDLDebugRenderer;
-}
+struct SDLCamera;
+struct SDLViewport;
+struct SDLDebugRenderer;
 
 void DrawGrid(
     SDL_Window* window,
-    Phoenix::SDLDebugRenderer* renderer,
-    const Phoenix::SDLViewport* viewport,
-    const Phoenix::SDLCamera* camera);
+    SDLDebugRenderer* renderer,
+    const SDLViewport* viewport,
+    const SDLCamera* camera);
 
 void DrawSelectionCircle(
     Phoenix::WorldConstRef world,
-    Phoenix::SDLDebugRenderer& renderer,
+    SDLDebugRenderer& renderer,
     Phoenix::ECS::EntityId entityId);

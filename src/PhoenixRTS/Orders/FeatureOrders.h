@@ -43,10 +43,12 @@ namespace Phoenix::RTS
     class PHOENIX_RTS_API FeatureOrders : public IFeature
     {
         PHX_DECLARE_FEATURE_TYPE(FeatureOrders)
+        {
+            FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
+            FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
+        }
 
     public:
-
-        FeatureOrders();
 
         //
         // Command Handler Management
@@ -201,4 +203,12 @@ namespace Phoenix::RTS
 
         std::unordered_map<FName, std::shared_ptr<ICommandHandler>> CommandIdToHandlerMap;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::RTS::FeatureOrders)
+{
+    registration
+        .Namespace("Phoenix.Orders")
+        .StaticMethod("IssueCommand(world, unit, command)", &RTS::FeatureOrders::StaticIssueCommand)
+        .StaticMethod("HasOrders(world, unit)",    &RTS::FeatureOrders::HasOrders);
 }

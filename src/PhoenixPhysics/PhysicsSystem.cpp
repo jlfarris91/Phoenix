@@ -1,5 +1,6 @@
 ﻿
 #include "PhoenixPhysics/PhysicsSystem.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/Color.h"
 #include "PhoenixSim/Debug/Debug.h"

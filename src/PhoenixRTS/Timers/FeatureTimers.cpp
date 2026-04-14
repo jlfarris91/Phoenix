@@ -32,12 +32,6 @@ void FeatureTimersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allo
     new (dest) FeatureTimersDynamicBlock(allocator, config);
 }
 
-FeatureTimers::FeatureTimers()
-{
-    FEATURE_CHANNEL(FeatureChannels::PreUpdate)
-    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-}
-
 FixedTimerManager* FeatureTimers::GetSessionTimerManager(SessionRef session)
 {
     FeatureTimersDynamicBlock* block = session.GetBlock<FeatureTimersDynamicBlock>();
@@ -79,7 +73,7 @@ void FeatureTimers::OnWorldLayout(const WorldLayoutContext& context, BlockBuffer
     FeatureTimersDynamicBlock::Config dynamicBlockConfig;
     dynamicBlockConfig.MaxTimers = PHX_MAX_WORLD_TIMERS;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
         dynamicBlockConfig.MaxTimers = featureConfigData.value("max_world_timers", dynamicBlockConfig.MaxTimers);

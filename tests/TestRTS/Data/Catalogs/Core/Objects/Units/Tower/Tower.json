@@ -38,8 +38,8 @@
         {
             "vital": "HealthVital",
             "stats": {
-                "starting": 1500,
-                "max": 1500,
+                "starting": 15000,
+                "max": 15000,
                 "regen": 0
             }
         }

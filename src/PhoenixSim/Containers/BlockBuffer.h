@@ -2,7 +2,7 @@
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Delegates.h"
-#include "PhoenixSim/Reflection.h"
+#include "PhoenixSim/Reflection/Registration.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/OffsetRef.h"
 
@@ -95,9 +95,9 @@ namespace Phoenix
         template <class TBlock>
         BufferBlockDefinition& RegisterBlock(EBufferBlockType type, const BufferBlockLayout& layout)
         {
-            const TypeDescriptor& typeDescriptor = TBlock::GetStaticTypeDescriptor();
+            const TypeDescriptor& typeDescriptor = TypeRegistry::Get<TBlock>();
             return Definitions.emplace_back(
-                typeDescriptor.GetFName(),
+                typeDescriptor.GetTypeId(),
                 layout,
                 (uint8)type,
                 &typeDescriptor);
@@ -210,13 +210,13 @@ namespace Phoenix
         template <class TBlock>
         TBlock* GetBlock()
         {
-            return reinterpret_cast<TBlock*>(GetBlock(TBlock::StaticTypeName));
+            return reinterpret_cast<TBlock*>(GetBlock(StaticTypeName<TBlock>::TypeId));
         }
 
         template <class TBlock>
         const TBlock* GetBlock() const
         {
-            return reinterpret_cast<const TBlock*>(GetBlock(TBlock::StaticTypeName));
+            return reinterpret_cast<const TBlock*>(GetBlock(StaticTypeName<TBlock>::TypeId));
         }
 
         template <class TBlock>
@@ -251,8 +251,6 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API BufferBlockBase
     {
-        virtual ~BufferBlockBase() = default;
-        virtual const TypeDescriptor& GetTypeDescriptor() const = 0;
     };
 
     template <class T>
@@ -324,27 +322,13 @@ namespace Phoenix
     void BlockBufferRunTests();
 }
 
-#define PHX_DECLARE_BLOCK_BEGIN(block) \
-    PHX_DECLARE_TYPE_WITH_BASE_BEGIN(block, BufferBlockBase)
-
-#define PHX_DECLARE_BLOCK_END() \
-    PHX_DECLARE_TYPE_WITH_BASE_END()
-
 #define PHX_DECLARE_BLOCK(block) \
-    PHX_DECLARE_BLOCK_BEGIN(block) \
-    PHX_DECLARE_BLOCK_END()
+    PHX_DECLARE_TYPE(block)
 
-#define PHX_DECLARE_BLOCK_WITH_ALLOC_BEGIN(block) \
+#define PHX_DECLARE_BLOCK_WITH_ALLOC(block) \
     struct Config; \
     block(BlockBufferAllocator& allocator, const Config& config); \
     block(BlockBufferAllocator& allocator, const Config& config, const block& other); \
     static BufferBlockLayout Layout(Config config); \
     static void Construct(void* dest, BlockBufferAllocator& allocator, Config config); \
-    PHX_DECLARE_BLOCK_BEGIN(block)
-
-#define PHX_DECLARE_BLOCK_WITH_ALLOC_END() \
-    PHX_DECLARE_BLOCK_END()
-
-#define PHX_DECLARE_BLOCK_WITH_ALLOC(block) \
-    PHX_DECLARE_BLOCK_WITH_ALLOC_BEGIN(block) \
-    PHX_DECLARE_BLOCK_WITH_ALLOC_END()
+    PHX_DECLARE_TYPE(block)

@@ -14,7 +14,7 @@ endif()
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 
 cmake_minimum_required(VERSION 3.20)
-project(Phoenix LANGUAGES CXX)
+project(Phoenix LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -40,7 +40,7 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:MSVC>:/wd4100>
     $<$<CXX_COMPILER_ID:MSVC>:/wd4101>
     $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>
-    $<$<CXX_COMPILER_ID:Clang,AppleClang>:-Wno-changes-meaning>
+    $<$<AND:$<CXX_COMPILER_ID:Clang,AppleClang>,$<NOT:$<BOOL:${EMSCRIPTEN}>>>:-Wno-changes-meaning>
     $<$<CXX_COMPILER_ID:GNU>:-fpermissive>
 )
 
@@ -48,14 +48,27 @@ add_compile_options(
 set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.natvis")
 
 find_package(nlohmann_json CONFIG REQUIRED)
+find_package(inja CONFIG REQUIRED)
 
 add_subdirectory(src/PhoenixSim)
 add_subdirectory(src/PhoenixPhysics)
 add_subdirectory(src/PhoenixSteering)
-add_subdirectory(src/PhoenixLua)
 add_subdirectory(src/PhoenixRTS)
+add_subdirectory(src/PhoenixScript)
+add_subdirectory(src/PhoenixLua)
+if(NOT EMSCRIPTEN)
+    add_subdirectory(tools/PhoenixAPIGen)   # dumps api.json; consumed by downstream generators
+    add_subdirectory(tools/PhoenixWasmGen)  # generates host_api.h
+    add_subdirectory(tools/PhoenixLuaGen)      # generates lua_bridge.c
+    add_subdirectory(tools/PhoenixLuaRuntime)  # Lua runtime compiled to WASM
+endif()
 option(PHX_BUILD_TESTAPP "Build TestRTS test application" ON)
+option(PHX_BUILD_TESTS "Build unit tests" OFF)
 option(PHX_USE_PCH "Use precompiled headers" ON)
 if(NOT EMSCRIPTEN AND PHX_BUILD_TESTAPP)
     add_subdirectory(tests/TestRTS)
+endif()
+if(PHX_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests/unit)
 endif()

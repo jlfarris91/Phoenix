@@ -7,6 +7,11 @@ const FeatureDefinition& IFeature::GetFeatureDefinition()
     return Definition;
 }
 
+FName IFeature::GetFeatureId() const
+{
+    return Definition.FeatureId;
+}
+
 void IFeature::OnPreUpdate(const FeatureUpdateArgs& args)
 {
 }
@@ -65,6 +70,11 @@ void IFeature::OnDebugRender(WorldConstRef world, const IDebugState& state, IDeb
 {
 }
 
+IFeature::IFeature(FName featureId)
+    : Definition({ .FeatureId = featureId })
+{
+}
+
 FeatureSharedPtr FeatureSet::GetFeature(const FName& name) const
 {
     auto&& feature = Features.find(name);
@@ -99,8 +109,7 @@ FeatureSet::FeatureSet(const FeatureSetCtorArgs& args)
 {
     for (const FeatureSharedPtr& feature : args.Features)
     {
-        const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
-        Features.insert_or_assign(typeDescriptor.GetFName(), feature);
+        Features.insert_or_assign(feature->GetFeatureId(), feature);
     }
 
     RegisterFeatureChannels(args.Features);
@@ -155,8 +164,7 @@ void FeatureSet::RegisterFeatureChannels(const std::vector<FeatureSharedPtr>& fe
         FeatureDefinition featureDefinition = feature->GetFeatureDefinition();
         for (const FeatureChannelInsertArgs& channelInsert : featureDefinition.Channels)
         {
-            const TypeDescriptor& typeDescriptor = feature->GetTypeDescriptor();
-            remainingInserts.emplace_back(typeDescriptor.GetFName(), channelInsert.Channel, channelInsert.InsertPosition);
+            remainingInserts.emplace_back(feature->GetFeatureId(), channelInsert.Channel, channelInsert.InsertPosition);
         }
     }
 
@@ -228,8 +236,7 @@ int32 FeatureSet::FindChannelInsertIndex(
 
     for (size_t i = 0; i < channelFeatures.size(); ++i)
     {
-        const TypeDescriptor& typeDescriptor = channelFeatures[i]->GetTypeDescriptor();
-        if (typeDescriptor.GetFName() != insertPosition.FeatureName)
+        if (channelFeatures[i]->GetFeatureId() != insertPosition.FeatureName)
         {
             continue;
         }

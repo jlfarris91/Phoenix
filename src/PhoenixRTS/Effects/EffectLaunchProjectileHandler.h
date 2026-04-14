@@ -7,7 +7,7 @@ namespace Phoenix::RTS
 {    
     class PHOENIX_RTS_API EffectLaunchProjectileHandler : public IEffectHandler
     {
-        PHX_DECLARE_TYPE_WITH_BASE(EffectLaunchProjectileHandler, IEffectHandler)
+        PHX_DECLARE_TYPE(EffectLaunchProjectileHandler, IEffectHandler)
 
     public:
 

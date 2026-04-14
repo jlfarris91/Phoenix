@@ -5,42 +5,48 @@
 
 #include <PhoenixSim/Containers/Optional.h>
 #include <PhoenixSim/ECS/EntityId.h>
-#include <PhoenixSim/Reflection.h>
 
-#include "../SDL/SDLCamera.h"
-#include "../SDL/SDLTool.h"
+#include "../sdl/SDLCamera.h"
+#include "../sdl/SDLTool.h"
 
 namespace Phoenix
 {
-    struct SDLViewport;
-    struct SDLCamera;
     class Session;
+}
 
-    struct PlayerController : ISDLTool
-    {
-        PHX_DECLARE_TYPE_BEGIN(PlayerController)
-            PHX_REGISTER_FIELD(float, PanSpeed)
-            PHX_REGISTER_FIELD(float, ZoomSpeed)
-        PHX_DECLARE_TYPE_END()
+struct SDLViewport;
+struct SDLCamera;
 
-        PlayerController(const std::shared_ptr<Session>& session, SDLCamera* camera, SDLViewport* viewport);
+struct PlayerController : public ISDLTool
+{
+    PHX_DECLARE_TYPE_DERIVED(PlayerController, ISDLTool)
 
-        void OnActivated() override;
-        void OnDeactivated() override;
-        void OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
-        void OnAppRenderUI(ImGuiIO& io) override;
-        void OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+    const char* GetDescription() const override { return "Select and issue orders to units. Left-click to select, right-click to move or attack."; }
 
-        std::shared_ptr<Session> Session;
-        SDLCamera* Camera;
-        SDLViewport* Viewport;
-        float PanSpeed = 100.0f;
-        float ZoomSpeed = 0.1f;
+    PlayerController(const std::shared_ptr<Phoenix::Session>& session, SDLCamera* camera, SDLViewport* viewport);
 
-        Vec2 CursorWorldPos;
-        TOptional<SDL_FPoint> CameraDragPos;
-        TOptional<SDL_FPoint> CursorDragStart;
-        TOptional<SDL_FPoint> BoxSelectDragStart, BoxSelectDragEnd;
-        ECS::EntityId HoverTarget;
-    };
+    void OnActivated() override;
+    void OnDeactivated() override;
+    void OnAppRenderWorld(Phoenix::WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
+    void OnAppRenderUI(ImGuiIO& io) override;
+    void OnAppEvent(Phoenix::WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+
+    std::shared_ptr<Phoenix::Session> Session;
+    SDLCamera* Camera;
+    SDLViewport* Viewport;
+    float PanSpeed = 100.0f;
+    float ZoomSpeed = 0.1f;
+
+    Phoenix::Vec2 CursorWorldPos;
+    Phoenix::TOptional<SDL_FPoint> CameraDragPos;
+    Phoenix::TOptional<SDL_FPoint> CursorDragStart;
+    Phoenix::TOptional<SDL_FPoint> BoxSelectDragStart, BoxSelectDragEnd;
+    Phoenix::ECS::EntityId HoverTarget;
+};
+
+PHX_DEFINE_TYPE(PlayerController)
+{
+    registration
+        .Field("PanSpeed", &PlayerController::PanSpeed)
+        .Field("ZoomSpeed", &PlayerController::ZoomSpeed);
 }

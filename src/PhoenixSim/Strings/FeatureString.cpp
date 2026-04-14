@@ -122,7 +122,7 @@ void Phoenix::FeatureString::OnSessionLayout(const SessionLayoutContext& context
     dynamicBlockConfig.MaxNumStrings = 8192;
     dynamicBlockConfig.MaxBufferCapacity = 8192 * 64;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
 
@@ -144,7 +144,7 @@ void Phoenix::FeatureString::OnWorldLayout(const WorldLayoutContext& context, Bl
     dynamicBlockConfig.MaxNumStrings = 0;
     dynamicBlockConfig.MaxBufferCapacity = 0;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
 

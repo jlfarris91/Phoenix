@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/FixedPoint/FixedPoint.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -54,4 +55,57 @@ namespace Phoenix
         auto v2 = v / Pi.Value;
         return Q64(v2);
     }
+}
+
+// ── Reflection type traits for TFixed domain types ───────────────────────────
+//
+// Register canonical names so TypeRegistry and GenericConverter can identify
+// these types.  Value == Distance (same TFixed<12,int32> type) — Distance is
+// the canonical name.  InvValue / DeltaTime are inverse types, not registered.
+
+#include "PhoenixSim/Reflection/TypeDescriptorMetadataProvider.h"
+#include "PhoenixSim/Reflection/TypeName.h"
+
+PHX_DEFINE_TYPE(Phoenix::Value)
+{
+    registration.Alias("Value");
+}
+
+// Distance is the same underlying type as Value...
+// PHX_DEFINE_TYPE(Phoenix::Distance)
+// {
+//     registration.Alias("Distance");
+// }
+
+PHX_DEFINE_TYPE(Phoenix::Time)
+{
+    registration.Alias("Time");
+}
+
+PHX_DEFINE_TYPE(Phoenix::Speed)
+{
+    registration.Alias("Speed");
+}
+
+PHX_DEFINE_TYPE(Phoenix::Angle)
+{
+    registration.Alias("Angle");
+}
+
+namespace Phoenix
+{
+    // A specialization for TFixed to provide the number of fractional bits as metadata, which is useful for UI to
+    // display the fixed-point value correctly.
+    template <uint8 Tb, class T>
+    struct TypeDescriptorMetadataProvider<TFixed<Tb, T>>
+    {
+        static std::unordered_map<std::string, std::string> GetMetadata()
+        {
+            return
+            { 
+                { "FractionalBits", std::to_string(Tb) },
+                { "UnderlyingType", std::to_string(StaticTypeName<T>::TypeId) }
+            };
+        }
+    };
 }

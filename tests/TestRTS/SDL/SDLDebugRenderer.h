@@ -6,46 +6,41 @@
 #include <PhoenixSim/Color.h>
 #include <PhoenixSim/Platform.h>
 
-namespace Phoenix
+struct SDLViewport;
+
+struct SDLDebugRenderer : public Phoenix::IDebugRenderer
 {
-    struct SDLViewport;
-}
+    SDLDebugRenderer(SDL_Renderer* renderer, SDLViewport* viewport);
 
-namespace Phoenix
-{
-    struct SDLDebugRenderer : public IDebugRenderer
-    {
-        SDLDebugRenderer(SDL_Renderer* renderer, SDLViewport* viewport);
+    void Reset();
 
-        void Reset();
+    void DrawCircle(const Phoenix::Vec2& pt, Phoenix::Distance radius, const Phoenix::Color& color, int32_t segments = 32) override;
 
-        void DrawCircle(const Vec2& pt, Distance radius, const Color& color, int32 segments = 32) override;
+    void DrawEllipse(const Phoenix::Vec2& pt, const Phoenix::Vec2& radius, const Phoenix::Color& color, int32_t segments = 32) override;
 
-        void DrawEllipse(const Vec2& pt, const Vec2& radius, const Color& color, int32 segments = 32) override;
+    void DrawLine(const Phoenix::Vec2& pt0, const Phoenix::Vec2& pt1, const Phoenix::Color& color) override;
 
-        void DrawLine(const Vec2& pt0, const Vec2& pt1, const Color& color) override;
+    void DrawLine(const Phoenix::Line2& line, const Phoenix::Color& color) override;
 
-        void DrawLine(const Line2& line, const Color& color) override;
+    void DrawLines(const Phoenix::Vec2* points, size_t num, const Phoenix::Color& color) override;
 
-        void DrawLines(const Vec2* points, size_t num, const Color& color) override;
+    void DrawLines(const Phoenix::Line2* lines, size_t num, const Phoenix::Color& color) override;
 
-        void DrawLines(const Line2* lines, size_t num, const Color& color) override;
+    void DrawRay(const Phoenix::Vec2& start, const Phoenix::Vec2& dir, const Phoenix::Color& color) override;
 
-        void DrawRay(const Vec2& start, const Vec2& dir, const Color& color) override;
+    void DrawRect(const Phoenix::Vec2& min, const Phoenix::Vec2& max, const Phoenix::Color& color) override;
 
-        void DrawRect(const Vec2& min, const Vec2& max, const Color& color) override;
+    void DrawDebugText(const Phoenix::Vec2& pt, const char* str, size_t len, const Phoenix::Color& color) override;
 
-        void DrawDebugText(const Vec2& pt, const char* str, size_t len, const Color& color) override;
+    float GetScale() const;
+    void PushScale(float scale);
+    void PopScale();
 
-        float GetScale() const;
-        void PushScale(float scale);
-        void PopScale();
+    Phoenix::Color GetColor(size_t index) const override;
 
-        Color GetColor(size_t index) const override;
-
-        SDL_Renderer* Renderer;
-        SDLViewport* Viewport;
-        Color Colors[1024];
-        std::vector<float> ScaleStack;
-    };
-}
+    SDL_Renderer* Renderer;
+    SDLViewport* Viewport;
+    Phoenix::Color Colors[1024];
+    std::vector<float> ScaleStack;
+    Phoenix::Vec2 Scale = Phoenix::Vec2::One;
+};

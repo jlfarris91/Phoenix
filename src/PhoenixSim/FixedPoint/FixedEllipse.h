@@ -2,17 +2,34 @@
 #pragma once
 
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
     // Represents a ellipse in 2D space.
-    struct PHOENIX_SIM_API Ellipse2
+    template <class TVec>
+    struct PHOENIX_SIM_API TEllipse
     {
-        constexpr Ellipse2() = default;
-        constexpr Ellipse2(const Vec2& origin, Distance radius) : Origin(origin), Radius(radius) {}
-        constexpr Ellipse2(const Vec2& origin, const Vec2& radius) : Origin(origin), Radius(radius) {}
+        PHX_DECLARE_TYPE(TEllipse)
 
-        Vec2 Origin;
-        Vec2 Radius;
+        constexpr TEllipse() = default;
+        constexpr TEllipse(const TVec& origin, TVec::ComponentT radius) : Origin(origin), Radius(radius) {}
+        constexpr TEllipse(const TVec& origin, const TVec& radius) : Origin(origin), Radius(radius) {}
+
+        TVec Origin;
+        TVec Radius;
     };
+
+    typedef TEllipse<Vec2> Ellipse2;
+}
+
+PHX_DEFINE_TYPE(Phoenix::Ellipse2)
+{
+    registration
+        .Alias("Ellipse2")
+        .Namespace("Phoenix.Ellipse2")
+        .Constructor<const Vec2&, Vec2::ComponentT>()
+        .Constructor<const Vec2&, const Vec2&>()
+        .Field("Origin", &Ellipse2::Origin)
+        .Field("Radius", &Ellipse2::Radius);
 }

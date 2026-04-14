@@ -9,8 +9,8 @@
 #include <PhoenixSim/Session.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 
-#include "../SDL/SDLDebugState.h"
-#include "../SDL/SDLDebugRenderer.h"
+#include "../sdl/SDLDebugState.h"
+#include "../sdl/SDLDebugRenderer.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;
@@ -215,7 +215,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
                 Vec2 pt = center + normal * 1.0;
 
                 char str[256] = { '\0' };
-                size_t len = sprintf_s(str, _countof(str), "%hu", halfEdgeIndex);
+                size_t len = snprintf(str, sizeof(str), "%hu", halfEdgeIndex);
                 renderer.DrawDebugText(pt, str, len, color); 
             });
 
@@ -233,7 +233,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
             const Vec2& pt = mesh.GetVertices()[i];
 
             char str[256];
-            size_t len = sprintf_s(str, _countof(str), "%lu", i);
+            size_t len = snprintf(str, sizeof(str), "%lu", i);
             renderer.DrawDebugText(pt, str, len, Color::White);
         }
     }
@@ -255,7 +255,7 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
             mesh.GetFaceCenter(i, center);
 
             char str[256] = { '\0' };
-            size_t len = sprintf_s(str, _countof(str), "%hu", i);
+            size_t len = snprintf(str, sizeof(str), "%hu", i);
             renderer.DrawDebugText(center, str, len, color);
         }
     }

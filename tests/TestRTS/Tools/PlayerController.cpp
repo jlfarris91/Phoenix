@@ -12,10 +12,10 @@
 #include <PhoenixRTS/Orders/FeatureOrders.h>
 #include <PhoenixRTS/Units/UnitId.h>
 
-#include "../SDL/SDLCamera.h"
-#include "../SDL/SDLDebugState.h"
-#include "../SDL/SDLDebugRenderer.h"
-#include "../SDL/SDLUtils.h"
+#include "../sdl/SDLCamera.h"
+#include "../sdl/SDLDebugState.h"
+#include "../sdl/SDLDebugRenderer.h"
+#include "../sdl/SDLUtils.h"
 #include "PhoenixRTS/Data/DataUnit.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
@@ -56,8 +56,8 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 
     if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet())
     {
-        Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragStart);
-        Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragEnd);
+        Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragStart));
+        Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragEnd));
 
         Vec2 min;
         min.X = std::min(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
@@ -145,7 +145,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
 
     if (event->type == SDL_EVENT_MOUSE_WHEEL)
     {
-        float zoomScale = 1.0f + (float)event->wheel.integer_y * ZoomSpeed;
+        float zoomScale = 1.0f + event->wheel.y * ZoomSpeed;
         Camera->Zoom = Max(Camera->Zoom * zoomScale, 0.001f);
     }
 
@@ -163,7 +163,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             return 0.0f;
         float dx = a.x - b.x;
         float dy = a.y - b.y;
-        return sqrt(dx*dx + dy*dy);
+        return sqrtf(dx*dx + dy*dy);
     };
 
     const double DragThreshold = 3.0;
@@ -178,7 +178,7 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
             }
             else if (CameraDragPos.IsSet())
             {
-                Vec2 lastMouseWorldPos = Viewport->ViewportPosToWorldPos(*CameraDragPos);
+                Vec2 lastMouseWorldPos = Viewport->ViewportPosToWorldPos(Viewport->WindowPosToViewportPos(*CameraDragPos));
                 Vec2 mouseDelta = mouseWorldPos - lastMouseWorldPos;
                 Camera->Position -= mouseDelta;
                 CameraDragPos = mouseWindowPos;
@@ -201,8 +201,8 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     {
         if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet() && distance(*BoxSelectDragStart, *BoxSelectDragEnd) > DragThreshold)
         {
-            Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragStart);
-            Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(*BoxSelectDragEnd);
+            Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragStart));
+            Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragEnd));
 
             Vec2 min;
             min.X = std::min(boxSelectDragStartWS.X, boxSelectDragEndWS.X);

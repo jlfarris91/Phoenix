@@ -6,9 +6,9 @@
 #include <PhoenixSim/Session.h>
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 
-#include "../SDL/SDLCamera.h"
-#include "../SDL/SDLDebugState.h"
-#include "../SDL/SDLDebugRenderer.h"
+#include "../sdl/SDLCamera.h"
+#include "../sdl/SDLDebugState.h"
+#include "../sdl/SDLDebugRenderer.h"
 
 using namespace Phoenix;
 
@@ -38,7 +38,7 @@ void CameraTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
     {
         if (CameraDragPos.IsSet())
         {
-            Vec2 lastMouseWorldPos = Viewport->ViewportPosToWorldPos(*CameraDragPos);
+            Vec2 lastMouseWorldPos = Viewport->ViewportPosToWorldPos(Viewport->WindowPosToViewportPos(*CameraDragPos));
             Vec2 mouseDelta = mouseWorldPos - lastMouseWorldPos;
             Camera->Position -= mouseDelta;
             CameraDragPos = mouseWindowPos;
@@ -90,7 +90,7 @@ void CameraTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event
 
     if (event->type == SDL_EVENT_MOUSE_WHEEL)
     {
-        float zoomScale = 1.0f + (float)event->wheel.integer_y * ZoomSpeed;
+        float zoomScale = 1.0f + event->wheel.y * ZoomSpeed;
         Camera->Zoom = Max(Camera->Zoom * zoomScale, 0.001f);
     }
 }

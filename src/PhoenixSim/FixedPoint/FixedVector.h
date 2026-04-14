@@ -4,6 +4,7 @@
 #include <cstdlib> // for rand(), remove once we have a deterministic rand
 
 #include "PhoenixSim/FixedPoint/FixedMath.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
 {
@@ -78,15 +79,17 @@ namespace Phoenix
         }
 
         template <class U = Fixed32_12>
+            requires (!std::is_same_v<U, TVec2>)
         constexpr TVec2 operator*(const U& rhs) const
         {
-            return { X * rhs, Y * rhs }; 
+            return { X * rhs, Y * rhs };
         }
 
         template <class U = Fixed32_12>
+            requires (!std::is_same_v<U, TVec2>)
         friend TVec2 operator*(const U& lhs, const TVec2& rhs)
         {
-            return { lhs * rhs.X, lhs * rhs.Y }; 
+            return { lhs * rhs.X, lhs * rhs.Y };
         }
 
         TVec2& operator*=(const TVec2& rhs)
@@ -110,15 +113,17 @@ namespace Phoenix
         }
 
         template <class U>
+            requires (!std::is_same_v<U, TVec2>)
         constexpr TVec2 operator/(const U& rhs) const
         {
-            return { X / rhs, Y / rhs }; 
+            return { X / rhs, Y / rhs };
         }
 
         template <class U = Fixed32_12>
+            requires (!std::is_same_v<U, TVec2>)
         friend TVec2 operator/(const U& lhs, const TVec2& rhs)
         {
-            return { lhs / rhs.X, lhs / rhs.Y }; 
+            return { lhs / rhs.X, lhs / rhs.Y };
         }
 
         TVec2& operator/=(const TVec2& rhs)
@@ -327,4 +332,48 @@ namespace Phoenix
     template <class> struct TOne {};
     template <uint8 Td, class T> struct TOne<TFixed<Td, T>> { static constexpr TFixed<Td, T> Value = 1; };
     template <class T> struct TOne<TVec2<T>> { static constexpr TVec2<T> Value = TVec2<T>(1, 1); };
+}
+
+PHX_DEFINE_TYPE(Phoenix::Vec2)
+{
+    using Vec2Member = Vec2 (Vec2::*)(const Vec2&) const;
+    using Vec2ComponentMember = Vec2 (Vec2::*)(const Vec2::ComponentT&) const;
+    using Vec2NegMember = Vec2 (Vec2::*)() const;
+
+    registration
+        .Alias("Vec2")
+        .Constructor<Vec2::ComponentT>()
+        .Constructor<Vec2::ComponentT, Vec2::ComponentT>()
+        .Field("X", &Vec2::X)
+        .Field("Y", &Vec2::Y)
+        .StaticField("Zero", &Vec2::Zero)
+        .StaticField("One", &Vec2::One)
+        .StaticField("XAxis", &Vec2::XAxis)
+        .StaticField("YAxis", &Vec2::YAxis)
+        .StaticField("Min", &Vec2::Min)
+        .StaticField("Max", &Vec2::Max)
+        .Method("Add", static_cast<Vec2Member>(&Vec2::operator+))
+        .Method("Add", static_cast<Vec2ComponentMember>(&Vec2::operator+))
+        .Method("Sub", static_cast<Vec2Member>(&Vec2::operator-))
+        .Method("Sub", static_cast<Vec2ComponentMember>(&Vec2::operator-))
+        .Method("Mult", static_cast<Vec2Member>(&Vec2::operator*))
+        .Method("Mult", static_cast<Vec2ComponentMember>(&Vec2::operator*))
+        .Method("Div", static_cast<Vec2Member>(&Vec2::operator/))
+        .Method("Div", static_cast<Vec2ComponentMember>(&Vec2::operator/))
+        .Method("Neg", static_cast<Vec2NegMember>(&Vec2::operator-))
+        .Method("AsRadians", &Vec2::AsRadians)
+        .Method("AsDegrees", &Vec2::AsDegrees)
+        .Method("Length", &Vec2::Length)
+        .Method("Normalized", &Vec2::Normalized)
+        .Method("Rotated", &Vec2::Rotate)
+        .StaticMethod("Equals(a, b, threshold)", &Vec2::Equals)
+        // .StaticMethod("Dot", &Vec2::Dot)
+        .StaticMethod("Distance(a, b)", &Vec2::Distance)
+        .StaticMethod("Project(s, n, p)", &Vec2::Project)
+        .StaticMethod("Reflect(normal, vector)", &Vec2::Reflect)
+        // .StaticMethod("Cross", &Vec2::Cross)
+        // .StaticMethod("Intersects", &Vec2::Intersects)
+        .StaticMethod("Midpoint(a, b)", &Vec2::Midpoint)
+        .StaticMethod("FromPolar(angle, radius)", &Vec2::FromPolar);
+    // .StaticMethod("Perpendicular", &Vec2::Perpendicular);
 }

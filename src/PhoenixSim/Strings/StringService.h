@@ -6,7 +6,7 @@ namespace Phoenix
 {
     class PHOENIX_SIM_API IStringService : IService
     {
-        PHX_DECLARE_INTERFACE_WITH_BASE(IStringService, IService)
+        PHX_DECLARE_TYPE(IStringService, IService)
 
     public:
 

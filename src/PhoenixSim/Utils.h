@@ -17,6 +17,12 @@ namespace Phoenix
     template <class T>
     using Underlying_T = Underlying<T>::type;
 
+    template <class T>
+    concept IsNumerical = requires
+    {
+        (std::is_integral_v<T> || std::is_floating_point_v<T>) && !std::is_same_v<T, bool>;
+    };
+
     template <size_t I = 0, typename... Ts>
     std::enable_if_t<I == sizeof...(Ts), bool> ContainsNullptr(const std::tuple<Ts...>&)
     {

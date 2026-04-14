@@ -1,14 +1,12 @@
-file(GLOB_RECURSE PHOENIXLUA_SRC "*.cpp" "*.h")
-find_package(sol2 CONFIG REQUIRED)
-find_package(lua CONFIG REQUIRED)
+file(GLOB_RECURSE PHOENIXLUA_SRC "*.cpp" "*.h" "*.lua")
 add_library(PhoenixLua ${PHOENIXLUA_SRC})
 set_property(TARGET PhoenixLua PROPERTY FOLDER "Libraries")
-target_include_directories(PhoenixLua PUBLIC "${CMAKE_SOURCE_DIR}/vcpkg_installed/$ENV{VCPKG_DEFAULT_TRIPLET}/include" ../../src)
+target_include_directories(PhoenixLua PUBLIC ../../src)
 if(PHX_USE_PCH)
     target_precompile_headers(PhoenixLua PRIVATE ../PhoenixSim/pch.h)
 endif()
 target_compile_definitions(PhoenixLua PUBLIC PHX_PROFILE_ENABLE)
-target_link_libraries(PhoenixLua PUBLIC PhoenixSim PhoenixPhysics)
+target_link_libraries(PhoenixLua PUBLIC PhoenixSim PhoenixScript)
 
 # Install rules
 install(TARGETS PhoenixLua

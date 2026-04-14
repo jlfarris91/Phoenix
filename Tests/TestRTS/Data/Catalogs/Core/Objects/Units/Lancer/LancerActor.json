@@ -1,6 +1,0 @@
-{
-    "id": "LancerActor",
-    "base": "UnitActor",
-    "scale": 0.6,
-    "tint": "FF0000FF"
-}

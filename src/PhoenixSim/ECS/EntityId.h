@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/Platform.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix::ECS
 {
@@ -47,3 +48,4 @@ namespace std
     }
 
 #define PHX_ECS_DECLARE_ENTITY_ID_SPEC(name) PHX_ECS_DECLARE_ENTITY_ID_SPEC_WITH_BASE(name, ECS::Entity)
+

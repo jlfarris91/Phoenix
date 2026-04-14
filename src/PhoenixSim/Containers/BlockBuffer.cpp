@@ -7,6 +7,7 @@
 #include "FixedArray.h"
 #include "PhoenixSim/Logging.h"
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/Utils.h"
 
 using namespace Phoenix;
 

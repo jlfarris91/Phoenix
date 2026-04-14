@@ -1,5 +1,6 @@
 ﻿
 #include "PhoenixSim/ECS/FeatureECS.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/MortonCode.h"
 #include "PhoenixSim/Profiling.h"
@@ -114,28 +115,6 @@ void FeatureECSScratchBlock::Construct(void* dest, BlockBufferAllocator& allocat
     new (dest) FeatureECSScratchBlock(allocator, config);
 }
 
-FeatureECS::FeatureECS()
-{
-    FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
-    FEATURE_CHANNEL(FeatureChannels::WorldShutdown)
-    FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::WorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::PostWorldUpdate)
-    FEATURE_CHANNEL(FeatureChannels::PreHandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::HandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::PostHandleWorldAction)
-    FEATURE_CHANNEL(FeatureChannels::DebugRender)
-}
-
-FeatureECS::FeatureECS(const FeatureECSCtorArgs& args)
-    : FeatureECS()
-{
-    for (const std::shared_ptr<ISystem>& system : args.Systems)
-    {
-        Systems.push_back(system);
-    }
-}
-
 void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
@@ -248,7 +227,7 @@ void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLay
     dynamicBlockConfig.ArchetypeManager.MaxArchetypeLists = PHX_ECS_MAX_ARCHETYPE_LISTS;
     dynamicBlockConfig.ArchetypeManager.ArchetypeListSize = PHX_ECS_ARCHETYPE_LIST_SIZE;
 
-    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(StaticTypeName))
+    if (const FeatureJsonConfig* featureConfig = context.Config.GetFeatureConfig(GetFeatureId()))
     {
         const nlohmann::json& featureConfigData = featureConfig->GetData();
 
@@ -927,16 +906,46 @@ const Transform2D* FeatureECS::GetWorldTransformPtr(WorldConstRef world, EntityI
     return comp ? &comp->Transform : nullptr;
 }
 
+Vec2 FeatureECS::GetLocalPosition(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetLocalTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Position : Vec2::Zero;
+}
+
 Vec2 FeatureECS::GetWorldPosition(WorldConstRef world, EntityId entityId)
 {
     auto entityTransform = GetWorldTransformPtr(world, entityId);
     return entityTransform ? entityTransform->Position : Vec2::Zero;
 }
 
+Angle FeatureECS::GetLocalFacing(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Rotation : 0;
+}
+
 Angle FeatureECS::GetWorldFacing(WorldConstRef world, EntityId entityId)
 {
     auto entityTransform = GetWorldTransformPtr(world, entityId);
     return entityTransform ? entityTransform->Rotation : 0;
+}
+
+Value FeatureECS::GetLocalScale(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Scale : 1;
+}
+
+Value FeatureECS::GetWorldScale(WorldConstRef world, EntityId entityId)
+{
+    auto entityTransform = GetWorldTransformPtr(world, entityId);
+    return entityTransform ? entityTransform->Scale : 1;
+}
+
+EntityId FeatureECS::GetParent(WorldConstRef world, EntityId entityId)
+{
+    const TransformComponent* comp = GetComponent<TransformComponent>(world, entityId);
+    return comp ? comp->AttachParent : EntityId::Invalid;
 }
 
 bool FeatureECS::IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range)

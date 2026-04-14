@@ -142,9 +142,22 @@ function Install-Emsdk {
         Write-Ok "EMSDK environment variable already set."
     }
 
-    $emcc = Join-Path $EmsdkRoot "upstream\emscripten\emcc.bat"
+    $emccDir = Join-Path $EmsdkRoot "upstream\emscripten"
+    $emcc    = Join-Path $emccDir "emcc.bat"
     if (Test-Path $emcc) {
         Write-Ok "Emscripten ready at $EmsdkRoot"
+
+        # Permanently add the emscripten directory to the user PATH so that
+        # cmake find_program(EMCC emcc) works in all future shells and IDEs.
+        $userPath = [System.Environment]::GetEnvironmentVariable("PATH", "User")
+        if ($userPath -notlike "*$emccDir*") {
+            Write-Host "    Adding $emccDir to user PATH..."
+            [System.Environment]::SetEnvironmentVariable("PATH", "$userPath;$emccDir", "User")
+            $env:PATH = "$env:PATH;$emccDir"
+            Write-Ok "emscripten added to PATH."
+        } else {
+            Write-Ok "emscripten already in PATH."
+        }
     } else {
         Write-Fail "EMSDK installation may have failed - emcc not found at expected path."
     }

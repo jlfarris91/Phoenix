@@ -35,8 +35,9 @@ namespace Phoenix
         x = (x ^ (x >> 1)) & 0x3333333333333333ULL;
         x = (x ^ (x >> 2)) & 0x0F0F0F0F0F0F0F0FULL;
         x = (x ^ (x >> 4)) & 0x00FF00FF00FF00FFULL;
-        x = (x ^ (x >> 8)) & 0x0000FFFF0000FFFFULL;
-        return static_cast<int32>(x);
+        x = (x ^ (x >> 8))  & 0x0000FFFF0000FFFFULL;
+        x = (x ^ (x >> 16)) & 0x00000000FFFFFFFFULL;
+        return static_cast<uint32>(x);
     }
 
     // Create Morton code from 2D coordinates

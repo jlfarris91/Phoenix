@@ -75,7 +75,7 @@ Vec2 SDLDebugState::GetWorldMousePos() const
     float mx, my;
     SDL_GetMouseState(&mx, &my);
 
-    return Viewport->ViewportPosToWorldPos(SDL_FPoint(mx, my));
+    return Viewport->ViewportPosToWorldPos(Viewport->WindowPosToViewportPos({ mx, my }));
 }
 
 void SDLDebugState::ProcessAppEvent(SDL_Event* event)

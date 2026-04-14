@@ -1,6 +1,7 @@
 
 #include "SDLDebugRenderer.h"
 
+#include <cmath>
 #include <vector>
 #include <SDL3/SDL_render.h>
 
@@ -27,8 +28,8 @@ namespace SDLDebugRenderer_Private
         for (int32 i = 0; i < segments - 1; ++i)
         {
             float angle = float(i) * (2.0f * 3.14f) / (segments - 1);
-            float x = x1 + cos(angle) * radiusX; 
-            float y = y1 + sin(angle) * radiusY;
+            float x = x1 + cosf(angle) * radiusX; 
+            float y = y1 + sinf(angle) * radiusY;
             points.emplace_back(x, y);
         }
 
