@@ -46,11 +46,27 @@ jobs:
         env:
           VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/.vcpkg-binary-cache
 
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+
+      - name: Cache sccache store
+        uses: actions/cache@v4
+        with:
+          path: .sccache
+          key: sccache-wasm-${{ github.run_id }}
+          restore-keys: sccache-wasm-
+
       - name: Configure
-        run: cmake --preset emscripten
+        run: cmake --preset emscripten "-DCMAKE_CXX_COMPILER_LAUNCHER=$SCCACHE_PATH" "-DCMAKE_C_COMPILER_LAUNCHER=$SCCACHE_PATH"
+        env:
+          SCCACHE_GHA_ENABLED: "false"
+          SCCACHE_DIR: ${{ github.workspace }}/.sccache
 
       - name: Build
         run: cmake --build --preset EmscriptenRelease
+        env:
+          SCCACHE_GHA_ENABLED: "false"
+          SCCACHE_DIR: ${{ github.workspace }}/.sccache
 
       - name: Install
         if: inputs.upload_artifact
