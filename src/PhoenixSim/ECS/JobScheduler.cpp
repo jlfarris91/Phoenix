@@ -1,7 +1,9 @@
 #include "JobScheduler.h"
 
 #include <algorithm>
+#include <functional>
 #include <queue>
+#include <thread>
 
 #include "PhoenixSim/ECS/ArchetypeManager.h"
 #include "PhoenixSim/ECS/CommandBuffer.h"
@@ -12,10 +14,15 @@
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 
-JobHandle JobScheduler::RegisterJob(std::unique_ptr<IJobBase> job)
+JobScheduler::JobScheduler(const std::string& name)
+    : Name(name)
+{
+}
+
+JobHandle JobScheduler::RegisterJob(IJobBase* job)
 {
     const JobHandle handle = static_cast<JobHandle>(Jobs.size());
-    Jobs.push_back(std::move(job));
+    Jobs.push_back(job);
     return handle;
 }
 
@@ -44,7 +51,7 @@ void JobScheduler::Build(const ArchetypeManager& archetypes)
     Nodes.resize(numJobs);
     for (uint32 i = 0; i < numJobs; ++i)
     {
-        Nodes[i].Job = Jobs[i].get();
+        Nodes[i].Job = Jobs[i];
         Nodes[i].TotalPredecessors = 0;
         Nodes[i].Successors.clear();
     }
@@ -161,8 +168,44 @@ JobNode& JobScheduler::GetNode(JobHandle handle)
     return Nodes[handle];
 }
 
+const std::string& JobScheduler::GetName() const
+{
+    return Name;
+}
+
+uint32 JobScheduler::GetJobCount() const
+{
+    return (uint32)Jobs.size();
+}
+
+const char* JobScheduler::GetJobName(uint32 index) const
+{
+    return Jobs[index]->GetName();
+}
+
+const SystemAccessDescriptor& JobScheduler::GetJobAccess(uint32 index) const
+{
+    return Jobs[index]->GetAccessDescriptor();
+}
+
+const std::vector<uint32>& JobScheduler::GetJobSuccessors(uint32 index) const
+{
+    return Nodes[index].Successors;
+}
+
+uint32 JobScheduler::GetJobPredecessorCount(uint32 index) const
+{
+    return Nodes[index].TotalPredecessors;
+}
+
 void JobScheduler::Execute(WorldConstRef world, TaskQueue& queue, const std::vector<CommandBuffer*>& commandBuffers)
 {
+    const char* schedulerName = GetName().c_str();
+    size_t schedulerNameLen = std::strlen(schedulerName);
+
+    PHX_PROFILE_ZONE_SCOPED;
+    PHX_PROFILE_ZONE_NAME(schedulerName, schedulerNameLen);
+
     if (Nodes.empty())
         return;
 
@@ -173,35 +216,71 @@ void JobScheduler::Execute(WorldConstRef world, TaskQueue& queue, const std::vec
     }
 
     const uint32 numNodes = static_cast<uint32>(Nodes.size());
-    std::vector<uint32> waveDepth(numNodes, 0);
+    ThreadPool* pool = queue.GetThreadPool();
+
+    // totalRemaining counts every batch that has been submitted and not yet completed.
+    // It is incremented inside submitNode (after any predecessor may have modified Batches)
+    // and decremented at the end of each batch lambda.
+    // When it reaches zero every lambda has fully executed and it is safe to return.
+    std::atomic<uint32> totalRemaining{0};
+
+    // Per-node remaining-batch count. Set inside submitNode so it reflects the batch list
+    // AFTER predecessors have had a chance to modify it (e.g. PrePartitionSortedEntitiesTask
+    // rewrites PopulateSortedEntitiesJob's Batches before Populate is submitted).
+    std::vector<std::atomic<uint32>> remainingBatches(numNodes);
 
     for (uint32 i = 0; i < numNodes; ++i)
-    {
-        uint32 idx = TopologicalOrder[i];
-        for (uint32 suc : Nodes[idx].Successors)
-            waveDepth[suc] = std::max(waveDepth[suc], waveDepth[idx] + 1);
-    }
+        Nodes[i].RemainingPredecessors.store(Nodes[i].TotalPredecessors, std::memory_order_relaxed);
 
-    uint32 maxWave = *std::ranges::max_element(waveDepth);
-
-    for (uint32 wave = 0; wave <= maxWave; ++wave)
+    // Submit all batches for a node directly to the thread pool.
+    // When the last batch of a node finishes it atomically decrements each successor's
+    // predecessor count and immediately submits any that reach zero — no wave barriers.
+    std::function<void(uint32)> submitNode = [&](uint32 nodeIdx)
     {
-        std::vector<Task>& tasks = queue.BeginGroup();
-        for (uint32 i = 0; i < numNodes; ++i)
+        JobNode* node = &Nodes[nodeIdx];
+
+        // Read the batch list and set the counter here — after all predecessors have run —
+        // so runtime modifications to Batches (e.g. PrePartition) are fully visible.
+        const uint32 batchCount = static_cast<uint32>(node->Batches.size());
+        remainingBatches[nodeIdx].store(batchCount, std::memory_order_relaxed);
+        totalRemaining.fetch_add(batchCount, std::memory_order_release);
+
+        for (const JobBatch& batch : node->Batches)
         {
-            if (waveDepth[i] != wave)
-                continue;
-            JobNode* node = &Nodes[i];
-            tasks.emplace_back([node, &commandBuffers, worldPtr = &world]
+            pool->Submit([&, node, batch, nodeIdx]
             {
                 CommandBuffer* cb = commandBuffers[GetCurrentThreadIndex()];
-                for (const JobBatch& batch : node->Batches)
-                    node->Job->RunBatch(*worldPtr, batch, *cb);
+                node->Job->RunBatch(world, batch, *cb);
+
+                // Last batch for this node → release successors
+                if (remainingBatches[nodeIdx].fetch_sub(1, std::memory_order_acq_rel) == 1)
+                {
+                    for (uint32 suc : node->Successors)
+                    {
+                        if (Nodes[suc].RemainingPredecessors.fetch_sub(1, std::memory_order_acq_rel) == 1)
+                            submitNode(suc);
+                    }
+                }
+
+                // Signal completion after successor submissions so totalRemaining
+                // only hits zero once every lambda body has finished executing.
+                totalRemaining.fetch_sub(1, std::memory_order_acq_rel);
             });
         }
-        queue.EndGroup();
-        queue.Flush();
+    };
+
+    // Kick off all root nodes (no predecessors)
+    for (uint32 i = 0; i < numNodes; ++i)
+    {
+        if (Nodes[i].TotalPredecessors == 0)
+            submitNode(i);
     }
+
+    // Spin until every batch lambda has completed.
+    // totalRemaining is only decremented after all successor submissions within a lambda,
+    // so zero means the full call graph is done and stack locals are safe to destroy.
+    while (totalRemaining.load(std::memory_order_acquire) != 0)
+        std::this_thread::yield();
 }
 
 void JobScheduler::ExecuteSerial(WorldConstRef world, const std::vector<CommandBuffer*>& commandBuffers)

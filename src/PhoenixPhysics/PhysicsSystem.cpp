@@ -21,38 +21,89 @@ constexpr uint8 SLEEP_TIMER = 1;
 
 namespace Phoenix::Physics::PhysicsSystemDetail
 {
-    struct PopulateSortedEntitiesJob : IJob<TransformComponent&, BodyComponent&>
+    struct ResetScratchBlockTask : ITask
     {
-        FeaturePhysicsScratchBlock* ScratchBlock = nullptr;
+        const char* GetName() const override { return "Physics.ResetScratchBlockJob"; }
 
-        void Execute(WorldConstRef /*world*/, EntityId entityId, CommandBuffer& /*cb*/,
-                     TransformComponent& transformComp, BodyComponent& bodyComp) override
+        void Run(WorldConstRef world, CommandBuffer& /*cb*/) override
         {
-            uint32 sortedEntityIndex = ScratchBlock->SortedEntityCount.fetch_add(1);
-            ScratchBlock->SortedEntities[sortedEntityIndex] =
-                EntityBody{entityId, &transformComp, &bodyComp, transformComp.ZCode};
+            auto* ecsScratch = world.GetBlock<FeatureECSScratchBlock>();
+            auto* physicsScratch = const_cast<FeaturePhysicsScratchBlock*>(world.GetBlock<FeaturePhysicsScratchBlock>());
+
+            // Invalidate scatter slots up to the high-water mark from the previous frame.
+            // PrevSortedEntityCount is initialized to full capacity so frame 0 is safe.
+            // Scatter only writes to positions 0..ecsCount-1, so this covers exactly the live range.
+            std::memset(physicsScratch->SortedEntities.GetData(), 0xFF,
+                        ecsScratch->PrevSortedEntityCount * sizeof(EntityBody));
+
+            physicsScratch->SortedEntityCount = 0;
+            physicsScratch->ContactPairs.Reset();
+            physicsScratch->ContactPairsCount = 0;
         }
     };
 
-    struct SortEntitiesByZCodeTask : ITask
+    // Scatter each physics entity directly into its ECS-sorted position.
+    // Requires SortedEntityIndex to be populated by the ECS sort task.
+    // Uses read-only component access so it can run in parallel with other read-only jobs.
+    struct ScatterSortedEntitiesJob : IJob<const TransformComponent&, const BodyComponent&>
     {
-        FeaturePhysicsScratchBlock* ScratchBlock = nullptr;
+        const FeatureECSScratchBlock*   EcsScratch     = nullptr;
+        FeaturePhysicsScratchBlock*     PhysicsScratch = nullptr;
 
-        FName GetName() const override { return "SortEntitiesByZCode"_n; }
+        const char* GetName() const override { return "Physics.ScatterSortedEntitiesJob"; }
 
-        void Run(WorldConstRef /*world*/, CommandBuffer& /*cb*/) override
+        void BeginBatch(WorldConstRef world, const JobBatch&, CommandBuffer&) override
         {
-            PHX_PROFILE_ZONE_SCOPED;
+            EcsScratch     = world.GetBlock<FeatureECSScratchBlock>();
+            PhysicsScratch = const_cast<FeaturePhysicsScratchBlock*>(world.GetBlock<FeaturePhysicsScratchBlock>());
+        }
 
-            ScratchBlock->SortedEntities.SetSize(ScratchBlock->SortedEntityCount);
+        void Execute(WorldConstRef /*world*/,
+                     EntityId entityId,
+                     CommandBuffer& /*cb*/,
+                     const TransformComponent& transformComp,
+                     const BodyComponent& bodyComp) override
+        {
+            const uint32 entityIdx = (entityId % EcsScratch->SortedEntityIndex.GetCapacity()) - 1;
+            const uint32 sortedIdx = EcsScratch->SortedEntityIndex[entityIdx];
+            if (sortedIdx != Index<uint32>::None)
+            {
+                PhysicsScratch->SortedEntities[sortedIdx] = {
+                    .EntityId = entityId,
+                    .TransformComponent = const_cast<TransformComponent*>(&transformComp),
+                    .BodyComponent = const_cast<BodyComponent*>(&bodyComp),
+                    .ZCode = transformComp.ZCode
+                };
+            }
+        }
+    };
 
-            std::sort(
-                ScratchBlock->SortedEntities.begin(),
-                ScratchBlock->SortedEntities.end(),
-                [](const EntityBody& a, const EntityBody& b)
+    // Compact the scatter buffer into a dense sorted array.
+    // Walks the ECS sorted range and collects positions that were written by ScatterSortedEntitiesJob.
+    struct CompactSortedEntitiesTask : ITask
+    {
+        const char* GetName() const override { return "Physics.CompactSortedEntitiesTask"; }
+
+        void Run(WorldConstRef world, CommandBuffer& /*cb*/) override
+        {
+            const auto* ecsScratch = world.GetBlock<FeatureECSScratchBlock>();
+            auto* physicsScratch = const_cast<FeaturePhysicsScratchBlock*>(world.GetBlock<FeaturePhysicsScratchBlock>());
+            const uint32 ecsCount = ecsScratch->SortedEntities.GetNum();
+            EntityBody* data = physicsScratch->SortedEntities.GetData();
+
+            // In-place compaction: valid entries are already in ZCode order (by construction).
+            // Writes always go to count <= i so no entry is overwritten before being read.
+            uint32 count = 0;
+            for (uint32 i = 0; i < ecsCount; ++i)
+            {
+                if (data[i].EntityId != EntityId::Invalid)
                 {
-                    return a.ZCode < b.ZCode;
-                });
+                    data[count++] = data[i];
+                }
+            }
+
+            physicsScratch->SortedEntities.SetSize(count);
+            physicsScratch->SortedEntityCount = count;
         }
     };
 
@@ -60,11 +111,13 @@ namespace Phoenix::Physics::PhysicsSystemDetail
     {
         DeltaTime DeltaTime;
 
-        void Execute(WorldConstRef /*world*/, EntityId /*entityId*/, CommandBuffer& /*cb*/,
+        const char* GetName() const override { return "Physics.IntegrateVelocitiesJob"; }
+
+        void Execute(WorldConstRef /*world*/,
+                     EntityId /*entityId*/,
+                     CommandBuffer& /*cb*/,
                      BodyComponent& bodyComp) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("IntegrateVelocitiesJob");
-
             bodyComp.LinearVelocity += bodyComp.Force * bodyComp.InvMass * DeltaTime;
 
             if (bodyComp.MaxLinearVelocity > 0)
@@ -83,11 +136,19 @@ namespace Phoenix::Physics::PhysicsSystemDetail
         DeltaTime DeltaTime;
         FeaturePhysicsScratchBlock* ScratchBlock = nullptr;
 
-        void Execute(WorldConstRef /*world*/, EntityId entityIdA, CommandBuffer& /*cb*/,
-                     TransformComponent& transformCompA, BodyComponent& bodyCompA) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("CalculateContactPairsJob");
+        const char* GetName() const override { return "Physics.CalculateContactPairsJob"; }
 
+        void BeginBatch(WorldConstRef world, const JobBatch&, CommandBuffer&) override
+        {
+            ScratchBlock = const_cast<FeaturePhysicsScratchBlock*>(world.GetBlock<FeaturePhysicsScratchBlock>());
+        }
+
+        void Execute(WorldConstRef /*world*/,
+                     EntityId entityIdA,
+                     CommandBuffer& /*cb*/,
+                     TransformComponent& transformCompA,
+                     BodyComponent& bodyCompA) override
+        {
             if (!HasAnyFlags(bodyCompA.Flags, EBodyFlags::Awake))
                 return;
 
@@ -112,9 +173,13 @@ namespace Phoenix::Physics::PhysicsSystemDetail
                     [&](const EntityBody& eb)
                     {
                         if (eb.EntityId == entityIdA)
+                        {
                             return false;
+                        }
                         if ((bodyCompA.CollisionMask & eb.BodyComponent->CollisionMask) == 0)
+                        {
                             return false;
+                        }
                         overlappingBodies[overlappingBodiesCount++] = &eb;
                         return overlappingBodiesCount == _countof(overlappingBodies);
                     });
@@ -130,7 +195,9 @@ namespace Phoenix::Physics::PhysicsSystemDetail
                 Distance vLen = v.Length();
                 Distance rr = bodyCompA.Radius + bodyCompB.Radius;
                 if (vLen > rr)
+                {
                     continue;
+                }
 
                 entityid_t loId = Min(entityIdA, entityBodyB->EntityId);
                 entityid_t hiId = Max(entityIdA, entityBodyB->EntityId);
@@ -138,7 +205,9 @@ namespace Phoenix::Physics::PhysicsSystemDetail
 
                 uint32 contactIndex = ScratchBlock->ContactPairsCount.fetch_add(1);
                 if (contactIndex >= ScratchBlock->ContactPairs.GetCapacity())
+                {
                     break;
+                }
 
                 ContactPair& pair = ScratchBlock->ContactPairs[contactIndex];
                 pair.Key = key;
@@ -201,9 +270,8 @@ namespace Phoenix::Physics::PhysicsSystemDetail
         {
             PHX_PROFILE_ZONE_SCOPED_N("SortContactPairs");
 
-            std::sort(
-                scratchBlock.ContactPairs.begin(),
-                scratchBlock.ContactPairs.end(),
+            std::ranges::sort(
+                scratchBlock.ContactPairs,
                 [](const ContactPair& a, const ContactPair& b)
                 {
                     return a.Key < b.Key;
@@ -278,11 +346,14 @@ namespace Phoenix::Physics::PhysicsSystemDetail
         DeltaTime DeltaTime;
         bool bAllowSleep = true;
 
-        void Execute(WorldConstRef /*world*/, EntityId /*entityId*/, CommandBuffer& /*cb*/,
-                     TransformComponent& transformComp, BodyComponent& bodyComp) override
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("IntegrateJob");
+        const char* GetName() const override { return "Physics.IntegrateJob"; }
 
+        void Execute(WorldConstRef /*world*/,
+                     EntityId /*entityId*/,
+                     CommandBuffer& /*cb*/,
+                     TransformComponent& transformComp,
+                     BodyComponent& bodyComp) override
+        {
             if (bodyComp.Movement == EBodyMovement::Attached)
             {
                 transformComp.Transform.Rotation += 10.0f;
@@ -346,7 +417,11 @@ namespace Phoenix::Physics::PhysicsSystemDetail
         }
     }
 
-    void OverlapSeparationTask2(WorldRef world, uint32 startIndex, uint32 count, Value penetrationThreshold, Value penetrationCorrection)
+    void OverlapSeparationTask2(WorldRef world,
+                                uint32 startIndex,
+                                uint32 count,
+                                Value penetrationThreshold,
+                                Value penetrationCorrection)
     {
         PHX_PROFILE_ZONE_SCOPED;
 
@@ -373,70 +448,61 @@ namespace Phoenix::Physics::PhysicsSystemDetail
     }
 }
 
+PhysicsSystem::PhysicsSystem()
+    : IntegrateVelocitiesScheduler("Physics.IntegrateVelocities")
+    , CalculateContactPairsScheduler("Physics.CalculateContactPairs")
+    , IntegrateScheduler("Physics.Integrate")
+{
+}
+
+// This is dumb but is required because IntegrateJob is only defined in the cpp.
+PhysicsSystem::~PhysicsSystem() = default;
+
 void PhysicsSystem::OnWorldInitialize(WorldRef world)
 {
-    FeaturePhysicsScratchBlock& scratchBlock = world.GetBlockRef<FeaturePhysicsScratchBlock>();
+    const FeatureECSDynamicBlock& ecsBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
 
-    // --- Pre-update scheduler: populate sorted entities, then sort ---
+    // --- Pre-update scheduler: reset → scatter (using ECS sorted index) → compact ---
     {
-        auto populate = std::make_unique<PhysicsSystemDetail::PopulateSortedEntitiesJob>();
-        populate->ScratchBlock = &scratchBlock;
+        auto reset   = std::make_unique<PhysicsSystemDetail::ResetScratchBlockTask>();
+        auto scatter = std::make_unique<PhysicsSystemDetail::ScatterSortedEntitiesJob>();
+        auto compact = std::make_unique<PhysicsSystemDetail::CompactSortedEntitiesTask>();
 
-        auto sort = std::make_unique<PhysicsSystemDetail::SortEntitiesByZCodeTask>();
-        sort->ScratchBlock = &scratchBlock;
+        JobHandle hReset   = FeatureECS::RegisterJob(world, std::move(reset),   EJobPhase::PreUpdate);
+        JobHandle hScatter = FeatureECS::RegisterJob(world, std::move(scatter), EJobPhase::PreUpdate);
+        JobHandle hCompact = FeatureECS::RegisterJob(world, std::move(compact), EJobPhase::PreUpdate);
 
-        JobHandle hPopulate = PreUpdateScheduler.RegisterJob(std::move(populate));
-        JobHandle hSort     = PreUpdateScheduler.RegisterJob(std::move(sort));
-        PreUpdateScheduler.AddDependency(hSort, hPopulate);
+        FeatureECS::AddJobDependency(world, EJobPhase::PreUpdate, hScatter, hReset);
+        FeatureECS::AddJobDependency(world, EJobPhase::PreUpdate, hCompact, hScatter);
 
-        const FeatureECSDynamicBlock& ecsBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-        PreUpdateScheduler.Build(ecsBlock.ArchetypeManager);
+        // Scatter reads SortedEntityIndex which is written by the ECS sort task.
+        JobHandle hECSSort = FeatureECS::GetPreUpdateSortJobHandle(world);
+        FeatureECS::AddJobDependency(world, EJobPhase::PreUpdate, hScatter, hECSSort);
     }
 
     // --- IntegrateVelocities scheduler ---
-    {
-        auto job = std::make_unique<PhysicsSystemDetail::IntegrateVelocitiesJob>();
-        IntegrateVelocitiesJobPtr = job.get();
-        IntegrateVelocitiesScheduler.RegisterJob(std::move(job));
-
-        const FeatureECSDynamicBlock& ecsBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-        IntegrateVelocitiesScheduler.Build(ecsBlock.ArchetypeManager);
-    }
+    IntegrateVelocitiesJob = std::make_unique<PhysicsSystemDetail::IntegrateVelocitiesJob>();
+    IntegrateVelocitiesScheduler.RegisterJob(IntegrateVelocitiesJob.get());
+    IntegrateVelocitiesScheduler.Build(ecsBlock.ArchetypeManager);
 
     // --- CalculateContactPairs scheduler ---
-    {
-        auto job = std::make_unique<PhysicsSystemDetail::CalculateContactPairsJob>();
-        job->ScratchBlock = &scratchBlock;
-        CalculateContactPairsJobPtr = job.get();
-        CalculateContactPairsScheduler.RegisterJob(std::move(job));
-
-        const FeatureECSDynamicBlock& ecsBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-        CalculateContactPairsScheduler.Build(ecsBlock.ArchetypeManager);
-    }
+    CalculateContactPairsJob = std::make_unique<PhysicsSystemDetail::CalculateContactPairsJob>();
+    CalculateContactPairsScheduler.RegisterJob(CalculateContactPairsJob.get());
+    CalculateContactPairsScheduler.Build(ecsBlock.ArchetypeManager);
 
     // --- Integrate scheduler ---
-    {
-        auto job = std::make_unique<PhysicsSystemDetail::IntegrateJob>();
-        IntegrateJobPtr = job.get();
-        IntegrateScheduler.RegisterJob(std::move(job));
+    IntegrateJob = std::make_unique<PhysicsSystemDetail::IntegrateJob>();
+    IntegrateScheduler.RegisterJob(IntegrateJob.get());
+    IntegrateScheduler.Build(ecsBlock.ArchetypeManager);
 
-        const FeatureECSDynamicBlock& ecsBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-        IntegrateScheduler.Build(ecsBlock.ArchetypeManager);
-    }
+    // Register schedulers for debug visualization
+    FeatureECS::RegisterScheduler(world, IntegrateVelocitiesScheduler);
+    FeatureECS::RegisterScheduler(world, CalculateContactPairsScheduler);
+    FeatureECS::RegisterScheduler(world, IntegrateScheduler);
 }
 
 void PhysicsSystem::OnPreWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
-    PHX_PROFILE_ZONE_SCOPED;
-
-    FeaturePhysicsScratchBlock& scratchBlock = world.GetBlockRef<FeaturePhysicsScratchBlock>();
-
-    scratchBlock.SortedEntities.Reset();
-    scratchBlock.SortedEntityCount = 0;
-    scratchBlock.ContactPairs.Reset();
-    scratchBlock.ContactPairsCount = 0;
-
-    FeatureECS::ExecuteScheduler(world, PreUpdateScheduler);
 }
 
 void PhysicsSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
@@ -452,38 +518,53 @@ void PhysicsSystem::OnPostWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
     FeaturePhysicsScratchBlock& scratchBlock = world.GetBlockRef<FeaturePhysicsScratchBlock>();
 
     // Integrate velocities (once, before the iteration loop)
-    IntegrateVelocitiesJobPtr->DeltaTime = dt;
+    IntegrateVelocitiesJob->DeltaTime = dt;
     FeatureECS::ExecuteScheduler(world, IntegrateVelocitiesScheduler);
 
-    for (uint32 iter = 0; iter < NumIterations; ++iter)
+    // Iteration loop
     {
-        // Determine contacts
-        CalculateContactPairsJobPtr->DeltaTime = dt;
-        FeatureECS::ExecuteScheduler(world, CalculateContactPairsScheduler);
-
-        WorldTaskQueue::Schedule(world, &PhysicsSystemDetail::ResolveContactPairsTask);
-
-        // CalculateContactsTask depends on scratchBlock.Contacts.Num() from ResolveContactPairs
-        WorldTaskQueue::Flush(world);
-
-        WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
-
-        // Multi-pass solver
-        for (uint32 i = 0; i < NumSolverSteps; ++i)
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::PGSTask, i);
-
-        // Integrate positions
-        IntegrateJobPtr->DeltaTime = dt;
-        IntegrateJobPtr->bAllowSleep = AllowSleep;
-        FeatureECS::ExecuteScheduler(world, IntegrateScheduler);
-
-        // Multi-pass overlap separation
-        for (uint32 i = 0; i < NumSeparationSteps; ++i)
+        for (uint32 iter = 0; iter < NumIterations; ++iter)
         {
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
+            PHX_PROFILE_ZONE_SCOPED_N("IterationLoop");
+            PHX_PROFILE_ZONE_VALUE(iter);
+
+            // Determine contacts
+            CalculateContactPairsJob->DeltaTime = dt;
+            FeatureECS::ExecuteScheduler(world, CalculateContactPairsScheduler);
+
+            WorldTaskQueue::Schedule(world, &PhysicsSystemDetail::ResolveContactPairsTask);
+
+            // CalculateContactsTask depends on scratchBlock.Contacts.Num() from ResolveContactPairs
+            WorldTaskQueue::Flush(world);
+
+            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
+
+            // Multi-pass solver
+            for (uint32 i = 0; i < NumSolverSteps; ++i)
+            {
+                PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
+                PHX_PROFILE_ZONE_VALUE(i);
+
+                WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::PGSTask, i);
+            }
+
+            // Integrate positions
+            IntegrateJob->DeltaTime = dt;
+            IntegrateJob->bAllowSleep = AllowSleep;
+            FeatureECS::ExecuteScheduler(world, IntegrateScheduler);
+
+            // Multi-pass overlap separation
+            for (uint32 i = 0; i < NumSeparationSteps; ++i)
+            {
+                PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
+                PHX_PROFILE_ZONE_VALUE(i);
+
+                WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
+                WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
+            }
         }
     }
+
 }
 
 void PhysicsSystem::OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer)

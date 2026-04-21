@@ -9,17 +9,18 @@ namespace Phoenix::Steering
 {
     namespace SteeringDetail
     {
-        struct PopulateSortedEntitiesJob;
-        struct SortEntitiesByZCodeTask;
         struct PathfindingJob;
         struct SteeringJob;
-        struct CollisionJob;
+        struct CollisionTask;
     }
 
     class PHOENIX_STEERING_API SteeringSystem : public ECS::ISystem
     {
     public:
         PHX_DECLARE_TYPE_DERIVED(SteeringSystem, Phoenix::ECS::ISystem)
+
+        SteeringSystem();
+        ~SteeringSystem();
 
         void OnWorldInitialize(WorldRef world) override;
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -42,14 +43,11 @@ namespace Phoenix::Steering
         double MaxSlack = 400.0;
 
     private:
-        // Pre-update: populate sorted entities + sort by z-code.
-        ECS::JobScheduler PreUpdateScheduler;
-
         // Update: pathfinding → steering → collision × 2.
-        ECS::JobScheduler UpdateScheduler;
-        SteeringDetail::PathfindingJob* PathfindingJobPtr  = nullptr;
-        SteeringDetail::SteeringJob*    SteeringJobPtr     = nullptr;
-        SteeringDetail::CollisionJob*   CollisionJobPtr[2] = {};
+        std::unique_ptr<SteeringDetail::PathfindingJob> PathfindingJob;
+        std::unique_ptr<SteeringDetail::SteeringJob>    SteeringJob;
+        std::unique_ptr<SteeringDetail::CollisionTask>  CollisionTask0;
+        std::unique_ptr<SteeringDetail::CollisionTask>  CollisionTask1;
     };
 }
 

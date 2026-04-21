@@ -3,8 +3,6 @@
 
 #include <unordered_map>
 
-#include "CommandBuffer.h"
-#include "PhoenixSim/ECS/JobScheduler.h"
 #include "PhoenixSim/Delegates.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Parallel.h"
@@ -12,13 +10,14 @@
 #include "PhoenixSim/Blackboard/FeatureBlackboard.h"
 #include "PhoenixSim/Blackboard/FixedBlackboard.h"
 #include "PhoenixSim/ECS/ArchetypeManager.h"
+#include "PhoenixSim/ECS/CommandBuffer.h"
 #include "PhoenixSim/ECS/Entity.h"
 #include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/ECS/FixedEntityList.h"
 #include "PhoenixSim/ECS/FixedGroupList.h"
 #include "PhoenixSim/ECS/FixedTagList.h"
+#include "PhoenixSim/ECS/JobScheduler.h"
 #include "PhoenixSim/ECS/System.h"
-#include "PhoenixSim/ECS/SystemJob.h"
 #include "PhoenixSim/ECS/TransformComponent.h"
 
 #ifndef PHX_ECS_MAX_ENTITIES
@@ -82,7 +81,11 @@ namespace Phoenix::ECS
         };
 
         TFixedArray<EntityTransform> SortedEntities;
+        TFixedArray<uint32> SortedEntityIndex;  // [entityId % capacity] → position in SortedEntities
         std::atomic<uint32> SortedEntityCount = 0;
+
+        // Tracks sorted entity count from previous frame for bounded memset
+        uint32 PrevSortedEntityCount = PHX_ECS_MAX_ENTITIES;
     };
 
     struct EntityRangeQueryArgs
@@ -624,14 +627,29 @@ namespace Phoenix::ECS
         // Register a job to run in the given phase. Returns a handle for dependency declarations.
         // Phase handles are scoped to their phase — AddJobDependency requires both handles from the same phase.
         static JobHandle RegisterJob(WorldRef world, std::unique_ptr<IJobBase> job, EJobPhase phase = EJobPhase::Update);
+        static JobHandle RegisterJob(WorldRef world, IJobBase* job, EJobPhase phase = EJobPhase::Update);
 
         // Declare that 'after' must not start until 'before' completes within the same phase.
         static void AddJobDependency(WorldRef world, EJobPhase phase, JobHandle after, JobHandle before);
+
+        // Returns the handle for the ECS PreUpdate sort job.
+        // Valid after FeatureECS::OnWorldInitialize; use to declare downstream dependencies.
+        static JobHandle GetPreUpdateSortJobHandle(WorldConstRef world);
 
         // Execute a caller-owned JobScheduler using this world's task queue and command buffers.
         // Rebuilds archetype batches if the archetype generation has changed since the last build.
         // Call from ISystem::OnXxxWorldUpdate to run system-owned job graphs with full parallelism.
         static void ExecuteScheduler(WorldRef world, JobScheduler& scheduler);
+
+        // Read-only access to the global phase schedulers — for debug visualization only.
+        static const JobScheduler& GetScheduler(WorldConstRef world, EJobPhase phase);
+
+        // Register a named scheduler owned by a system for debug visualization.
+        // The scheduler must outlive the world (system lifetime guarantees this).
+        static void RegisterScheduler(WorldRef world, const JobScheduler& scheduler);
+
+        // Returns all named schedulers registered via RegisterScheduler, in registration order.
+        static std::vector<std::pair<FName, const JobScheduler*>> GetNamedSchedulers(WorldConstRef world);
 
         bool bAllowParallelJobs = true;
 
@@ -719,9 +737,9 @@ namespace Phoenix::ECS
 
         void ApplyCommandBuffers(WorldRef world);
 
-        JobScheduler& GetScheduler(EJobPhase phase);
-        void BuildAllSchedulers(const ArchetypeManager& archetypes);
-        void RebuildAllSchedulersIfDirty(const ArchetypeManager& archetypes);
+        JobScheduler& GetMutableScheduler(WorldConstRef world, EJobPhase phase);
+        void BuildAllSchedulers(WorldRef world, const ArchetypeManager& archetypes);
+        void RebuildAllSchedulersIfDirty(WorldRef world, const ArchetypeManager& archetypes);
         void ExecuteScheduler(WorldRef world, EJobPhase phase);
 
         void RegisterECSCommandHandlers();
@@ -731,9 +749,23 @@ namespace Phoenix::ECS
         std::vector<std::unique_ptr<CommandBuffer>> CommandBuffers;
         std::unordered_map<FName, TCommandHandler> CommandHandlers;
 
-        JobScheduler PreUpdateScheduler;
-        JobScheduler UpdateScheduler;
-        JobScheduler PostUpdateScheduler;
+        struct ScopedWorldData
+        {
+            std::unique_ptr<JobScheduler> PreUpdateScheduler;
+            std::unique_ptr<JobScheduler> UpdateScheduler;
+            std::unique_ptr<JobScheduler> PostUpdateScheduler;
+            JobHandle PreUpdateSortJobHandle = InvalidJobHandle;
+
+            // Named schedulers registered by systems for debug visualization.
+            std::vector<std::pair<FName, const JobScheduler*>> NamedSchedulers;
+        };
+
+        ScopedWorldData& GetScopedWorldData(WorldConstRef world);
+
+        std::unordered_map<FName, ScopedWorldData> WorldData;
+
+        // Jobs registered directly (as opposed to owned by systems) that need to be kept alive.
+        std::vector<std::unique_ptr<IJobBase>> OwnedJobs;
 
         FOnEntityAcquired EntityAcquiredEvent;
         FOnEntityReleasing EntityReleasedEvent;

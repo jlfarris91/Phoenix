@@ -28,6 +28,9 @@ namespace Phoenix::Physics
     public:
         PHX_DECLARE_TYPE_DERIVED(PhysicsSystem, ISystem)
 
+        PhysicsSystem();
+        ~PhysicsSystem() override;
+
         void OnWorldInitialize(WorldRef world) override;
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -44,20 +47,18 @@ namespace Phoenix::Physics
         double PenetrationCorrection = 0.1;
 
     private:
-        // Pre-update: populate sorted entities + sort by z-code.
-        ECS::JobScheduler PreUpdateScheduler;
 
         // Post-update (before loop): integrate velocities once.
         ECS::JobScheduler IntegrateVelocitiesScheduler;
-        PhysicsSystemDetail::IntegrateVelocitiesJob* IntegrateVelocitiesJobPtr = nullptr;
+        std::unique_ptr<PhysicsSystemDetail::IntegrateVelocitiesJob> IntegrateVelocitiesJob;
 
         // Per-iteration: calculate contact pairs.
         ECS::JobScheduler CalculateContactPairsScheduler;
-        PhysicsSystemDetail::CalculateContactPairsJob* CalculateContactPairsJobPtr = nullptr;
+        std::unique_ptr<PhysicsSystemDetail::CalculateContactPairsJob> CalculateContactPairsJob;
 
         // Per-iteration: integrate positions.
         ECS::JobScheduler IntegrateScheduler;
-        PhysicsSystemDetail::IntegrateJob* IntegrateJobPtr = nullptr;
+        std::unique_ptr<PhysicsSystemDetail::IntegrateJob> IntegrateJob;
     };
 }
 

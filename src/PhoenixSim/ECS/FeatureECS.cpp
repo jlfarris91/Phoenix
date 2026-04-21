@@ -20,14 +20,16 @@ namespace FeatureECSDetail
 {
     // Phase 1: assign non-overlapping write ranges to each batch and pre-size the output array.
     // Runs once per frame on the world thread before any parallel populate work.
-    struct PrePartitionSortedEntitiesJob : ITask
+    struct PrePartitionSortedEntitiesTask : ITask
     {
         JobNode* PopulateNode = nullptr;
         FeatureECSScratchBlock* ScratchBlock = nullptr;
 
+        const char* GetName() const override { return "ECS.PrePartitionSortedEntitiesTask"; }
+
         void Run(WorldConstRef /*world*/, CommandBuffer& /*cb*/) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("PrePartitionSortedEntitiesJob");
+            ScratchBlock->PrevSortedEntityCount = ScratchBlock->SortedEntities.GetNum();
 
             uint32 total = 0;
             for (JobBatch& batch : PopulateNode->Batches)
@@ -36,7 +38,11 @@ namespace FeatureECSDetail
                 total += batch.List ? batch.List->GetNumInstances() : 0;
             }
 
-            ScratchBlock->SortedEntities.SetSize(total);
+            // Invalidate scatter slots up to the high-water mark from the previous frame.
+            std::memset(ScratchBlock->SortedEntities.GetData(), 0xFF,
+                        ScratchBlock->SortedEntities.GetNum() * sizeof(EntityTransform));
+
+            ScratchBlock->SortedEntities.SetNum(total);
             ScratchBlock->SortedEntityCount = 0;
         }
     };
@@ -47,7 +53,10 @@ namespace FeatureECSDetail
     class PopulateSortedEntitiesJob : public IJob<TransformComponent&>
     {
     public:
+        FeatureECSDynamicBlock* DynamicBlock = nullptr;
         FeatureECSScratchBlock* ScratchBlock = nullptr;
+
+        const char* GetName() const override { return "ECS.PopulateSortedEntitiesJob"; }
 
         void BeginBatch(WorldConstRef /*world*/, const JobBatch& batch, CommandBuffer& /*cb*/) override
         {
@@ -57,9 +66,9 @@ namespace FeatureECSDetail
 
         void Execute(WorldConstRef /*world*/, EntityId id, CommandBuffer& /*cb*/, TransformComponent& t) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("PopulateSortedEntitiesJob");
             t.ZCode = ToMortonCode(t.Transform.Position);
-            ScratchBlock->SortedEntities[tl_BatchStart + tl_WriteCount] = EntityTransform(id, &t, t.ZCode);
+            auto tl_writeIdx = tl_BatchStart + tl_WriteCount;
+            ScratchBlock->SortedEntities[tl_writeIdx] = EntityTransform { id, &t, t.ZCode };
             ++tl_WriteCount;
         }
 
@@ -80,23 +89,67 @@ namespace FeatureECSDetail
     thread_local uint32 PopulateSortedEntitiesJob::tl_WriteCount = 0;
 
     // Phase 3: trim the output array to the actual valid entity count and sort by Z-code.
-    struct SortEntitiesJob : ITask
+    struct SortEntitiesTask : ITask
     {
+        FeatureECSDynamicBlock* DynamicBlock = nullptr;
         FeatureECSScratchBlock* ScratchBlock = nullptr;
+
+        const char* GetName() const override { return "ECS.SortEntitiesTask"; }
 
         void Run(WorldConstRef /*world*/, CommandBuffer& /*cb*/) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("SortEntitiesJob");
+#if 0
+            // Test to ensure that duplicate entities are not added to SortedEntities
+            for (uint32 i = 0; i < ScratchBlock->SortedEntityCount; ++i)
+            {
+                for (uint32 j = i + 1; j < ScratchBlock->SortedEntityCount; ++j)
+                {
+                    if (ScratchBlock->SortedEntities[i].EntityId != EntityId::Invalid &&
+                        ScratchBlock->SortedEntities[i].EntityId == ScratchBlock->SortedEntities[j].EntityId)
+                    {
+                        __debugbreak();
+                    }
+                }
+            }
+#endif
+
+            std::ranges::sort(ScratchBlock->SortedEntities, [](const EntityTransform& a, const EntityTransform& b)
+            {
+                if (a.EntityId == EntityId::Invalid)
+                {
+                    return false;
+                }
+                if (b.EntityId == EntityId::Invalid)
+                {
+                    return true;
+                }
+                return a.ZCode < b.ZCode;
+            });
 
             ScratchBlock->SortedEntities.SetSize(ScratchBlock->SortedEntityCount);
 
-            std::sort(
-                ScratchBlock->SortedEntities.begin(),
-                ScratchBlock->SortedEntities.end(),
-                [](const EntityTransform& a, const EntityTransform& b)
+            std::memset(ScratchBlock->SortedEntityIndex.GetData(), 0xFF,
+                        DynamicBlock->Entities.GetNumHighWaterMark() * sizeof(uint32));
+            ScratchBlock->SortedEntityIndex.SetSize(DynamicBlock->Entities.GetNumHighWaterMark());
+
+            // Build entityId → sorted-position lookup for downstream scatter consumers.
+            for (uint32 i = 0; i < ScratchBlock->SortedEntities.GetNum(); ++i)
+            {
+                auto entityIdx = DynamicBlock->Entities.GetEntityIndex(ScratchBlock->SortedEntities[i].EntityId) - 1;
+#if 0
+                // Test to ensure that no two entities are occupying the same slot in SortedEntityIndex
+                if (ScratchBlock->SortedEntityIndex[entityIdx] != Index<uint32>::None)
                 {
-                    return a.ZCode < b.ZCode;
-                });
+                    auto existingIdx = ScratchBlock->SortedEntityIndex[entityIdx];
+                    EntityTransform& entityTransform = ScratchBlock->SortedEntities[existingIdx];
+                    auto existingEntity = DynamicBlock->Entities.GetEntityPtr(entityTransform.EntityId);
+                    auto existingEntityIdx = DynamicBlock->Entities.GetEntityIndex(entityTransform.EntityId);
+                    __debugbreak();
+                }
+#endif
+                PHX_ASSERT(ScratchBlock->SortedEntityIndex[entityIdx] == Index<uint32>::None);
+                ScratchBlock->SortedEntityIndex[entityIdx] = i;
+            }
         }
     };
 }
@@ -142,6 +195,7 @@ void FeatureECSDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocat
 
 FeatureECSScratchBlock::FeatureECSScratchBlock(BlockBufferAllocator& allocator, const Config& config)
     : SortedEntities(allocator, config.MaxEntities)
+    , SortedEntityIndex(allocator, config.MaxEntities)
 {
 }
 
@@ -150,6 +204,7 @@ FeatureECSScratchBlock::FeatureECSScratchBlock(
     const Config& config,
     const FeatureECSScratchBlock& other)
     : SortedEntities(allocator, config.MaxEntities, other.SortedEntities)
+    , SortedEntityIndex(allocator, config.MaxEntities, other.SortedEntityIndex)
     , SortedEntityCount(other.SortedEntityCount.load())
 {
 }
@@ -159,6 +214,7 @@ BufferBlockLayout FeatureECSScratchBlock::Layout(Config config)
     BufferBlockLayout layout;
     layout.BlockSize = sizeof(FeatureECSScratchBlock);
     layout.AllocSize += TFixedArray<EntityTransform>::GetAllocSizeBytes(config.MaxEntities);
+    layout.AllocSize += TFixedArray<uint32>::GetAllocSizeBytes(config.MaxEntities);
     return layout;
 }
 
@@ -668,13 +724,31 @@ void FeatureECS::RegisterCommandHandler(WorldRef world, FName commandId, TComman
 JobHandle FeatureECS::RegisterJob(WorldRef world, std::unique_ptr<IJobBase> job, EJobPhase phase)
 {
     std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
-    return feature->GetScheduler(phase).RegisterJob(std::move(job));
+    IJobBase* raw = job.get();
+    feature->OwnedJobs.push_back(std::move(job));
+    return feature->GetMutableScheduler(world, phase).RegisterJob(raw);
+}
+
+JobHandle FeatureECS::RegisterJob(WorldRef world, IJobBase* job, EJobPhase phase)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    return feature->GetMutableScheduler(world, phase).RegisterJob(job);
 }
 
 void FeatureECS::AddJobDependency(WorldRef world, EJobPhase phase, JobHandle after, JobHandle before)
 {
     std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
-    feature->GetScheduler(phase).AddDependency(after, before);
+    feature->GetMutableScheduler(world, phase).AddDependency(after, before);
+}
+
+JobHandle FeatureECS::GetPreUpdateSortJobHandle(WorldConstRef world)
+{
+    if (std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world))
+    {
+        ScopedWorldData& worldData = feature->GetScopedWorldData(world);
+        return worldData.PreUpdateSortJobHandle;
+    }
+    return InvalidJobHandle;
 }
 
 void FeatureECS::ExecuteScheduler(WorldRef world, JobScheduler& scheduler)
@@ -700,6 +774,29 @@ void FeatureECS::ExecuteScheduler(WorldRef world, JobScheduler& scheduler)
     {
         scheduler.ExecuteSerial(world, threadCbs);
     }
+}
+
+const JobScheduler& FeatureECS::GetScheduler(WorldConstRef world, EJobPhase phase)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    PHX_ASSERT(feature);
+    return feature->GetMutableScheduler(world, phase);
+}
+
+void FeatureECS::RegisterScheduler(WorldRef world, const JobScheduler& scheduler)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    PHX_ASSERT(feature);
+    ScopedWorldData& worldData = feature->GetScopedWorldData(world);
+    worldData.NamedSchedulers.emplace_back(scheduler.GetName(), &scheduler);
+}
+
+std::vector<std::pair<FName, const JobScheduler*>> FeatureECS::GetNamedSchedulers(WorldConstRef world)
+{
+    std::shared_ptr<FeatureECS> feature = GetFeature<FeatureECS>(world);
+    PHX_ASSERT(feature);
+    ScopedWorldData& worldData = feature->GetScopedWorldData(world);
+    return worldData.NamedSchedulers;
 }
 
 const Transform2D* FeatureECS::GetLocalTransformPtr(WorldConstRef world, EntityId entityId)
@@ -1024,40 +1121,54 @@ void FeatureECS::OnWorldInitialize(WorldRef world)
 
     TaskQueue::CreateTaskQueue((uint32)world.GetId());
 
+    RegisterECSCommandHandlers();
+
+    ScopedWorldData& worldData = GetScopedWorldData(world);
+
+    worldData.PreUpdateScheduler = std::make_unique<JobScheduler>("ECS.PreUpdateScheduler");
+    worldData.UpdateScheduler = std::make_unique<JobScheduler>("ECS.UpdateScheduler");
+    worldData.PostUpdateScheduler = std::make_unique<JobScheduler>("ECS.PostUpdateScheduler");
+
+    // Register ECS's own PreUpdate sort pipeline BEFORE system initialization so that
+    // systems can call GetPreUpdateSortJobHandle and declare dependencies on it.
+    FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
+    FeatureECSScratchBlock& scratchBlock = world.GetBlockRef<FeatureECSScratchBlock>();
+
+    auto prePartitionOwned = std::make_unique<FeatureECSDetail::PrePartitionSortedEntitiesTask>();
+    auto populateOwned     = std::make_unique<FeatureECSDetail::PopulateSortedEntitiesJob>();
+    auto sortOwned         = std::make_unique<FeatureECSDetail::SortEntitiesTask>();
+
+    prePartitionOwned->ScratchBlock = &scratchBlock;
+    populateOwned->DynamicBlock = &dynamicBlock;
+    populateOwned->ScratchBlock = &scratchBlock;
+    sortOwned->DynamicBlock     = &dynamicBlock;
+    sortOwned->ScratchBlock     = &scratchBlock;
+
+    auto* prePartition = prePartitionOwned.get();
+
+    JobHandle hPrePartition = worldData.PreUpdateScheduler->RegisterJob(prePartitionOwned.get());
+    JobHandle hPopulate     = worldData.PreUpdateScheduler->RegisterJob(populateOwned.get());
+    worldData.PreUpdateSortJobHandle  = worldData.PreUpdateScheduler->RegisterJob(sortOwned.get());
+
+    OwnedJobs.push_back(std::move(prePartitionOwned));
+    OwnedJobs.push_back(std::move(populateOwned));
+    OwnedJobs.push_back(std::move(sortOwned));
+
+    worldData.PreUpdateScheduler->AddDependency(hPopulate, hPrePartition);
+    worldData.PreUpdateScheduler->AddDependency(worldData.PreUpdateSortJobHandle, hPopulate);
+
+    // Initialize systems — they may call GetPreUpdateSortJobHandle to depend on the ECS sort.
     for (const std::shared_ptr<ISystem>& system : Systems)
     {
         system->OnWorldInitialize(world);
     }
 
-    RegisterECSCommandHandlers();
-
-    // Register pre-update sort pipeline: PrePartition → Populate (parallel) → Sort
-    FeatureECSScratchBlock& scratchBlock = world.GetBlockRef<FeatureECSScratchBlock>();
-
-    auto prePartition = std::make_unique<FeatureECSDetail::PrePartitionSortedEntitiesJob>();
-    auto populate     = std::make_unique<FeatureECSDetail::PopulateSortedEntitiesJob>();
-    auto sort         = std::make_unique<FeatureECSDetail::SortEntitiesJob>();
-
-    prePartition->ScratchBlock = &scratchBlock;
-    populate->ScratchBlock = &scratchBlock;
-    sort->ScratchBlock     = &scratchBlock;
-
-    JobHandle hPrePartition = PreUpdateScheduler.RegisterJob(std::move(prePartition));
-    JobHandle hPopulate     = PreUpdateScheduler.RegisterJob(std::move(populate));
-    JobHandle hSort         = PreUpdateScheduler.RegisterJob(std::move(sort));
-
-    PreUpdateScheduler.AddDependency(hPopulate, hPrePartition);
-    PreUpdateScheduler.AddDependency(hSort,     hPopulate);
-
-    // Build all schedulers — must happen after all RegisterJob/AddDependency calls.
-    const FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-    BuildAllSchedulers(dynamicBlock.ArchetypeManager);
+    // Build all schedulers after all jobs (ECS + system) have been registered.
+    BuildAllSchedulers(world, dynamicBlock.ArchetypeManager);
 
     // PrePartition needs a pointer to Populate's node to read its pre-built Batches.
     // Resolved after Build() since Nodes are stable post-build.
-    static_cast<FeatureECSDetail::PrePartitionSortedEntitiesJob*>(
-        PreUpdateScheduler.GetNode(hPrePartition).Job)->PopulateNode =
-            &PreUpdateScheduler.GetNode(hPopulate);
+    prePartition->PopulateNode = &worldData.PreUpdateScheduler->GetNode(hPopulate);
 }
 
 void FeatureECS::OnWorldShutdown(WorldRef world)
@@ -1068,7 +1179,9 @@ void FeatureECS::OnWorldShutdown(WorldRef world)
     {
         system->OnWorldShutdown(world);
     }
-    
+
+    WorldData.erase(world.GetId());
+
     TaskQueue::ReleaseTaskQueue((uint32)world.GetId());
 }
 
@@ -1077,18 +1190,30 @@ void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
     PHX_PROFILE_ZONE_SCOPED;
 
     const FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-    RebuildAllSchedulersIfDirty(dynamicBlock.ArchetypeManager);
+    RebuildAllSchedulersIfDirty(world, dynamicBlock.ArchetypeManager);
 
     ExecuteScheduler(world, EJobPhase::PreUpdate);
+
     ApplyCommandBuffers(world);
 
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
+    // Update systems
     {
-        system->OnPreWorldUpdate(world, systemUpdateArgs);
+        PHX_PROFILE_ZONE_SCOPED_N("OnPreWorldUpdate_Systems");
+
+        SystemUpdateArgs systemUpdateArgs;
+        systemUpdateArgs.SimTime = args.SimTime;
+        systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+        for (const std::shared_ptr<ISystem>& system : Systems)
+        {
+            const char* systemName = system->GetTypeDescriptor().GetName().c_str();
+            const size_t systemNameLen = std::strlen(systemName);
+
+            PHX_PROFILE_ZONE_SCOPED;
+            PHX_PROFILE_ZONE_NAME(systemName, systemNameLen);
+            
+            system->OnPreWorldUpdate(world, systemUpdateArgs);
+        }
     }
 
     WorldTaskQueue::Flush(world);
@@ -1101,13 +1226,24 @@ void FeatureECS::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
     ExecuteScheduler(world, EJobPhase::Update);
     ApplyCommandBuffers(world);
 
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
+    // Update systems
     {
-        system->OnWorldUpdate(world, systemUpdateArgs);
+        PHX_PROFILE_ZONE_SCOPED_N("OnWorldUpdate_Systems");
+
+        SystemUpdateArgs systemUpdateArgs;
+        systemUpdateArgs.SimTime = args.SimTime;
+        systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+        for (const std::shared_ptr<ISystem>& system : Systems)
+        {
+            const char* systemName = system->GetTypeDescriptor().GetName().c_str();
+            const size_t systemNameLen = std::strlen(systemName);
+
+            PHX_PROFILE_ZONE_SCOPED;
+            PHX_PROFILE_ZONE_NAME(systemName, systemNameLen);
+
+            system->OnWorldUpdate(world, systemUpdateArgs);
+        }
     }
 
     WorldTaskQueue::Flush(world);
@@ -1120,14 +1256,26 @@ void FeatureECS::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args
     ExecuteScheduler(world, EJobPhase::PostUpdate);
     ApplyCommandBuffers(world);
 
-    SystemUpdateArgs systemUpdateArgs;
-    systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
-
-    for (const std::shared_ptr<ISystem>& system : Systems)
+    // Update systems
     {
-        system->OnPostWorldUpdate(world, systemUpdateArgs);
+        PHX_PROFILE_ZONE_SCOPED_N("OnPostWorldUpdate_Systems");
+
+        SystemUpdateArgs systemUpdateArgs;
+        systemUpdateArgs.SimTime = args.SimTime;
+        systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+
+        for (const std::shared_ptr<ISystem>& system : Systems)
+        {
+            const char* systemName = system->GetTypeDescriptor().GetName().c_str();
+            const size_t systemNameLen = std::strlen(systemName);
+
+            PHX_PROFILE_ZONE_SCOPED;
+            PHX_PROFILE_ZONE_NAME(systemName, systemNameLen);
+
+            system->OnPostWorldUpdate(world, systemUpdateArgs);
+        }
     }
+
 
     WorldTaskQueue::Flush(world);
 
@@ -1271,6 +1419,8 @@ void FeatureECS::OnReclaimEntity(WorldRef world, const EntityId& entityId) const
 }
 void FeatureECS::ApplyCommandBuffers(WorldRef world)
 {
+    PHX_PROFILE_ZONE_SCOPED;
+
     for (const std::unique_ptr<CommandBuffer>& cb : CommandBuffers)
     {
         if (!cb || cb->IsEmpty())
@@ -1290,34 +1440,43 @@ void FeatureECS::ApplyCommandBuffers(WorldRef world)
     }
 }
 
-JobScheduler& FeatureECS::GetScheduler(EJobPhase phase)
+JobScheduler& FeatureECS::GetMutableScheduler(WorldConstRef world, EJobPhase phase)
 {
+    ScopedWorldData& worldData = GetScopedWorldData(world);
     switch (phase)
     {
-        case EJobPhase::PreUpdate:  return PreUpdateScheduler;
-        case EJobPhase::Update:     return UpdateScheduler;
-        case EJobPhase::PostUpdate: return PostUpdateScheduler;
+        case EJobPhase::PreUpdate:  return *worldData.PreUpdateScheduler;
+        case EJobPhase::Update:     return *worldData.UpdateScheduler;
+        case EJobPhase::PostUpdate: return *worldData.PostUpdateScheduler;
     }
-    return UpdateScheduler;
+    return *worldData.UpdateScheduler;
 }
 
-void FeatureECS::BuildAllSchedulers(const ArchetypeManager& archetypes)
+void FeatureECS::BuildAllSchedulers(WorldRef world, const ArchetypeManager& archetypes)
 {
-    PreUpdateScheduler.Build(archetypes);
-    UpdateScheduler.Build(archetypes);
-    PostUpdateScheduler.Build(archetypes);
+    PHX_PROFILE_ZONE_SCOPED;
+
+    ScopedWorldData& worldData = GetScopedWorldData(world);
+    worldData.PreUpdateScheduler->Build(archetypes);
+    worldData.UpdateScheduler->Build(archetypes);
+    worldData.PostUpdateScheduler->Build(archetypes);
 }
 
-void FeatureECS::RebuildAllSchedulersIfDirty(const ArchetypeManager& archetypes)
+void FeatureECS::RebuildAllSchedulersIfDirty(WorldRef world, const ArchetypeManager& archetypes)
 {
-    PreUpdateScheduler.RebuildBatchesIfDirty(archetypes);
-    UpdateScheduler.RebuildBatchesIfDirty(archetypes);
-    PostUpdateScheduler.RebuildBatchesIfDirty(archetypes);
+    PHX_PROFILE_ZONE_SCOPED;
+
+    ScopedWorldData& worldData = GetScopedWorldData(world);
+    worldData.PreUpdateScheduler->RebuildBatchesIfDirty(archetypes);
+    worldData.UpdateScheduler->RebuildBatchesIfDirty(archetypes);
+    worldData.PostUpdateScheduler->RebuildBatchesIfDirty(archetypes);
 }
 
 void FeatureECS::ExecuteScheduler(WorldRef world, EJobPhase phase)
 {
-    JobScheduler& scheduler = GetScheduler(phase);
+    PHX_PROFILE_ZONE_SCOPED;
+
+    JobScheduler& scheduler = GetMutableScheduler(world, phase);
 
     std::vector<CommandBuffer*> threadCbs;
     threadCbs.reserve(CommandBuffers.size());
@@ -1416,4 +1575,9 @@ void FeatureECS::RegisterECSCommandHandlers()
         const void* valuePtr = data->GetValuePtr();
         SetBlackboardValueRaw(w, data->Target, data->Key, *static_cast<const blackboard_value_t*>(valuePtr));
     };
+}
+
+struct FeatureECS::ScopedWorldData& FeatureECS::GetScopedWorldData(WorldConstRef world)
+{
+    return WorldData[world.GetId()];
 }

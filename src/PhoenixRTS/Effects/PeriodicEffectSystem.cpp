@@ -19,10 +19,7 @@ namespace
 {
     struct PeriodicEffectSystemJob : IJob<PeriodicEffectComponent&>
     {
-        FName GetName() const override
-        {
-            return "PeriodicEffectSystemJob"_n;
-        }
+        const char* GetName() const override { return "Effects.PeriodicEffectSystemJob"; }
 
         void Execute(
             WorldConstRef world,

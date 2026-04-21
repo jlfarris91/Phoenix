@@ -1,6 +1,7 @@
 
+#include <algorithm>
+
 #include "PhoenixSteering/SteeringSystem.h"
-#include "PhoenixSim/Reflection/Registration.h"
 
 #include "PhoenixSim/Debug/Debug.h"
 #include "PhoenixSim/Flags.h"
@@ -21,41 +22,92 @@ using namespace Phoenix::Steering;
 
 namespace Phoenix::Steering::SteeringDetail
 {
-    struct PopulateSortedEntitiesJob : IJob<TransformComponent&, SteeringComponent&>
+    struct ResetScratchBlockTask : ITask
     {
-        FeatureSteeringScratchBlock* ScratchBlock = nullptr;
+        const char* GetName() const override { return "Steering.ResetScratchBlockJob"; }
 
-        void Execute(WorldConstRef /*world*/, EntityId entityId, CommandBuffer& /*cb*/,
-                     TransformComponent& transformComp, SteeringComponent& steeringComp) override
+        void Run(WorldConstRef world, CommandBuffer& /*cb*/) override
         {
-            uint32 sortedEntityIndex = ScratchBlock->SortedEntityCount.fetch_add(1);
-            ScratchBlock->SortedEntities[sortedEntityIndex] =
-                SortedEntity{entityId, &transformComp, &steeringComp, transformComp.ZCode};
+            auto* ecsScratch = world.GetBlock<FeatureECSScratchBlock>();
+            auto* steeringScratch = const_cast<FeatureSteeringScratchBlock*>(world.GetBlock<FeatureSteeringScratchBlock>());
+
+            // Invalidate scatter slots up to the high-water mark from the previous frame.
+            // PrevSortedEntityCount is initialized to full capacity so frame 0 is safe.
+            // Scatter only writes to positions 0..ecsCount-1, so this covers exactly the live range.
+            std::memset(steeringScratch->SortedEntities.GetData(), 0xFF,
+                        ecsScratch->PrevSortedEntityCount * sizeof(SortedEntity));
+
+            steeringScratch->SortedEntityCount = 0;
         }
     };
 
-    struct SortEntitiesByZCodeTask : ITask
+    // Scatter each steering entity directly into its ECS-sorted position.
+    // Requires SortedEntityIndex to be populated by the ECS sort task.
+    // Uses read-only component access so it can run in parallel with other read-only jobs.
+    struct ScatterSortedEntitiesJob : IJob<const TransformComponent&, const SteeringComponent&>
     {
-        FeatureSteeringScratchBlock* ScratchBlock = nullptr;
+        const FeatureECSScratchBlock*  EcsScratch      = nullptr;
+        FeatureSteeringScratchBlock*   SteeringScratch = nullptr;
 
-        FName GetName() const override { return "SortSteeringEntitiesByZCode"_n; }
+        const char* GetName() const override { return "Steering.ScatterSortedEntitiesJob"; }
 
-        void Run(WorldConstRef /*world*/, CommandBuffer& /*cb*/) override
+        void BeginBatch(WorldConstRef world, const JobBatch&, CommandBuffer&) override
         {
-            ScratchBlock->SortedEntities.SetSize(ScratchBlock->SortedEntityCount);
+            EcsScratch      = world.GetBlock<FeatureECSScratchBlock>();
+            SteeringScratch = const_cast<FeatureSteeringScratchBlock*>(world.GetBlock<FeatureSteeringScratchBlock>());
+        }
 
-            std::ranges::stable_sort(
-                ScratchBlock->SortedEntities,
-                [](const SortedEntity& a, const SortedEntity& b)
-                {
-                    return a.ZCode < b.ZCode;
-                });
-
-            ScratchBlock->MaxEntityRadius = 0;
-            for (const SortedEntity& entity : ScratchBlock->SortedEntities)
+        void Execute(WorldConstRef /*world*/,
+                     EntityId entityId,
+                     CommandBuffer& /*cb*/,
+                     const TransformComponent& transformComp,
+                     const SteeringComponent& steeringComp) override
+        {
+            const uint32 entityIdx = (entityId % EcsScratch->SortedEntityIndex.GetCapacity()) - 1;
+            const uint32 sortedIdx = EcsScratch->SortedEntityIndex[entityIdx];
+            if (sortedIdx != Index<uint32>::None)
             {
-                if (entity.SteeringComponent->OuterRadius > ScratchBlock->MaxEntityRadius)
-                    ScratchBlock->MaxEntityRadius = entity.SteeringComponent->OuterRadius;
+                SteeringScratch->SortedEntities[sortedIdx] = {
+                    .EntityId = entityId,
+                    .TransformComponent = const_cast<TransformComponent*>(&transformComp),
+                    .SteeringComponent = const_cast<SteeringComponent*>(&steeringComp),
+                    .ZCode = transformComp.ZCode
+                };
+            }
+        }
+    };
+
+    // Compact the scatter buffer into a dense sorted array and compute MaxEntityRadius.
+    struct CompactSortedEntitiesTask : ITask
+    {
+        const char* GetName() const override { return "Steering.CompactSortedEntitiesTask"; }
+
+        void Run(WorldConstRef world, CommandBuffer& /*cb*/) override
+        {
+            const auto* ecsScratch = world.GetBlock<FeatureECSScratchBlock>();
+            auto* scratch = const_cast<FeatureSteeringScratchBlock*>(world.GetBlock<FeatureSteeringScratchBlock>());
+            const uint32 ecsCount = ecsScratch->SortedEntities.GetNum();
+            SortedEntity* data = scratch->SortedEntities.GetData();
+
+            uint32 count = 0;
+            for (uint32 i = 0; i < ecsCount; ++i)
+            {
+                if (data[i].EntityId != EntityId::Invalid)
+                {
+                    data[count++] = data[i];
+                }
+            }
+
+            scratch->SortedEntities.SetSize(count);
+            scratch->SortedEntityCount = count;
+
+            scratch->MaxEntityRadius = 0;
+            for (uint32 i = 0; i < count; ++i)
+            {
+                if (data[i].SteeringComponent->OuterRadius > scratch->MaxEntityRadius)
+                {
+                    scratch->MaxEntityRadius = data[i].SteeringComponent->OuterRadius;
+                }
             }
         }
     };
@@ -64,10 +116,11 @@ namespace Phoenix::Steering::SteeringDetail
     {
         Distance ArrivalThreshold;
 
+        const char* GetName() const override { return "Steering.PathfindingJob"; }
+
         void Execute(WorldConstRef world, EntityId /*entityId*/, CommandBuffer& /*cb*/,
                      TransformComponent& transformComp, SteeringComponent& steerComp) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("PathfindingJob");
             DetermineStepPositions(world, transformComp, steerComp);
         }
 
@@ -131,11 +184,11 @@ namespace Phoenix::Steering::SteeringDetail
         Value SlackRateDivisorSlow;
         Value MaxSlack;
 
+        const char* GetName() const override { return "Steering.SteeringJob"; }
+
         void Execute(WorldConstRef world, EntityId /*entityId*/, CommandBuffer& /*cb*/,
                      TransformComponent& transformComp, SteeringComponent& steerComp) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("SteeringJob");
-
             if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
                 return;
 
@@ -242,11 +295,13 @@ namespace Phoenix::Steering::SteeringDetail
         Vec2 CalculateVelocity2(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
         {
             if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+            {
                 return Vec2::Zero;
+            }
 
             const Vec2& currPos = transformComp.Transform.Position;
             const Vec2& stepPos = steerComp.StepPos[0];
-            Vec2 stepDir = stepPos - currPos;
+            // Vec2 stepDir = stepPos - currPos;
 
             Vec2 v = currPos - steerComp.PreviousPos;
             int64 vv = Vec2::SqrxQ(v);
@@ -259,16 +314,18 @@ namespace Phoenix::Steering::SteeringDetail
 
             int64 decel = 1;
             if (steerComp.DecelerationTime.Value > 0)
+            {
                 decel = (int64)steerComp.MaxSpeed.Value / steerComp.DecelerationTime.Value;
-            if (decel < 1)
-                decel = 1;
+            }
+            decel = std::max<int64>(decel, 1);
             int64 decel2 = decel * decel;
 
             int64 accel2 = speed2;
             if (steerComp.AccelerationTime.Value > 0)
+            {
                 accel2 = speed2 / steerComp.AccelerationTime.Value;
-            if (accel2 < 2)
-                accel2 = 2;
+            }
+            accel2 = std::max<int64>(accel2, 2);
 
             int64 stopTime2 = vv / decel2;
             int64 stopDist2 = stopTime2 * vv;
@@ -281,8 +338,7 @@ namespace Phoenix::Steering::SteeringDetail
             else if (dd <= stopDist2)
             {
                 int64 decelNeed = (vv * vv) / dd;
-                if (decelNeed > decel2)
-                    decel2 = decelNeed;
+                decel2 = std::max(decelNeed, decel2);
 
                 if (vv > decel2)
                 {
@@ -293,9 +349,10 @@ namespace Phoenix::Steering::SteeringDetail
             else
             {
                 if (vv < speed2)
+                {
                     vv = vv * 9 / 8 + accel2;
-                if (vv > speed2)
-                    vv = speed2;
+                }
+                vv = std::min(vv, speed2);
             }
 
             v = vv >= dd ? d : d.Normalized() * Distance(Q64(vv));
@@ -312,26 +369,38 @@ namespace Phoenix::Steering::SteeringDetail
             Distance len = velocity.Length();
             Distance thresh = Distance(Q32(128));
             if (len <= thresh)
+            {
                 return false;
+            }
 
             Angle angle = velocity.AsRadians();
             Angle delta = AngleDelta(angle, transformComp.Transform.Rotation);
             Angle absDelta = Abs(delta);
 
             if (absDelta <= threshold)
+            {
                 return false;
+            }
 
             if (steerComp.TurnRateMoving == 0)
+            {
                 return false;
+            }
 
             Angle turnRate = Pi / steerComp.TurnRateMoving * DeltaTime;
 
             if (absDelta < turnRate)
+            {
                 outAngle = angle;
+            }
             else if (delta > 0)
+            {
                 outAngle = Cordic::AngleShift(transformComp.Transform.Rotation + turnRate);
+            }
             else
+            {
                 outAngle = Cordic::AngleShift(transformComp.Transform.Rotation - turnRate);
+            }
 
             return true;
         }
@@ -347,34 +416,43 @@ namespace Phoenix::Steering::SteeringDetail
                 steerComp.BestPos = transformComp.Transform.Position;
                 steerComp.Slack /= 2;
                 if (steerComp.Slack < steerComp.InnerRadius)
+                {
                     steerComp.Slack = 0;
+                }
                 return;
             }
 
             std::vector<const SortedEntity*> entities;
-            SteeringRangeQueryArgs queryArgs = { steerComp.CollisionMask };
+            SteeringRangeQueryArgs queryArgs = { .CollisionMask = steerComp.CollisionMask };
             FeatureSteering::QueryEntitiesInRange(world, steerComp.GoalPos, steerComp.Slack, entities);
 
             uint64 crowdedness = 0;
             for (const SortedEntity* entity : entities)
+            {
                 crowdedness += SqrxQ(entity->SteeringComponent->OuterRadius);
+            }
 
             Value increaseRate = 1.0;
             if (steerComp.Slack > 0)
             {
                 uint64 slackArea = SqrxQ(steerComp.Slack);
-                if (crowdedness > slackArea)
-                    crowdedness = slackArea;
+                crowdedness = std::min(crowdedness, slackArea);
                 increaseRate = Lerp01<Value>(SlackIncreaseRate, SlackIncreaseRateFast, crowdedness / slackArea);
             }
 
             if (steerComp.Mode == ESteerMode::Move)
+            {
                 steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisor;
+            }
             else
+            {
                 steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisorSlow;
+            }
 
             if (steerComp.Slack > MaxSlack)
+            {
                 steerComp.Slack = MaxSlack;
+            }
         }
 
         void Integrate(TransformComponent& transformComp, SteeringComponent& steerComp)
@@ -397,92 +475,111 @@ namespace Phoenix::Steering::SteeringDetail
         }
     };
 
-    struct CollisionJob : IJob<TransformComponent&, SteeringComponent&>
+    // ITask (not IJob) so it always runs as a single batch on one thread.
+    // CollisionJob previously used IJob<TransformComponent&, SteeringComponent&>, but that
+    // creates multiple per-archetype batches that run in parallel. Each batch writes to
+    // neighbor entities' TransformComponent/SteeringComponent via SortedEntities pointers,
+    // racing with other batches that process those same neighbors. Converting to ITask
+    // eliminates the race without changing any separation logic.
+    struct CollisionTask : ITask
     {
-        FeatureSteeringScratchBlock* ScratchBlock = nullptr;
+        const char* GetName() const override { return "Steering.CollisionTask"; }
 
-        void Execute(WorldConstRef /*world*/, EntityId entityId, CommandBuffer& /*cb*/,
-                     TransformComponent& transformCompA, SteeringComponent& steerCompA) override
+        void Run(WorldConstRef world, CommandBuffer& /*cb*/) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("CollisionJob");
-
-            if (HasNoneFlags(steerCompA.Flags, ESteerFlags::Active))
-                return;
+            auto* scratch = const_cast<FeatureSteeringScratchBlock*>(world.GetBlock<FeatureSteeringScratchBlock>());
 
             TMortonCodeRangeArray ranges;
             const SortedEntity* neighbors[64];
-            uint32 neighborsCount = 0;
 
-            // Query for overlapping morton ranges
+            const uint32 count = scratch->SortedEntities.GetNum();
+            for (uint32 idx = 0; idx < count; ++idx)
             {
-                PHX_PROFILE_ZONE_SCOPED_N("OverlapQuery");
+                const SortedEntity& entityA = scratch->SortedEntities[idx];
+                TransformComponent& transformCompA = *entityA.TransformComponent;
+                SteeringComponent& steerCompA = *entityA.SteeringComponent;
 
-                Distance range = Max(steerCompA.AvoidanceRadius, ScratchBlock->MaxEntityRadius);
-                MortonCodeAABB aabb = ToMortonCodeAABB(transformCompA.Transform.Position, range);
-
-                ranges.clear();
-                MortonCodeQuery(aabb, ranges);
-
-                neighborsCount = 0;
-                ForEachInMortonCodeRanges<SortedEntity, &SortedEntity::ZCode>(
-                    ScratchBlock->SortedEntities,
-                    ranges,
-                    [&](const SortedEntity& other)
-                    {
-                        if (other.EntityId == entityId)
-                            return false;
-                        if ((steerCompA.CollisionMask & other.SteeringComponent->CollisionMask) == 0)
-                            return false;
-                        neighbors[neighborsCount++] = &other;
-                        return neighborsCount == _countof(neighbors);
-                    });
-            }
-
-            for (uint32 i = 0; i < neighborsCount; ++i)
-            {
-                const SortedEntity* entityB = neighbors[i];
-                TransformComponent& transformCompB = *entityB->TransformComponent;
-                SteeringComponent& steerCompB = *entityB->SteeringComponent;
-
-                auto radius = steerCompA.OuterRadius + steerCompB.OuterRadius;
-                auto rr = SqrxQ(radius);
-
-                auto dist = transformCompB.Transform.Position - transformCompA.Transform.Position;
-                auto dd = Vec2::SqrxQ(dist);
-
-                if (dd >= rr)
+                if (HasNoneFlags(steerCompA.Flags, ESteerFlags::Active))
                     continue;
 
-                if (dd == 0)
+                uint32 neighborsCount = 0;
+
+                // Query for overlapping morton ranges
                 {
-                    dist = Vec2(radius, 0);
-                    dd = rr;
+                    PHX_PROFILE_ZONE_SCOPED_N("OverlapQuery");
+
+                    Distance range = Max(steerCompA.AvoidanceRadius, scratch->MaxEntityRadius);
+                    MortonCodeAABB aabb = ToMortonCodeAABB(transformCompA.Transform.Position, range);
+
+                    ranges.clear();
+                    MortonCodeQuery(aabb, ranges);
+
+                    ForEachInMortonCodeRanges<SortedEntity, &SortedEntity::ZCode>(
+                        scratch->SortedEntities,
+                        ranges,
+                        [&](const SortedEntity& other)
+                        {
+                            if (other.EntityId == entityA.EntityId)
+                                return false;
+                            if ((steerCompA.CollisionMask & other.SteeringComponent->CollisionMask) == 0)
+                                return false;
+                            neighbors[neighborsCount++] = &other;
+                            return neighborsCount == _countof(neighbors);
+                        });
                 }
 
-                Value separationRatioA = 1.0;
-                Value separationRatioB = 1.0;
-
-                if (HasAnyFlags(steerCompA.Flags, ESteerFlags::Holding))
-                    separationRatioA = 0.0;
-                if (HasAnyFlags(steerCompB.Flags, ESteerFlags::Holding))
-                    separationRatioB = 0.0;
-
-                Value totalRatio = separationRatioA + separationRatioB;
-                if (totalRatio != 0)
+                for (uint32 i = 0; i < neighborsCount; ++i)
                 {
-                    auto normal = dist.Normalized() * radius;
-                    auto separation = normal - dist;
+                    const SortedEntity* entityB = neighbors[i];
+                    TransformComponent& transformCompB = *entityB->TransformComponent;
+                    SteeringComponent& steerCompB = *entityB->SteeringComponent;
 
-                    if (separationRatioA != 0)
+                    auto radius = steerCompA.OuterRadius + steerCompB.OuterRadius;
+                    auto rr = SqrxQ(radius);
+
+                    auto dist = transformCompB.Transform.Position - transformCompA.Transform.Position;
+                    auto dd = Vec2::SqrxQ(dist);
+
+                    if (dd >= rr)
                     {
-                        transformCompA.Transform.Position -= separation * separationRatioA / totalRatio;
-                        SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
+                        continue;
                     }
 
-                    if (separationRatioB != 0)
+                    if (dd == 0)
                     {
-                        transformCompB.Transform.Position += separation * separationRatioB / totalRatio;
-                        SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
+                        dist = Vec2(radius, 0);
+                        // dd = rr;
+                    }
+
+                    Value separationRatioA = 1.0;
+                    Value separationRatioB = 1.0;
+
+                    if (HasAnyFlags(steerCompA.Flags, ESteerFlags::Holding))
+                    {
+                        separationRatioA = 0.0;
+                    }
+                    if (HasAnyFlags(steerCompB.Flags, ESteerFlags::Holding))
+                    {
+                        separationRatioB = 0.0;
+                    }
+
+                    Value totalRatio = separationRatioA + separationRatioB;
+                    if (totalRatio != 0)
+                    {
+                        auto normal = dist.Normalized() * radius;
+                        auto separation = normal - dist;
+
+                        if (separationRatioA != 0)
+                        {
+                            transformCompA.Transform.Position -= separation * separationRatioA / totalRatio;
+                            SetFlagRef(steerCompA.Flags, ESteerFlags::Active);
+                        }
+
+                        if (separationRatioB != 0)
+                        {
+                            transformCompB.Transform.Position += separation * separationRatioB / totalRatio;
+                            SetFlagRef(steerCompB.Flags, ESteerFlags::Active);
+                        }
                     }
                 }
             }
@@ -490,83 +587,70 @@ namespace Phoenix::Steering::SteeringDetail
     };
 }
 
+SteeringSystem::SteeringSystem() = default;
+SteeringSystem::~SteeringSystem() = default;
+
 void SteeringSystem::OnWorldInitialize(WorldRef world)
 {
-    FeatureSteeringScratchBlock& scratchBlock = world.GetBlockRef<FeatureSteeringScratchBlock>();
-    const FeatureECSDynamicBlock& ecsBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-
-    // --- Pre-update scheduler: populate + sort ---
+    // --- Pre-update scheduler: reset → scatter (using ECS sorted index) → compact ---
     {
-        auto populate = std::make_unique<SteeringDetail::PopulateSortedEntitiesJob>();
-        populate->ScratchBlock = &scratchBlock;
+        auto reset   = std::make_unique<SteeringDetail::ResetScratchBlockTask>();
+        auto scatter = std::make_unique<SteeringDetail::ScatterSortedEntitiesJob>();
+        auto compact = std::make_unique<SteeringDetail::CompactSortedEntitiesTask>();
 
-        auto sort = std::make_unique<SteeringDetail::SortEntitiesByZCodeTask>();
-        sort->ScratchBlock = &scratchBlock;
+        JobHandle hReset   = FeatureECS::RegisterJob(world, std::move(reset),   EJobPhase::PreUpdate);
+        JobHandle hScatter = FeatureECS::RegisterJob(world, std::move(scatter), EJobPhase::PreUpdate);
+        JobHandle hCompact = FeatureECS::RegisterJob(world, std::move(compact), EJobPhase::PreUpdate);
 
-        JobHandle hPopulate = PreUpdateScheduler.RegisterJob(std::move(populate));
-        JobHandle hSort     = PreUpdateScheduler.RegisterJob(std::move(sort));
-        PreUpdateScheduler.AddDependency(hSort, hPopulate);
-        PreUpdateScheduler.Build(ecsBlock.ArchetypeManager);
+        FeatureECS::AddJobDependency(world, EJobPhase::PreUpdate, hScatter, hReset);
+        FeatureECS::AddJobDependency(world, EJobPhase::PreUpdate, hCompact, hScatter);
+
+        // Scatter must run after ECS sort so SortedEntityIndex is populated
+        JobHandle hECSSort = FeatureECS::GetPreUpdateSortJobHandle(world);
+        FeatureECS::AddJobDependency(world, EJobPhase::PreUpdate, hScatter, hECSSort);
     }
 
     // --- Update scheduler: pathfinding → steering → collision × 2 ---
     {
-        auto pathfinding = std::make_unique<SteeringDetail::PathfindingJob>();
-        PathfindingJobPtr = pathfinding.get();
+        PathfindingJob  = std::make_unique<SteeringDetail::PathfindingJob>();
+        SteeringJob     = std::make_unique<SteeringDetail::SteeringJob>();
+        CollisionTask0  = std::make_unique<SteeringDetail::CollisionTask>();
+        CollisionTask1  = std::make_unique<SteeringDetail::CollisionTask>();
 
-        auto steering = std::make_unique<SteeringDetail::SteeringJob>();
-        SteeringJobPtr = steering.get();
-
-        auto collision0 = std::make_unique<SteeringDetail::CollisionJob>();
-        collision0->ScratchBlock = &scratchBlock;
-        CollisionJobPtr[0] = collision0.get();
-
-        auto collision1 = std::make_unique<SteeringDetail::CollisionJob>();
-        collision1->ScratchBlock = &scratchBlock;
-        CollisionJobPtr[1] = collision1.get();
-
-        JobHandle hPathfinding = UpdateScheduler.RegisterJob(std::move(pathfinding));
-        JobHandle hSteering    = UpdateScheduler.RegisterJob(std::move(steering));
-        JobHandle hCollision0  = UpdateScheduler.RegisterJob(std::move(collision0));
-        JobHandle hCollision1  = UpdateScheduler.RegisterJob(std::move(collision1));
+        JobHandle hPathfinding = FeatureECS::RegisterJob(world, PathfindingJob.get(),  EJobPhase::Update);
+        JobHandle hSteering    = FeatureECS::RegisterJob(world, SteeringJob.get(),     EJobPhase::Update);
+        JobHandle hCollision0  = FeatureECS::RegisterJob(world, CollisionTask0.get(),  EJobPhase::Update);
+        JobHandle hCollision1  = FeatureECS::RegisterJob(world, CollisionTask1.get(),  EJobPhase::Update);
 
         // Explicit ordering: pathfinding → steering → collision0 → collision1
-        UpdateScheduler.AddDependency(hSteering,   hPathfinding);
-        UpdateScheduler.AddDependency(hCollision0, hSteering);
-        UpdateScheduler.AddDependency(hCollision1, hCollision0);
-        UpdateScheduler.Build(ecsBlock.ArchetypeManager);
+        FeatureECS::AddJobDependency(world, EJobPhase::Update, hSteering, hPathfinding);
+        FeatureECS::AddJobDependency(world, EJobPhase::Update, hCollision0, hSteering);
+        FeatureECS::AddJobDependency(world, EJobPhase::Update, hCollision1, hCollision0);
     }
 }
 
 void SteeringSystem::OnPreWorldUpdate(WorldRef world, const SystemUpdateArgs& /*args*/)
 {
-    FeatureSteeringScratchBlock& scratchBlock = world.GetBlockRef<FeatureSteeringScratchBlock>();
-    scratchBlock.SortedEntities.Reset();
-    scratchBlock.SortedEntityCount = 0;
-
-    FeatureECS::ExecuteScheduler(world, PreUpdateScheduler);
 }
 
 void SteeringSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
-    PathfindingJobPtr->ArrivalThreshold = ArrivalThreshold;
+    PathfindingJob->ArrivalThreshold = ArrivalThreshold;
 
-    SteeringJobPtr->DeltaTime            = args.DeltaTime;
-    SteeringJobPtr->MoveTowardsGoal      = MoveTowardsGoal;
-    SteeringJobPtr->ArrivalThreshold     = ArrivalThreshold;
-    SteeringJobPtr->DensityScalar        = DensityScalar;
-    SteeringJobPtr->DensityRadiusScalar  = DensityRadiusScalar;
-    SteeringJobPtr->AvoidanceScalar      = AvoidanceScalar;
-    SteeringJobPtr->AvoidanceRadiusScalar = AvoidanceRadiusScalar;
-    SteeringJobPtr->SlackIncreaseRate    = SlackIncreaseRate;
-    SteeringJobPtr->SlackIncreaseRateFast = SlackIncreaseRateFast;
-    SteeringJobPtr->SlackRateDivisor     = SlackRateDivisor;
-    SteeringJobPtr->SlackRateDivisorSlow = SlackRateDivisorSlow;
-    SteeringJobPtr->MaxSlack             = MaxSlack;
-
-    FeatureECS::ExecuteScheduler(world, UpdateScheduler);
+    SteeringJob->DeltaTime            = args.DeltaTime;
+    SteeringJob->MoveTowardsGoal      = MoveTowardsGoal;
+    SteeringJob->ArrivalThreshold     = ArrivalThreshold;
+    SteeringJob->DensityScalar        = DensityScalar;
+    SteeringJob->DensityRadiusScalar  = DensityRadiusScalar;
+    SteeringJob->AvoidanceScalar      = AvoidanceScalar;
+    SteeringJob->AvoidanceRadiusScalar = AvoidanceRadiusScalar;
+    SteeringJob->SlackIncreaseRate    = SlackIncreaseRate;
+    SteeringJob->SlackIncreaseRateFast = SlackIncreaseRateFast;
+    SteeringJob->SlackRateDivisor     = SlackRateDivisor;
+    SteeringJob->SlackRateDivisorSlow = SlackRateDivisorSlow;
+    SteeringJob->MaxSlack             = MaxSlack;
 }
 
 void SteeringSystem::OnDebugRender(

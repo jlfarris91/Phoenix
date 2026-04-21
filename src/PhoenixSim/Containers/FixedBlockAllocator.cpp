@@ -154,9 +154,17 @@ void Phoenix::FixedBlockAllocator::Compact()
     Blocks.SetSize(NumOccupiedBlocks);
 }
 
-Phoenix::FixedBlockAllocator::ConstIter::ConstIter(const FixedBlockAllocator* owner, uint32 index): Index(index), Owner(owner)
+Phoenix::FixedBlockAllocator::ConstIter::ConstIter(
+    const FixedBlockAllocator* owner,
+    uint32 index,
+    uint32 numBlocks,
+    uint32 blockIdGen)
+    : Index(index)
+    , NumBlocks(numBlocks)
+    , BlockIdGen(blockIdGen)
+    , Owner(owner)
 {
-    Index = Owner->FindNextOccupiedBlockIndex(Index);
+    Index = std::min(Owner->FindNextOccupiedBlockIndex(Index), NumBlocks);
 }
 
 Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::ConstIter::operator*() const
@@ -171,18 +179,33 @@ Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::ConstIter::op
 
 Phoenix::FixedBlockAllocator::ConstIter& Phoenix::FixedBlockAllocator::ConstIter::operator++()
 {
-    Index = Owner->FindNextOccupiedBlockIndex(Index + 1);
+    // TODO (jfarris): Uncomment-out this assert once we have refactored AttackAbilitySystem
+    // PHX_ASSERT(BlockIdGen == Owner->BlockIdGen);
+    Index = std::min(Owner->FindNextOccupiedBlockIndex(Index + 1), NumBlocks);
     return *this;
+}
+
+bool Phoenix::FixedBlockAllocator::ConstIter::operator==(const ConstIter& other) const
+{
+    // Note that we compare the BlockIdGen to detect if the allocator was modified since the iterator was created.
+    // If it was, then the iterator is considered invalid and not equal to any other iterator (including itself).
+    // This case should be caught by the assert in operator++.
+    return BlockIdGen != other.BlockIdGen || (Owner == other.Owner && Index == other.Index && NumBlocks == other.NumBlocks);
+}
+
+bool Phoenix::FixedBlockAllocator::ConstIter::operator!=(const ConstIter& other) const
+{
+    return !(*this == other);
 }
 
 Phoenix::FixedBlockAllocator::ConstIter Phoenix::FixedBlockAllocator::begin() const
 {
-    return { this, FindNextOccupiedBlockIndex(0) };
+    return { this, 0, Blocks.GetNum(), BlockIdGen };
 }
 
 Phoenix::FixedBlockAllocator::ConstIter Phoenix::FixedBlockAllocator::end() const
 {
-    return { this, Blocks.GetNum() };
+    return { this, Blocks.GetNum(), Blocks.GetNum(), BlockIdGen };
 }
 
 Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockIndex(const Handle& handle) const

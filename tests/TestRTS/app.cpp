@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include <set>
 
 #ifndef __EMSCRIPTEN__
@@ -77,6 +78,7 @@
 #include "imgui/ImGuiPropertyGrid.h"
 #include "imgui/Console.h"
 #include "imgui/Logger.h"
+#include "imgui/JobGraphPanel.h"
 
 // Profiling
 #include "PhoenixLua/FeatureLua.h"
@@ -127,6 +129,12 @@ bool GShowConsoleWindow = true;
 // ===== Tools =====
 std::vector<std::shared_ptr<ISDLTool>> GTools;
 std::set<std::shared_ptr<ISDLTool>> GActiveTools;
+
+// ===== Job Graph =====
+JobGraphPanel GJobGraphPreUpdate;
+JobGraphPanel GJobGraphUpdate;
+JobGraphPanel GJobGraphPostUpdate;
+std::unordered_map<uint32_t, JobGraphPanel> GNamedJobGraphPanels;
 std::shared_ptr<ISDLTool> GPlayerController;
 std::shared_ptr<ISDLTool> GCameraTool;
 std::shared_ptr<ISDLTool> GEntityTool;
@@ -452,30 +460,33 @@ void OnAppRenderWorld()
                 entityBodyShape.ZCode = transformComp.ZCode;
                 entityBodyShape.VelLen = bodyComp.LinearVelocity.Length();
 
-                PhoenixColor color;
-                if (!FeatureECS::TryGetBlackboardValue(world, entityId, "actor_tint"_n, color))
-                {
-                    color = PhoenixColor::Red;
-                }
+                PhoenixColor finalTint = PhoenixColor::White;
+                PhoenixColor bbTint = PhoenixColor::White;
+                PhoenixColor ownerTint = PhoenixColor::White;
+                PhoenixColor dataTint = PhoenixColor::White;
 
-                entityBodyShape.AssetTint = color;
+                FeatureECS::TryGetBlackboardValue(world, entityId, "actor_tint"_n, bbTint);
 
                 if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(world, entityId))
                 {
-                    color = GDebugRenderer->GetColor(unitComp->OwningPlayer);
+                    ownerTint = GDebugRenderer->GetColor(unitComp->OwningPlayer);
 
                     RTS::Data::UnitPtr unitData(unitComp->UnitData);
                     RTS::Data::UnitActorPtr unitActorData = unitData.Actor().ResolveObject(lds);
 
                     entityBodyShape.Asset = unitActorData.Asset().GetValue(lds);
                     entityBodyShape.AssetScale = unitActorData.Scale().GetValue(lds);
-                    entityBodyShape.AssetTint = unitActorData.Tint().GetValue(lds);
+                    dataTint = unitActorData.Tint().GetValue(lds, PhoenixColor::White);
                 }
+
+                finalTint = bbTint * ownerTint * dataTint;
 
                 if (!HasAnyFlags(bodyComp.Flags, EBodyFlags::Awake))
                 {
-                    entityBodyShape.AssetTint = color / 2;
+                    finalTint = finalTint / 2;
                 }
+
+                entityBodyShape.AssetTint = finalTint;
 
                 if (bodyComp.Movement == EBodyMovement::Attached &&
                     transformComp.AttachParent != EntityId::Invalid)
@@ -536,14 +547,14 @@ void OnAppRenderWorld()
             auto scaleY = GViewport->Scale.y;
             if (entityBodyShape.Asset == "Units/Human/Tower/Tower.json"_n)
             {
-                GViewport->Scale.y = 1.0f;
+                // GViewport->Scale.y = 1.0f;
             }
 
             DrawLineModel(GDebugRenderer, *lineModel, entityBodyShape.Transform, entityBodyShape.AssetScale, entityBodyShape.AssetTint);
             
             if (entityBodyShape.Asset == "Units/Human/Tower/Tower.json"_n)
             {
-                GViewport->Scale.y = scaleY;
+                // GViewport->Scale.y = scaleY;
             }
         }
 
@@ -1146,6 +1157,43 @@ void RenderPhoenixUI()
         }
     }
     ImGui::End();
+
+    if (GCurrWorldView)
+    {
+        ImGui::Begin("Job Graph");
+        if (ImGui::BeginTabBar("##phases"))
+        {
+            if (ImGui::BeginTabItem("PreUpdate"))
+            {
+                GJobGraphPreUpdate.Draw(FeatureECS::GetScheduler(*GCurrWorldView, ECS::EJobPhase::PreUpdate));
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("Update"))
+            {
+                GJobGraphUpdate.Draw(FeatureECS::GetScheduler(*GCurrWorldView, ECS::EJobPhase::Update));
+                ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem("PostUpdate"))
+            {
+                GJobGraphPostUpdate.Draw(FeatureECS::GetScheduler(*GCurrWorldView, ECS::EJobPhase::PostUpdate));
+                ImGui::EndTabItem();
+            }
+
+            for (auto& [name, sched] : FeatureECS::GetNamedSchedulers(*GCurrWorldView))
+            {
+                const char* label = FName::GetNameEntry(name);
+                if (!label || label[0] == '\0') continue;
+                if (ImGui::BeginTabItem(label))
+                {
+                    GNamedJobGraphPanels[(uint32_t)name].Draw(*sched);
+                    ImGui::EndTabItem();
+                }
+            }
+
+            ImGui::EndTabBar();
+        }
+        ImGui::End();
+    }
 
     ShowConsole(&GShowConsoleWindow);
 }

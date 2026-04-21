@@ -7,6 +7,7 @@
 #include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/ECS/EntityQuery.h"
 #include "PhoenixSim/ECS/JobBatch.h"
+#include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix { class IFeature; }
 
@@ -129,7 +130,7 @@ namespace Phoenix::ECS
         virtual ~IJobBase() = default;
         virtual void RunBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) = 0;
         virtual const SystemAccessDescriptor& GetAccessDescriptor() const = 0;
-        virtual FName GetName() const { return FName::None; }
+        virtual const char* GetName() const = 0;
     };
 
     // Single-execution task: participates in the job dependency graph but runs
@@ -142,6 +143,12 @@ namespace Phoenix::ECS
 
         void RunBatch(WorldConstRef world, const JobBatch& /*batch*/, CommandBuffer& cb) final
         {
+            const char* taskName = GetName();
+            const size_t taskNameLen = std::strlen(taskName);
+
+            PHX_PROFILE_ZONE_SCOPED;
+            PHX_PROFILE_ZONE_NAME(taskName, taskNameLen);
+
             Run(world, cb);
         }
 
@@ -259,9 +266,14 @@ namespace Phoenix::ECS
         // ---- RunBatchImpl ----
 
         template <std::size_t... Is>
-        void RunBatchImpl(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb,
-                          std::index_sequence<Is...>)
+        void RunBatchImpl(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb, std::index_sequence<Is...>)
         {
+            const char* jobName = GetName();
+            const size_t jobNameLen = std::strlen(jobName);
+
+            PHX_PROFILE_ZONE_SCOPED;
+            PHX_PROFILE_ZONE_NAME(jobName, jobNameLen);
+
             // Resolve feature refs once per batch (outside the entity loop).
             // Component positions hold std::monostate — they are never accessed here.
             auto refs = std::make_tuple(MakeArgStorage<TComponents>(world)...);
@@ -270,7 +282,7 @@ namespace Phoenix::ECS
 
             if (batch.List)
             {
-                uint8* data        = static_cast<uint8*>(batch.List->GetData());
+                uint8* data         = static_cast<uint8*>(batch.List->GetData());
                 const uint32 stride = batch.List->GetEntityTotalSize();
                 const uint32 count  = batch.List->GetNumInstances();
 
@@ -278,10 +290,11 @@ namespace Phoenix::ECS
                 {
                     auto* inst = reinterpret_cast<ArchetypeInstance*>(data + i * stride);
                     if (inst->EntityId == EntityId::Invalid)
+                    {
                         continue;
+                    }
                     uint8* base = reinterpret_cast<uint8*>(inst + 1);
-                    Execute(world, inst->EntityId, cb,
-                        GetArg<TComponents, Is>(base, batch, refs)...);
+                    Execute(world, inst->EntityId, cb, GetArg<TComponents, Is>(base, batch, refs)...);
                 }
             }
 

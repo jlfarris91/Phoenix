@@ -22,14 +22,11 @@ namespace UnitSystemDetail
     {
     public:
 
-        virtual FName GetName() const override
-        {
-            return "UpdateUnitsJob"_n;
-        }
+        virtual const char* GetName() const override { return "Units.UpdateUnitsJob"; }
 
         void BeginBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) override
         {
-            LDSQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+            LDSQueryContext = FeatureLDS::StaticGetWorldQueryContext(world).get();
         }
 
         void Execute(WorldConstRef world, EntityId id, CommandBuffer& cb, const UnitComponent&) override
@@ -67,13 +64,15 @@ namespace UnitSystemDetail
 
         void EndBatch(WorldConstRef, const JobBatch& batch, CommandBuffer& cb) override
         {
-            LDSQueryContext.reset();
+            LDSQueryContext = nullptr;
         }
 
     private:
 
-        std::shared_ptr<const ILDSQueryContext> LDSQueryContext;
+        thread_local static const ILDSQueryContext* LDSQueryContext;
     };
+
+    thread_local const ILDSQueryContext* UpdateUnitsJob::LDSQueryContext = nullptr;
 }
 
 void UnitSystem::OnWorldInitialize(WorldRef world)

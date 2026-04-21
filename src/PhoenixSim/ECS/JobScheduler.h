@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "JobBatch.h"
+#include "SystemJob.h"
 #include "PhoenixSim/WorldsFwd.h"
 
 namespace Phoenix
@@ -53,8 +54,12 @@ namespace Phoenix::ECS
     class JobScheduler
     {
     public:
+        JobScheduler(const std::string& name);
+
         // Register a job and return its handle. Must be called before Build().
-        JobHandle RegisterJob(std::unique_ptr<IJobBase> job);
+        // The scheduler borrows the pointer — the caller retains ownership and must
+        // ensure the job outlives the scheduler.
+        JobHandle RegisterJob(IJobBase* job);
 
         // Declare that 'after' must not start until 'before' has completed.
         // Must be called before Build().
@@ -71,11 +76,20 @@ namespace Phoenix::ECS
         // Access a node after Build() — e.g. to read Batches from a dependent task.
         JobNode& GetNode(JobHandle handle);
 
+        // ---- Debug / visualization ----
+        const std::string& GetName() const;
+        uint32 GetJobCount() const;
+        const char* GetJobName(uint32 index) const;
+        const SystemAccessDescriptor& GetJobAccess(uint32 index) const;
+        const std::vector<uint32>& GetJobSuccessors(uint32 index) const;
+        uint32 GetJobPredecessorCount(uint32 index) const;
+
     private:
         void BuildBatches(const ArchetypeManager& archetypes);
         void AddEdge(uint32 from, uint32 to);
 
-        std::vector<std::unique_ptr<IJobBase>>  Jobs;
+        std::string                             Name;
+        std::vector<IJobBase*>                  Jobs;
         std::vector<JobNode>                    Nodes;
         std::vector<uint32>                     TopologicalOrder;
         std::vector<std::pair<uint32, uint32>>  ExplicitEdges;   // (after, before) pairs

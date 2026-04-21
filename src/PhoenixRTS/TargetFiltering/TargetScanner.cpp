@@ -65,7 +65,7 @@ void TargetScanner::PopulateTargetScanArgs(WorldConstRef world, UnitId unit, Tar
 
     if (!args.LdsQueryContext)
     {
-        args.LdsQueryContext = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
+        args.LdsQueryContext = LDS::FeatureLDS::StaticGetWorldQueryContext(world).get();
     }
 
     if (!FeatureUnit::UnitCanMove(world, unit))
@@ -156,15 +156,38 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world,
     bool unitCanMove = HasNoneFlags(args.Flags, ETargetScanFlags::UnitCannotMove);
     Distance minScanRange = Distance::Min;
 
+    // Pre-compute usable weapons and their ranges
+    struct WeaponScanData
+    {
+        FName Id;
+        Distance MaxRange;
+        Distance AcquireRange;
+    };
+
+    std::vector<WeaponScanData> usableWeapons;
+    usableWeapons.reserve(weapons.size());
+
     for (const Data::WeaponPtr& weapon : weapons)
     {
-        if (Weapons::CanUseWeapon(world, unit, weapon.GetObjectId()))
+        const FName& weaponId = weapon.GetObjectId();
+        if (!Weapons::CanUseWeapon(world, unit, weaponId))
         {
-            Distance maxRange = Weapons::GetMaxRange(world, unit, weapon.GetObjectId());
-            Distance acquireRange = Weapons::GetAcquireRange(world, unit, weapon.GetObjectId());
-            Distance minHoldingRange = unitCanMove ? acquireRange : Min(maxRange, acquireRange);
-            minScanRange = Max(minScanRange, minHoldingRange);
+            continue;
         }
+        usableWeapons.push_back({ weaponId,
+            Weapons::GetMaxRange(world, unit, weaponId),
+            Weapons::GetAcquireRange(world, unit, weaponId) });
+    }
+
+    if (usableWeapons.empty())
+    {
+        return {};
+    }
+
+    for (const WeaponScanData& wd : usableWeapons)
+    {
+        Distance minHoldingRange = unitCanMove ? wd.AcquireRange : Min(wd.MaxRange, wd.AcquireRange);
+        minScanRange = Max(minScanRange, minHoldingRange);
     }
 
     if (minScanRange <= 0.0)
@@ -179,6 +202,7 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world,
     rangeQueryArgs.Exclude = { unit };
     rangeQueryArgs.Flags = EUnitQueryFlags::Alive;
     rangeQueryArgs.TeamMask = Teams::EnemiesOf(world, FeatureUnit::GetOwningTeam(world, unit));
+    rangeQueryArgs.MaxNum = 16;
 
     std::vector<UnitId> unitsInRange;
     FeatureUnit::QueryUnitsInRange(world, scanPos, minScanRange, unitsInRange, rangeQueryArgs);
@@ -189,60 +213,46 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world,
     }
 
     TOptional<int32> bestTargetPriority;
-    TOptional<uint32> bestWeaponIndex;
+    TOptional<FName> bestWeaponId;
+
+    // GetAttackTargetPriority is invariant with respect to the scanning unit — hoist it out.
+    int32 attackPriority = FeatureUnit::GetAttackTargetPriority(world, unit);
 
     for (const UnitId& candidate : unitsInRange)
     {
-        int32 attackPriority = FeatureUnit::GetAttackTargetPriority(world, unit);
-
         if (bestTargetPriority.IsSet() && attackPriority < bestTargetPriority.Get())
         {
             continue;
         }
 
-        uint32 weaponIndex = 0;
-        for (const Data::WeaponPtr& weapon : weapons)
+        for (const WeaponScanData& wd : usableWeapons)
         {
-            const FName& weaponId = weapon.GetObjectId();
-
-            if (!Weapons::CanUseWeapon(world, unit, weaponId))
-            {
+            if (!Weapons::TargetPassesFilter(world, unit, candidate, wd.Id))
                 continue;
-            }
 
-            if (!Weapons::TargetPassesFilter(world, unit, candidate, weaponId))
-            {
+            if (!Weapons::TargetPassesAcquireFilter(world, unit, candidate, wd.Id))
                 continue;
-            }
 
-            if (!Weapons::TargetPassesAcquireFilter(world, unit, candidate, weaponId))
-            {
+            if (Weapons::TargetIsTooClose(world, unit, candidate, wd.Id))
                 continue;
-            }
 
-            if (Weapons::TargetIsTooClose(world, unit, candidate, weaponId))
-            {
+            if (!Weapons::TargetIsInRange(world, unit, candidate, wd.Id) && !unitCanMove)
                 continue;
-            }
 
-            if (!Weapons::TargetIsInRange(world, unit, candidate, weaponId) && !unitCanMove)
-            {
-                continue;
-            }
-
-            bestWeaponIndex = weaponIndex++;
+            bestWeaponId = wd.Id;
             bestTargetPriority = attackPriority;
             target = candidate;
         }
     }
 
-    if (!bestWeaponIndex.IsSet() || !FeatureECS::IsEntityValid(world, target))
+    if (!bestWeaponId.IsSet() || !FeatureECS::IsEntityValid(world, target))
     {
         return {};
     }
 
-    FName bestWeaponId = weapons[bestWeaponIndex.Get()].GetObjectId();
     Vec2 targetPos = FeatureECS::GetWorldPosition(world, target);
+
+    const FName& weaponId = bestWeaponId.Get();
 
     if (lastScanTarget != target)
     {
@@ -250,12 +260,12 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world,
         request.Verb = "Attack"_n;
         request.TargetEntity = target;
         request.TargetLocation = FeatureECS::GetWorldPosition(world, target);
-        request.Kind = bestWeaponId;
+        request.Kind = weaponId;
         return{
             .Target = target,
             .TargetLocation = targetPos,
             .AbilityId = {},
-            .WeaponId = bestWeaponId,
+            .WeaponId = weaponId,
             .AcquireRequest = request
         };
     }
@@ -264,6 +274,6 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world,
         .Target = target,
         .TargetLocation = targetPos,
         .AbilityId = {},
-        .WeaponId = bestWeaponId,
+        .WeaponId = weaponId,
         .AcquireRequest = {} };
 }

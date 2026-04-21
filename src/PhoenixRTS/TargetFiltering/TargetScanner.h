@@ -29,7 +29,7 @@ namespace Phoenix::RTS
         TOptional<ECS::EntityId> LastScanTarget;
         ETargetScanFlags Flags = ETargetScanFlags::None;
         ETargetScanLevel Level = ETargetScanLevel::None;
-        std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
+        const LDS::ILDSQueryContext* LdsQueryContext = nullptr;
     };
 
     struct PHOENIX_RTS_API TargetScanResult
