@@ -2,6 +2,5 @@
     "id": "Archer_Actor",
     "base": "UnitActor",
     "asset": "Units\\Human\\Archer\\Archer.mdl",
-    "scale": 0.6,
-    "tint": "#00AA00FF"
+    "scale": 0.6
 }
