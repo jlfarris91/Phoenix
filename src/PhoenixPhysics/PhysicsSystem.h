@@ -2,6 +2,7 @@
 #pragma once
 
 #include "PhoenixPhysics/DLLExport.h"
+#include "PhoenixSim/ECS/JobScheduler.h"
 #include "PhoenixSim/ECS/System.h"
 
 namespace Phoenix
@@ -12,11 +13,25 @@ namespace Phoenix
 
 namespace Phoenix::Physics
 {
+    // Forward-declared job types so the header stays light.
+    namespace PhysicsSystemDetail
+    {
+        struct PopulateSortedEntitiesJob;
+        struct SortEntitiesByZCodeTask;
+        struct IntegrateVelocitiesJob;
+        struct CalculateContactPairsJob;
+        struct IntegrateJob;
+    }
+
     class PHOENIX_PHYSICS_API PhysicsSystem : public ECS::ISystem
     {
     public:
         PHX_DECLARE_TYPE_DERIVED(PhysicsSystem, ISystem)
 
+        PhysicsSystem();
+        ~PhysicsSystem() override;
+
+        void OnWorldInitialize(WorldRef world) override;
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnPostWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -30,6 +45,20 @@ namespace Phoenix::Physics
         uint8 NumSeparationSteps = 40;
         double PenetrationThreshold = 0.05;
         double PenetrationCorrection = 0.1;
+
+    private:
+
+        // Post-update (before loop): integrate velocities once.
+        ECS::JobScheduler IntegrateVelocitiesScheduler;
+        std::unique_ptr<PhysicsSystemDetail::IntegrateVelocitiesJob> IntegrateVelocitiesJob;
+
+        // Per-iteration: calculate contact pairs.
+        ECS::JobScheduler CalculateContactPairsScheduler;
+        std::unique_ptr<PhysicsSystemDetail::CalculateContactPairsJob> CalculateContactPairsJob;
+
+        // Per-iteration: integrate positions.
+        ECS::JobScheduler IntegrateScheduler;
+        std::unique_ptr<PhysicsSystemDetail::IntegrateJob> IntegrateJob;
     };
 }
 

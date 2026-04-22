@@ -1,13 +1,15 @@
 #include "PhoenixRTS/Units/UnitSystem.h"
 
-#include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/ECS/ECSCommands.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
+#include "PhoenixSim/LDS/FeatureLDS.h"
 
+#include "PhoenixRTS/ECS/ECSCommands.h"
+#include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/TargetFiltering/TargetScanner.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -16,61 +18,71 @@ using namespace Phoenix::RTS;
 
 namespace UnitSystemDetail
 {
-    struct UpdateUnitsJob
+    class UpdateUnitsJob : public IJob<const UnitComponent&>
     {
-        std::shared_ptr<const ILDSQueryContext> LDSQueryContext;
+    public:
 
-        void Begin(WorldRef world)
+        virtual const char* GetName() const override { return "Units.UpdateUnitsJob"; }
+
+        void BeginBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) override
         {
-            LDSQueryContext = FeatureLDS::StaticGetWorldQueryContext(world);
+            LDSQueryContext = FeatureLDS::StaticGetWorldQueryContext(world).get();
         }
 
-        void Execute(WorldRef world, const EntityComponentSpan<UnitComponent&>& span) const
+        void Execute(WorldConstRef world, EntityId id, CommandBuffer& cb, const UnitComponent&) override
         {
-            Time simTime = world.GetSimTime();
-            for (auto && [entityId, index, unitComp] : span)
+            UnitId unit = UnitId(id);
+
+            // The unit had an expiration timer set, should we release the entity?
+            if (FeatureUnit::HasExpired(world, unit))
             {
-                UnitId unitId = UnitId(entityId);
+                cb.Append<Commands::ReleaseEntity>(unit);
+                return;
+            }
 
-                // The unit had an expiration timer set, should we release the entity?
-                if (FeatureUnit::HasExpired(world, unitId))
-                {
-                    FeatureECS::StaticReleaseEntity(world, unitId);
-                    continue;
-                }
+            if (!FeatureUnit::UnitIsDead(world, unit) && !FeatureUnit::UnitIsDormant(world, unit))
+            {
+                Time simTime = world.GetSimTime();
+                Time nextScanTime = FeatureECS::GetBlackboardValue<Time>(world, unit, "NextTargetScanTime"_n);
 
-                if (!FeatureUnit::UnitIsDead(world, unitId) && !FeatureUnit::UnitIsDormant(world, unitId))
+                if (simTime > nextScanTime)
                 {
-                    Time nextScanTime = FeatureECS::GetBlackboardValue<Time>(world, unitId, "NextTargetScanTime"_n);
-                    if (simTime > nextScanTime)
+                    TargetScanArgs args;
+                    args.Level = FeatureUnit::GetTargetScanLevel(world, unit);
+                    args.LdsQueryContext = LDSQueryContext;
+                    auto scanResult = TargetScanner::ScanForTarget(world, unit, args);
+                    if (scanResult.AcquireRequest.IsSet())
                     {
-                        TargetScanArgs args;
-                        args.Level = FeatureUnit::GetTargetScanLevel(world, unitId);
-                        args.Flags = ETargetScanFlags::AutoAcquire;
-                        args.LdsQueryContext = LDSQueryContext;
-                        TargetScanner::ScanForTarget(world, unitId, args);
-
-                        nextScanTime = simTime + 0.25;
-                        FeatureECS::SetBlackboardValue(world, unitId, "NextTargetScanTime"_n, nextScanTime);
+                        cb.Append<Commands::RequestAcquireOrder>(unit, scanResult.AcquireRequest.Get());
                     }
+
+                    nextScanTime = simTime + 0.25;
+                    cb.Append<Commands::SetBlackboardValue<Time>>(id, "NextTargetScanTime"_n, nextScanTime);
                 }
             }
         }
 
-        void End(WorldRef)
+        void EndBatch(WorldConstRef, const JobBatch& batch, CommandBuffer& cb) override
         {
-            LDSQueryContext.reset();
+            LDSQueryContext = nullptr;
         }
+
+    private:
+
+        thread_local static const ILDSQueryContext* LDSQueryContext;
     };
+
+    thread_local const ILDSQueryContext* UpdateUnitsJob::LDSQueryContext = nullptr;
 }
 
-void UnitSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
+void UnitSystem::OnWorldInitialize(WorldRef world)
 {
-    ISystem::OnWorldUpdate(world, args);
+    ISystem::OnWorldInitialize(world);
 
+    FeatureECS::RegisterJob(world, std::make_unique<UnitSystemDetail::UpdateUnitsJob>());
+
+    FeatureECS::RegisterCommandHandler<Commands::RequestAcquireOrder>(world, [](WorldRef world, const Commands::RequestAcquireOrder& command)
     {
-        PHX_PROFILE_ZONE_SCOPED_N("UpdateUnitsJob");
-        UnitSystemDetail::UpdateUnitsJob job;
-        FeatureECS::ForEachEntity(world, job);
-    }
+        FeatureOrders::StaticRequestAcquireOrder(world, command.Target, command.Request);
+    });
 }

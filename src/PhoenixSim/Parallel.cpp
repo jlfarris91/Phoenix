@@ -7,6 +7,13 @@
 
 using namespace Phoenix;
 
+thread_local uint32 gCurrentThreadIndex = 0;
+
+uint32 Phoenix::GetCurrentThreadIndex()
+{
+    return gCurrentThreadIndex;
+}
+
 bool TaskHandle::IsCompleted() const
 {
     return bIsCompleted.load(std::memory_order_acquire);
@@ -200,6 +207,9 @@ bool ThreadPool::WaitIdle(std::chrono::milliseconds maxWaitTime) const
 
 void ThreadPool::Worker(uint32 workerId)
 {
+    // Set thread-local index for worker threads (main thread is index 0)
+    gCurrentThreadIndex = workerId + 1;
+
 #if _WIN32
     wchar_t buf[256];
     size_t len;

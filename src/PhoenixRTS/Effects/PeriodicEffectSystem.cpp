@@ -1,6 +1,7 @@
 
 #include "PhoenixRTS/Effects/PeriodicEffectSystem.h"
 
+#include "PhoenixRTS/ECS/ECSCommands.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/ECS/SystemJob.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
@@ -14,41 +15,43 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-namespace PeriodicEffectSystemDetail
+namespace
 {
-    struct PeriodicEffectSystemJob : IBufferJob<TransformComponent&, PeriodicEffectComponent&>
+    struct PeriodicEffectSystemJob : IJob<PeriodicEffectComponent&>
     {
-        void Execute(const EntityComponentSpan<TransformComponent&, PeriodicEffectComponent&>& span) override
+        const char* GetName() const override { return "Effects.PeriodicEffectSystemJob"; }
+
+        void Execute(
+            WorldConstRef world,
+            EntityId entityId,
+            CommandBuffer& cb,
+            PeriodicEffectComponent& periodicComp) override
         {
-            PHX_PROFILE_ZONE_SCOPED_N("PeriodicEffectSystemJob");
-
-            WorldRef world = *World;
-            std::shared_ptr<FeatureEffects> effectsFeature = GetFeature<FeatureEffects>(world);
-
-            for (auto && [entityId, index, transformComp, projectileComp] : span)
+            if (periodicComp.PeriodicEffectTime <= 0.0 || FName::IsNoneOrEmpty(periodicComp.PeriodicEffectId))
             {
-                if (projectileComp.PeriodicEffectTime <= 0.0 || FName::IsNoneOrEmpty(projectileComp.PeriodicEffectId))
-                {
-                    continue;
-                }
-
-                if (world.GetSimTime() < projectileComp.NextPeriodicEffectTime)
-                {
-                    continue;
-                }
-
-                effectsFeature->ExecuteEffect(world, projectileComp.EffectNode, projectileComp.PeriodicEffectId);
-
-                projectileComp.NextPeriodicEffectTime = world.GetSimTime() + projectileComp.PeriodicEffectTime;
+                return;
             }
+
+            if (world.GetSimTime() < periodicComp.NextPeriodicEffectTime)
+            {
+                return;
+            }
+
+            periodicComp.NextPeriodicEffectTime = world.GetSimTime() + periodicComp.PeriodicEffectTime;
+
+            cb.Append(Commands::ExecuteEffectCommand{ periodicComp.EffectNode, periodicComp.PeriodicEffectId });
         }
     };
 }
 
-void PeriodicEffectSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
+void PeriodicEffectSystem::OnWorldInitialize(WorldRef world)
 {
-    PHX_PROFILE_ZONE_SCOPED;
+    auto job = std::make_unique<PeriodicEffectSystemJob>();
+    FeatureECS::RegisterJob(world, std::move(job), EJobPhase::Update);
 
-    PeriodicEffectSystemDetail::PeriodicEffectSystemJob job;
-    FeatureECS::ScheduleParallel(world, job);
+    FeatureECS::RegisterCommandHandler<Commands::ExecuteEffectCommand>(world, [this](WorldRef w, const Commands::ExecuteEffectCommand& cmd)
+    {
+        std::shared_ptr<FeatureEffects> effectsFeature = GetFeature<FeatureEffects>(w);
+        effectsFeature->ExecuteEffect(w, cmd.EffectNode, cmd.EffectId);
+    });
 }

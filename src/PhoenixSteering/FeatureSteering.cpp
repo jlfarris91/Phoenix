@@ -125,15 +125,15 @@ bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& en
     return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
-TOptional<ESteerMode> FeatureSteering::GetSteeringMode(WorldRef world, const EntityId& entity)
+TOptional<ESteerMode> FeatureSteering::GetSteeringMode(WorldConstRef world, const EntityId& entity)
 {
-    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     return steerComp ? steerComp->Mode : TOptional<ESteerMode>();
 }
 
-bool FeatureSteering::IsSeekingGoal(WorldRef world, const EntityId& entity)
+bool FeatureSteering::IsSeekingGoal(WorldConstRef world, const EntityId& entity)
 {
-    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
     {
         return false;
@@ -142,9 +142,9 @@ bool FeatureSteering::IsSeekingGoal(WorldRef world, const EntityId& entity)
     return HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
-bool FeatureSteering::HasArrivedAtGoal(WorldRef world, const EntityId& entity)
+bool FeatureSteering::HasArrivedAtGoal(WorldConstRef world, const EntityId& entity)
 {
-    SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
     {
         return false;

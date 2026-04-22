@@ -1,6 +1,8 @@
 ﻿
 #pragma once
 
+#include <unordered_map>
+
 #include "PhoenixSim/Delegates.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Parallel.h"
@@ -8,12 +10,14 @@
 #include "PhoenixSim/Blackboard/FeatureBlackboard.h"
 #include "PhoenixSim/Blackboard/FixedBlackboard.h"
 #include "PhoenixSim/ECS/ArchetypeManager.h"
+#include "PhoenixSim/ECS/CommandBuffer.h"
 #include "PhoenixSim/ECS/Entity.h"
 #include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/ECS/FixedEntityList.h"
 #include "PhoenixSim/ECS/FixedGroupList.h"
 #include "PhoenixSim/ECS/FixedTagList.h"
-#include "PhoenixSim/ECS/SystemJob.h"
+#include "PhoenixSim/ECS/JobScheduler.h"
+#include "PhoenixSim/ECS/System.h"
 #include "PhoenixSim/ECS/TransformComponent.h"
 
 #ifndef PHX_ECS_MAX_ENTITIES
@@ -77,7 +81,11 @@ namespace Phoenix::ECS
         };
 
         TFixedArray<EntityTransform> SortedEntities;
+        TFixedArray<uint32> SortedEntityIndex;  // [entityId % capacity] → position in SortedEntities
         std::atomic<uint32> SortedEntityCount = 0;
+
+        // Tracks sorted entity count from previous frame for bounded memset
+        uint32 PrevSortedEntityCount = PHX_ECS_MAX_ENTITIES;
     };
 
     struct EntityRangeQueryArgs
@@ -107,28 +115,6 @@ namespace Phoenix::ECS
 
     public:
 
-        void OnPreUpdate(const FeatureUpdateArgs& args) override;
-        void OnUpdate(const FeatureUpdateArgs& args) override;
-        void OnPostUpdate(const FeatureUpdateArgs& args) override;
-
-        bool OnPreHandleAction(const FeatureActionArgs& action) override;
-        bool OnHandleAction(const FeatureActionArgs& action) override;
-        bool OnPostHandleAction(const FeatureActionArgs& action) override;
-
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
-        void OnWorldInitialize(WorldRef world) override;
-        void OnWorldShutdown(WorldRef world) override;
-
-        void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
-        void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
-        void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
-
-        bool OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
-        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
-        bool OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
-
-        void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer) override;
-
         //
         // Events
         //
@@ -154,7 +140,7 @@ namespace Phoenix::ECS
         //
 
         // Gets a pointer to the entities array for a given world.
-        static const decltype(FeatureECSDynamicBlock::Entities)* GetEntities(WorldConstRef world);
+        static const FixedEntityList* GetEntities(WorldConstRef world);
         
         static bool IsEntityValid(WorldConstRef world, EntityId entityId);
         
@@ -386,7 +372,11 @@ namespace Phoenix::ECS
         static bool HasComponent(WorldConstRef world, EntityId entityId, const FName& componentType);
 
         // Adds a new component to an entity.
-        static IComponent* AddComponent(WorldRef world, EntityId entityId, const FName& componentType);
+        static IComponent* AddComponent(
+            WorldRef world,
+            EntityId entityId,
+            const FName& componentType,
+            const void* componentData);
 
         // Adds a new component to an entity.
         template <class T>
@@ -619,68 +609,53 @@ namespace Phoenix::ECS
         // Jobs
         //
 
-        template <class TJob>
-        static void Schedule(WorldRef world, const TJob& job)
+        static CommandBuffer& GetCommandBuffer(WorldConstRef world);
+
+        using TCommandHandler = std::function<void(WorldRef, const CommandBuffer::Command&)>;
+
+        static void RegisterCommandHandler(WorldRef world, FName commandId, TCommandHandler handler);
+
+        template <class TCommand>
+        static void RegisterCommandHandler(WorldRef world, std::function<void(WorldRef, const TCommand&)> handler)
         {
-            std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
-
-            FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-            WorldPtr worldPtr = &world;
-
-            uint32 startIndex = 0;
-            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](FixedArchetypeList& list)
+            RegisterCommandHandler(world, TCommand::StaticId, [handler](WorldRef world, const CommandBuffer::Command& command)
             {
-                if (job.GetQuery().PassesFilter(list.GetDefinition()))
-                {
-                    TJob jobInstance = job;
-                    auto listPtr = &list;
-                    auto wrapper = [=]() mutable
-                    {
-                        static_cast<IEntityJobBase*>(&jobInstance)->Execute(*worldPtr, *listPtr, startIndex);
-                    };
-
-                    taskQueue->Enqueue(std::move(wrapper));
-
-                    startIndex += list.GetNumInstances();
-                }
+                handler(world, *static_cast<const TCommand*>(command.Data));
             });
         }
 
-        template <class TJob>
-        static void ScheduleParallel(WorldRef world, const TJob& job)
-        {
-            PHX_PROFILE_ZONE_SCOPED;
+        // Register a job to run in the given phase. Returns a handle for dependency declarations.
+        // Phase handles are scoped to their phase — AddJobDependency requires both handles from the same phase.
+        static JobHandle RegisterJob(WorldRef world, std::unique_ptr<IJobBase> job, EJobPhase phase = EJobPhase::Update);
+        static JobHandle RegisterJob(WorldRef world, IJobBase* job, EJobPhase phase = EJobPhase::Update);
 
-            std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
+        // Declare that 'after' must not start until 'before' completes within the same phase.
+        static void AddJobDependency(WorldRef world, EJobPhase phase, JobHandle after, JobHandle before);
 
-            FeatureECSDynamicBlock& dynamicBlock = world.GetBlockRef<FeatureECSDynamicBlock>();
-            WorldPtr worldPtr = &world;
+        // Returns the handle for the ECS PreUpdate sort job.
+        // Valid after FeatureECS::OnWorldInitialize; use to declare downstream dependencies.
+        static JobHandle GetPreUpdateSortJobHandle(WorldConstRef world);
 
-            uint32 numArchetypeLists = dynamicBlock.ArchetypeManager.GetNumArchetypeLists();
-            std::vector<Task>& taskGroup = taskQueue->BeginGroup(numArchetypeLists);
+        // Execute a caller-owned JobScheduler using this world's task queue and command buffers.
+        // Rebuilds archetype batches if the archetype generation has changed since the last build.
+        // Call from ISystem::OnXxxWorldUpdate to run system-owned job graphs with full parallelism.
+        static void ExecuteScheduler(WorldRef world, JobScheduler& scheduler);
 
-            uint32 startIndex = 0;
-            dynamicBlock.ArchetypeManager.ForEachArchetypeList([&](FixedArchetypeList& list)
-            {
-                if (job.GetQuery().PassesFilter(list.GetDefinition()))
-                {
-                    PHX_PROFILE_ZONE_SCOPED_N("PushTaskToTaskGroup");
+        // Read-only access to the global phase schedulers — for debug visualization only.
+        static const JobScheduler& GetScheduler(WorldConstRef world, EJobPhase phase);
 
-                    TJob jobInstance = job;
-                    auto listPtr = &list;
-                    auto wrapper = [=]() mutable
-                    {
-                        static_cast<IEntityJobBase*>(&jobInstance)->Execute(*worldPtr, *listPtr, startIndex);
-                    };
+        // Register a named scheduler owned by a system for debug visualization.
+        // The scheduler must outlive the world (system lifetime guarantees this).
+        static void RegisterScheduler(WorldRef world, const JobScheduler& scheduler);
 
-                    taskGroup.emplace_back(std::move(wrapper));
+        // Returns all named schedulers registered via RegisterScheduler, in registration order.
+        static std::vector<std::pair<FName, const JobScheduler*>> GetNamedSchedulers(WorldConstRef world);
 
-                    startIndex += list.GetNumInstances();
-                }
-            });
+        bool bAllowParallelJobs = true;
 
-            taskQueue->EndGroup();
-        }
+        //
+        // Hierarchy/Transform
+        //
 
         static const Transform2D* GetLocalTransformPtr(WorldConstRef world, EntityId entityId);
         static const Transform2D* GetWorldTransformPtr(WorldConstRef world, EntityId entityId);
@@ -695,6 +670,10 @@ namespace Phoenix::ECS
         static Value GetWorldScale(WorldConstRef world, EntityId entityId);
 
         static EntityId GetParent(WorldConstRef world, EntityId entityId);
+
+        //
+        // Spacial Queries
+        //
 
         // Returns true if the entity is within range of the target entity.
         static bool IsInRange(WorldConstRef world, EntityId entity, EntityId target, Distance range);
@@ -727,14 +706,66 @@ namespace Phoenix::ECS
 
     private:
 
-        static void SortEntitiesByZCode(WorldRef world);
+        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
+        void Shutdown() override;
+
+        void OnPreUpdate(const FeatureUpdateArgs& args) override;
+        void OnUpdate(const FeatureUpdateArgs& args) override;
+        void OnPostUpdate(const FeatureUpdateArgs& args) override;
+
+        bool OnPreHandleAction(const FeatureActionArgs& action) override;
+        bool OnHandleAction(const FeatureActionArgs& action) override;
+        bool OnPostHandleAction(const FeatureActionArgs& action) override;
+
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldInitialize(WorldRef world) override;
+        void OnWorldShutdown(WorldRef world) override;
+
+        void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
+        void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
+        void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
+
+        bool OnPreHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
+        bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
+        bool OnPostHandleWorldAction(WorldRef world, const FeatureActionArgs& action) override;
+
+        void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer) override;
 
         static void SortAndCompact(WorldRef world);
 
         void OnReclaimEntity(WorldRef world, const EntityId& entityId) const;
 
+        void ApplyCommandBuffers(WorldRef world);
+
+        JobScheduler& GetMutableScheduler(WorldConstRef world, EJobPhase phase);
+        void BuildAllSchedulers(WorldRef world, const ArchetypeManager& archetypes);
+        void RebuildAllSchedulersIfDirty(WorldRef world, const ArchetypeManager& archetypes);
+        void ExecuteScheduler(WorldRef world, EJobPhase phase);
+
+        void RegisterECSCommandHandlers();
+
         std::vector<std::shared_ptr<ISystem>> Systems;
-        std::shared_ptr<ThreadPool> JobThreadPool;
+
+        std::vector<std::unique_ptr<CommandBuffer>> CommandBuffers;
+        std::unordered_map<FName, TCommandHandler> CommandHandlers;
+
+        struct ScopedWorldData
+        {
+            std::unique_ptr<JobScheduler> PreUpdateScheduler;
+            std::unique_ptr<JobScheduler> UpdateScheduler;
+            std::unique_ptr<JobScheduler> PostUpdateScheduler;
+            JobHandle PreUpdateSortJobHandle = InvalidJobHandle;
+
+            // Named schedulers registered by systems for debug visualization.
+            std::vector<std::pair<FName, const JobScheduler*>> NamedSchedulers;
+        };
+
+        ScopedWorldData& GetScopedWorldData(WorldConstRef world);
+
+        std::unordered_map<FName, ScopedWorldData> WorldData;
+
+        // Jobs registered directly (as opposed to owned by systems) that need to be kept alive.
+        std::vector<std::unique_ptr<IJobBase>> OwnedJobs;
 
         FOnEntityAcquired EntityAcquiredEvent;
         FOnEntityReleasing EntityReleasedEvent;

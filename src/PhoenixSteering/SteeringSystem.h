@@ -2,15 +2,27 @@
 #pragma once
 
 #include "PhoenixSteering/DLLExport.h"
+#include "PhoenixSim/ECS/JobScheduler.h"
 #include "PhoenixSim/ECS/System.h"
 
 namespace Phoenix::Steering
 {
+    namespace SteeringDetail
+    {
+        struct PathfindingJob;
+        struct SteeringJob;
+        struct CollisionTask;
+    }
+
     class PHOENIX_STEERING_API SteeringSystem : public ECS::ISystem
     {
     public:
         PHX_DECLARE_TYPE_DERIVED(SteeringSystem, Phoenix::ECS::ISystem)
 
+        SteeringSystem();
+        ~SteeringSystem();
+
+        void OnWorldInitialize(WorldRef world) override;
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
         void OnWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
 
@@ -29,6 +41,13 @@ namespace Phoenix::Steering
         double SlackRateDivisor = 8.0;
         double SlackRateDivisorSlow = 32.0;
         double MaxSlack = 400.0;
+
+    private:
+        // Update: pathfinding → steering → collision × 2.
+        std::unique_ptr<SteeringDetail::PathfindingJob> PathfindingJob;
+        std::unique_ptr<SteeringDetail::SteeringJob>    SteeringJob;
+        std::unique_ptr<SteeringDetail::CollisionTask>  CollisionTask0;
+        std::unique_ptr<SteeringDetail::CollisionTask>  CollisionTask1;
     };
 }
 

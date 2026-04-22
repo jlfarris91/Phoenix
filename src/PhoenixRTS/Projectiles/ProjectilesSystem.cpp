@@ -14,7 +14,7 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-namespace ProjectilesSystemDetail
+namespace
 {
     struct UpdateProjectilesJob
     {
@@ -44,7 +44,7 @@ void ProjectilesSystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
 
     {
         PHX_PROFILE_ZONE_SCOPED_N("UpdateProjectilesJob");
-        ProjectilesSystemDetail::UpdateProjectilesJob job;
+        UpdateProjectilesJob job;
         FeatureECS::ForEachEntity(world, job);
     }
 }

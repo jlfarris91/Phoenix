@@ -6,6 +6,7 @@
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Containers/FixedArray.h"
+#include "PhoenixSim/Reflection/TypeRegistry.h"
 
 #ifndef PHX_ECS_ARCHETYPE_MAX_COMPS
 #define PHX_ECS_ARCHETYPE_MAX_COMPS 8
@@ -155,6 +156,11 @@ namespace Phoenix
                         return (uint16)i;
                 }
                 return Index<uint16>::None;
+            }
+
+            constexpr bool HasComponent(const FName& componentId) const
+            {
+                return IndexOfComponent(componentId) != Index<uint16>::None;
             }
 
             void Construct(void* data) const

@@ -20,7 +20,7 @@ bool TargetScanResult::IsValid() const
     return Target != EntityId::Invalid;
 }
 
-TargetScanResult TargetScanner::ScanForTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
     TargetScanArgs modifiedArgs = args;
@@ -28,14 +28,14 @@ TargetScanResult TargetScanner::ScanForTarget(WorldRef world, UnitId unit, const
     return ScanForTargetInternal(world, unit, modifiedArgs);
 }
 
-TargetScanResult TargetScanner::ScanForAbilityTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForAbilityTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
     return ScanForAbilityTargetInternal(world, unit, modifiedArgs);
 }
 
-TargetScanResult TargetScanner::ScanForWeaponTarget(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForWeaponTarget(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     TargetScanArgs modifiedArgs = args;
     PopulateTargetScanArgs(world, unit, modifiedArgs);
@@ -65,7 +65,7 @@ void TargetScanner::PopulateTargetScanArgs(WorldConstRef world, UnitId unit, Tar
 
     if (!args.LdsQueryContext)
     {
-        args.LdsQueryContext = LDS::FeatureLDS::StaticGetWorldQueryContext(world);
+        args.LdsQueryContext = LDS::FeatureLDS::StaticGetWorldQueryContext(world).get();
     }
 
     if (!FeatureUnit::UnitCanMove(world, unit))
@@ -74,7 +74,7 @@ void TargetScanner::PopulateTargetScanArgs(WorldConstRef world, UnitId unit, Tar
     }
 }
 
-TargetScanResult TargetScanner::ScanForTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     // Abilities take the highest priority
     TargetScanResult result = ScanForAbilityTargetInternal(world, unit, args);
@@ -86,7 +86,7 @@ TargetScanResult TargetScanner::ScanForTargetInternal(WorldRef world, UnitId uni
     return ScanForWeaponTargetInternal(world, unit, args);
 }
 
-TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -113,14 +113,20 @@ TargetScanResult TargetScanner::ScanForAbilityTargetInternal(WorldRef world, Uni
         EntityId scanTarget = handler->ScanForTarget(world, abilityTargetScanArgs);
         if (scanTarget != EntityId::Invalid)
         {
-            return { scanTarget, abilityId, {} };
+            return {
+                .Target = scanTarget,
+                .TargetLocation = FeatureECS::GetWorldPosition(world, scanTarget),
+                .AbilityId = abilityId,
+                .WeaponId = {},
+                .AcquireRequest = {}
+            };
         }
     }
 
     return {};
 }
 
-TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, UnitId unit, const TargetScanArgs& args)
+TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldConstRef world, UnitId unit, const TargetScanArgs& args)
 {
     if (args.Level < ETargetScanLevel::Offensive)
     {
@@ -150,15 +156,38 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     bool unitCanMove = HasNoneFlags(args.Flags, ETargetScanFlags::UnitCannotMove);
     Distance minScanRange = Distance::Min;
 
+    // Pre-compute usable weapons and their ranges
+    struct WeaponScanData
+    {
+        FName Id;
+        Distance MaxRange;
+        Distance AcquireRange;
+    };
+
+    std::vector<WeaponScanData> usableWeapons;
+    usableWeapons.reserve(weapons.size());
+
     for (const Data::WeaponPtr& weapon : weapons)
     {
-        if (Weapons::CanUseWeapon(world, unit, weapon.GetObjectId()))
+        const FName& weaponId = weapon.GetObjectId();
+        if (!Weapons::CanUseWeapon(world, unit, weaponId))
         {
-            Distance maxRange = Weapons::GetMaxRange(world, unit, weapon.GetObjectId());
-            Distance acquireRange = Weapons::GetAcquireRange(world, unit, weapon.GetObjectId());
-            Distance minHoldingRange = unitCanMove ? acquireRange : Min(maxRange, acquireRange);
-            minScanRange = Max(minScanRange, minHoldingRange);
+            continue;
         }
+        usableWeapons.push_back({ weaponId,
+            Weapons::GetMaxRange(world, unit, weaponId),
+            Weapons::GetAcquireRange(world, unit, weaponId) });
+    }
+
+    if (usableWeapons.empty())
+    {
+        return {};
+    }
+
+    for (const WeaponScanData& wd : usableWeapons)
+    {
+        Distance minHoldingRange = unitCanMove ? wd.AcquireRange : Min(wd.MaxRange, wd.AcquireRange);
+        minScanRange = Max(minScanRange, minHoldingRange);
     }
 
     if (minScanRange <= 0.0)
@@ -173,6 +202,7 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     rangeQueryArgs.Exclude = { unit };
     rangeQueryArgs.Flags = EUnitQueryFlags::Alive;
     rangeQueryArgs.TeamMask = Teams::EnemiesOf(world, FeatureUnit::GetOwningTeam(world, unit));
+    rangeQueryArgs.MaxNum = 16;
 
     std::vector<UnitId> unitsInRange;
     FeatureUnit::QueryUnitsInRange(world, scanPos, minScanRange, unitsInRange, rangeQueryArgs);
@@ -183,69 +213,67 @@ TargetScanResult TargetScanner::ScanForWeaponTargetInternal(WorldRef world, Unit
     }
 
     TOptional<int32> bestTargetPriority;
-    TOptional<uint32> bestWeaponIndex;
+    TOptional<FName> bestWeaponId;
+
+    // GetAttackTargetPriority is invariant with respect to the scanning unit — hoist it out.
+    int32 attackPriority = FeatureUnit::GetAttackTargetPriority(world, unit);
 
     for (const UnitId& candidate : unitsInRange)
     {
-        int32 attackPriority = FeatureUnit::GetAttackTargetPriority(world, unit);
-
         if (bestTargetPriority.IsSet() && attackPriority < bestTargetPriority.Get())
         {
             continue;
         }
 
-        uint32 weaponIndex = 0;
-        for (const Data::WeaponPtr& weapon : weapons)
+        for (const WeaponScanData& wd : usableWeapons)
         {
-            const FName& weaponId = weapon.GetObjectId();
-
-            if (!Weapons::CanUseWeapon(world, unit, weaponId))
-            {
+            if (!Weapons::TargetPassesFilter(world, unit, candidate, wd.Id))
                 continue;
-            }
 
-            if (!Weapons::TargetPassesFilter(world, unit, candidate, weaponId))
-            {
+            if (!Weapons::TargetPassesAcquireFilter(world, unit, candidate, wd.Id))
                 continue;
-            }
 
-            if (!Weapons::TargetPassesAcquireFilter(world, unit, candidate, weaponId))
-            {
+            if (Weapons::TargetIsTooClose(world, unit, candidate, wd.Id))
                 continue;
-            }
 
-            if (Weapons::TargetIsTooClose(world, unit, candidate, weaponId))
-            {
+            if (!Weapons::TargetIsInRange(world, unit, candidate, wd.Id) && !unitCanMove)
                 continue;
-            }
 
-            if (!Weapons::TargetIsInRange(world, unit, candidate, weaponId) && !unitCanMove)
-            {
-                continue;
-            }
-
-            bestWeaponIndex = weaponIndex++;
+            bestWeaponId = wd.Id;
             bestTargetPriority = attackPriority;
             target = candidate;
         }
     }
 
-    if (!bestWeaponIndex.IsSet() || !FeatureECS::IsEntityValid(world, target))
+    if (!bestWeaponId.IsSet() || !FeatureECS::IsEntityValid(world, target))
     {
         return {};
     }
 
-    FName bestWeaponId = weapons[bestWeaponIndex.Get()].GetObjectId();
+    Vec2 targetPos = FeatureECS::GetWorldPosition(world, target);
 
-    if (lastScanTarget != target && HasAnyFlags(args.Flags, ETargetScanFlags::AutoAcquire))
+    const FName& weaponId = bestWeaponId.Get();
+
+    if (lastScanTarget != target)
     {
         AcquireRequest request;
         request.Verb = "Attack"_n;
         request.TargetEntity = target;
         request.TargetLocation = FeatureECS::GetWorldPosition(world, target);
-        request.Kind = bestWeaponId;
-        FeatureOrders::StaticRequestAcquireOrder(world, unit, request);
+        request.Kind = weaponId;
+        return{
+            .Target = target,
+            .TargetLocation = targetPos,
+            .AbilityId = {},
+            .WeaponId = weaponId,
+            .AcquireRequest = request
+        };
     }
 
-    return { target, {}, bestWeaponId };
+    return {
+        .Target = target,
+        .TargetLocation = targetPos,
+        .AbilityId = {},
+        .WeaponId = weaponId,
+        .AcquireRequest = {} };
 }

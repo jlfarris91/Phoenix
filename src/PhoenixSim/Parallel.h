@@ -11,6 +11,8 @@
 
 namespace Phoenix
 {
+    PHOENIX_SIM_API uint32 GetCurrentThreadIndex();
+    
     struct PHOENIX_SIM_API TaskHandle
     {
         bool IsCompleted() const;

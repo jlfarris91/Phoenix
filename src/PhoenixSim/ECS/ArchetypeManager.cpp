@@ -247,7 +247,10 @@ ArchetypeManager::TArchetypeHandle ArchetypeManager::SetArchetype(EntityId entit
     return SetArchetype(handle, archetypeIdOrHash);
 }
 
-void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const ComponentDefinition& componentDef)
+void* ArchetypeManager::AddComponent(
+    TArchetypeHandle& inOutHandle,
+    const ComponentDefinition& componentDef,
+    const void* componentData)
 {
     ArchetypeDefinition currArchDef;
 
@@ -273,16 +276,23 @@ void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const Compon
 
     SetArchetype(inOutHandle, archDef->GetArchetypeHash());
 
-    return GetComponent(inOutHandle, componentDef.Id);
+    void* component = GetComponent(inOutHandle, componentDef.Id);
+
+    if (component && componentData)
+    {
+        std::memcpy(component, componentData, componentDef.Size);
+    }
+
+    return component;
 }
 
-void* ArchetypeManager::AddComponent(EntityId entityId, const ComponentDefinition& componentDef)
+void* ArchetypeManager::AddComponent(EntityId entityId, const ComponentDefinition& componentDef, const void* componentData)
 {
     TArchetypeHandle handle = GetHandleForEntity(entityId);
-    return AddComponent(handle, componentDef);
+    return AddComponent(handle, componentDef, componentData);
 }
 
-void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const FName& componentId)
+void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const FName& componentId, const void* componentData)
 {
     const ComponentDefinition* compDef = ComponentDefinitions.GetPtr(componentId);
     if (!compDef)
@@ -290,13 +300,13 @@ void* ArchetypeManager::AddComponent(TArchetypeHandle& inOutHandle, const FName&
         return nullptr;
     }
 
-    return AddComponent(inOutHandle, *compDef);
+    return AddComponent(inOutHandle, *compDef, componentData);
 }
 
-void* ArchetypeManager::AddComponent(EntityId entityId, const FName& componentId)
+void* ArchetypeManager::AddComponent(EntityId entityId, const FName& componentId, const void* componentData)
 {
     TArchetypeHandle handle = GetHandleForEntity(entityId);
-    return AddComponent(handle, componentId);
+    return AddComponent(handle, componentId, componentData);
 }
 
 bool ArchetypeManager::RemoveComponent(TArchetypeHandle& inOutHandle, const FName& componentId)
@@ -394,7 +404,7 @@ ArchetypeManager::TArchetypeList* ArchetypeManager::FindFirstArchetypeList(
     const FName& archetypeIdOrHash,
     bool includeFullLists)
 {
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && (includeFullLists || !list->IsFull()))
@@ -434,7 +444,7 @@ const ArchetypeManager::TArchetypeList* ArchetypeManager::FindOwningArchetypeLis
 void ArchetypeManager::ForEachArchetypeList(const std::function<void(TArchetypeList&)>& func)
 {
     PHX_PROFILE_ZONE_SCOPED;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && InvokeForEachCallbackNoIndex(func, *list))
@@ -447,7 +457,7 @@ void ArchetypeManager::ForEachArchetypeList(const std::function<void(TArchetypeL
 void ArchetypeManager::ForEachArchetypeList(const std::function<void(const TArchetypeList&)>& func) const
 {
     PHX_PROFILE_ZONE_SCOPED;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && InvokeForEachCallbackNoIndex(func, *list))
@@ -461,7 +471,7 @@ void ArchetypeManager::ForEachArchetypeList(const FName& archetypeIdOrHash,
     const std::function<void(TArchetypeList&)>& func)
 {
     PHX_PROFILE_ZONE_SCOPED;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && list->HasArchetypeDefinition(archetypeIdOrHash) && InvokeForEachCallbackNoIndex(func, *list))
@@ -473,17 +483,30 @@ void ArchetypeManager::ForEachArchetypeList(const FName& archetypeIdOrHash,
 
 void ArchetypeManager::Compact()
 {
+    bool anyDeallocated = false;
+
     // Free any archetype lists with no active instances.
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
         if (list && list->GetNumActiveInstances() == 0)
         {
             ArchetypeLists.Deallocate(handle);
+            anyDeallocated = true;
         }
     }
 
     ArchetypeLists.Compact();
+
+    if (anyDeallocated)
+    {
+        ++Generation;
+    }
+}
+
+uint32 ArchetypeManager::GetGeneration() const
+{
+    return Generation;
 }
 
 ArchetypeManager::TArchetypeHandle ArchetypeManager::GetHandleForEntity(EntityId entityId) const
@@ -513,6 +536,8 @@ ArchetypeManager::TArchetypeList* ArchetypeManager::FindOrAddArchetypeList(const
     {
         list->SetId(handle.Id);
     }
+
+    ++Generation;
 
     return list;
 }

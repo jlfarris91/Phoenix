@@ -79,13 +79,13 @@ namespace Phoenix::Steering
         static bool HasFinishedTurning(WorldConstRef world, const ECS::EntityId& entity);
 
         // Returns the current steering mode of an entity if a steering component is present.
-        static TOptional<ESteerMode> GetSteeringMode(WorldRef world, const ECS::EntityId& entity);
+        static TOptional<ESteerMode> GetSteeringMode(WorldConstRef world, const ECS::EntityId& entity);
 
         // Returns true if the entity is currently seeking its goal.
-        static bool IsSeekingGoal(WorldRef world, const ECS::EntityId& entity);
+        static bool IsSeekingGoal(WorldConstRef world, const ECS::EntityId& entity);
 
         // Returns true if the entity has arrived at its goal.
-        static bool HasArrivedAtGoal(WorldRef world, const ECS::EntityId& entity);
+        static bool HasArrivedAtGoal(WorldConstRef world, const ECS::EntityId& entity);
 
         // Stops an entity from seeking its current goal, if there was one.
         static bool Stop(WorldRef world, const ECS::EntityId& entity);

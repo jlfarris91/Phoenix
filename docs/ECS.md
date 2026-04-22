@@ -198,6 +198,143 @@ auto pos = t->Transform.Position;  // Phoenix::Math::Vec2
 
 ---
 
+## Jobs and Parallel Scheduling
+
+The job system is the primary way to process entities in parallel. Jobs participate in a DAG-based scheduler that serializes conflicting jobs and runs independent ones concurrently.
+
+### IJob — per-entity job
+
+Subclass `IJob<TComponents...>` where `TComponents` is the list of component types the job needs. Each entity is processed by a single `Execute()` call:
+
+```cpp
+struct MyJob : Phoenix::ECS::IJob<TransformComponent&, const MyComponent&>
+{
+    FName GetName() const override { return "MyJob"_n; }
+
+    void Execute(WorldConstRef world, EntityId id, CommandBuffer& cb,
+                 TransformComponent& transform,
+                 const MyComponent& my) override
+    {
+        if (my.ShouldRelease)
+            cb.Append<Commands::ReleaseEntity>(id);
+    }
+};
+```
+
+Component types follow the same rules as `ForEachEntity` — `T&` for read-write, `const T&` for read-only. The scheduler uses these access modes to detect conflicts between jobs.
+
+Optional batch hooks run once per matching archetype, outside the entity loop:
+
+```cpp
+void BeginBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) override;
+void EndBatch(WorldConstRef world, const JobBatch& batch, CommandBuffer& cb) override;
+```
+
+### ITask — single-execution task
+
+`ITask` participates in the same DAG as jobs but runs once per scheduler execution rather than once per entity. Use it for setup/teardown that must be ordered relative to `IJob` work:
+
+```cpp
+struct MySortTask : Phoenix::ECS::ITask
+{
+    void Run(WorldConstRef world, CommandBuffer& cb) override
+    {
+        std::sort(...);
+    }
+};
+```
+
+### Registering jobs in the global scheduler
+
+Register jobs from `ISystem::OnWorldInitialize`. The global scheduler runs automatically each tick — **before** system `OnXxxWorldUpdate` methods:
+
+```cpp
+void MySystem::OnWorldInitialize(WorldRef world)
+{
+    JobHandle hA = FeatureECS::RegisterJob(world,
+        std::make_unique<MyJobA>(), EJobPhase::Update);
+
+    JobHandle hB = FeatureECS::RegisterJob(world,
+        std::make_unique<MyJobB>(), EJobPhase::Update);
+
+    // B must not start until A has finished
+    FeatureECS::AddJobDependency(world, EJobPhase::Update, /*after=*/hB, /*before=*/hA);
+}
+```
+
+`EJobPhase` controls when the scheduler fires relative to the world tick:
+
+| Phase | Runs before |
+|---|---|
+| `PreUpdate` | `ISystem::OnPreWorldUpdate` |
+| `Update` | `ISystem::OnWorldUpdate` |
+| `PostUpdate` | `ISystem::OnPostWorldUpdate` |
+
+### System-owned schedulers
+
+The global scheduler runs **before** system update methods, so globally-registered jobs cannot receive per-frame data (DeltaTime, config values) that the system sets during its own update. For those cases, own the `JobScheduler` on the system and drive it manually:
+
+```cpp
+class MySystem : public ISystem
+{
+    void OnWorldInitialize(WorldRef world) override
+    {
+        auto job = std::make_unique<MyJob>();
+        JobPtr = job.get();
+        Scheduler.RegisterJob(std::move(job));
+        // call Scheduler.AddDependency(...) as needed
+        // Build() is called internally by ExecuteScheduler on first run
+    }
+
+    void OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args) override
+    {
+        JobPtr->DeltaTime = args.DeltaTime;     // inject per-frame data before running
+        FeatureECS::ExecuteScheduler(world, Scheduler);
+    }
+
+    ECS::JobScheduler Scheduler;
+    MyJob* JobPtr = nullptr;   // raw ptr for per-frame param updates; Scheduler owns lifetime
+};
+```
+
+`FeatureECS::ExecuteScheduler` runs the caller-owned scheduler using the world's thread pool and command buffers, and rebuilds archetype batches automatically when archetypes change.
+
+### CommandBuffer — deferring mutations
+
+Each `Execute()` call receives a per-thread `CommandBuffer`. Use it to defer any mutation that touches shared or cross-entity state:
+
+```cpp
+// Structural changes
+cb.Append<Commands::ReleaseEntity>(id);
+cb.Append<Commands::AddTag<AliveTag>>(id);
+
+// Construct-in-place from args
+cb.Append<Commands::SetBlackboardValue<float>>(id, "Speed"_n, 2.5f);
+
+// From a pre-constructed value
+cb.Append(Commands::SetEntityKind{id, "NewKind"_n});
+```
+
+Command buffers are flushed and applied serially after the parallel job phase completes. Register a handler to react to custom commands:
+
+```cpp
+FeatureECS::RegisterCommandHandler<MyCommand>(world,
+    [](WorldRef world, const MyCommand& cmd) { /* ... */ });
+```
+
+### What is and isn't safe from Execute()
+
+| Operation | Safe in parallel? | How |
+|---|---|---|
+| Read component args | Yes | Each entity owns distinct memory |
+| Write component args | Yes | Each entity's slot is exclusive |
+| Read feature/world block data | Yes | Treat as a read-only snapshot during job execution |
+| Mutate shared or global state | **No** | Use `CommandBuffer` |
+| Call feature statics that mutate | **No** | Use `CommandBuffer` |
+| Acquire or release entities | **No** | Use `CommandBuffer` |
+
+---
+
 ## Practical Tips
 
 **Don't add/remove components inside `ForEachEntity`** — structural changes are deferred, but modifying the archetype list you're currently iterating causes undefined behavior. Queue the changes and apply them after the loop.

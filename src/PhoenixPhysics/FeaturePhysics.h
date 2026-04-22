@@ -1,9 +1,7 @@
 ﻿#pragma once
 
 #include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Containers/FixedSet.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/ECS/System.h"
 #include "PhoenixSim/FixedPoint/FixedPoint.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
 #include "PhoenixSim/FixedPoint/FixedLine.h"

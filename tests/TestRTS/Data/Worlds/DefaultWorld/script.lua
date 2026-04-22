@@ -1,6 +1,7 @@
-local SPAWN_INTERVAL     = 30
+local SPAWN_INTERVAL     = 1
 local ROTATION_SPEED     = 2 * math.pi  -- one full revolution per second of sim time
-local frameCount         = 0
+local spawnTimer         = 0
+local waveIndex          = 0
 local spawnEnabled       = false
 local towerUnit
 local angle1             = 0.0
@@ -13,22 +14,22 @@ end
 
 function OnWorldShutdown()
     spawnEnabled = false
-    frameCount   = 0
 end
 
 function OnWorldUpdate()
     if not spawnEnabled then return end
 
-    frameCount = frameCount + 1
-
     local dt = Phoenix.DeltaTime
+    spawnTimer = spawnTimer + dt
     angle1 = angle1 + ROTATION_SPEED * dt
 
     Phoenix.Debug.DrawRay({0.0, 0.0}, Phoenix.Vec2.FromPolar(angle1, 10), {R=255, G=0, B=0, A=255})
 
-    if frameCount % SPAWN_INTERVAL == 0 then
-        local wave = math.floor(frameCount / SPAWN_INTERVAL)
-        local unitData = (wave % 2 == 0) and "Lancer" or "Archer"
+    if spawnTimer > SPAWN_INTERVAL then
+        spawnTimer = spawnTimer - SPAWN_INTERVAL
+        waveIndex = waveIndex + 1
+
+        local unitData = (waveIndex % 2 == 0) and "Lancer" or "Archer"
         local owner = 1 -- (wave % 9) + 1
         local angle = math.random() * 2 * math.pi
         local pos = Phoenix.Vec2.FromPolar(angle, 10.0)

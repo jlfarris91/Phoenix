@@ -114,16 +114,18 @@ namespace Phoenix
 
         struct ConstIter
         {
-            ConstIter(const FixedBlockAllocator* owner, uint32 index);
+            ConstIter(const FixedBlockAllocator* owner, uint32 index, uint32 numBlocks, uint32 blockIdGen);
 
             Handle operator*() const;
 
             ConstIter& operator++();
 
-            bool operator==(const ConstIter& other) const = default;
-            bool operator!=(const ConstIter& other) const = default;
+            bool operator==(const ConstIter& other) const;
+            bool operator!=(const ConstIter& other) const;
 
             uint32 Index;
+            uint32 NumBlocks;
+            uint32 BlockIdGen;
             const FixedBlockAllocator* Owner;
         };
 

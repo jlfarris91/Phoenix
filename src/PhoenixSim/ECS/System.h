@@ -14,6 +14,13 @@ namespace Phoenix
 
 namespace Phoenix::ECS
 {
+    enum class PHOENIX_SIM_API EJobPhase : uint8
+    {
+        PreUpdate,
+        Update,
+        PostUpdate,
+    };
+
     struct PHOENIX_SIM_API SystemUpdateArgs
     {
         simtime_t SimTime = 0;
@@ -29,6 +36,10 @@ namespace Phoenix::ECS
     class PHOENIX_SIM_API ISystem
     {
         PHX_DECLARE_TYPE_INTERFACE(ISystem)
+
+    public:
+
+        virtual ~ISystem() = default;
 
         virtual FName GetName() const { return FName::None; }
 

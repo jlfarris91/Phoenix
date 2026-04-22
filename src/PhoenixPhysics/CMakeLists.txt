@@ -7,6 +7,10 @@ if(PHX_USE_PCH)
 endif()
 target_compile_definitions(PhoenixPhysics PUBLIC PHX_PROFILE_ENABLE)
 target_link_libraries(PhoenixPhysics PUBLIC PhoenixSim)
+# Heavy template instantiation in job types can overflow MSVC's debug-info linker pass.
+if(MSVC)
+    target_link_options(PhoenixPhysics PRIVATE $<$<CONFIG:Debug>:/DEBUG:FASTLINK>)
+endif()
 
 # Install rules
 install(TARGETS PhoenixPhysics
