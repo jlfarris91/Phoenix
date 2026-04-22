@@ -27,6 +27,20 @@
     <DisplayString>{X}, {Y}, {Z}</DisplayString>
   </Type>
 
+  <!-- ECS -->
+
+  <!-- Visualizer for EntityId -->
+  <Type Name="Phoenix::ECS::EntityId">
+    <DisplayString Condition="Id == -1">Invalid</DisplayString>
+    <DisplayString>{(int)(Id%32768),d}:{(int)(Id/32768),d} ({(int)Id,d})</DisplayString>
+    <Expand>
+      <If Condition="(int)Id != -1">
+        <Item Name="Index">Id%32768</Item>
+        <Item Name="Generation">Id/32768</Item>
+      </If>
+    </Expand>
+  </Type>
+
   <!-- Containers -->
 
   <!-- Visualizer for TContiguousStorage<T, InlineStoragePolicy<N>> -->

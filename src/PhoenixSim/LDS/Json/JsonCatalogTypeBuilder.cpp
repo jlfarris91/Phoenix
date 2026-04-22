@@ -413,9 +413,11 @@ bool JsonCatalogTypeBuilder::ProcessValueProperty(
         if (metaName == "default")
         {
             LDSTypedValue value = { {}, valueType };
-            if (!GetValueFromJson(metaValue, valueType, value.Value))
+
+            std::string errorMessage;
+            if (!GetValueFromJson(metaValue, valueType, value.Value, errorMessage))
             {
-                LogError("Unexpected default value type.").Context(rootTypeId, propertyPath);
+                LogError("{}", errorMessage).Context(rootTypeId, propertyPath);
                 return false;
             }
 
@@ -548,9 +550,10 @@ bool JsonCatalogTypeBuilder::ProcessEnumPropertyItem(
         auto itemKVPJson = itemJson.items().begin();
         itemKey = itemKVPJson.key();
 
-        if (!GetValueFromJson(itemKVPJson.value(), underlyingValueType.Get(), itemValue.Value))
+        std::string errorMessage;
+        if (!GetValueFromJson(itemKVPJson.value(), underlyingValueType.Get(), itemValue.Value, errorMessage))
         {
-            LogError("Failed to read enum item value.").Context(rootTypeId, itemPath);
+            LogError("{}", errorMessage).Context(rootTypeId, itemPath);
             return false;
         }
     }

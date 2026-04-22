@@ -29,5 +29,5 @@ struct SDLViewport
     SDL_FPoint Offset = { 0.0f, 0.0f };
     int Width = 0;
     int Height = 0;
-    SDL_FPoint Scale = { 1.0f, 0.6f };
+    SDL_FPoint Scale = { 1.0f, 1.0f };
 };

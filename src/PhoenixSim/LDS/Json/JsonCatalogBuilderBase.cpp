@@ -1,5 +1,9 @@
 #include "PhoenixSim/LDS/Json/JsonCatalogBuilderBase.h"
 
+#include <charconv>
+#include <string_view>
+#include <system_error>
+
 using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::LDS::Json;
@@ -15,10 +19,49 @@ JsonCatalogBuilderBase::JsonCatalogBuilderBase(
     PHX_ASSERT(catalog);
 }
 
+namespace
+{
+    template <class T>
+    bool TryParseHexString(const std::string_view& str, T& outValue, std::string& outErrorMessage)
+    {
+        const char* first = str.data();
+        const char* last = str.data() + str.size();
+
+        if (str.starts_with('#'))
+        {
+            first += 1; // Skip the '#' character
+        }
+
+        T value = 0;
+        auto [ptr, ec] = std::from_chars(first, last, value, 16);
+
+        if (ec == std::errc{})
+        {
+            outValue = value;
+            return true;
+        }
+
+        if (ec == std::errc::invalid_argument)
+        {
+            outErrorMessage = "not a number";
+            return false;
+        }
+
+        if (ec == std::errc::result_out_of_range)
+        {
+            outErrorMessage = "out of range";
+            return false;
+        }
+
+        return false;
+    }
+}
+
 bool JsonCatalogBuilderBase::GetValueFromJson(
     const json& json,
     ELDSValueType type,
-    LDSValue& outValue)
+    LDSValue& outValue,
+    std::string& outErrorMessage)
 {
     switch (type)
     {
@@ -31,7 +74,12 @@ bool JsonCatalogBuilderBase::GetValueFromJson(
             if (json.is_string())
             {
                 const std::string& str = json.get<std::string>();
-                outValue.Int32 = static_cast<int32>(strtoul(str.c_str(), nullptr, 16));
+                std::string errorMessage;
+                if (!TryParseHexString(str, outValue.Int32, errorMessage))
+                {
+                    outErrorMessage = std::format("Failed to parse hex value: {}", errorMessage);
+                    return false;
+                }
                 return true;
             }
             break;
@@ -43,8 +91,13 @@ bool JsonCatalogBuilderBase::GetValueFromJson(
             }
             if (json.is_string())
             {
-                const std::string& str = json.get<std::string>();
-                outValue.UInt32 = static_cast<uint32>(strtoul(str.c_str(), nullptr, 16));
+                std::string str = json.get<std::string>();
+                std::string errorMessage;
+                if (!TryParseHexString(str, outValue.UInt32, errorMessage))
+                {
+                    outErrorMessage = std::format("Failed to parse hex value: {}", errorMessage);
+                    return false;
+                }
                 return true;
             }
             break;
@@ -141,7 +194,7 @@ bool JsonCatalogBuilderBase::GetPropertyValueObjectRefFromJson(const json& json,
 
 bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
     const json& json,
-    const FName& objectId,
+    const std::string& objectId,
     const std::string& propertyPath,
     uint32 pointerFirst,
     uint32 pointerLast,
@@ -191,12 +244,20 @@ bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
     }
 
     outValue.Type = metaRecord->GetValueAs<ELDSValueType>();
-    return GetValueFromJson(json, outValue.Type, outValue.Value);
+
+    std::string errorMessage;
+    if (!GetValueFromJson(json, outValue.Type, outValue.Value, errorMessage))
+    {
+        LogError("{}", errorMessage).Context(objectId, propertyPath);
+        return false;
+    }
+
+    return true;
 }
 
 bool JsonCatalogBuilderBase::GetPropertyValueFromJson(
     const json& json,
-    const FName& objectId,
+    const std::string& objectId,
     const std::string& propertyPath,
     LDSTypedValue& outValue)
 {

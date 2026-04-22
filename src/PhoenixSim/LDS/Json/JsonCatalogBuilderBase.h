@@ -35,13 +35,14 @@ namespace Phoenix::LDS::Json
         static bool GetValueFromJson(
             const json& json,
             ELDSValueType type,
-            LDSValue& outValue);
+            LDSValue& outValue,
+            std::string& outErrorMessage);
 
         bool GetPropertyValueObjectRefFromJson(const json& json, LDSValue& value);
 
         bool GetPropertyValueFromJson(
             const json& json,
-            const FName& objectId,
+            const std::string& objectId,
             const std::string& propertyPath,
             uint32 pointerFirst,
             uint32 pointerLast,
@@ -49,7 +50,7 @@ namespace Phoenix::LDS::Json
 
         bool GetPropertyValueFromJson(
             const json& json,
-            const FName& objectId,
+            const std::string& objectId,
             const std::string& propertyPath,
             LDSTypedValue& outValue);
 

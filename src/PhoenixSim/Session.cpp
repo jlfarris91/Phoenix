@@ -155,6 +155,8 @@ void Session::Step(const SessionStepArgs& args)
     LastStepTime = PHX_SYS_CLOCK_NOW();
     SimTime += 1;
 
+    FPSCalc.Time = LastStepTime;
+
     // Process actions
     ProcessActions(SimTime);
 
