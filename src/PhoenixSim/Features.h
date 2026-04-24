@@ -45,7 +45,6 @@ namespace Phoenix
     struct PHOENIX_SIM_API FeatureUpdateArgs
     {
         simtime_t SimTime = 0;
-        uint32 StepHz = 0;
     };
 
     struct PHOENIX_SIM_API FeatureActionArgs

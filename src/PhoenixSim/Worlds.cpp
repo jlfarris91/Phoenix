@@ -258,7 +258,7 @@ void WorldManager::Step(const WorldStepArgs& args)
     // TODO (jfarris): parallelize
     for (const WorldSharedPtr& world : worlds)
     {
-        UpdateWorld(*world, args.SimTime, args.StepHz);
+        UpdateWorld(*world, args.SimTime);
     }
 }
 
@@ -356,7 +356,7 @@ void WorldManager::ShutdownWorld(WorldRef world) const
     SetFlagRef(world.Flags, EWorldFlags::ShutDown, true);
 }
 
-void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const
+void WorldManager::UpdateWorld(WorldRef world, simtime_t time) const
 {
     PHX_PROFILE_ZONE_SCOPED;
 
@@ -364,7 +364,6 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) c
 
     FeatureUpdateArgs updateArgs;
     updateArgs.SimTime = time;
-    updateArgs.StepHz = stepHz;
 
     // Pre-update
     {
