@@ -116,7 +116,6 @@ namespace Phoenix
     struct PHOENIX_SIM_API WorldStepArgs
     {
         simtime_t SimTime = 0;
-        uint32 StepHz = 0;
         FName WorldName = FName::None;
     };
 
@@ -169,7 +168,7 @@ namespace Phoenix
 
         void InitializeWorld(WorldRef world, simtime_t time) const;
         void ShutdownWorld(WorldRef world) const;
-        void UpdateWorld(WorldRef world, simtime_t time, clock_t stepHz) const;
+        void UpdateWorld(WorldRef world, simtime_t time) const;
         void SendActionToWorld(WorldRef world, const Action& action) const;
 
         std::shared_ptr<Session> Session;

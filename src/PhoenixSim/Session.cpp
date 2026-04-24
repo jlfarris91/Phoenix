@@ -7,11 +7,7 @@
 #include "PhoenixSim/Worlds.h"
 
 #include <algorithm>
-#ifdef _WIN32
-#include <windows.h>  // For Sleep
-#else
-#include <unistd.h>   // For usleep
-#endif
+#include <thread>
 
 using namespace Phoenix;
 
@@ -94,7 +90,6 @@ void Session::Initialize()
     StartTime = PHX_SYS_CLOCK_NOW();
     CurrTickTime = StartTime;
     LastStepTime = StartTime;
-    AccTickTime = sys_clock_dur_t(0);
     FPSCalc.Reset();
 }
 
@@ -116,35 +111,19 @@ void Session::Tick(const SessionStepArgs& args)
 {
     using namespace std::chrono;
 
-    auto currTime = PHX_SYS_CLOCK_NOW();
-    auto dt = currTime - CurrTickTime;
-    CurrTickTime = currTime;
+    auto stepStart = PHX_SYS_CLOCK_NOW();
 
-    // Skip frames during debug break
-    if (dt > 3s)
+    Step(args);
+
+    auto stepElapsed = PHX_SYS_CLOCK_NOW() - stepStart;
+
+    sys_clock_dur_t targetInterval = duration_cast<sys_clock_dur_t>(
+        duration<double>(sys_clock_dur_t(1s) / Time::D) / args.SpeedMultiplier);
+
+    auto remaining = targetInterval - stepElapsed;
+    if (remaining > sys_clock_dur_t(0))
     {
-        return;
-    }
-
-    sys_clock_dur_t hz = sys_clock_dur_t(1s) / args.StepHz;
-
-    AccTickTime += dt;
-    while (AccTickTime >= hz)
-    {
-        auto startStepTime = PHX_SYS_CLOCK_NOW();
-
-        Step(args);
-
-        sys_clock_t endStepTime = PHX_SYS_CLOCK_NOW();
-        auto stepElapsed = endStepTime - startStepTime;
-
-        if (stepElapsed > 3s)
-        {
-            break;
-        }
-
-        AccTickTime -= std::max(stepElapsed, hz);
-        CurrTickTime = PHX_SYS_CLOCK_NOW();
+        std::this_thread::sleep_for(remaining);
     }
 }
 
@@ -161,12 +140,11 @@ void Session::Step(const SessionStepArgs& args)
     ProcessActions(SimTime);
 
     // Step features at the session level
-    UpdateSession(SimTime, args.StepHz);
+    UpdateSession(SimTime);
 
     // Step active worlds
     WorldStepArgs worldStepArgs;
     worldStepArgs.SimTime = SimTime;
-    worldStepArgs.StepHz = args.StepHz;
     WorldManager->Step(worldStepArgs);
 
     FPSCalc.Tick();
@@ -316,11 +294,10 @@ void Session::ProcessActions(simtime_t time)
     }
 }
 
-void Session::UpdateSession(simtime_t time, uint32 stepHz) const
+void Session::UpdateSession(simtime_t time) const
 {
     FeatureUpdateArgs updateArgs;
     updateArgs.SimTime = time;
-    updateArgs.StepHz = stepHz;
 
     // Pre-update
     {

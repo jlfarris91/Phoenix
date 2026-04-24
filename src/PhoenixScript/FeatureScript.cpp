@@ -154,7 +154,7 @@ void FeatureScript::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& ar
 {
     if (auto* env = GetEnvironment(world); env && env->IsValid())
     {
-        const float dt = args.StepHz > 0 ? 1.0f / static_cast<float>(args.StepHz) : 0.0f;
+        const float dt = 1.0f / Time::D;
         const void* argPtrs[] = { &dt };
         env->CallExport("OnPreWorldUpdate", 1, argPtrs, 0, nullptr);
     }
@@ -164,7 +164,7 @@ void FeatureScript::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 {
     if (auto* env = GetEnvironment(world); env && env->IsValid())
     {
-        const float dt = args.StepHz > 0 ? 1.0f / static_cast<float>(args.StepHz) : 0.0f;
+        const float dt = 1.0f / Time::D;
         const void* argPtrs[] = { &dt };
         env->CallExport("OnWorldUpdate", 1, argPtrs, 0, nullptr);
     }
@@ -174,7 +174,7 @@ void FeatureScript::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& a
 {
     if (auto* env = GetEnvironment(world); env && env->IsValid())
     {
-        const float dt = args.StepHz > 0 ? 1.0f / static_cast<float>(args.StepHz) : 0.0f;
+        const float dt = 1.0f / Time::D;
         const void* argPtrs[] = { &dt };
         env->CallExport("OnPostWorldUpdate", 1, argPtrs, 0, nullptr);
     }
