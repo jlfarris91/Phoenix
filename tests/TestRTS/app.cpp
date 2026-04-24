@@ -40,6 +40,11 @@
 #include <PhoenixPhysics/FeaturePhysics.h>
 #include <PhoenixPhysics/BodyComponent.h>
 #include <PhoenixSteering/FeatureSteering.h>
+#include <PhoenixSim/Tasks/FeatureTask.h>
+
+// Script Features
+#include <PhoenixScript/FeatureScript.h>
+#include <PhoenixLua/FeatureLua.h>
 
 // RTS Features
 #include <PhoenixRTS/Units/FeatureUnit.h>
@@ -81,14 +86,13 @@
 #include "imgui/JobGraphPanel.h"
 
 // Profiling
-#include "PhoenixLua/FeatureLua.h"
-#include "PhoenixScript/FeatureScript.h"
 #include "tracy/PhoenixTracyImpl.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::Blackboard;
 using namespace Phoenix::ECS;
+using namespace Phoenix::Tasks;
 using namespace Phoenix::Physics;
 using namespace Phoenix::Pathfinding;
 using namespace Phoenix::Steering;
@@ -148,7 +152,7 @@ std::shared_ptr<ISDLTool> GNavMeshTool;
 // inconsistent state for one frame — acceptable for a render view.
 World* GRenderView = nullptr;
 
-World* GCurrWorldView = nullptr;
+const World* GCurrWorldView = nullptr;
 bool GCopyWorld = true;
 FPSCalc GWorldViewUpdateCalc;
 
@@ -200,6 +204,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureBlackboard>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureLDS>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureECS>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureTask>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
@@ -434,7 +439,7 @@ void OnAppRenderWorld()
         return;
     }
 
-    World& world = *worldPtr;
+    const World& world = *worldPtr;
 
     // Realize the sim world
     {
@@ -467,7 +472,7 @@ void OnAppRenderWorld()
 
                 FeatureECS::TryGetBlackboardValue(world, entityId, "actor_tint"_n, bbTint);
 
-                if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(world, entityId))
+                if (const RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(world, entityId))
                 {
                     ownerTint = GDebugRenderer->GetColor(unitComp->OwningPlayer);
 
@@ -491,7 +496,7 @@ void OnAppRenderWorld()
                 if (bodyComp.Movement == EBodyMovement::Attached &&
                     transformComp.AttachParent != EntityId::Invalid)
                 {
-                    if (TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(world, transformComp.AttachParent))
+                    if (const TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(world, transformComp.AttachParent))
                     {
                         entityBodyShape.Transform.Position = parentTransformComp->Transform.Position + entityBodyShape.Transform.Position.Rotate(parentTransformComp->Transform.Rotation);
                         entityBodyShape.Transform.Rotation += parentTransformComp->Transform.Rotation;
@@ -661,7 +666,7 @@ void RenderPhoenixUI()
 
         {
             static constexpr double kMinSpeed = 0.1;
-            static constexpr double kMaxSpeed = 64.0;
+            static constexpr double kMaxSpeed = 16.0;
             ImGui::SliderScalar("Sim Speed", ImGuiDataType_Double, &GSimSpeed, &kMinSpeed, &kMaxSpeed);
         }
         ImGui::Checkbox("Copy World", &GCopyWorld);
@@ -709,7 +714,7 @@ void RenderPhoenixUI()
                     {
                         for (const BufferBlockDefinition& blockDef : featureDefinition.WorldBlocks.Definitions)
                         {
-                            uint8* block = GCurrWorldView->GetBlock(blockDef.TypeName);
+                            const uint8* block = GCurrWorldView->GetBlock(blockDef.TypeName);
                             if (!block || !blockDef.Type)
                             {
                                 continue;
