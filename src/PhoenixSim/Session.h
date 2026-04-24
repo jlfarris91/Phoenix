@@ -40,7 +40,7 @@ namespace Phoenix
 
     struct PHOENIX_SIM_API SessionStepArgs
     {
-        uint32 StepHz = 60;
+        double SpeedMultiplier = 1.0;
 
         // Optionally only step this world.
         FName WorldName = FName::None;
@@ -108,7 +108,7 @@ namespace Phoenix
 
         void ProcessActions(simtime_t time);
 
-        void UpdateSession(simtime_t time, uint32 stepHz) const;
+        void UpdateSession(simtime_t time) const;
 
         std::filesystem::path DataDirectory;
 
@@ -123,7 +123,6 @@ namespace Phoenix
 
         sys_clock_t StartTime;
         sys_clock_t CurrTickTime;
-        sys_clock_dur_t AccTickTime = sys_clock_dur_t(0);
         sys_clock_t LastStepTime;
         simtime_t SimTime = 0;
 

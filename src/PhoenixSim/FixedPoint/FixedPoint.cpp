@@ -4,6 +4,9 @@
 
 using namespace Phoenix;
 
+// MSVC produces a corrupt COFF when a TU contains only static_asserts (no symbols).
+namespace { volatile int sFixedPointAssertionAnchor = 0; }
+
 static_assert(BitWidth(1) == 1);
 static_assert(BitWidth(3) == 2);
 static_assert(BitWidth(5) == 3);

@@ -184,7 +184,7 @@ LineModel GDefaultUnitModel;
 
 bool GDrawGrid = false;
 
-uint32 GSimStepHz = Time::D;
+double GSimSpeed = 1.0;
 
 void SessionWorker();
 void OnPostWorldUpdate(WorldConstRef world);
@@ -254,7 +254,7 @@ void TickSession()
 #endif
 
     SessionStepArgs stepArgs;
-    stepArgs.StepHz = GSimStepHz;
+    stepArgs.SpeedMultiplier = GSimSpeed;
 
     GSession->Tick(stepArgs);
 }
@@ -659,7 +659,11 @@ void RenderPhoenixUI()
             ImGui::EndTable();
         }
 
-        ImGui::InputScalar("Step Hz", ImGuiDataType_U32, &GSimStepHz);
+        {
+            static constexpr double kMinSpeed = 0.1;
+            static constexpr double kMaxSpeed = 64.0;
+            ImGui::SliderScalar("Sim Speed", ImGuiDataType_Double, &GSimSpeed, &kMinSpeed, &kMaxSpeed);
+        }
         ImGui::Checkbox("Copy World", &GCopyWorld);
         ImGui::Checkbox("Draw Grid", &GDrawGrid);
 

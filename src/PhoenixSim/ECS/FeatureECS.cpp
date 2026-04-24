@@ -370,6 +370,8 @@ bool FeatureECS::SetEntityKind(WorldRef world, EntityId entityId, const FName& k
     // If the entity has an archetype then release it now
     (void)block.ArchetypeManager.Release(entity->Id);
 
+    entity->Kind = kind;
+
     // Automatically acquire an archetype if the kind matches one
     if (block.ArchetypeManager.IsArchetypeRegistered(kind))
     {
@@ -988,7 +990,7 @@ void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
 
     SystemUpdateArgs systemUpdateArgs;
     systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(Time::D));
 
     for (const std::shared_ptr<ISystem>& system : Systems)
     {
@@ -1002,7 +1004,7 @@ void FeatureECS::OnUpdate(const FeatureUpdateArgs& args)
 
     SystemUpdateArgs systemUpdateArgs;
     systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(Time::D));
 
     for (const std::shared_ptr<ISystem>& system : Systems)
     {
@@ -1016,7 +1018,7 @@ void FeatureECS::OnPostUpdate(const FeatureUpdateArgs& args)
 
     SystemUpdateArgs systemUpdateArgs;
     systemUpdateArgs.SimTime = args.SimTime;
-    systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+    systemUpdateArgs.DeltaTime = OneDivBy(Time(Time::D));
 
     for (const std::shared_ptr<ISystem>& system : Systems)
     {
@@ -1204,7 +1206,7 @@ void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 
         SystemUpdateArgs systemUpdateArgs;
         systemUpdateArgs.SimTime = args.SimTime;
-        systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+        systemUpdateArgs.DeltaTime = OneDivBy(Time(Time::D));
 
         for (const std::shared_ptr<ISystem>& system : Systems)
         {
@@ -1234,7 +1236,7 @@ void FeatureECS::OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
 
         SystemUpdateArgs systemUpdateArgs;
         systemUpdateArgs.SimTime = args.SimTime;
-        systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+        systemUpdateArgs.DeltaTime = OneDivBy(Time(Time::D));
 
         for (const std::shared_ptr<ISystem>& system : Systems)
         {
@@ -1264,7 +1266,7 @@ void FeatureECS::OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args
 
         SystemUpdateArgs systemUpdateArgs;
         systemUpdateArgs.SimTime = args.SimTime;
-        systemUpdateArgs.DeltaTime = OneDivBy(Time(args.StepHz));
+        systemUpdateArgs.DeltaTime = OneDivBy(Time(Time::D));
 
         for (const std::shared_ptr<ISystem>& system : Systems)
         {
