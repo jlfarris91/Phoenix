@@ -325,6 +325,23 @@ namespace Phoenix
                 return span;
             }
 
+            // TODO (jfarris): this should fail when TComponents contains a non-const ref
+            static EntityComponentSpan FromList(const FixedArchetypeList& list, uint32 startingIndex)
+            {
+                EntityComponentSpan span;
+                span.RawData = const_cast<uint8*>(static_cast<const uint8*>(list.GetData()));
+                span.StartingIndex = startingIndex;
+                span.InstanceCount = list.GetNumInstances();
+                span.Step = list.GetEntityTotalSize();
+
+                uint32 offsets[sizeof...(TComponents)] = { list.GetComponentLocalOffset(StaticTypeName<std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<TComponents>>>>::TypeId)... };
+                memcpy(span.Offsets, offsets, sizeof...(TComponents) * sizeof(uint32));
+
+                span.CheckRawData();
+
+                return span;
+            }
+
             uint32 GetStartIndex() const
             {
                 CheckRawData();

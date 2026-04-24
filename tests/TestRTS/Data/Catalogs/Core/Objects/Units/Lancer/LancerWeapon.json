@@ -8,7 +8,7 @@
         "display_name": "Lancer Weapon"
     },
     "period": 1.5,
-    "range_max": 1.5,
+    "range_max": 1.0,
     "range_slop": 2.0,
     "swing_time": 0.166667,
     "target_filter": {

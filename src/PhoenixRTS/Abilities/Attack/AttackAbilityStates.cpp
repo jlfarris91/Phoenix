@@ -4,6 +4,8 @@
 #include "PhoenixRTS/Data/DataWeapon.h"
 #include "PhoenixRTS/Units/FeatureUnit.h"
 #include "PhoenixRTS/Weapons/Weapons.h"
+#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "PhoenixSteering/FeatureSteering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -22,6 +24,12 @@ AbilityStateResult AttackTargetState::Enter(
     AbilityId = attackAbility.GetObjectId();
     Range = Weapons::GetMaxRange(world, unit, WeaponId);
     Arc = Weapons::GetWeaponArcMin(world, unit, WeaponId);
+
+    const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
+    if (HasAnyFlags(weapon.Flags().GetValue(lds), Data::EWeaponFlags::Melee))
+    {
+        Range += Steering::FeatureSteering::GetEntityOuterRadius(world, target);
+    }
 
     return SetState(world, unit, EActiveState::MoveToEntity);
 }

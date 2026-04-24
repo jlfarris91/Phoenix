@@ -136,7 +136,7 @@ namespace FeatureECSDetail
             for (uint32 i = 0; i < ScratchBlock->SortedEntities.GetNum(); ++i)
             {
                 auto entityIdx = DynamicBlock->Entities.GetEntityIndex(ScratchBlock->SortedEntities[i].EntityId) - 1;
-#if 0
+#if 1
                 // Test to ensure that no two entities are occupying the same slot in SortedEntityIndex
                 if (ScratchBlock->SortedEntityIndex[entityIdx] != Index<uint32>::None)
                 {
@@ -344,8 +344,10 @@ bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId) const
         return false;
     }
 
-    block.Entities.Release(entityId);
+    // Broadcast before releasing so that handlers can still access entity data if needed.
     EntityReleasedEvent.Broadcast(world, entityId);
+
+    block.Entities.Release(entityId);
 
     return true;
 }

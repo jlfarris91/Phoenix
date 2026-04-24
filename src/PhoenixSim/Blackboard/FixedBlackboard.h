@@ -350,6 +350,12 @@ namespace Phoenix::Blackboard
 
         BlackboardValues Enumerate(uint32 keyHi) const;
 
+        auto begin() { return Storage.begin();}
+        auto begin() const { return Storage.begin();}
+
+        auto end() { return Storage.end();}
+        auto end() const { return Storage.end();}
+
     private:
 
         BlackboardItem* FindItemWithQuery(const BlackboardQuery& query);

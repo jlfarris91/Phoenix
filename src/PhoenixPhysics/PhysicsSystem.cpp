@@ -521,49 +521,49 @@ void PhysicsSystem::OnPostWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
     IntegrateVelocitiesJob->DeltaTime = dt;
     FeatureECS::ExecuteScheduler(world, IntegrateVelocitiesScheduler);
 
-    // Iteration loop
-    {
-        for (uint32 iter = 0; iter < NumIterations; ++iter)
-        {
-            PHX_PROFILE_ZONE_SCOPED_N("IterationLoop");
-            PHX_PROFILE_ZONE_VALUE(iter);
-
-            // Determine contacts
-            CalculateContactPairsJob->DeltaTime = dt;
-            FeatureECS::ExecuteScheduler(world, CalculateContactPairsScheduler);
-
-            WorldTaskQueue::Schedule(world, &PhysicsSystemDetail::ResolveContactPairsTask);
-
-            // CalculateContactsTask depends on scratchBlock.Contacts.Num() from ResolveContactPairs
-            WorldTaskQueue::Flush(world);
-
-            WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
-
-            // Multi-pass solver
-            for (uint32 i = 0; i < NumSolverSteps; ++i)
-            {
-                PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
-                PHX_PROFILE_ZONE_VALUE(i);
-
-                WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::PGSTask, i);
-            }
-
-            // Integrate positions
-            IntegrateJob->DeltaTime = dt;
-            IntegrateJob->bAllowSleep = AllowSleep;
-            FeatureECS::ExecuteScheduler(world, IntegrateScheduler);
-
-            // Multi-pass overlap separation
-            for (uint32 i = 0; i < NumSeparationSteps; ++i)
-            {
-                PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
-                PHX_PROFILE_ZONE_VALUE(i);
-
-                WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
-                WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
-            }
-        }
-    }
+    // // Iteration loop
+    // {
+    //     for (uint32 iter = 0; iter < NumIterations; ++iter)
+    //     {
+    //         PHX_PROFILE_ZONE_SCOPED_N("IterationLoop");
+    //         PHX_PROFILE_ZONE_VALUE(iter);
+    //
+    //         // Determine contacts
+    //         CalculateContactPairsJob->DeltaTime = dt;
+    //         FeatureECS::ExecuteScheduler(world, CalculateContactPairsScheduler);
+    //
+    //         WorldTaskQueue::Schedule(world, &PhysicsSystemDetail::ResolveContactPairsTask);
+    //
+    //         // CalculateContactsTask depends on scratchBlock.Contacts.Num() from ResolveContactPairs
+    //         WorldTaskQueue::Flush(world);
+    //
+    //         WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
+    //
+    //         // Multi-pass solver
+    //         for (uint32 i = 0; i < NumSolverSteps; ++i)
+    //         {
+    //             PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
+    //             PHX_PROFILE_ZONE_VALUE(i);
+    //
+    //             WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::PGSTask, i);
+    //         }
+    //
+    //         // Integrate positions
+    //         IntegrateJob->DeltaTime = dt;
+    //         IntegrateJob->bAllowSleep = AllowSleep;
+    //         FeatureECS::ExecuteScheduler(world, IntegrateScheduler);
+    //
+    //         // Multi-pass overlap separation
+    //         for (uint32 i = 0; i < NumSeparationSteps; ++i)
+    //         {
+    //             PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
+    //             PHX_PROFILE_ZONE_VALUE(i);
+    //
+    //             WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
+    //             WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
+    //         }
+    //     }
+    // }
 
 }
 

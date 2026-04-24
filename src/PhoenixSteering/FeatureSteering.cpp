@@ -23,6 +23,7 @@ bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, con
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->ArrivalRange = range;
     steerComp->Slack = 0;
+    steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
@@ -45,6 +46,7 @@ bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const
     steerComp->GoalPos = Vec2::Zero;
     steerComp->ArrivalRange = range;
     steerComp->Slack = 0;
+    steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
@@ -83,6 +85,7 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const E
     steerComp->GoalPos = Vec2::Zero;
     steerComp->GoalEntity = target;
     steerComp->Slack = 0;
+    steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
@@ -99,6 +102,7 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const V
     steerComp->GoalPos = target;
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->Slack = 0;
+    steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
@@ -165,6 +169,7 @@ bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->GoalPos = Vec2::Zero;
     steerComp->Slack = 0;
+    steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, false);
     SetFlagRef(steerComp->Flags, ESteerFlags::ArrivedAtGoal, false);
     return true;

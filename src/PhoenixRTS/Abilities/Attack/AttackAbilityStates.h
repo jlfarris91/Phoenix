@@ -14,7 +14,7 @@ namespace Phoenix::RTS
 
     enum class PHOENIX_RTS_API EAttackAbilityState : uint8
     {
-        None,
+        Idle,
         AttackEntity,
         AttackLocation,
         AttackMove,

@@ -1,6 +1,7 @@
 
 #include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
 
+#include "AttackAbilityTask.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
@@ -16,6 +17,7 @@
 #include "PhoenixRTS/Units/UnitId.h"
 #include "PhoenixRTS/Weapons/Weapons.h"
 #include "PhoenixSim/Session.h"
+#include "PhoenixSim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -23,97 +25,6 @@ using namespace Phoenix::ECS;
 using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
-
-namespace AttackAbilitySystemDetail
-{
-    struct UpdateAttackAbilityComponentJob
-    {
-        std::shared_ptr<FeatureOrders> OrdersFeature;
-
-        void Begin(WorldRef world)
-        {
-            OrdersFeature = GetFeature<FeatureOrders>(world);
-        }
-
-        void Execute(WorldRef world, const EntityComponentSpan<AttackAbilityComponent&>& span) const
-        {
-            for (auto && [entityId, index, attackComp] : span)
-            {
-                if (attackComp.ActiveState != EAttackAbilityState::None)
-                {
-                    AbilityStateResult result = attackComp.Update(world, UnitId(entityId));
-                    if (result != EAbilityStateResult::Continue)
-                    {
-                        OrdersFeature->OnActiveOrderCompleted(world, UnitId(entityId), result == EAbilityStateResult::Complete);
-                    }
-                }
-            }
-        }
-    };
-}
-
-void AttackAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
-{
-    ISystem::OnWorldUpdate(world, args);
-
-    {
-        PHX_PROFILE_ZONE_SCOPED_N("UpdateAttackAbilityComponentJob");
-        AttackAbilitySystemDetail::UpdateAttackAbilityComponentJob job;
-        FeatureECS::ForEachEntity(world, job);
-    }
-}
-
-AttackAbilityComponent::AttackAbilityComponent()
-    : States(AttackTargetState{})
-    , ActiveState(EAttackAbilityState::None)
-{
-}
-
-AbilityStateResult AttackAbilityComponent::Update(WorldRef world, const UnitId& unit)
-{
-    switch (ActiveState)
-    {
-        case EAttackAbilityState::AttackEntity:     return States.AttackEntity.Update(world, unit);
-        case EAttackAbilityState::AttackLocation:   return States.AttackLocation.Update(world, unit);
-        case EAttackAbilityState::AttackMove:       return States.AttackMove.Update(world, unit);
-        case EAttackAbilityState::FollowEntity:     return States.FollowEntity.Update(world, unit);
-        default:                                    return EAbilityStateResult::Fail;
-    }
-}
-
-void AttackAbilityComponent::Interrupt(WorldRef world, const UnitId& unit)
-{
-    switch (ActiveState)
-    {
-        case EAttackAbilityState::AttackEntity:     States.AttackEntity.Interrupt(world, unit); break;
-        case EAttackAbilityState::AttackLocation:   States.AttackLocation.Interrupt(world, unit); break;
-        case EAttackAbilityState::AttackMove:       States.AttackMove.Interrupt(world, unit); break;
-        case EAttackAbilityState::FollowEntity:     States.FollowEntity.Interrupt(world, unit); break;
-        default:                                    break;
-    }
-
-    Exit(world, unit);
-}
-
-void AttackAbilityComponent::Exit(WorldRef world, const UnitId& unit)
-{
-    switch (ActiveState)
-    {
-        case EAttackAbilityState::AttackEntity:     States.AttackEntity.Exit(world, unit); break;
-        case EAttackAbilityState::AttackLocation:   States.AttackLocation.Exit(world, unit); break;
-        case EAttackAbilityState::AttackMove:       States.AttackMove.Exit(world, unit); break;
-        case EAttackAbilityState::FollowEntity:     States.FollowEntity.Exit(world, unit); break;
-        default:                                    break;
-    }
-
-    ActiveState = EAttackAbilityState::None;
-    FeatureSteering::Stop(world, unit);
-}
-
-AttackAbilityHandler::AttackAbilityHandler()
-{
-    System = std::make_shared<AttackAbilitySystem>();
-}
 
 FName AttackAbilityHandler::StaticGetCommandId()
 {
@@ -125,51 +36,31 @@ FName AttackAbilityHandler::GetCommandId() const
     return StaticGetCommandId();
 }
 
-void AttackAbilityHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
-{
-    IAbilityHandler::Initialize(session);
-
-    std::shared_ptr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
-    ecs->RegisterSystem(System);
-}
-
-void AttackAbilityHandler::Shutdown()
-{
-    IAbilityHandler::Shutdown();
-
-    std::shared_ptr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
-    ecs->UnregisterSystem(System);
-}
-
-void AttackAbilityHandler::OnWorldInitialize(WorldRef world)
-{
-    FeatureECS::RegisterComponentDefinition<AttackAbilityComponent>(world);
-}
-
-void AttackAbilityHandler::OnWorldShutdown(WorldRef world)
-{
-    FeatureECS::UnregisterComponentDefinition<AttackAbilityComponent>(world);
-}
-
 bool AttackAbilityHandler::AddAbility(WorldRef world, const UnitId& unit) const
 {
-    AttackAbilityComponent* attackComp = FeatureECS::GetOrAddComponent<AttackAbilityComponent>(world, unit);
-    if (!attackComp)
+    if (Tasks::FeatureTask::HasTask(world, unit, StaticTypeName<AttackAbilityTask>::TypeId))
     {
         return false;
     }
+
+    // Allocate a new attack task for the unit.
+    Tasks::FeatureTask::Allocate(world, unit, AttackAbilityTask{});
 
     return true;
 }
 
 bool AttackAbilityHandler::RemoveAbility(WorldRef world, const UnitId& unit) const
 {
-    return FeatureECS::RemoveComponent<AttackAbilityComponent>(world, unit);
+    // Deallocate the attack task on the unit.
+    uint32 index;
+    Tasks::TaskHandle handle = Tasks::FeatureTask::GetFirstTask(world, unit, StaticTypeName<AttackAbilityTask>::TypeId, index);
+    PHX_ASSERT(handle != Tasks::TaskHandle::Invalid);
+    return Tasks::FeatureTask::FinishTask(world, handle);
 }
 
 bool AttackAbilityHandler::HasAbility(WorldConstRef world, const UnitId& unit) const
 {
-    return FeatureECS::GetComponent<AttackAbilityComponent>(world, unit) != nullptr;
+    return Tasks::FeatureTask::HasTask(world, unit, StaticTypeName<AttackAbilityTask>::TypeId);
 }
 
 uint32 AttackAbilityHandler::GetCommandPriority(
@@ -250,49 +141,16 @@ uint32 AttackAbilityHandler::GetSmartCommandPriority(
 
 bool AttackAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    AttackAbilityComponent* attackComp = FeatureECS::GetComponent<AttackAbilityComponent>(world, unit);
-    if (!attackComp)
-    {
-        return false;
-    }
-
-    Data::AttackAbilityPtr attackAbility(order.OrderId);
-    UnitId targetUnit = UnitId(order.TargetEntity);
-    Vec2 targetLocation = order.TargetLocation;
-
-    if (order.OrderIndex == Commands::Attack)
-    {
-        if (targetUnit != EntityId::Invalid)
-        {
-            if (ExecuteAttackTargetOrder(world, unit, targetUnit, attackAbility, *attackComp))
-            {
-                return true;
-            }
-        }
-        else
-        {
-            if (ExecuteAttackMoveOrder(world, unit, targetLocation, attackAbility, *attackComp))
-            {
-                return true;
-            }
-        }
-    }
-    else if (order.OrderIndex == Commands::AttackGround)
-    {
-        if (ExecuteAttackGroundOrder(world, unit, targetLocation, attackAbility, *attackComp))
-        {
-            return true;
-        }
-    }
-
-    return false;
+    Tasks::TaskHandle handle = Tasks::FeatureTask::GetFirstTask<AttackAbilityTask>(world, unit);
+    return Tasks::FeatureTask::Execute<AttackAbilityTask, bool, WorldRef, UnitId, const Order&>(world, handle, &AttackAbilityTask::ExecuteOrder, world, unit, order).GetValue(false);
 }
 
 bool AttackAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    if (AttackAbilityComponent* attackComp = FeatureECS::GetComponent<AttackAbilityComponent>(world, unit))
+    Tasks::TaskHandle handle = Tasks::FeatureTask::GetFirstTask<AttackAbilityTask>(world, unit);
+    if (handle != Tasks::TaskHandle::Invalid)
     {
-        attackComp->Interrupt(world, unit);
+        Tasks::FeatureTask::Execute<AttackAbilityTask, void, WorldRef, UnitId>(world, handle, &AttackAbilityTask::Interrupt, world, unit);
         return true;
     }
     return false;
@@ -301,87 +159,4 @@ bool AttackAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, co
 bool AttackAbilityHandler::SupportsMagicBox(const Order& order) const
 {
     return false;
-}
-
-bool AttackAbilityHandler::ExecuteAttackTargetOrder(
-    WorldRef world,
-    const UnitId& unit,
-    const UnitId& target,
-    const Data::AttackAbilityPtr& attackAbility,
-    AttackAbilityComponent& attackComp)
-{
-    if (target == unit ||
-        FeatureUnit::UnitIsDead(world, target) ||
-        FeatureUnit::UnitIsHidden(world, target) ||
-        !FeatureUnit::UnitIsDetected(world, unit, target))
-    {
-        return false;
-    }
-
-    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
-    Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);
-    if (weapon.IsValid())
-    {
-        attackComp.ActiveState = EAttackAbilityState::AttackEntity;
-        auto result = attackComp.States.AttackEntity.Enter(world, unit, target, weapon, attackAbility);
-        return result != EAbilityStateResult::Fail;
-    }
-
-    if (unitCanMove)
-    {
-        attackComp.ActiveState = EAttackAbilityState::FollowEntity;
-        auto result = attackComp.States.FollowEntity.Enter(world, unit, target, 0);
-        return result != EAbilityStateResult::Fail;
-    }
-
-    return false;
-}
-
-bool AttackAbilityHandler::ExecuteAttackMoveOrder(
-    WorldRef world,
-    const UnitId& unit,
-    const Vec2& target,
-    const Data::AttackAbilityPtr& attackAbility,
-    AttackAbilityComponent& attackComp)
-{
-    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
-    if (!unitCanMove)
-    {
-        return false;
-    }
-
-    Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, true);
-    if (!weapon.IsValid())
-    {
-        return false;
-    }
-
-    attackComp.ActiveState = EAttackAbilityState::AttackMove;
-    auto result = attackComp.States.AttackMove.Enter(world, unit, target, weapon, attackAbility);
-    if (result == EAbilityStateResult::Fail)
-    {
-        return false;
-    }
-
-    FeatureUnit::SetTargetScanLevel(world, unit, ETargetScanLevel::Offensive);
-    return true;
-}
-
-bool AttackAbilityHandler::ExecuteAttackGroundOrder(
-    WorldRef world,
-    const UnitId& unit,
-    const Vec2& target,
-    const Data::AttackAbilityPtr& attackAbility,
-    AttackAbilityComponent& attackComp)
-{
-    bool unitCanMove = FeatureUnit::UnitCanMove(world, unit);
-    Data::WeaponPtr weapon = Weapons::FindBestEnabledWeapon(world, unit, target, unitCanMove);
-    if (!weapon.IsValid())
-    {
-        return false;
-    }
-
-    attackComp.ActiveState = EAttackAbilityState::AttackLocation;
-    auto result = attackComp.States.AttackLocation.Enter(world, unit, target, weapon, attackAbility);
-    return result != EAbilityStateResult::Fail;
 }

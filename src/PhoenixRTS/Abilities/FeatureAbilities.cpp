@@ -157,6 +157,8 @@ void FeatureAbilities::Initialize(const std::shared_ptr<Phoenix::Session>& sessi
     {
         RegisterAbilityHandler(handler);
     }
+
+    EntityReleasingHandle = session->GetFeature<FeatureECS>()->OnEntityReleasing().AddStatic(&FeatureAbilities::OnEntityReleasing);
 }
 
 void FeatureAbilities::Shutdown()
@@ -166,5 +168,27 @@ void FeatureAbilities::Shutdown()
     while (!AbilityIdToHandlerMap.empty())
     {
         UnregisterAbilityHandler(AbilityIdToHandlerMap.begin()->first);
+    }
+
+    Session->GetFeature<FeatureECS>()->OnEntityReleasing().Remove(EntityReleasingHandle);
+    EntityReleasingHandle = {};
+}
+
+void FeatureAbilities::OnEntityReleasing(WorldRef world, EntityId entity)
+{
+    RemoveAllAbilities(world, entity);
+}
+
+void FeatureAbilities::RemoveAllAbilities(WorldRef world, EntityId entity)
+{
+    std::vector<FName> abilities;
+    if (GetAbilities(world, UnitId(entity), abilities) == 0)
+    {
+        return;
+    }
+
+    for (FName abilityId : abilities)
+    {
+        RemoveAbility(world, UnitId(entity), abilityId);
     }
 }

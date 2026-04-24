@@ -59,13 +59,13 @@ AbilityStateResult MoveToEntityState::Update(WorldRef world, const EntityId& ent
         return EAbilityStateResult::Complete;
     }
 
+    if (FeatureSteering::HasFinishedMoving(world, entity))
+    {
+        return EAbilityStateResult::Complete;
+    }
+
     if (!FeatureSteering::IsMoving(world, entity))
     {
-        if (FeatureSteering::HasFinishedMoving(world, entity))
-        {
-            return EAbilityStateResult::Complete;
-        }
-
         return { EAbilityStateResult::Fail, AbilityStateReasons::NoLongerSeekingGoal };
     }
 
@@ -119,13 +119,13 @@ AbilityStateResult MoveToLocationState::Update(WorldRef world, const EntityId& e
         return EAbilityStateResult::Complete;
     }
 
+    if (FeatureSteering::HasFinishedMoving(world, entity))
+    {
+        return EAbilityStateResult::Complete;
+    }
+
     if (!FeatureSteering::IsMoving(world, entity))
     {
-        if (FeatureSteering::HasFinishedMoving(world, entity))
-        {
-            return EAbilityStateResult::Complete;
-        }
-
         return { EAbilityStateResult::Fail, AbilityStateReasons::NoLongerSeekingGoal };
     }
 
@@ -200,13 +200,13 @@ AbilityStateResult FaceEntityState::Update(WorldRef world, const EntityId& entit
         return EAbilityStateResult::Complete;
     }
 
+    if (FeatureSteering::HasFinishedTurning(world, entity))
+    {
+        return EAbilityStateResult::Complete;
+    }
+
     if (!FeatureSteering::IsTurning(world, entity))
     {
-        if (FeatureSteering::HasFinishedTurning(world, entity))
-        {
-            return EAbilityStateResult::Complete;
-        }
-
         return { EAbilityStateResult::Fail, AbilityStateReasons::NoLongerSeekingGoal };
     }
 
@@ -266,13 +266,13 @@ AbilityStateResult FaceLocationState::Update(WorldRef world, const EntityId& ent
         return EAbilityStateResult::Complete;
     }
 
+    if (FeatureSteering::HasFinishedTurning(world, entity))
+    {
+        return EAbilityStateResult::Complete;
+    }
+
     if (!FeatureSteering::IsTurning(world, entity))
     {
-        if (FeatureSteering::HasFinishedTurning(world, entity))
-        {
-            return EAbilityStateResult::Complete;
-        }
-
         return { EAbilityStateResult::Fail, AbilityStateReasons::NoLongerSeekingGoal };
     }
 

@@ -441,6 +441,11 @@ namespace Phoenix
             return numRemoved;
         }
 
+        // IMPORTANT:
+        // This returns a non-const pointer to an item in the list for convenience of changing non-key values.
+        // This may return a pointer to an item that is part of the sorted range, but you won't know that.
+        // So, if you change the KEY used to sort this item the list may become unsorted and subsequent lookups will fail.
+        // If you do change the key then you need to manually call Sort() afterwards.
         template <class TKeyEquals = std::equal_to<TKey>>
         T* GetFirstItem(const TKey& key, uint32& outIndex, const TKeyEquals& keyEquals = {})
         {
@@ -453,6 +458,11 @@ namespace Phoenix
             return FindSubItemInternal(key, 0, outIndex, keyEquals);
         }
 
+        // IMPORTANT:
+        // This returns a non-const pointer to an item in the list for convenience of changing non-key values.
+        // This may return a pointer to an item that is part of the sorted range, but you won't know that.
+        // So, if you change the KEY used to sort this item the list may become unsorted and subsequent lookups will fail.
+        // If you do change the key then you need to manually call Sort() afterwards.
         template <class TKeyEquals = std::equal_to<TKey>>
         T* GetNextItem(const TKey& key, uint32 currIndex, uint32& outIndex, const TKeyEquals& keyEquals = {})
         {
