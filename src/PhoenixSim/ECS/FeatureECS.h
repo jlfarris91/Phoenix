@@ -345,7 +345,7 @@ namespace Phoenix::ECS
         static T* GetOrAddComponent(WorldRef world, EntityId entityId)
         {
             IComponent* comp = GetComponent(world, entityId, StaticTypeName<T>::TypeId);
-            if (!comp)
+            if (!comp && IsEntityValid(world, entityId))
             {
                 comp = AddComponent<T>(world, entityId);
             }
