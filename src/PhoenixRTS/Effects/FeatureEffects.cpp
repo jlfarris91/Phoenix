@@ -391,7 +391,11 @@ uint32 FeatureEffects::DereferenceEffectNode(WorldRef world, EffectNodeId id, Ef
     --effectComp.RefCount;
 
     // Recursively dereference parent nodes too
-    DereferenceEffectNode(world, GetEffectNodeParent(world, id));
+    EffectNodeId parentNodeId = GetEffectNodeParent(world, id);
+    if (parentNodeId != EntityId::Invalid)
+    {
+        DereferenceEffectNode(world, parentNodeId);
+    }
 
     if (effectComp.RefCount == 0)
     {
