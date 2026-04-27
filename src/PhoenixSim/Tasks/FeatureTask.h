@@ -86,6 +86,12 @@ namespace Phoenix::Tasks
         // Finishes a task with the given handle, explicitly removing it from the engine.
         static bool FinishTask(WorldRef world, TaskHandle handle);
 
+        // Finishes all tasks in the given context and removes them from the engine.
+        static uint32 FinishAllTasks(WorldRef world, uint32 context);
+
+        // Finishes all tasks with the given id in the given context and removes them from the engine.
+        static uint32 FinishAllTasks(WorldRef world, uint32 context, FName id);
+
         // Returns true if the context has a task with the given id.
         static bool HasTask(WorldConstRef world, uint32 context, FName id);
 

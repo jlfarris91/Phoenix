@@ -115,6 +115,68 @@ bool FeatureTask::FinishTask(WorldRef world, TaskHandle handle)
     return true;
 }
 
+uint32 FeatureTask::FinishAllTasks(WorldRef world, uint32 context)
+{
+    std::shared_ptr<FeatureTask> feature = GetFeature<FeatureTask>(world);
+    if (!feature)
+    {
+        return false;
+    }
+
+    FeatureTaskDynamicBlock* block = world.GetBlock<FeatureTaskDynamicBlock>();
+    if (!block)
+    {
+        return false;
+    }
+
+    uint32 index;
+    TaskEntry* entry = block->Tasks.GetFirstEntry(context, index);
+
+    uint32 count = 0;
+    while (entry)
+    {
+        feature->ExecuteTaskOnFinish(world, block->Tasks, *entry);
+        if (block->Tasks.Deallocate(entry->GetHandle()))
+        {
+            ++count;
+        }
+        entry = block->Tasks.GetNextEntry(context, index);
+    }
+
+    return count;
+}
+
+uint32 FeatureTask::FinishAllTasks(WorldRef world, uint32 context, FName id)
+{
+    std::shared_ptr<FeatureTask> feature = GetFeature<FeatureTask>(world);
+    if (!feature)
+    {
+        return false;
+    }
+
+    FeatureTaskDynamicBlock* block = world.GetBlock<FeatureTaskDynamicBlock>();
+    if (!block)
+    {
+        return false;
+    }
+
+    uint32 index;
+    TaskEntry* entry = block->Tasks.GetFirstEntry(context, id, index);
+
+    uint32 count = 0;
+    while (entry)
+    {
+        feature->ExecuteTaskOnFinish(world, block->Tasks, *entry);
+        if (block->Tasks.Deallocate(entry->GetHandle()))
+        {
+            ++count;
+        }
+        entry = block->Tasks.GetNextEntry(context, id, index);
+    }
+
+    return count;
+}
+
 bool FeatureTask::HasTask(WorldConstRef world, uint32 context, FName id)
 {
     uint32 index;
