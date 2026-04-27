@@ -73,8 +73,11 @@ namespace Phoenix
         World& operator=(const World& other);
         World& operator=(World&& other) noexcept;
 
-        void CopyTo(World& other) const;
         void SyncTo(World& view) const;
+        void SyncTo(World& view, const std::vector<std::vector<uint32>>& stepPages) const;
+
+        void BeginTracking();
+        void EndTracking();
 
         BlockBuffer& GetBuffer();
         const BlockBuffer& GetBuffer() const;
@@ -154,7 +157,9 @@ namespace Phoenix
         // Gets the first world created by the session.
         WorldSharedPtr GetPrimaryWorld() const;
 
+        void PreStep(const WorldStepArgs& args);
         void Step(const WorldStepArgs& args);
+        void PostStep(const WorldStepArgs& args);
 
         void SendAction(const WorldSendActionArgs& args);
 

@@ -134,16 +134,6 @@ World& World::operator=(World&& other) noexcept
     return *this;
 }
 
-void World::CopyTo(World& other) const
-{
-    other.Id = Id;
-    other.Type = Type;
-    other.Config = Config;
-    other.SimTime = SimTime;
-    other.Random = Random;
-    Buffer.CopyTo(other.Buffer);
-}
-
 void World::SyncTo(World& view) const
 {
     view.Id = Id;
@@ -152,6 +142,26 @@ void World::SyncTo(World& view) const
     view.SimTime = SimTime;
     view.Random = Random;
     Buffer.SyncTo(view.Buffer);
+}
+
+void World::SyncTo(World& view, const std::vector<std::vector<uint32>>& stepPages) const
+{
+    view.Id = Id;
+    view.Type = Type;
+    view.Config = Config;
+    view.SimTime = SimTime;
+    view.Random = Random;
+    Buffer.SyncTo(view.Buffer, stepPages);
+}
+
+void World::BeginTracking()
+{
+    Buffer.BeginTracking();
+}
+
+void World::EndTracking()
+{
+    Buffer.EndTracking();
 }
 
 BlockBuffer& World::GetBuffer()
@@ -250,34 +260,73 @@ WorldSharedPtr WorldManager::GetPrimaryWorld() const
     return Worlds[0];
 }
 
-void WorldManager::Step(const WorldStepArgs& args)
+void WorldManager::PreStep(const WorldStepArgs& args)
 {
-    std::vector<WorldSharedPtr> worlds;
-
     if (args.WorldName != FName::None)
     {
         if (WorldSharedPtr world = GetWorld(args.WorldName))
         {
-            worlds.push_back(world);
+            world->BeginTracking();
         }
     }
     else
     {
-        worlds = Worlds;
-    }
-
-    for (const WorldSharedPtr& world : worlds)
-    {
-        if (!world->IsInitialized())
+        for (const WorldSharedPtr& world : Worlds)
         {
-            InitializeWorld(*world, args.SimTime);
+            world->BeginTracking();
         }
     }
+}
 
-    // TODO (jfarris): parallelize
-    for (const WorldSharedPtr& world : worlds)
+void WorldManager::Step(const WorldStepArgs& args)
+{
+    if (args.WorldName != FName::None)
     {
-        UpdateWorld(*world, args.SimTime);
+        if (WorldSharedPtr world = GetWorld(args.WorldName))
+        {
+            if (!world->IsInitialized())
+            {
+                InitializeWorld(*world, args.SimTime);
+            }
+
+            UpdateWorld(*world, args.SimTime);
+        }
+    }
+    else
+    {
+        for (const WorldSharedPtr& world : Worlds)
+        {
+            if (!world->IsInitialized())
+            {
+                InitializeWorld(*world, args.SimTime);
+            }
+        }
+
+        // TODO (jfarris): parallelize
+        for (const WorldSharedPtr& world : Worlds)
+        {
+            UpdateWorld(*world, args.SimTime);
+        }
+    }
+}
+
+void WorldManager::PostStep(const WorldStepArgs& args)
+{
+    if (args.WorldName != FName::None)
+    {
+        if (WorldSharedPtr world = GetWorld(args.WorldName))
+        {
+            world->EndTracking();
+            OnPostWorldUpdate(*world);
+        }
+    }
+    else
+    {
+        for (const WorldSharedPtr& world : Worlds)
+        {
+            world->EndTracking();
+            OnPostWorldUpdate(*world);
+        }
     }
 }
 
@@ -422,8 +471,6 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time) const
             feature->OnPostWorldUpdate(world, updateArgs);
         }
     }
-
-    OnPostWorldUpdate(world);
 }
 
 void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const

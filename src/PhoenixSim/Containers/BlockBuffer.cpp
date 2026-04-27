@@ -227,56 +227,147 @@ void BlockBuffer::CopyTo(BlockBuffer& other) const
     ChunkedParallelCopy(other.Data.get(), Data.get(), Size, pageSize * 256);
 }
 
+void BlockBuffer::BeginTracking()
+{
+#ifdef _WIN32
+    if (Data && Size > 0)
+    {
+        ResetWriteWatch(Data.get(), Size);
+    }
+#endif
+    DirtyPageOffsets.clear();
+    DirtyPageSize = 0;
+}
+
+void BlockBuffer::EndTracking()
+{
+#ifdef _WIN32
+    if (Data && Size > 0)
+    {
+        static const DWORD sPageSize = []() -> DWORD
+        {
+            SYSTEM_INFO info;
+            GetSystemInfo(&info);
+            return info.dwPageSize;
+        }();
+
+        ULONG_PTR pageCount = (Size / sPageSize) + 1;
+        thread_local std::vector<void*> sDirtyPages;
+        sDirtyPages.resize(pageCount);
+
+        DWORD pageSize;
+        // No WRITE_WATCH_FLAG_RESET: BeginTracking owns the reset.
+        GetWriteWatch(0, Data.get(), Size, sDirtyPages.data(), &pageCount, &pageSize);
+
+        DirtyPageOffsets.resize(pageCount);
+        DirtyPageSize = pageSize;
+
+        const uint8* base = Data.get();
+        for (ULONG_PTR i = 0; i < pageCount; ++i)
+        {
+            DirtyPageOffsets[i] = static_cast<uint32>(
+                static_cast<const uint8*>(sDirtyPages[i]) - base);
+        }
+    }
+#endif
+}
+
+const std::vector<uint32>& BlockBuffer::GetDirtyPageOffsets() const
+{
+    return DirtyPageOffsets;
+}
+
+uint32 BlockBuffer::GetDirtyPageSize() const
+{
+    return DirtyPageSize;
+}
+
 void BlockBuffer::SyncTo(BlockBuffer& view) const
 {
     PHX_PROFILE_ZONE_SCOPED_N("BlockBufferSyncTo");
 
-    // First sync, or buffer was reallocated with a different size: fall back to a full copy
-    // to establish the layout and initial data in the view.
     if (view.Size != Size)
     {
         CopyTo(view);
-
-#ifdef _WIN32
-        // Discard the dirty list accumulated during construction and CopyTo so that
-        // the next SyncTo only sees pages written by the sim after this point.
-        ResetWriteWatch(Data.get(), Size);
-#endif
         return;
     }
 
 #ifdef _WIN32
-    static const DWORD sPageSize = []() -> DWORD
+    // DirtyPageSize == 0 means EndTracking hasn't been called (e.g. this is a view buffer).
+    // Fall back to full copy unless the caller supplied explicit additionalOffsets to apply.
+    if (DirtyPageSize == 0)
     {
-        SYSTEM_INFO info;
-        GetSystemInfo(&info);
-        return info.dwPageSize;
-    }();
+        CopyTo(view);
+        return;
+    }
 
-    // GetWriteWatch returns page addresses written since the last reset.
-    // WRITE_WATCH_FLAG_RESET atomically clears the dirty list as we read it,
-    // so no writes are lost between a separate get and reset.
-    ULONG_PTR pageCount = (Size / sPageSize) + 1;
-    thread_local std::vector<void*> sDirtyPages;
-    sDirtyPages.resize(pageCount);
-
-    DWORD pageSize;
-    GetWriteWatch(
-        WRITE_WATCH_FLAG_RESET,
-        Data.get(), Size,
-        sDirtyPages.data(), &pageCount,
-        &pageSize);
+    // View buffers have DirtyPageSize == 0; use SystemPageSize as the fallback.
+    const uint32 pageSize = DirtyPageSize != 0 ? DirtyPageSize : SystemPageSize;
+    if (pageSize == 0)
+    {
+        CopyTo(view);
+        return;
+    }
 
     const uint8* src = Data.get();
     uint8* dst = view.Data.get();
 
-    for (ULONG_PTR i = 0; i < pageCount; ++i)
+    for (uint32 offset : DirtyPageOffsets)
     {
-        const size_t offset = static_cast<const uint8*>(sDirtyPages[i]) - src;
         memcpy(dst + offset, src + offset, pageSize);
     }
+
 #else
-    // Non-Windows fallback: full copy.
+    memcpy(view.Data.get(), Data.get(), Size);
+#endif
+}
+
+
+void BlockBuffer::SyncTo(BlockBuffer& view, const std::vector<std::vector<uint32>>& stepPages) const
+{
+    PHX_PROFILE_ZONE_SCOPED_N("BlockBufferSyncToSteps");
+
+    if (view.Size != Size)
+    {
+        CopyTo(view);
+        return;
+    }
+
+#ifdef _WIN32
+    bool hasPages = false;
+    for (const auto& step : stepPages)
+    {
+        if (!step.empty())
+        {
+            hasPages = true;
+            break;
+        }
+    }
+
+    if (!hasPages)
+    {
+        CopyTo(view);
+        return;
+    }
+
+    const uint32 pageSize = SystemPageSize;
+    if (pageSize == 0)
+    {
+        CopyTo(view);
+        return;
+    }
+
+    const uint8* src = Data.get();
+    uint8* dst = view.Data.get();
+
+    for (const auto& step : stepPages)
+    {
+        for (uint32 offset : step)
+        {
+            memcpy(dst + offset, src + offset, pageSize);
+        }
+    }
+#else
     memcpy(view.Data.get(), Data.get(), Size);
 #endif
 }
@@ -314,6 +405,7 @@ void BlockBuffer::AllocateMemory(uint32 size)
 
     Data.reset(data);
     Size = size;
+    SystemPageSize = pageSize;
 }
 
 struct TestBlock : BufferBlockBase
