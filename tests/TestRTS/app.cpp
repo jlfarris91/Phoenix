@@ -1,6 +1,7 @@
 
 #include <ranges>
 #include <algorithm>
+#include <atomic>
 #include <thread>
 #include <chrono>
 #include <cinttypes>
@@ -85,6 +86,8 @@
 #include "PhoenixScript/FeatureScript.h"
 #include "tracy/PhoenixTracyImpl.h"
 
+#include "WorldDoubleBuffer.h"
+
 using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::Blackboard;
@@ -99,8 +102,6 @@ using PhoenixColor = Phoenix::Color;
 std::shared_ptr<Session> GSession;
 bool GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
-std::mutex GWorldViewUpdateMutex;
-World* GLatestWorldView = nullptr;
 
 // ===== Rendering Globals =====
 SDL_Window* GWindow;
@@ -111,6 +112,7 @@ SDLViewport* GViewport;
 SDLDebugState* GDebugState;
 SDLDebugRenderer* GDebugRenderer;
 ImVec4 g_RenderTargetClearColor = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+bool GVsync = false;
 
 // ===== World Render Texture =====
 SDL_Texture* GWorldRenderTexture = nullptr;
@@ -141,16 +143,7 @@ std::shared_ptr<ISDLTool> GEntityTool;
 std::shared_ptr<ISDLTool> GNavMeshTool;
 
 // ===== World View =====
-
-// Single render-view buffer. The sim thread writes into this via SyncTo at the end of each
-// world update; the render thread reads from it throughout its frame. SyncTo is ~0.13ms so
-// the overlap window is small and the worst-case artifact is a single entity with transiently
-// inconsistent state for one frame — acceptable for a render view.
-World* GRenderView = nullptr;
-
-World* GCurrWorldView = nullptr;
-bool GCopyWorld = true;
-FPSCalc GWorldViewUpdateCalc;
+WorldDoubleBuffer GWorldView;
 
 // ===== Client State
 struct EntityBodyShape
@@ -274,27 +267,7 @@ void SessionWorker()
 void OnPostWorldUpdate(WorldConstRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
-
-    if (!GCopyWorld)
-    {
-        return;
-    }
-
-    GWorldViewUpdateCalc.Time = PHX_SYS_CLOCK_NOW();
-
-    if (!GRenderView)
-    {
-        GRenderView = new World(world);
-    }
-    else
-    {
-        // Sync only dirty pages from the sim world into the render view.
-        // On Windows this uses MEM_WRITE_WATCH to find pages written since the last
-        // sync and copies only those, making it ~0.13ms for typical sparse scenes.
-        world.SyncTo(*GRenderView);
-    }
-
-    GWorldViewUpdateCalc.Tick();
+    GWorldView.OnSimUpdate(world);
 }
 
 bool LoadLineModel(
@@ -318,7 +291,7 @@ bool LoadLineModel(
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 {
 #ifndef __EMSCRIPTEN__
-    Profiling::SetProfiler(&GTracyProfiler);
+    //Profiling::SetProfiler(&GTracyProfiler);
 
     unsigned int numThreads = std::min(std::thread::hardware_concurrency(), 8u);
     if (numThreads > 1)
@@ -382,6 +355,8 @@ void OnAppRenderWorld()
     TickSession();
 #endif
 
+    GWorldView.OnRenderFrameStart();
+
     float mx, my;
     SDL_GetMouseState(&mx, &my);
 
@@ -427,14 +402,12 @@ void OnAppRenderWorld()
         DrawGrid(GWindow, GDebugRenderer, GViewport, GCamera);
     }
 
-    World* worldPtr = GRenderView;
-    GCurrWorldView = worldPtr;
-    if (!worldPtr)
+    if (!GWorldView.GetRenderView())
     {
         return;
     }
 
-    World& world = *worldPtr;
+    const World& world = *GWorldView.GetRenderView();
 
     // Realize the sim world
     {
@@ -467,7 +440,7 @@ void OnAppRenderWorld()
 
                 FeatureECS::TryGetBlackboardValue(world, entityId, "actor_tint"_n, bbTint);
 
-                if (RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(world, entityId))
+                if (const RTS::UnitComponent* unitComp = FeatureECS::GetComponent<RTS::UnitComponent>(world, entityId))
                 {
                     ownerTint = GDebugRenderer->GetColor(unitComp->OwningPlayer);
 
@@ -491,7 +464,7 @@ void OnAppRenderWorld()
                 if (bodyComp.Movement == EBodyMovement::Attached &&
                     transformComp.AttachParent != EntityId::Invalid)
                 {
-                    if (TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(world, transformComp.AttachParent))
+                    if (const TransformComponent* parentTransformComp = FeatureECS::GetComponent<TransformComponent>(world, transformComp.AttachParent))
                     {
                         entityBodyShape.Transform.Position = parentTransformComp->Transform.Position + entityBodyShape.Transform.Position.Rotate(parentTransformComp->Transform.Rotation);
                         entityBodyShape.Transform.Rotation += parentTransformComp->Transform.Rotation;
@@ -644,7 +617,12 @@ void RenderPhoenixUI()
             ImGui::TableNextColumn();
             ImGui::Text("World Copy:");
             ImGui::TableNextColumn();
-            ImGui::Text("%.3f ms/frame", GWorldViewUpdateCalc.GetFPS());
+            ImGui::Text("%.3f ms/frame", GWorldView.GetUpdateRate());
+
+            ImGui::TableNextColumn();
+            ImGui::Text("Acc Dirty Pages:");
+            ImGui::TableNextColumn();
+            ImGui::Text("%u pages", GWorldView.GetAccumulatedDirtyPageCount());
 
             ImGui::TableNextColumn();
             ImGui::Text("Mouse Pos:");
@@ -660,11 +638,16 @@ void RenderPhoenixUI()
         }
 
         {
-            static constexpr double kMinSpeed = 0.1;
-            static constexpr double kMaxSpeed = 64.0;
-            ImGui::SliderScalar("Sim Speed", ImGuiDataType_Double, &GSimSpeed, &kMinSpeed, &kMaxSpeed);
+            static constexpr double kMinSpeed = 0.1f;
+            static constexpr double kMaxSpeed = 16.0f;
+            ImGui::DragScalar("Sim Speed", ImGuiDataType_Double, &GSimSpeed, 0.25, &kMinSpeed, &kMaxSpeed);
         }
-        ImGui::Checkbox("Copy World", &GCopyWorld);
+
+        bool copyWorld = GWorldView.IsEnabled();
+        if (ImGui::Checkbox("Copy World", &copyWorld))
+            GWorldView.SetEnabled(copyWorld);
+        if (ImGui::Checkbox("VSync", &GVsync))
+            SDL_SetRenderVSync(GRenderer, GVsync ? 1 : 0);
         ImGui::Checkbox("Draw Grid", &GDrawGrid);
 
         ImGui::SliderFloat2("Scale", &GViewport->Scale.x, 0.01f, 2.0f);
@@ -709,7 +692,7 @@ void RenderPhoenixUI()
                     {
                         for (const BufferBlockDefinition& blockDef : featureDefinition.WorldBlocks.Definitions)
                         {
-                            uint8* block = GCurrWorldView->GetBlock(blockDef.TypeName);
+                            const uint8* block = GWorldView.GetRenderView()->GetBlock(blockDef.TypeName);
                             if (!block || !blockDef.Type)
                             {
                                 continue;
@@ -803,9 +786,9 @@ void RenderPhoenixUI()
 
     ImGui::Begin("ECS");
     {
-        if (GCurrWorldView)
+        if (GWorldView.GetRenderView())
         {
-            const FeatureECSDynamicBlock& ecsDynamicBlock = GCurrWorldView->GetBlockRef<FeatureECSDynamicBlock>();
+            const FeatureECSDynamicBlock& ecsDynamicBlock = GWorldView.GetRenderView()->GetBlockRef<FeatureECSDynamicBlock>();
 
             if (ImGui::BeginTable("Stats", 2, ImGuiTableFlags_SizingFixedFit))
             {
@@ -992,7 +975,7 @@ void RenderPhoenixUI()
             {
                 std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
-                if (auto entitiesPtr = FeatureECS::GetEntities(*GCurrWorldView))
+                if (auto entitiesPtr = FeatureECS::GetEntities(*GWorldView.GetRenderView()))
                 {
                     if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit))
                     {
@@ -1018,7 +1001,7 @@ void RenderPhoenixUI()
             {
                 std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
-                if (auto tagsPtr = FeatureECS::GetTags(*GCurrWorldView))
+                if (auto tagsPtr = FeatureECS::GetTags(*GWorldView.GetRenderView()))
                 {
                     if (ImGui::BeginTable("Tags", 2, ImGuiTableFlags_SizingFixedFit))
                     {
@@ -1042,7 +1025,7 @@ void RenderPhoenixUI()
             {
                 std::shared_ptr<FeatureECS> featureECS = GSession->GetFeatureSet()->GetFeature<FeatureECS>();
 
-                if (auto groupsPtr = FeatureECS::GetGroups(*GCurrWorldView))
+                if (auto groupsPtr = FeatureECS::GetGroups(*GWorldView.GetRenderView()))
                 {
                     if (ImGui::BeginTable("Groups", 2, ImGuiTableFlags_SizingFixedFit))
                     {
@@ -1067,9 +1050,9 @@ void RenderPhoenixUI()
 
     ImGui::Begin("Blackboard");
     {
-        if (GCurrWorldView)
+        if (GWorldView.GetRenderView())
         {
-            const FeatureBlackboardBlock& blackboardBlock = GCurrWorldView->GetBlockRef<FeatureBlackboardBlock>();
+            const FeatureBlackboardBlock& blackboardBlock = GWorldView.GetRenderView()->GetBlockRef<FeatureBlackboardBlock>();
 
             if (ImGui::BeginTable("Stats", 2, ImGuiTableFlags_SizingFixedFit))
             {
@@ -1091,9 +1074,9 @@ void RenderPhoenixUI()
 
     ImGui::Begin("Inspector");
     {
-        if (GCurrWorldView)
+        if (GWorldView.GetRenderView())
         {
-            WorldConstRef world = *GCurrWorldView;
+            WorldConstRef world = *GWorldView.GetRenderView();
 
             EntityId playerSelection = RTS::FeatureSelection::GetPlayerSelection(world, 0);
             EntityId selectedEntityId = FeatureECS::GetFirstEntityInGroup(world, playerSelection);
@@ -1162,28 +1145,28 @@ void RenderPhoenixUI()
     }
     ImGui::End();
 
-    if (GCurrWorldView)
+    if (GWorldView.GetRenderView())
     {
         ImGui::Begin("Job Graph");
         if (ImGui::BeginTabBar("##phases"))
         {
             if (ImGui::BeginTabItem("PreUpdate"))
             {
-                GJobGraphPreUpdate.Draw(FeatureECS::GetScheduler(*GCurrWorldView, ECS::EJobPhase::PreUpdate));
+                GJobGraphPreUpdate.Draw(FeatureECS::GetScheduler(*GWorldView.GetRenderView(), ECS::EJobPhase::PreUpdate));
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("Update"))
             {
-                GJobGraphUpdate.Draw(FeatureECS::GetScheduler(*GCurrWorldView, ECS::EJobPhase::Update));
+                GJobGraphUpdate.Draw(FeatureECS::GetScheduler(*GWorldView.GetRenderView(), ECS::EJobPhase::Update));
                 ImGui::EndTabItem();
             }
             if (ImGui::BeginTabItem("PostUpdate"))
             {
-                GJobGraphPostUpdate.Draw(FeatureECS::GetScheduler(*GCurrWorldView, ECS::EJobPhase::PostUpdate));
+                GJobGraphPostUpdate.Draw(FeatureECS::GetScheduler(*GWorldView.GetRenderView(), ECS::EJobPhase::PostUpdate));
                 ImGui::EndTabItem();
             }
 
-            for (auto& [name, sched] : FeatureECS::GetNamedSchedulers(*GCurrWorldView))
+            for (auto& [name, sched] : FeatureECS::GetNamedSchedulers(*GWorldView.GetRenderView()))
             {
                 const char* label = FName::GetNameEntry(name);
                 if (!label || label[0] == '\0') continue;
@@ -1211,11 +1194,11 @@ void OnAppEvent(SDL_Event* event)
 {
     GDebugState->ProcessAppEvent(event);
 
-    if (GCurrWorldView)
+    if (GWorldView.GetRenderView())
     {
         for (const std::shared_ptr<ISDLTool>& tool : GActiveTools)
         {
-            tool->OnAppEvent(*GCurrWorldView, *GDebugState, event);
+            tool->OnAppEvent(*GWorldView.GetRenderView(), *GDebugState, event);
         }
     }
 }

@@ -136,6 +136,12 @@ void Session::Step(const SessionStepArgs& args)
 
     FPSCalc.Time = LastStepTime;
 
+    WorldStepArgs worldStepArgs;
+    worldStepArgs.SimTime = SimTime;
+
+    // Start tracking memory changes prior to processing actions that may mutate the world state.
+    WorldManager->PreStep(worldStepArgs);
+
     // Process actions
     ProcessActions(SimTime);
 
@@ -143,9 +149,10 @@ void Session::Step(const SessionStepArgs& args)
     UpdateSession(SimTime);
 
     // Step active worlds
-    WorldStepArgs worldStepArgs;
-    worldStepArgs.SimTime = SimTime;
     WorldManager->Step(worldStepArgs);
+
+    // After mutating the world state, end tracking and calculate dirty pages.
+    WorldManager->PostStep(worldStepArgs);
 
     FPSCalc.Tick();
 }
