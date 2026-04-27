@@ -325,6 +325,12 @@ namespace Phoenix
                 return span;
             }
 
+            static EntityComponentSpan FromList(const FixedArchetypeList& list, uint32 startingIndex)
+            {
+                // TODO (jfarris): we should enforce that all components are const refs (read-only)
+                return FromList(const_cast<FixedArchetypeList&>(list), startingIndex);
+            }
+
             uint32 GetStartIndex() const
             {
                 CheckRawData();
