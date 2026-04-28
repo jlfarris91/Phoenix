@@ -137,7 +137,7 @@ namespace FeatureECSDetail
             for (uint32 i = 0; i < ScratchBlock->SortedEntities.GetNum(); ++i)
             {
                 auto entityIdx = DynamicBlock->Entities.GetEntityIndex(ScratchBlock->SortedEntities[i].EntityId) - 1;
-#if 1
+#if 0
                 // Test to ensure that no two entities are occupying the same slot in SortedEntityIndex
                 if (ScratchBlock->SortedEntityIndex[entityIdx] != Index<uint32>::None)
                 {
