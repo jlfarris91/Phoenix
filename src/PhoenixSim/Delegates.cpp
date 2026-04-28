@@ -1,5 +1,7 @@
 #include "Delegates.h"
 
+#include <atomic>
+
 using namespace Phoenix;
 
 std::atomic<uint64> gHandleIdGen = 0;
