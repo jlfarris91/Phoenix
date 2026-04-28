@@ -175,6 +175,11 @@ const BlockBuffer& World::GetBuffer() const
     return Buffer;
 }
 
+BlockBuffer& World::GetBufferUnsafe()
+{
+    return Buffer;
+}
+
 WorldManager::WorldManager(const WorldManagerCtorArgs& args)
     : Session(args.Session)
     , FeatureSet(args.FeatureSet)
