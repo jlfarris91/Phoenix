@@ -24,6 +24,16 @@ Phoenix::uint32 Phoenix::FixedBlockAllocator::GetNumOccupiedBlocks() const
     return NumOccupiedBlocks;
 }
 
+Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockCapacity() const
+{
+    return Configuration.Capacity;
+}
+
+Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockSize() const
+{
+    return Configuration.BlockSize;
+}
+
 bool Phoenix::FixedBlockAllocator::IsEmpty() const
 {
     return NumOccupiedBlocks == 0;
@@ -57,6 +67,31 @@ Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::Allocate(uint
     {
         return {};
     }
+
+    Block& block = Blocks[index];
+    return { block.Id };
+}
+
+Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::Allocate(
+    uint32 userData,
+    const void* source,
+    uint32 size)
+{
+    PHX_ASSERT(size <= Configuration.BlockSize);
+
+    if (IsFull())
+    {
+        return {};
+    }
+
+    uint32 index = AllocateBlock(userData);
+    if (index == Index<uint32>::None)
+    {
+        return {};
+    }
+
+    void* data = GetBlockDataPtr(index);
+    memcpy(data, source, std::min(size, Configuration.BlockSize));
 
     Block& block = Blocks[index];
     return { block.Id };
@@ -190,7 +225,9 @@ bool Phoenix::FixedBlockAllocator::ConstIter::operator==(const ConstIter& other)
     // Note that we compare the BlockIdGen to detect if the allocator was modified since the iterator was created.
     // If it was, then the iterator is considered invalid and not equal to any other iterator (including itself).
     // This case should be caught by the assert in operator++.
-    return BlockIdGen != other.BlockIdGen || (Owner == other.Owner && Index == other.Index && NumBlocks == other.NumBlocks);
+    return BlockIdGen != other.BlockIdGen ||
+           NumBlocks != other.NumBlocks ||
+           (Owner == other.Owner && Index == other.Index && NumBlocks == other.NumBlocks);
 }
 
 bool Phoenix::FixedBlockAllocator::ConstIter::operator!=(const ConstIter& other) const

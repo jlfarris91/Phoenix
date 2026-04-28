@@ -11,6 +11,7 @@
 #include "PhoenixSim/ECS/System.h"
 #include "PhoenixSim/ECS/SystemJob.h"
 #include "PhoenixSim/Blackboard/FeatureBlackboard.h"
+#include "PhoenixSim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -344,8 +345,10 @@ bool FeatureECS::ReleaseEntity(WorldRef world, EntityId entityId) const
         return false;
     }
 
-    block.Entities.Release(entityId);
+    // Broadcast before releasing so that handlers can still access entity data if needed.
     EntityReleasedEvent.Broadcast(world, entityId);
+
+    block.Entities.Release(entityId);
 
     return true;
 }
@@ -1400,6 +1403,9 @@ void FeatureECS::SortAndCompact(WorldRef world)
 void FeatureECS::OnReclaimEntity(WorldRef world, const EntityId& entityId) const
 {
     FeatureECSDynamicBlock& block = world.GetBlockRef<FeatureECSDynamicBlock>();
+
+    // Finish and deallocate any tasks associated with the entity
+    Tasks::FeatureTask::FinishAllTasks(world, entityId);
 
     // If the entity has an archetype then release it now
     block.ArchetypeManager.Release(entityId);

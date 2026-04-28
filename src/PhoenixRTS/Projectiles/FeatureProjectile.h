@@ -1,11 +1,11 @@
 #pragma once
 
-#include "ProjectileId.h"
 #include "PhoenixSim/Features.h"
 
 #include "PhoenixRTS/DLLExport.h"
 #include "PhoenixRTS/Data/DataProjectile.h"
 #include "PhoenixRTS/Effects/EffectId.h"
+#include "PhoenixRTS/Projectiles/ProjectileId.h"
 
 namespace Phoenix::RTS
 {
@@ -41,12 +41,5 @@ namespace Phoenix::RTS
 
         static FName GetDataId(WorldConstRef world, ProjectileId projectileId);
         static Data::ProjectilePtr GetData(WorldConstRef world, ProjectileId projectileId);
-
-    protected:
-
-        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
-        void Shutdown() override;
-
-        std::shared_ptr<ProjectilesSystem> ProjectilesSystem;
     };
 }

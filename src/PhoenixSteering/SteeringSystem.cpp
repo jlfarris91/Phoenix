@@ -186,8 +186,12 @@ namespace Phoenix::Steering::SteeringDetail
 
         const char* GetName() const override { return "Steering.SteeringJob"; }
 
-        void Execute(WorldConstRef world, EntityId /*entityId*/, CommandBuffer& /*cb*/,
-                     TransformComponent& transformComp, SteeringComponent& steerComp) override
+        void Execute(
+            WorldConstRef world,
+            EntityId entityId,
+            CommandBuffer& /*cb*/,
+            TransformComponent& transformComp,
+            SteeringComponent& steerComp) override
         {
             if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
                 return;
@@ -272,16 +276,20 @@ namespace Phoenix::Steering::SteeringDetail
             steerComp.Velocity = vel;
 
             if (!HasAnyFlags(steerComp.Flags, ESteerFlags::LockFacing))
+            {
                 CalculateFacing(transformComp, steerComp, vecToStep0, transformComp.Transform.Rotation);
+            }
 
-            CalculateSlack(world, transformComp, steerComp);
+            CalculateSlack(world, entityId, transformComp, steerComp);
             Integrate(transformComp, steerComp);
         }
 
         Vec2 CalculateVelocity(const TransformComponent& transformComp, const SteeringComponent& steerComp) const
         {
             if (!HasAnyFlags(steerComp.Flags, ESteerFlags::SeekingGoal))
+            {
                 return Vec2::Zero;
+            }
 
             const Vec2& currPos = transformComp.Transform.Position;
             const Vec2& stepPos = steerComp.StepPos[0];
@@ -405,13 +413,23 @@ namespace Phoenix::Steering::SteeringDetail
             return true;
         }
 
-        void CalculateSlack(WorldConstRef world, const TransformComponent& transformComp, SteeringComponent& steerComp) const
+        void CalculateSlack(
+            WorldConstRef world,
+            EntityId entityId,
+            const TransformComponent& transformComp,
+            SteeringComponent& steerComp) const
         {
-            Vec2 dest = steerComp.StepPos[0];
-            Vec2 currToDest = dest - transformComp.Transform.Position;
-            Vec2 bestToDest = dest - steerComp.BestPos;
+            if (steerComp.Mode != ESteerMode::Move)
+            {
+                steerComp.Slack = 0;
+                return;
+            }
 
-            if (currToDest.Length() < bestToDest.Length())
+            Vec2 dest = steerComp.StepPos[0];
+            Distance currToDest = Vec2::Distance(dest, transformComp.Transform.Position);
+            Distance bestToDest = Vec2::Distance(dest, steerComp.BestPos);
+
+            if (currToDest < bestToDest || Vec2::Equals(steerComp.BestPos, Vec2::Max))
             {
                 steerComp.BestPos = transformComp.Transform.Position;
                 steerComp.Slack /= 2;
@@ -423,7 +441,7 @@ namespace Phoenix::Steering::SteeringDetail
             }
 
             std::vector<const SortedEntity*> entities;
-            SteeringRangeQueryArgs queryArgs = { .CollisionMask = steerComp.CollisionMask };
+            SteeringRangeQueryArgs queryArgs = { .CollisionMask = steerComp.CollisionMask, .Exclude = { entityId } };
             FeatureSteering::QueryEntitiesInRange(world, steerComp.GoalPos, steerComp.Slack, entities);
 
             uint64 crowdedness = 0;
@@ -437,17 +455,18 @@ namespace Phoenix::Steering::SteeringDetail
             {
                 uint64 slackArea = SqrxQ(steerComp.Slack);
                 crowdedness = std::min(crowdedness, slackArea);
-                increaseRate = Lerp01<Value>(SlackIncreaseRate, SlackIncreaseRateFast, crowdedness / slackArea);
+                Value t = Value::QT(crowdedness / slackArea);
+                increaseRate = Lerp01<Value>(SlackIncreaseRate, SlackIncreaseRateFast, t);
             }
 
             if (steerComp.Mode == ESteerMode::Move)
             {
                 steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisor;
             }
-            else
-            {
-                steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisorSlow;
-            }
+            // else
+            // {
+            //     steerComp.Slack += steerComp.InnerRadius * increaseRate / SlackRateDivisorSlow;
+            // }
 
             if (steerComp.Slack > MaxSlack)
             {

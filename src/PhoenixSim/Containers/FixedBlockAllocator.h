@@ -41,13 +41,13 @@ namespace Phoenix
         }
 
         template <class TAllocator>
-        FixedBlockAllocator(TAllocator& allocator, uint32 capacity, const FixedBlockAllocator& other)
-            : Configuration({ .BlockSize = other.Configuration.BlockSize, .Capacity = capacity })
+        FixedBlockAllocator(TAllocator& allocator, const Config& config, const FixedBlockAllocator& other)
+            : Configuration({ .BlockSize = other.Configuration.BlockSize, .Capacity = config.Capacity })
             , BlockIdGen(other.BlockIdGen)
             , NumOccupiedBlocks(other.NumOccupiedBlocks)
-            , Blocks(allocator, capacity, other.Blocks)
-            , BlockData(allocator, capacity * other.Configuration.BlockSize, other.BlockData)
-            , IndexMap(allocator, capacity, other.IndexMap)
+            , Blocks(allocator, config.Capacity, other.Blocks)
+            , BlockData(allocator, config.Capacity * other.Configuration.BlockSize, other.BlockData)
+            , IndexMap(allocator, config.Capacity, other.IndexMap)
         {
         }
 
@@ -59,6 +59,10 @@ namespace Phoenix
 
         uint32 GetNumOccupiedBlocks() const;
 
+        uint32 GetBlockCapacity() const;
+
+        uint32 GetBlockSize() const;
+
         bool IsEmpty() const;
 
         bool IsFull() const;
@@ -66,6 +70,8 @@ namespace Phoenix
         bool IsValid(Handle handle) const;
 
         Handle Allocate(uint32 userData);
+
+        Handle Allocate(uint32 userData, const void* source, uint32 size);
 
         template <class T, class ...TArgs>
         Handle Allocate(uint32 userData, TArgs&& ...args)

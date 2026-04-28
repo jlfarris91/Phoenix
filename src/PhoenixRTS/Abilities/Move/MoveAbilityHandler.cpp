@@ -1,6 +1,7 @@
 ﻿
 #include "PhoenixRTS/Abilities/Move/MoveAbilityHandler.h"
 
+#include "MoveAbilityTask.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
 
@@ -18,6 +19,7 @@
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitId.h"
 #include "PhoenixSim/Session.h"
+#include "PhoenixSim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -26,135 +28,26 @@ using namespace Phoenix::Physics;
 using namespace Phoenix::Steering;
 using namespace Phoenix::RTS;
 
-namespace MoveAbilitySystemDetail
-{
-    struct UpdateMoveAbilityComponentJob
-    {
-        std::shared_ptr<FeatureOrders> OrdersFeature;
-
-        void Begin(WorldRef world)
-        {
-            OrdersFeature = GetFeature<FeatureOrders>(world);
-        }
-
-        void Execute(WorldRef world, const EntityComponentSpan<MoveAbilityComponent&>& span) const
-        {
-            for (auto && [entityId, index, moveComp] : span)
-            {
-                if (moveComp.ActiveState != EMoveAbilityState::Idle)
-                {
-                    AbilityStateResult result = moveComp.Update(world, UnitId(entityId));
-                    if (result != EAbilityStateResult::Continue)
-                    {
-                        OrdersFeature->OnActiveOrderCompleted(world, UnitId(entityId), result == EAbilityStateResult::Complete);
-                    }
-                }
-            }
-        }
-    };
-}
-
-void MoveAbilitySystem::OnWorldUpdate(WorldRef world, const SystemUpdateArgs& args)
-{
-    ISystem::OnWorldUpdate(world, args);
-
-    {
-        PHX_PROFILE_ZONE_SCOPED_N("UpdateMoveAbilityComponentJob");
-        MoveAbilitySystemDetail::UpdateMoveAbilityComponentJob job;
-        FeatureECS::ForEachEntity(world, job);
-    }
-}
-
-MoveAbilityComponent::MoveAbilityComponent()
-    : States(MoveToLocationState{})
-    , ActiveState(EMoveAbilityState::Idle)
-{
-}
-
-AbilityStateResult MoveAbilityComponent::Update(WorldRef world, const UnitId& unit)
-{
-    switch (ActiveState)
-    {
-        case EMoveAbilityState::MoveToPosition: return States.MoveToPosition.Update(world, unit);
-        case EMoveAbilityState::FollowEntity:   return States.FollowEntity.Update(world, unit);
-        default:                                return EAbilityStateResult::Fail;
-    }
-}
-
-void MoveAbilityComponent::Interrupt(WorldRef world, const UnitId& unit)
-{
-    switch (ActiveState)
-    {
-        case EMoveAbilityState::MoveToPosition: States.MoveToPosition.Interrupt(world, unit); break;
-        case EMoveAbilityState::FollowEntity:   States.FollowEntity.Interrupt(world, unit); break;
-        default:                                break;
-    }
-
-    Exit(world, unit);
-}
-
-void MoveAbilityComponent::Exit(WorldRef world, const UnitId& unit)
-{
-    switch (ActiveState)
-    {
-        case EMoveAbilityState::MoveToPosition: States.MoveToPosition.Exit(world, unit); break;
-        case EMoveAbilityState::FollowEntity:   States.FollowEntity.Exit(world, unit); break;
-        default:                                break;
-    }
-
-    ActiveState = EMoveAbilityState::Idle;
-    FeatureSteering::Stop(world, unit);
-}
-
-MoveAbilityHandler::MoveAbilityHandler()
-{
-    System = std::make_shared<MoveAbilitySystem>();
-}
-
 FName MoveAbilityHandler::GetCommandId() const
 {
     return "MoveAbility"_n;
 }
 
-void MoveAbilityHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
-{
-    IAbilityHandler::Initialize(session);
-
-    std::shared_ptr<FeatureECS> ecs = session->GetFeature<FeatureECS>();
-    ecs->RegisterSystem(System);
-}
-
-void MoveAbilityHandler::Shutdown()
-{
-    IAbilityHandler::Shutdown();
-
-    std::shared_ptr<FeatureECS> ecs = Session->GetFeature<FeatureECS>();
-    ecs->UnregisterSystem(System);
-}
-
-void MoveAbilityHandler::OnWorldInitialize(WorldRef world)
-{
-    FeatureECS::RegisterComponentDefinition<MoveAbilityComponent>(world);
-}
-
-void MoveAbilityHandler::OnWorldShutdown(WorldRef world)
-{
-    FeatureECS::UnregisterComponentDefinition<MoveAbilityComponent>(world);
-}
-
 bool MoveAbilityHandler::AddAbility(WorldRef world, const UnitId& unit) const
 {
+    if (Tasks::FeatureTask::HasTask(world, unit, StaticTypeName<MoveAbilityTask>::TypeId))
+    {
+        return false;
+    }
+
     UnitComponent* unitComp = FeatureECS::GetComponent<UnitComponent>(world, unit);
     if (!unitComp)
     {
         return false;
     }
 
-    MoveAbilityComponent* moveComp = FeatureECS::GetOrAddComponent<MoveAbilityComponent>(world, unit);
-    if (!moveComp)
-    {
-        return false;
-    }
+    // Allocate a new move task for the unit.
+    Tasks::FeatureTask::Allocate(world, unit, MoveAbilityTask{});
 
     SteeringComponent* steeringComp = FeatureECS::GetOrAddComponent<SteeringComponent>(world, unit);
     if (!steeringComp)
@@ -192,12 +85,16 @@ bool MoveAbilityHandler::AddAbility(WorldRef world, const UnitId& unit) const
 
 bool MoveAbilityHandler::RemoveAbility(WorldRef world, const UnitId& unit) const
 {
-    return FeatureECS::RemoveComponent<MoveAbilityComponent>(world, unit);
+    // Deallocate the move task on the unit.
+    uint32 index;
+    Tasks::TaskHandle handle = Tasks::FeatureTask::GetFirstTask(world, unit, StaticTypeName<MoveAbilityTask>::TypeId, index);
+    PHX_ASSERT(handle != Tasks::TaskHandle::Invalid);
+    return Tasks::FeatureTask::FinishTask(world, handle);
 }
 
 bool MoveAbilityHandler::HasAbility(WorldConstRef world, const UnitId& unit) const
 {
-    return FeatureECS::GetComponent<MoveAbilityComponent>(world, unit) != nullptr;
+    return Tasks::FeatureTask::HasTask(world, unit, StaticTypeName<MoveAbilityTask>::TypeId);
 }
 
 bool MoveAbilityHandler::IgnoreCommand(
@@ -225,34 +122,16 @@ uint32 MoveAbilityHandler::GetCommandPriority(
 
 bool MoveAbilityHandler::ExecuteOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    MoveAbilityComponent* moveComp = FeatureECS::GetComponent<MoveAbilityComponent>(world, unit);
-
-    if (order.OrderIndex == Commands::Patrol)
-    {
-        // TODO (jfarris): implement patrol states
-    }
-    else 
-    {
-        if (order.TargetEntity != EntityId::Invalid && FeatureECS::IsEntityValid(world, order.TargetEntity))
-        {
-            moveComp->ActiveState = EMoveAbilityState::FollowEntity;
-            auto result = moveComp->States.FollowEntity.Enter(world, unit, order.TargetEntity, 0);
-            return result != EAbilityStateResult::Fail;
-        }
-
-        moveComp->ActiveState = EMoveAbilityState::MoveToPosition;
-        auto result = moveComp->States.MoveToPosition.Enter(world, unit, order.TargetLocation, 0);
-        return result != EAbilityStateResult::Fail;
-    }
-
-    return false;
+    Tasks::TaskHandle handle = Tasks::FeatureTask::GetFirstTask<MoveAbilityTask>(world, unit);
+    return Tasks::FeatureTask::Execute<MoveAbilityTask, bool, WorldRef, UnitId, const Order&>(world, handle, &MoveAbilityTask::ExecuteOrder, world, unit, order).GetValue(false);
 }
 
 bool MoveAbilityHandler::InterruptOrder(WorldRef world, const UnitId& unit, const Order& order) const
 {
-    if (MoveAbilityComponent* moveComp = FeatureECS::GetComponent<MoveAbilityComponent>(world, unit))
+    Tasks::TaskHandle handle = Tasks::FeatureTask::GetFirstTask<MoveAbilityTask>(world, unit);
+    if (handle != Tasks::TaskHandle::Invalid)
     {
-        moveComp->Interrupt(world, unit);
+        Tasks::FeatureTask::Execute<MoveAbilityTask, void, WorldRef, UnitId>(world, handle, &MoveAbilityTask::Interrupt, world, unit);
         return true;
     }
     return false;

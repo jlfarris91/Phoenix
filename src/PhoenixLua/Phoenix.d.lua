@@ -8,6 +8,10 @@ Phoenix.Debug = {}
 Phoenix.Orders = {}
 Phoenix.Physics = {}
 Phoenix.RTS = {}
+Phoenix.RTS.AttackAbilityTask = {}
+Phoenix.RTS.MoveAbilityTask = {}
+Phoenix.RTS.ProjectileTask = {}
+Phoenix.RTS.VitalsTask = {}
 Phoenix.Random = {}
 Phoenix.Steering = {}
 Phoenix.Vitals = {}
@@ -697,6 +701,26 @@ function Phoenix.Orders.IssueCommand(unit, command) end
 ---@param unit integer
 ---@return boolean
 function Phoenix.Orders.HasOrders(unit) end
+
+-- Phoenix.RTS.AttackAbilityTask
+
+---@return any
+function Phoenix.RTS.AttackAbilityTask.GetTaskDefinition() end
+
+-- Phoenix.RTS.MoveAbilityTask
+
+---@return any
+function Phoenix.RTS.MoveAbilityTask.GetTaskDefinition() end
+
+-- Phoenix.RTS.ProjectileTask
+
+---@return any
+function Phoenix.RTS.ProjectileTask.GetTaskDefinition() end
+
+-- Phoenix.RTS.VitalsTask
+
+---@return any
+function Phoenix.RTS.VitalsTask.GetTaskDefinition() end
 
 -- Phoenix.Random
 

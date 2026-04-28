@@ -82,6 +82,10 @@ namespace Phoenix
         BlockBuffer& GetBuffer();
         const BlockBuffer& GetBuffer() const;
 
+        // You should probably use GetBuffer instead.
+        // This method exists to return a mutable reference to the block buffer off of the world context thread.
+        BlockBuffer& GetBufferUnsafe();
+
     private:
 
         friend class WorldManager;

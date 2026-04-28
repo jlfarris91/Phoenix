@@ -36,11 +36,17 @@
 #include <PhoenixSim/LDS/FeatureLDS.h>
 #include <PhoenixSim/Blackboard/FeatureBlackboard.h>
 #include <PhoenixSim/ECS/FeatureECS.h>
+#include <PhoenixSim/Tasks/FeatureTask.h>
 #include <PhoenixSim/Navigation/FeatureNavigation.h>
 #include "PhoenixSim/Services/ServiceContainerBuilder.h"
 #include <PhoenixPhysics/FeaturePhysics.h>
 #include <PhoenixPhysics/BodyComponent.h>
 #include <PhoenixSteering/FeatureSteering.h>
+#include <PhoenixSim/Tasks/FeatureTask.h>
+
+// Script Features
+#include <PhoenixScript/FeatureScript.h>
+#include <PhoenixLua/FeatureLua.h>
 
 // RTS Features
 #include <PhoenixRTS/Units/FeatureUnit.h>
@@ -82,8 +88,6 @@
 #include "imgui/JobGraphPanel.h"
 
 // Profiling
-#include "PhoenixLua/FeatureLua.h"
-#include "PhoenixScript/FeatureScript.h"
 #include "tracy/PhoenixTracyImpl.h"
 
 #include "WorldDoubleBuffer.h"
@@ -92,6 +96,7 @@ using namespace Phoenix;
 using namespace Phoenix::LDS;
 using namespace Phoenix::Blackboard;
 using namespace Phoenix::ECS;
+using namespace Phoenix::Tasks;
 using namespace Phoenix::Physics;
 using namespace Phoenix::Pathfinding;
 using namespace Phoenix::Steering;
@@ -193,6 +198,7 @@ void InitSession()
     serviceContainerBuilder->RegisterService<FeatureBlackboard>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureLDS>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureECS>().AsInterfaces();
+    serviceContainerBuilder->RegisterService<FeatureTask>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
     serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
@@ -977,17 +983,22 @@ void RenderPhoenixUI()
 
                 if (auto entitiesPtr = FeatureECS::GetEntities(*GWorldView.GetRenderView()))
                 {
-                    if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit))
+                    if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                     {
+                        ImGui::TableSetupColumn("Index");
+                        ImGui::TableSetupColumn("Id");
+                        ImGui::TableSetupColumn("Kind");
+                        ImGui::TableHeadersRow();
+
                         const auto& entities = *entitiesPtr;
                         entities.ForEach([&](const Entity& entity)
                         {
                             ImGui::TableNextColumn();
                             ImGui::Text("%u:", entities.GetEntityIndex(entity.Id));
                             ImGui::TableNextColumn();
-                            ImGui::Text("Id: %u", entity.Id);
+                            ImGui::Text("%u", (uint32)entity.Id);
                             ImGui::TableNextColumn();
-                            ImGui::Text("Kind: %u", entity.Kind);
+                            ImGui::Text("%s", FName::GetNameEntry(entity.Kind));
                         });
 
                         ImGui::EndTable();
@@ -1003,15 +1014,19 @@ void RenderPhoenixUI()
 
                 if (auto tagsPtr = FeatureECS::GetTags(*GWorldView.GetRenderView()))
                 {
-                    if (ImGui::BeginTable("Tags", 2, ImGuiTableFlags_SizingFixedFit))
+                    if (ImGui::BeginTable("Tags", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                     {
+                        ImGui::TableSetupColumn("Entity");
+                        ImGui::TableSetupColumn("Tag");
+                        ImGui::TableHeadersRow();
+
                         const auto& tags = *tagsPtr;
                         tags.ForEach([](const EntityTag& entityTag)
                         {
                             ImGui::TableNextColumn();
-                            ImGui::Text("%u:", entityTag.Entity);
+                            ImGui::Text("%u:", (uint32)entityTag.Entity);
                             ImGui::TableNextColumn();
-                            ImGui::Text("%u", entityTag.Tag);
+                            ImGui::Text("%s", FName::GetNameEntry(entityTag.Tag));
                         });
 
                         ImGui::EndTable();
@@ -1027,15 +1042,19 @@ void RenderPhoenixUI()
 
                 if (auto groupsPtr = FeatureECS::GetGroups(*GWorldView.GetRenderView()))
                 {
-                    if (ImGui::BeginTable("Groups", 2, ImGuiTableFlags_SizingFixedFit))
+                    if (ImGui::BeginTable("Groups", 2, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                     {
+                        ImGui::TableSetupColumn("Group");
+                        ImGui::TableSetupColumn("Entity");
+                        ImGui::TableHeadersRow();
+
                         const auto& groups = *groupsPtr;
                         groups.ForEach([](const GroupEntity& groupEntity)
                         {
                             ImGui::TableNextColumn();
-                            ImGui::Text("%u", groupEntity.Group);
+                            ImGui::Text("%u", (uint32)groupEntity.Group);
                             ImGui::TableNextColumn();
-                            ImGui::Text("%u", groupEntity.Entity);
+                            ImGui::Text("%u", (uint32)groupEntity.Entity);
                         });
 
                         ImGui::EndTable();
@@ -1065,7 +1084,31 @@ void RenderPhoenixUI()
                 ImGui::Text("KVP HWM:");
                 ImGui::TableNextColumn();
                 ImGui::Text("%u", blackboardBlock.Blackboard.GetNum());
-                                
+
+                ImGui::EndTable();
+            }
+
+            if (ImGui::BeginTable("KVPs", 4, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                ImGui::TableSetupColumn("Key (Hi)");
+                ImGui::TableSetupColumn("Key (Lo)");
+                ImGui::TableSetupColumn("Type");
+                ImGui::TableSetupColumn("Value");
+                ImGui::TableHeadersRow();
+                
+                for (const auto& blackboardItem : blackboardBlock.Blackboard)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", BlackboardKey::GetKeyHi(blackboardItem.Key));
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", BlackboardKey::GetKeyLo(blackboardItem.Key));
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", BlackboardKey::GetKeyType(blackboardItem.Key));
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%ill", blackboardItem.Value);
+                }
+
                 ImGui::EndTable();
             }
         }
@@ -1115,8 +1158,13 @@ void RenderPhoenixUI()
 
                 if (ImGui::TreeNode("Group:"))
                 {
-                    if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit))
+                    if (ImGui::BeginTable("Entities", 3, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
                     {
+                        ImGui::TableSetupColumn("Index");
+                        ImGui::TableSetupColumn("Id");
+                        ImGui::TableSetupColumn("Kind");
+                        ImGui::TableHeadersRow();
+
                         const auto& entities = *FeatureECS::GetEntities(world);
                         FeatureECS::ForEachEntityInGroup(world, selectedEntityId, [&](EntityId childId)
                         {
@@ -1125,9 +1173,9 @@ void RenderPhoenixUI()
                                 ImGui::TableNextColumn();
                                 ImGui::Text("%u:", entities.GetEntityIndex(childId));
                                 ImGui::TableNextColumn();
-                                ImGui::Text("Id: %u", childEntity->Id);
+                                ImGui::Text("%u", (uint32)childEntity->Id);
                                 ImGui::TableNextColumn();
-                                ImGui::Text("Kind: %u", childEntity->Kind);
+                                ImGui::Text("%s", FName::GetNameEntry(childEntity->Kind));
                             }
                         });
 
@@ -1145,10 +1193,61 @@ void RenderPhoenixUI()
     }
     ImGui::End();
 
-    if (GWorldView.GetRenderView())
+    ImGui::Begin("Tasks");
     {
-        ImGui::Begin("Job Graph");
-        if (ImGui::BeginTabBar("##phases"))
+        if (GWorldView.GetRenderView())
+        {
+            const FeatureTaskDynamicBlock& taskBlock = GWorldView.GetRenderView()->GetBlockRef<FeatureTaskDynamicBlock>();
+
+            if (ImGui::BeginTable("Stats", 2, ImGuiTableFlags_SizingFixedFit))
+            {
+                ImGui::TableNextColumn();
+                ImGui::Text("Num Tasks:");
+                ImGui::TableNextColumn();
+                ImGui::Text("%u / %u / %u", taskBlock.Tasks.GetNumValid(), taskBlock.Tasks.GetNum(), taskBlock.Tasks.GetCapacity());
+
+                ImGui::TableNextColumn();
+                ImGui::Text("Num Blocks:");
+                ImGui::TableNextColumn();
+                ImGui::Text("%u / %u / %u", taskBlock.Tasks.GetNumOccupiedBlocks(), taskBlock.Tasks.GetNumBlocks(), taskBlock.Tasks.GetBlockCapacity());
+
+                ImGui::EndTable();
+            }
+
+            if (ImGui::BeginTable("Tasks", 5, ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            {
+                ImGui::TableSetupColumn("Tick");
+                ImGui::TableSetupColumn("Context");
+                ImGui::TableSetupColumn("Id");
+                ImGui::TableSetupColumn("Type");
+                ImGui::TableSetupColumn("Handle");
+                ImGui::TableHeadersRow();
+                
+                for (const TaskEntry& taskEntry : taskBlock.Tasks)
+                {
+                    ImGui::TableNextRow();
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%+.2f", (double)(taskEntry.GetTickTime() - GWorldView.GetRenderView()->GetSimTime()));
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", taskEntry.GetContext());
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", FName::GetNameEntry(taskEntry.GetId()));
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%s", FName::GetNameEntry(taskEntry.GetType()));
+                    ImGui::TableNextColumn();
+                    ImGui::Text("%u", taskEntry.GetHandle().Key);
+                }
+
+                ImGui::EndTable();
+            }
+        }
+    }
+    ImGui::End();
+
+    ImGui::Begin("Job Graph");
+    if (ImGui::BeginTabBar("##phases"))
+    {
+        if (GWorldView.GetRenderView())
         {
             if (ImGui::BeginTabItem("PreUpdate"))
             {
@@ -1176,11 +1275,11 @@ void RenderPhoenixUI()
                     ImGui::EndTabItem();
                 }
             }
-
-            ImGui::EndTabBar();
         }
-        ImGui::End();
+
+        ImGui::EndTabBar();
     }
+    ImGui::End();
 
     ShowConsole(&GShowConsoleWindow);
 }

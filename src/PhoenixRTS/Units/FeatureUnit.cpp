@@ -17,7 +17,8 @@
 #include "PhoenixRTS/Orders/FeatureOrders.h"
 #include "PhoenixRTS/Units/UnitComponent.h"
 #include "PhoenixRTS/Units/UnitSystem.h"
-#include "PhoenixRTS/Vitals/VitalComponents.h"
+#include "PhoenixRTS/Vitals/FeatureVitals.h"
+#include "PhoenixRTS/Vitals/VitalComponent.h"
 #include "PhoenixSteering/FeatureSteering.h"
 
 using namespace Phoenix;
@@ -74,7 +75,7 @@ UnitId FeatureUnit::SpawnUnit(
         FeatureSteering::SetHolding(world, unitId, true);
     }
 
-    // TODO (jfarris): hate that we hard-code the vitals component. What if I don't care about energy or shield?
+    // Add vitals and their initial values
     dataPtr.Vitals().ForEachItem(lds, [&](const Data::VitalStatsPairPtr& vitalStatsPair)
     {
         Data::VitalPtr vitalPtr = vitalStatsPair.Vital().ResolveObject(lds);
@@ -83,29 +84,18 @@ UnitId FeatureUnit::SpawnUnit(
             return;
         }
 
-        Data::VitalComponentPtr vitalComponentPtr = vitalPtr.Component().ResolveObject(lds);
-        if (!vitalComponentPtr.Exists(lds))
-        {
-            return;
-        }
+        FName vitalId = vitalStatsPair.Vital().GetReferenceId(lds);
+        Data::VitalStats vitalStats = vitalStatsPair.Stats().ReadObject(lds);
 
-        // TODO (jfarris): remove this hard-coded component initialization
-        switch (vitalPtr.GetObjectId())
-        {
-            case "HealthVital"_n:
-                {
-                    if (HealthComponent* healthComp = FeatureECS::GetOrAddComponent<HealthComponent>(world, unitId))
-                    {
-                        Data::VitalStats vitalStats = vitalStatsPair.Stats().ReadObject(lds);
-                        healthComp->Health.Current = vitalStats.Starting;
-                        healthComp->Health.Max = vitalStats.Max;
-                        healthComp->Health.Regen = vitalStats.Regen;
-                    }
-                    break;
-                }
-        }
+        Vital initial;
+        initial.Current = vitalStats.Starting;
+        initial.Max = vitalStats.Max;
+        initial.Regen = vitalStats.Regen;
+
+        FeatureVitals::AddVital(world, unitId, vitalId, initial);
     });
 
+    // Add initial tags
     dataPtr.Tags().ForEachResolvedItemObject(lds, [&](const Data::TagPtr& tag)
     {
        FeatureECS::AddTag(world, unitId, tag.GetObjectId()); 

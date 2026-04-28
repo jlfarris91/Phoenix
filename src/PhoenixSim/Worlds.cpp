@@ -14,6 +14,22 @@
 
 using namespace Phoenix;
 
+thread_local FName gCurrentWorldId = FName::None;
+
+struct ScopedWorldId
+{
+    ScopedWorldId(const FName& newWorldId)
+        : PrevWorldId(gCurrentWorldId)
+    {
+        gCurrentWorldId = newWorldId;
+    }
+    ~ScopedWorldId()
+    {
+        gCurrentWorldId = PrevWorldId;
+    }
+    FName PrevWorldId;
+};
+
 World::World(const WorldConfig& config)
     : Session(config.Session)
     , Id(config.WorldId)
@@ -150,10 +166,16 @@ void World::EndTracking()
 
 BlockBuffer& World::GetBuffer()
 {
+    PHX_ASSERT(gCurrentWorldId == Id);
     return Buffer;
 }
 
 const BlockBuffer& World::GetBuffer() const
+{
+    return Buffer;
+}
+
+BlockBuffer& World::GetBufferUnsafe()
 {
     return Buffer;
 }
@@ -186,6 +208,8 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
     {
         worldId = GenerateNewWorldId(args.WorldType);
     }
+
+    ScopedWorldId _(worldId);
 
     WorldLayoutContext layoutContext;
     layoutContext.Session = Session;
@@ -356,6 +380,8 @@ FName WorldManager::GenerateNewWorldId(const FName& worldType)
 
 void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
 {
+    ScopedWorldId _(world.GetId());
+
     const nlohmann::json& worldConfigData = world.Config.GetData();
 
     world.SimTime = Time::QT(time);
@@ -388,6 +414,8 @@ void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
 
 void WorldManager::ShutdownWorld(WorldRef world) const
 {
+    ScopedWorldId _(world.GetId());
+
     std::vector<FeatureSharedPtr> channelFeatures = FeatureSet->GetChannelRef(FeatureChannels::WorldShutdown);
     for (const FeatureSharedPtr& feature : channelFeatures)
     {
@@ -408,6 +436,8 @@ void WorldManager::ShutdownWorld(WorldRef world) const
 void WorldManager::UpdateWorld(WorldRef world, simtime_t time) const
 {
     PHX_PROFILE_ZONE_SCOPED;
+
+    ScopedWorldId _(world.GetId());
 
     world.SimTime = Time::QT(time);
 
@@ -451,6 +481,8 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time) const
 void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const
 {
     PHX_PROFILE_ZONE_SCOPED;
+
+    ScopedWorldId _(world.GetId());
 
     FeatureActionArgs actionArgs;
     actionArgs.Action = action;

@@ -68,6 +68,11 @@ namespace Phoenix::RTS
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
+        static void OnEntityReleasing(WorldRef world, ECS::EntityId entity);
+
+        static void RemoveAllAbilities(WorldRef world, ECS::EntityId entity);
+
         std::unordered_map<FName, std::shared_ptr<IAbilityHandler>> AbilityIdToHandlerMap;
+        DelegateHandle EntityReleasingHandle;
     };
 }

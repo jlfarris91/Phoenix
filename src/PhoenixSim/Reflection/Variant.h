@@ -44,7 +44,7 @@ namespace Phoenix
         Variant(const T& value) noexcept
         {
             TypeId = StaticTypeName<std::decay_t<T>>::TypeId;
-            if constexpr (sizeof(T) < sizeof(Buffer))
+            if constexpr (sizeof(T) <= sizeof(Buffer))
             {
                 Flags = EVariantFlags::OwnsData;
                 std::memcpy(Buffer, &value, sizeof(T));
@@ -52,7 +52,7 @@ namespace Phoenix
             else
             {
                 Flags = EVariantFlags::ConstRef;
-                *reinterpret_cast<T* const*>(&Buffer[0]) = &value;
+                *reinterpret_cast<T const**>(&Buffer[0]) = &value;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
 
+#include "ProjectileTask.h"
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/LDS/FeatureLDS.h"
 #include "PhoenixSim/Session.h"
@@ -11,7 +12,7 @@
 #include "PhoenixRTS/Effects/FeatureEffects.h"
 #include "PhoenixRTS/Effects/PeriodicEffectComponent.h"
 #include "PhoenixRTS/Projectiles/ProjectileComponent.h"
-#include "PhoenixRTS/Projectiles/ProjectilesSystem.h"
+#include "PhoenixSim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -28,17 +29,15 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
 {
     ProjectileId projectileId = ProjectileId(FeatureECS::StaticAcquireEntity(world, "Projectile"_n));
     if (projectileId == EntityId::Invalid)
+    {
         return {};
+    }
 
     const ILDSQueryContext& lds = *FeatureLDS::StaticGetWorldQueryContext(world);
 
     Data::ProjectilePtr dataPtr(projectileData);
 
     TransformComponent* transformComp = FeatureECS::GetOrAddComponent<TransformComponent>(world, projectileId);
-    if (!transformComp)
-    {
-        return {};
-    }
     transformComp->Transform.Position = launchPos;
     transformComp->Transform.Rotation = launchFacing;
 
@@ -84,9 +83,18 @@ ProjectileId FeatureProjectiles::SpawnProjectile(
         }
     }
 
-    // TODO (jfarris): spawn launch fx actor
+    // Allocate task to execute projectile logic
+    {
+        ProjectileTask task;
+        task.State.TargetEntity = projectileComp->TargetEntity;
+        task.State.TargetPos = projectileComp->TargetPos;
+        task.State.EffectParent = projectileComp->EffectParent;
+        task.State.ImpactEffectId = projectileComp->ImpactEffectId;
+        task.State.ArrivalThreshold = args.ArrivalThreshold;
+        Tasks::FeatureTask::Allocate(world, projectileId, task);
+    }
 
-    projectileComp->State.Enter(world, projectileId, *projectileComp, args.ArrivalThreshold);
+    // TODO (jfarris): spawn launch fx actor
 
     return projectileId;
 }
@@ -106,26 +114,4 @@ FName FeatureProjectiles::GetDataId(WorldConstRef world, ProjectileId projectile
 RTS::Data::ProjectilePtr FeatureProjectiles::GetData(WorldConstRef world, ProjectileId projectileId)
 {
     return { GetDataId(world, projectileId) };
-}
-
-void FeatureProjectiles::Initialize(const std::shared_ptr<Phoenix::Session>& session)
-{
-    IFeature::Initialize(session);
-
-    ProjectilesSystem = std::make_shared<RTS::ProjectilesSystem>();
-
-    std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
-    featureECS->RegisterSystem(ProjectilesSystem);
-}
-
-void FeatureProjectiles::Shutdown()
-{
-    IFeature::Shutdown();
-
-    if (std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>())
-    {
-        featureECS->UnregisterSystem(ProjectilesSystem);
-    }
-
-    ProjectilesSystem.reset();
 }
