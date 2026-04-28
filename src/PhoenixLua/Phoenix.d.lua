@@ -11,6 +11,7 @@ Phoenix.RTS = {}
 Phoenix.RTS.AttackAbilityTask = {}
 Phoenix.RTS.MoveAbilityTask = {}
 Phoenix.RTS.ProjectileTask = {}
+Phoenix.RTS.VitalsTask = {}
 Phoenix.Random = {}
 Phoenix.Steering = {}
 Phoenix.Vitals = {}
@@ -715,6 +716,11 @@ function Phoenix.RTS.MoveAbilityTask.GetTaskDefinition() end
 
 ---@return any
 function Phoenix.RTS.ProjectileTask.GetTaskDefinition() end
+
+-- Phoenix.RTS.VitalsTask
+
+---@return any
+function Phoenix.RTS.VitalsTask.GetTaskDefinition() end
 
 -- Phoenix.Random
 

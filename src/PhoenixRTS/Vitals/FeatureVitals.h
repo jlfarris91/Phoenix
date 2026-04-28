@@ -4,11 +4,13 @@
 #include "PhoenixSim/Features.h"
 
 #include "PhoenixRTS/DLLExport.h"
+#include "PhoenixRTS/Data/DataVital.h"
+#include "PhoenixRTS/Vitals/Damage.h"
+#include "PhoenixRTS/Vitals/Vitals.h"
 
 namespace Phoenix::RTS
 {
     struct Damage;
-    class VitalsSystem;
 
     class PHOENIX_RTS_API FeatureVitals : public IFeature
     {
@@ -16,14 +18,18 @@ namespace Phoenix::RTS
 
     public:
 
+        // Adds a new vital to the specified entity with the given initial value.
+        // If the entity already has that vital, a pointer to the existing vital is returned.
+        static Vital* AddVital(WorldRef world, ECS::EntityId entity, FName vitalId, Vital initialValue = {});
+
+        // Removes the specified vital from the entity.
+        // Returns true if the vital was successfully removed, false if the entity doesn't have that vital.
+        static bool RemoveVital(WorldRef world, ECS::EntityId entity, FName vitalId);
+
+        static Vital* GetVital(WorldRef world, ECS::EntityId entity, FName vitalId);
+        static const Vital* GetVital(WorldConstRef world, ECS::EntityId entity, FName vitalId);
+
         static bool ApplyDamage(WorldRef world, ECS::EntityId target, const Damage& damage);
-
-    protected:
-
-        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
-        void Shutdown() override;
-
-        std::shared_ptr<VitalsSystem> VitalsSystem;
     };
 }
 

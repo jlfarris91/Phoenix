@@ -115,6 +115,17 @@ bool FeatureTask::FinishTask(WorldRef world, TaskHandle handle)
     return true;
 }
 
+bool FeatureTask::FinishTask(WorldRef world, uint32 context, FName id)
+{
+    uint32 index;
+    TaskHandle handle = GetFirstTask(world, context, id, index);
+    if (handle == TaskHandle::Invalid)
+    {
+        return false;
+    }
+    return FinishTask(world, handle);
+}
+
 uint32 FeatureTask::FinishAllTasks(WorldRef world, uint32 context)
 {
     std::shared_ptr<FeatureTask> feature = GetFeature<FeatureTask>(world);
