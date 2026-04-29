@@ -1,6 +1,8 @@
 #pragma once
 
 #include "PhoenixSim/Name.h"
+#include "PhoenixSim/Containers/Optional.h"
+#include "PhoenixSim/Reflection/EnumValueDescriptor.h"
 #include "PhoenixSim/Reflection/FieldDescriptor.h"
 #include "PhoenixSim/Reflection/MethodDescriptor.h"
 #include "PhoenixSim/Reflection/PropertyDescriptor.h"
@@ -10,10 +12,12 @@ namespace Phoenix
 {
     enum class PHOENIX_SIM_API ETypeDescriptorFlags : uint8
     {
-        None = 0,
-        Class = 1,
-        Interface = 2,
-        ScriptHidden = 4
+        None            = 0,
+        Class           = 1,
+        Enum            = 2,
+        EnumFlags       = 4,
+        Interface       = 8,
+        ScriptHidden    = 16
     };
 
     class PHOENIX_SIM_API TypeDescriptor
@@ -84,10 +88,52 @@ namespace Phoenix
 
         void Destruct(void* data) const;
 
+        std::string ToString(const void* obj) const;
+
+        // ── Enums ───────────────────────────────────────────────────────────
+
+        bool IsEnum() const;
+        bool IsEnumFlags() const;
+
+        FName GetEnumUnderlyingTypeId() const;
+
+        const TypeDescriptor* GetEnumUnderlyingType() const;
+
+        const std::vector<EnumValueDescriptor>& GetEnumValues() const;
+
+        const EnumValueDescriptor* GetEnumValueDescriptor(uint32 index) const;
+        const EnumValueDescriptor* GetEnumValueDescriptor(const std::string& name) const;
+        const EnumValueDescriptor* GetEnumValueDescriptor(const Variant& value) const;
+        const EnumValueDescriptor* GetEnumValueDescriptor(const void* value) const;
+
+        const Variant* GetEnumValue(uint32 index) const;
+        const Variant* GetEnumValue(const std::string& name) const;
+
+        template <class TValue>
+        TOptional<TValue> GetEnumValueAs(uint32 index) const
+        {
+            auto value = GetEnumValue(index);
+            return value ? value->As<TValue>() : TOptional<TValue>();
+        }
+
+        template <class TValue>
+        TOptional<TValue> GetEnumValueAs(const std::string& name) const
+        {
+            auto value = GetEnumValue(name);
+            return value ? value->As<TValue>() : TOptional<TValue>();
+        }
+
+        Variant ConstructEnumValue(const std::unordered_set<uint32>& flagIndices) const;
+
+        bool HasEnumFlag(const void* value, const void* flag) const;
+        void SetEnumFlag(void* value, const void* flag) const;
+        void ClearEnumFlag(void* value, const void* flag) const;
+
     private:
 
         friend class TypeRegistry;
         template <class T> friend class TypeDescriptorBuilder;
+        template <class T> friend class EnumDescriptorBuilder;
         template <class T> friend class ScriptRegistrationBuilder;
 
         FTypeName               TypeName;
@@ -106,6 +152,11 @@ namespace Phoenix
         std::vector<MethodDescriptor>                       Constructors;
         MethodDescriptor                                    Destructor;
         std::unordered_map<std::string, std::string>        Metadata;
+        std::function<std::string(const void*)>             ToStringFunc;
+
+        // Enum specific fields
+        FName                               EnumUnderlyingTypeId;
+        std::vector<EnumValueDescriptor>    EnumValues;
     };
 
     template <class TBase, class TClass>

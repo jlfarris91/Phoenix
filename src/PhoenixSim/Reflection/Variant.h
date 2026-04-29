@@ -64,7 +64,10 @@ namespace Phoenix
             *reinterpret_cast<T**>(&Buffer[0]) = &ref;
         }
 
+        Variant(const FName& typeId, const void* value, uint32 size);
+
         Variant(const TypeDescriptor& desc);
+        Variant(const TypeDescriptor& desc, const void* value);
 
         Variant(const Variant& other);
 
@@ -224,6 +227,8 @@ namespace Phoenix
                 return *GetData<T>();
             }
         }
+
+        std::string ToString() const;
 
     private:
 

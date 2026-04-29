@@ -16,13 +16,20 @@ namespace Phoenix
     class TypeDescriptor;
 
     // Forward declaration to break circular dependency with TypeDescriptorBuilder.h.
-    // Full definition is provided by Registration.h / TypeDescriptorBuilder.h at
-    // instantiation time.
+    // Full definition is provided by Registration.h / TypeDescriptorBuilder.h at instantiation time.
     template <class T>
     class TypeDescriptorBuilder;
 
     template <class T>
     struct TypeRegistrar;
+
+    template <class T>
+    struct EnumRegistrar;
+
+    // Forward declaration to break circular dependency with EnumDescriptorBuilder.h.
+    // Full definition is provided by Registration.h / EnumDescriptorBuilder.h at instantiation time.
+    template <class T>
+    class EnumDescriptorBuilder;
 
     // Global registry that owns every reflected TypeDescriptor.
     // Types are created on first call to Get<T>() and live for the
@@ -56,6 +63,12 @@ namespace Phoenix
 
                 SetFlagRef(desc.Flags, ETypeDescriptorFlags::Class, std::is_class_v<TDecay>);
                 SetFlagRef(desc.Flags, ETypeDescriptorFlags::Interface, std::is_abstract_v<TDecay>);
+
+                if constexpr (std::is_enum_v<TDecay>)
+                {
+                    SetFlagRef(desc.Flags, ETypeDescriptorFlags::Enum);
+                    desc.EnumUnderlyingTypeId = StaticTypeName<std::underlying_type_t<TDecay>>::TypeId;
+                }
 
                 if constexpr (!std::is_void_v<TDecay>)
                 {
@@ -91,6 +104,15 @@ namespace Phoenix
                         desc.Destructor = std::move(descriptor);
                     }
 
+                    // ToString
+                    if constexpr (requires { std::to_string(std::declval<TDecay>()); })
+                    {
+                        desc.ToStringFunc = [](const void* mem)
+                        {
+                            return std::to_string(*static_cast<const TDecay*>(mem));
+                        };
+                    }
+
                     // Extension point for custom metadata.
                     desc.Metadata = TypeDescriptorMetadataProvider<TDecay>::GetMetadata();
 
@@ -100,6 +122,13 @@ namespace Phoenix
                     {
                         TypeDescriptorBuilder<TDecay> builder;
                         TypeRegistrar<TDecay>::Register(builder);
+                    }
+
+                    // Extension point for custom enum registration logic.
+                    if constexpr (std::is_enum_v<TDecay>)
+                    {
+                        EnumDescriptorBuilder<TDecay> builder;
+                        EnumRegistrar<TDecay>::Register(builder);
                     }
 
                     // Also add a record for the alias, if one was defined.

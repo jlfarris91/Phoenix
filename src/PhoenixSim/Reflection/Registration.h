@@ -1,5 +1,6 @@
 #pragma once
 
+#include "PhoenixSim/Reflection/EnumDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/TypeDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/TypeRegistry.h"
 
@@ -9,6 +10,12 @@ namespace Phoenix
     struct TypeRegistrar
     {
         static void Register(const TypeDescriptorBuilder<T>&) { }
+    };
+
+    template <class T>
+    struct EnumRegistrar
+    {
+        static void Register(const EnumDescriptorBuilder<T>&) { }
     };
 
     // Specialize this for external types when you can't modify the type declaration to include PHX_DECLARE_TYPE.
@@ -67,4 +74,12 @@ namespace Phoenix
         }; \
     } \
     inline void Phoenix::TypeRegistrar<type>::Register(Phoenix::TypeDescriptorBuilder<type>& registration)
+
+#define PHX_DEFINE_ENUM(type) \
+    namespace Phoenix { \
+        template <> struct EnumRegistrar<type> { \
+            static void Register(Phoenix::EnumDescriptorBuilder<type>& registration); \
+        }; \
+    } \
+    inline void Phoenix::EnumRegistrar<type>::Register(Phoenix::EnumDescriptorBuilder<type>& registration)
 } // namespace Phoenix

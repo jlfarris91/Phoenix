@@ -12,6 +12,15 @@ Phoenix::Variant::~Variant() noexcept
     DestructActive();
 }
 
+Phoenix::Variant::Variant(const FName& typeId, const void* value, uint32 size)
+    : TypeId(typeId)
+    , Flags(EVariantFlags::OwnsData)
+    , Size(size)
+{
+    assert(size < sizeof(Buffer));
+    memcpy(Buffer, value, size);
+}
+
 Phoenix::Variant::Variant(const TypeDescriptor& desc)
     : TypeId(desc.GetTypeId())
     , Flags(EVariantFlags::OwnsData)
@@ -19,6 +28,15 @@ Phoenix::Variant::Variant(const TypeDescriptor& desc)
 {
     assert(desc.GetSize() < sizeof(Buffer));
     desc.DefaultConstruct(Buffer);
+}
+
+Phoenix::Variant::Variant(const TypeDescriptor& desc, const void* value)
+    : TypeId(desc.GetTypeId())
+    , Flags(EVariantFlags::OwnsData)
+    , Size(desc.GetSize())
+{
+    assert(desc.GetSize() < sizeof(Buffer));
+    memcpy(Buffer, value, desc.GetSize());
 }
 
 Phoenix::Variant::Variant(const Variant& other)
@@ -119,6 +137,11 @@ const void* Phoenix::Variant::GetData() const
 Phoenix::uint32 Phoenix::Variant::GetSize() const
 {
     return Size;
+}
+
+std::string Phoenix::Variant::ToString() const
+{
+    return TypeRegistry::Get(TypeId)->ToString(GetData());
 }
 
 void Phoenix::Variant::DestructActive()

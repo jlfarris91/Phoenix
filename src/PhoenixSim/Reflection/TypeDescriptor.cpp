@@ -195,3 +195,168 @@ void Phoenix::TypeDescriptor::Destruct(void* data) const
 {
     Destructor.Execute(data);
 }
+
+std::string Phoenix::TypeDescriptor::ToString(const void* obj) const
+{
+    if (ToStringFunc)
+    {
+        return ToStringFunc(obj);
+    }
+
+    if (IsEnum())
+    {
+        if (const EnumValueDescriptor* enumValueDescriptor = GetEnumValueDescriptor(obj))
+        {
+            return enumValueDescriptor->GetDisplayName();
+        }
+
+        if (IsEnumFlags())
+        {
+            std::string result;
+            for (const auto& enumFlagValue : EnumValues)
+            {
+                if (!HasEnumFlag(obj, enumFlagValue.GetValue().GetData()))
+                {
+                    continue;
+                }
+                if (!result.empty())
+                {
+                    result += "|";
+                }
+                result += enumFlagValue.GetDisplayName();
+            }
+
+            if (!result.empty() || static_cast<const uint8*>(obj)[0] == 0)
+            {
+                return result;
+            }
+        }
+
+        return GetEnumUnderlyingType()->ToString(obj);
+    }
+
+    return std::format("{} ({:#x})", QualifiedName, uint64(obj));
+}
+
+bool Phoenix::TypeDescriptor::IsEnum() const
+{
+    return HasAnyFlags(Flags, ETypeDescriptorFlags::Enum, ETypeDescriptorFlags::EnumFlags);
+}
+
+bool Phoenix::TypeDescriptor::IsEnumFlags() const
+{
+    return HasAnyFlags(Flags, ETypeDescriptorFlags::EnumFlags);
+}
+
+Phoenix::FName Phoenix::TypeDescriptor::GetEnumUnderlyingTypeId() const
+{
+    return EnumUnderlyingTypeId;
+}
+
+const Phoenix::TypeDescriptor* Phoenix::TypeDescriptor::GetEnumUnderlyingType() const
+{
+    return TypeRegistry::Get(GetEnumUnderlyingTypeId());
+}
+
+const std::vector<Phoenix::EnumValueDescriptor>& Phoenix::TypeDescriptor::GetEnumValues() const
+{
+    return EnumValues;
+}
+
+const Phoenix::EnumValueDescriptor* Phoenix::TypeDescriptor::GetEnumValueDescriptor(uint32 index) const
+{
+    return index < EnumValues.size() ? &EnumValues[index] : nullptr;
+}
+
+const Phoenix::EnumValueDescriptor* Phoenix::TypeDescriptor::GetEnumValueDescriptor(const std::string& name) const
+{
+    for (auto& descriptor : EnumValues)
+    {
+        if (descriptor.GetName() == name)
+        {
+            return &descriptor;
+        }
+    }
+    return nullptr;
+}
+
+const Phoenix::EnumValueDescriptor* Phoenix::TypeDescriptor::GetEnumValueDescriptor(const Variant& value) const
+{
+    for (auto& descriptor : EnumValues)
+    {
+        if (descriptor.GetValue() == value)
+        {
+            return &descriptor;
+        }
+    }
+    return nullptr;
+}
+
+const Phoenix::EnumValueDescriptor* Phoenix::TypeDescriptor::GetEnumValueDescriptor(const void* value) const
+{
+    uint32 underlyingTypeSize = GetEnumUnderlyingType()->GetSize();
+    for (auto& descriptor : EnumValues)
+    {
+        if (memcmp(descriptor.GetValue().GetData(), value, underlyingTypeSize) == 0)
+        {
+            return &descriptor;
+        }
+    }
+    return nullptr;
+}
+
+const Phoenix::Variant* Phoenix::TypeDescriptor::GetEnumValue(uint32 index) const
+{
+    auto enumValueDescriptor = GetEnumValueDescriptor(index);
+    return enumValueDescriptor ? &enumValueDescriptor->GetValue() : nullptr;
+}
+
+const Phoenix::Variant* Phoenix::TypeDescriptor::GetEnumValue(const std::string& name) const
+{
+    auto enumValueDescriptor = GetEnumValueDescriptor(name);
+    return enumValueDescriptor ? &enumValueDescriptor->GetValue() : nullptr;
+}
+
+Phoenix::Variant Phoenix::TypeDescriptor::ConstructEnumValue(const std::unordered_set<uint32>& flagIndices) const
+{
+    const TypeDescriptor& underlyingType = *GetEnumUnderlyingType();
+    uint64 mask = (1ull << (underlyingType.GetSize() * 8)) - 1;
+    Variant value(underlyingType);
+    uint64* valuePtr = static_cast<uint64*>(value.GetData());
+    for (uint32 flagIdx : flagIndices)
+    {
+        if (flagIdx < EnumValues.size())
+        {
+            const void* flagValuePtr = EnumValues[flagIdx].GetValue().GetData();
+            *valuePtr = (*valuePtr | *static_cast<const uint64*>(flagValuePtr)) & mask;
+        }
+    }
+    return value;
+}
+
+bool Phoenix::TypeDescriptor::HasEnumFlag(const void* value, const void* flag) const
+{
+    const TypeDescriptor& underlyingType = *GetEnumUnderlyingType();
+    uint64 mask = (1ull << (underlyingType.GetSize() * 8)) - 1;
+    const uint64* valuePtr = static_cast<const uint64*>(value);
+    const uint64* flagPtr = static_cast<const uint64*>(flag);
+    return (*valuePtr & *flagPtr & mask) != 0ull;
+}
+
+void Phoenix::TypeDescriptor::SetEnumFlag(void* value, const void* flag) const
+{
+    const TypeDescriptor& underlyingType = *GetEnumUnderlyingType();
+    uint64 mask = (1ull << (underlyingType.GetSize() * 8)) - 1;
+    uint64* valuePtr = static_cast<uint64*>(value);
+    const uint64* flagPtr = static_cast<const uint64*>(flag);
+    *valuePtr = (*valuePtr | *flagPtr) & mask;
+}
+
+void Phoenix::TypeDescriptor::ClearEnumFlag(void* value, const void* flag) const
+{
+    const TypeDescriptor& underlyingType = *GetEnumUnderlyingType();
+    uint64 mask = (1ull << (underlyingType.GetSize() * 8)) - 1;
+    uint64* valuePtr = static_cast<uint64*>(value);
+    const uint64* flagPtr = static_cast<const uint64*>(flag);
+    *valuePtr = (*valuePtr & ~*flagPtr) & mask;
+}

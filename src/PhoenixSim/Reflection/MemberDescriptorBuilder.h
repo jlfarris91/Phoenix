@@ -1,36 +1,19 @@
 #pragma once
 
 #include "PhoenixSim/Flags.h"
+#include "PhoenixSim/Reflection/BaseDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/MemberDescriptor.h"
 
 namespace Phoenix
 {
     template <class TBuilder>
-    class MemberDescriptorBuilder
+    class MemberDescriptorBuilder : public BaseDescriptorBuilder<TBuilder>
     {
     public:
         MemberDescriptorBuilder(MemberDescriptor* descriptor)
-            : Descriptor(descriptor)
+            : BaseDescriptorBuilder<TBuilder>(descriptor)
+            , Descriptor(descriptor)
         {}
-
-        TBuilder& Metadata(const std::string& key, const std::string& value)
-        {
-            Descriptor->Metadata[key] = value;
-            return *reinterpret_cast<TBuilder*>(this);
-        }
-
-        template <class TValue>
-        TBuilder& Metadata(const std::string& key, const TValue& value)
-        {
-            Descriptor->Metadata[key] = std::to_string(value);
-            return *reinterpret_cast<TBuilder*>(this);
-        }
-
-        TBuilder& DisplayName(const std::string& displayName)
-        {
-            Descriptor->DisplayName = displayName;
-            return *reinterpret_cast<TBuilder*>(this);
-        }
 
         TBuilder& Category(const std::string& category)
         {

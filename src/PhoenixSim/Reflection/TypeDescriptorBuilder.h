@@ -1,9 +1,9 @@
 #pragma once
 
-#include "MethodDescriptorString.h"
 #include "PhoenixSim/Reflection/FieldAccessor.h"
 #include "PhoenixSim/Reflection/FieldDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/MethodDescriptorBuilder.h"
+#include "PhoenixSim/Reflection/MethodDescriptorString.h"
 #include "PhoenixSim/Reflection/PropertyAccessor.h"
 #include "PhoenixSim/Reflection/PropertyDescriptorBuilder.h"
 #include "PhoenixSim/Reflection/TypeDescriptor.h"
