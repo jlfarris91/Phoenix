@@ -200,4 +200,10 @@
       </ArrayItems>
     </Expand>
   </Type>
+
+  <!-- Visualizer for Variant -->
+  <Type Name="Phoenix::Variant">
+    <DisplayString>{ToString()}</DisplayString>
+  </Type>
+
 </AutoVisualizer>

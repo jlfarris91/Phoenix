@@ -139,6 +139,89 @@ void DrawPropertyEditor(
             }
         }
     }
+
+    if (type.IsEnumFlags())
+    {
+        std::string previewValue = type.ToString(obj);
+
+        if (ImGui::BeginCombo("##Editor", previewValue.c_str()))
+        {
+            const auto& enumValues = type.GetEnumValues();
+
+            std::unordered_set<uint32> flagIndices;
+            std::unordered_set<uint32> newFlagIndices;
+
+            for (const auto& enumFlagValue : enumValues)
+            {
+                if (type.HasEnumFlag(obj, enumFlagValue.GetValue().GetData()))
+                {
+                    flagIndices.insert(enumFlagValue.GetIndex());
+                }
+            }
+
+            for (const auto& enumFlagValue : enumValues)
+            {
+                bool checked = flagIndices.contains(enumFlagValue.GetIndex());
+                if (ImGui::Checkbox(enumFlagValue.GetDisplayName().c_str(), &checked) && checked)
+                {
+                    newFlagIndices.insert(enumFlagValue.GetIndex());
+                }
+            }
+
+            ImGui::EndCombo();
+
+            if (newFlagIndices != flagIndices)
+            {
+                Variant newValue(*type.GetEnumUnderlyingType());
+                for (uint32 flagIdx : newFlagIndices)
+                {
+                    type.SetEnumFlag(newValue.GetData(), enumValues[flagIdx].GetValue().GetData());
+                }
+                callback(newValue.GetData());
+            }
+        }
+    }
+    else if (type.IsEnum())
+    {
+        std::string previewValue = type.ToString(obj);
+
+        if (ImGui::BeginCombo("##Editor", previewValue.c_str()))
+        {
+            TOptional<uint32> selectedIndex;
+            TOptional<uint32> newSelectedIndex;
+
+            if (auto enumValueDescriptor = type.GetEnumValueDescriptor(obj))
+            {
+                selectedIndex = enumValueDescriptor->GetIndex();
+            }
+
+            const auto& enumValues = type.GetEnumValues();
+            for (uint32 i = 0; i < enumValues.size(); ++i)
+            {
+                const bool selected = selectedIndex.IsSet() && selectedIndex.Get() == i;
+
+                if (ImGui::Selectable(enumValues[i].GetDisplayName().c_str(), selected))
+                {
+                    newSelectedIndex = i;
+                }
+
+                if (selected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+
+            ImGui::EndCombo();
+
+            if (newSelectedIndex != selectedIndex &&
+                newSelectedIndex.IsSet() &&
+                newSelectedIndex.Get() < enumValues.size())
+            {
+                const EnumValueDescriptor& descriptor = enumValues[newSelectedIndex.Get()];
+                callback(descriptor.GetValue().GetData());
+            }
+        }
+    }
 }
 
 void DrawFieldDescriptor(void* obj, const FieldDescriptor& field, uint32 depth)

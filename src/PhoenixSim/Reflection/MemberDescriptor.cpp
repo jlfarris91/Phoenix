@@ -2,21 +2,6 @@
 
 #include "PhoenixSim/Flags.h"
 
-const std::string& Phoenix::MemberDescriptor::GetName() const
-{
-    return Name;
-}
-
-const std::string& Phoenix::MemberDescriptor::GetDisplayName() const
-{
-    return DisplayName.empty() ? GetName() : DisplayName;
-}
-
-void Phoenix::MemberDescriptor::SetDisplayName(const std::string& displayName)
-{
-    DisplayName = displayName;
-}
-
 const std::string& Phoenix::MemberDescriptor::GetCategory() const
 {
     return Category;
@@ -35,11 +20,6 @@ Phoenix::int32 Phoenix::MemberDescriptor::GetSortOrder() const
 void Phoenix::MemberDescriptor::SetSortOrder(int32 sortOrder)
 {
     SortOrder = sortOrder;
-}
-
-const std::unordered_map<std::string, std::string>& Phoenix::MemberDescriptor::GetMetadata() const
-{
-    return Metadata;
 }
 
 Phoenix::EMemberDescriptorFlags Phoenix::MemberDescriptor::GetFlags() const

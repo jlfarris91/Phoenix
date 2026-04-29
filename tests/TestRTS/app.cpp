@@ -105,7 +105,9 @@ using PhoenixColor = Phoenix::Color;
 
 // ===== Phoenix Session Globals =====
 std::shared_ptr<Session> GSession;
-bool GSessionThreadWantsExit = false;
+std::atomic GTickSession = true;
+std::atomic GWantsSessionStep = 0u;
+std::atomic GSessionThreadWantsExit = false;
 std::thread* GSessionThread = nullptr;
 
 // ===== Rendering Globals =====
@@ -265,8 +267,15 @@ void SessionWorker()
     GSessionThreadWantsExit = false;
     while (!GSessionThreadWantsExit)
     {
-        TickSession();
-        //Sleep(10);
+        if (GTickSession || GWantsSessionStep)
+        {
+            TickSession();
+
+            if (GWantsSessionStep)
+            {
+                --GWantsSessionStep;
+            }
+        }
     }
 }
 
@@ -643,10 +652,36 @@ void RenderPhoenixUI()
             ImGui::EndTable();
         }
 
+        // Session play controls
         {
             static constexpr double kMinSpeed = 0.1f;
             static constexpr double kMaxSpeed = 16.0f;
             ImGui::DragScalar("Sim Speed", ImGuiDataType_Double, &GSimSpeed, 0.25, &kMinSpeed, &kMaxSpeed);
+            ImGui::SameLine();
+
+            if (GTickSession)
+            {
+                if (ImGui::SmallButton("Pause"))
+                {
+                    GTickSession = false;
+                }
+            }
+            else
+            {
+                if (ImGui::SmallButton("Play"))
+                {
+                    GTickSession = true;
+                }
+            }
+
+            ImGui::SameLine();
+
+            ImGui::BeginDisabled(GTickSession);
+            if (ImGui::ArrowButton("Step", ImGuiDir_Right))
+            {
+                GWantsSessionStep = 1;
+            }
+            ImGui::EndDisabled();
         }
 
         bool copyWorld = GWorldView.IsEnabled();

@@ -1,9 +1,6 @@
 #pragma once
 
-#include <string>
-#include <unordered_map>
-
-#include "PhoenixSim/Platform.h"
+#include "PhoenixSim/Reflection/BaseDescriptor.h"
 
 namespace Phoenix
 {
@@ -19,23 +16,15 @@ namespace Phoenix
         ScriptHidden    = 64,
     };
 
-    class PHOENIX_SIM_API MemberDescriptor
+    class PHOENIX_SIM_API MemberDescriptor : public BaseDescriptor
     {
     public:
-        virtual ~MemberDescriptor() = default;
-
-        const std::string& GetName() const;
-
-        const std::string& GetDisplayName() const;
-        void SetDisplayName(const std::string& displayName);
 
         const std::string& GetCategory() const;
         void SetCategory(const std::string& category);
 
         int32 GetSortOrder() const;
         void SetSortOrder(int32 sortOrder);
-
-        const std::unordered_map<std::string, std::string>& GetMetadata() const;
 
         EMemberDescriptorFlags GetFlags() const;
 
@@ -47,11 +36,8 @@ namespace Phoenix
 
     // protected:
 
-        std::string Name;
-        std::string DisplayName;
         std::string Category;
         int32 SortOrder = 0;
-        std::unordered_map<std::string, std::string> Metadata;
         EMemberDescriptorFlags Flags = EMemberDescriptorFlags::None;
     };
 }
