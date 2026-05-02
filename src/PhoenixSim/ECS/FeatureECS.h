@@ -707,7 +707,6 @@ namespace Phoenix::ECS
     private:
 
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
-        void Shutdown() override;
 
         void OnPreUpdate(const FeatureUpdateArgs& args) override;
         void OnUpdate(const FeatureUpdateArgs& args) override;

@@ -47,16 +47,6 @@ void FeatureLua::EnqueueScript(std::string code)
     ScriptQueue.push_back(std::move(code));
 }
 
-void FeatureLua::Initialize(const std::shared_ptr<Phoenix::Session>& session)
-{
-    IFeature::Initialize(session);
-}
-
-void FeatureLua::Shutdown()
-{
-    IFeature::Shutdown();
-}
-
 // ── World lifecycle ───────────────────────────────────────────────────────────
 
 void FeatureLua::OnWorldInitialize(WorldRef world)

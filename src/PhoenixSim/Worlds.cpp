@@ -188,8 +188,13 @@ WorldManager::WorldManager(const WorldManagerCtorArgs& args)
     ConfigService = Session->GetServiceAs<IConfigService>();
 }
 
-WorldManager::~WorldManager()
+void WorldManager::Shutdown()
 {
+    for (const WorldSharedPtr& world : Worlds)
+    {
+        ShutdownWorld(*world);
+    }
+    Worlds.clear();
 }
 
 WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)

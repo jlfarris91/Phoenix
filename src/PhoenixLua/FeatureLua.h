@@ -44,9 +44,6 @@ namespace Phoenix
         // Thread-safe: enqueues a Lua snippet to execute on the next world update.
         void EnqueueScript(std::string code);
 
-        void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
-        void Shutdown() override;
-
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
         void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;

@@ -17,8 +17,8 @@ void Phoenix::RTS::IEffectHandler::Initialize(const std::shared_ptr<Phoenix::Ses
 
 void Phoenix::RTS::IEffectHandler::Shutdown()
 {
-    IService::Shutdown();
     EffectsFeature.reset();
+    IService::Shutdown();
 }
 
 bool Phoenix::RTS::IEffectHandler::Execute(WorldRef world, const EffectExecuteContext& context) const

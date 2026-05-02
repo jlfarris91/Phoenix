@@ -357,6 +357,8 @@ void FeatureUnit::Shutdown()
     }
 
     UnitSystem.reset();
+
+    IFeature::Shutdown();
 }
 
 bool FeatureUnit::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args)

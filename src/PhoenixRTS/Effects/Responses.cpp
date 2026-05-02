@@ -20,8 +20,8 @@ void IResponseHandler::Initialize(const std::shared_ptr<Phoenix::Session>& sessi
 
 void IResponseHandler::Shutdown()
 {
-    IService::Shutdown();
     EffectsFeature.reset();
+    IService::Shutdown();
 }
 
 FName IResponseHandler::GetResponseId() const

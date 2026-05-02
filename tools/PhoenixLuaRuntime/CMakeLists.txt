@@ -199,6 +199,7 @@ function(add_lua_wasm_script)
             -I "${CMAKE_CURRENT_FUNCTION_LIST_DIR}"
             # Lua configuration
             -DLUA_32BITS                        # 32-bit ints/floats for determinism
+            -Wno-macro-redefined                # luaconf.h re-defines LUA_32BITS unconditionally
             # Emscripten WASM flags
             --no-entry                          # no main()
             -sSTANDALONE_WASM=1                # pure .wasm, no JS glue

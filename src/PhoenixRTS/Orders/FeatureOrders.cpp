@@ -329,8 +329,6 @@ void FeatureOrders::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 
 void FeatureOrders::Shutdown()
 {
-    IFeature::Shutdown();
-
     while (!CommandIdToHandlerMap.empty())
     {
         UnregisterCommandHandler(CommandIdToHandlerMap.begin()->first);
@@ -338,6 +336,8 @@ void FeatureOrders::Shutdown()
 
     std::shared_ptr<FeatureECS> featureECS = Session->GetFeature<FeatureECS>();
     featureECS->OnEntityReleasing().RemoveAll(this);
+
+    IFeature::Shutdown();
 }
 
 void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)

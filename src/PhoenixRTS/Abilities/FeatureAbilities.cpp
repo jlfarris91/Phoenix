@@ -163,8 +163,6 @@ void FeatureAbilities::Initialize(const std::shared_ptr<Phoenix::Session>& sessi
 
 void FeatureAbilities::Shutdown()
 {
-    IFeature::Shutdown();
-
     while (!AbilityIdToHandlerMap.empty())
     {
         UnregisterAbilityHandler(AbilityIdToHandlerMap.begin()->first);
@@ -172,6 +170,8 @@ void FeatureAbilities::Shutdown()
 
     Session->GetFeature<FeatureECS>()->OnEntityReleasing().Remove(EntityReleasingHandle);
     EntityReleasingHandle = {};
+
+    IFeature::Shutdown();
 }
 
 void FeatureAbilities::OnEntityReleasing(WorldRef world, EntityId entity)

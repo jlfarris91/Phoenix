@@ -17,8 +17,8 @@ void Phoenix::RTS::ICommandHandler::Initialize(const std::shared_ptr<Phoenix::Se
 
 void Phoenix::RTS::ICommandHandler::Shutdown()
 {
-    IService::Shutdown();
     OrdersFeature.reset();
+    IService::Shutdown();
 }
 
 bool Phoenix::RTS::ICommandHandler::IgnoreCommand(

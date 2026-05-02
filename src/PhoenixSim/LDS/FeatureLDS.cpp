@@ -143,8 +143,6 @@ void FeatureLDS::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 
 void FeatureLDS::Shutdown()
 {
-    IFeature::Shutdown();
-
     // All world query contexts should have been freed at this point.
     PHX_ASSERT(WorldQueryContexts.empty());
 
@@ -155,6 +153,8 @@ void FeatureLDS::Shutdown()
 
     // Unload the session catalog
     StaticSessionCatalog.reset();
+
+    IFeature::Shutdown();
 }
 
 void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
@@ -210,14 +210,12 @@ void FeatureLDS::OnWorldShutdown(WorldRef world)
     if (staticCatalogIter != StaticWorldCatalogs.end())
     {
         StaticWorldCatalogs.erase(staticCatalogIter);
-        staticCatalogIter->second.reset();
     }
 
     auto queryContextIter = WorldQueryContexts.find(world.GetId());
     if (queryContextIter != WorldQueryContexts.end())
     {
         WorldQueryContexts.erase(queryContextIter);
-        queryContextIter->second.reset();
     }
 }
 

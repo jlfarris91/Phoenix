@@ -95,6 +95,8 @@ void Session::Initialize()
 
 void Session::Shutdown()
 {
+    WorldManager->Shutdown();
+
     for (const std::shared_ptr<IService>& service : ServiceContainer->GetServices())
     {
         service->Shutdown();

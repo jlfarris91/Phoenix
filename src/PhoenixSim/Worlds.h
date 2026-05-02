@@ -150,7 +150,8 @@ namespace Phoenix
     {
     public:
         WorldManager(const WorldManagerCtorArgs& args);
-        ~WorldManager();
+
+        void Shutdown();
 
         // Create a new world.
         WorldSharedPtr NewWorld(const NewWorldArgs& args);

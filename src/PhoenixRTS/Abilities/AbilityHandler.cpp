@@ -42,8 +42,8 @@ void IAbilityHandler::Initialize(const std::shared_ptr<Phoenix::Session>& sessio
 
 void IAbilityHandler::Shutdown()
 {
-    ICommandHandler::Shutdown();
     AbilitiesFeature.reset();
+    ICommandHandler::Shutdown();
 }
 
 bool IAbilityHandler::AddAbility(WorldRef world, const UnitId& unit) const

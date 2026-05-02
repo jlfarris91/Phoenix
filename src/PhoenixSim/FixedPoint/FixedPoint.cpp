@@ -4,8 +4,9 @@
 
 using namespace Phoenix;
 
-// MSVC produces a corrupt COFF when a TU contains only static_asserts (no symbols).
-namespace { volatile int sFixedPointAssertionAnchor = 0; }
+// MSVC produces a corrupt COFF when a TU has no external-linkage symbols.
+// Anonymous-namespace variables are internal linkage and can still trigger the bug.
+namespace Phoenix { void FixedPointAssertionsAnchor_() {} }
 
 static_assert(BitWidth(1) == 1);
 static_assert(BitWidth(3) == 2);

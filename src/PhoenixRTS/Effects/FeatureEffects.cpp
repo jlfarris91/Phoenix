@@ -598,8 +598,6 @@ void FeatureEffects::Initialize(const std::shared_ptr<Phoenix::Session>& session
 
 void FeatureEffects::Shutdown()
 {
-    IFeature::Shutdown();
-
     while (!ResponseIdToHandlerMap.empty())
     {
         UnregisterResponseHandler(ResponseIdToHandlerMap.begin()->first);
@@ -616,6 +614,8 @@ void FeatureEffects::Shutdown()
     }
 
     PeriodicEffectSystem.reset();
+
+    IFeature::Shutdown();
 }
 
 void FeatureEffects::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)

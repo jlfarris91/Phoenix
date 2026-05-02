@@ -279,10 +279,10 @@ void FeatureSteering::Initialize(const std::shared_ptr<Phoenix::Session>& sessio
 
 void FeatureSteering::Shutdown()
 {
-    IFeature::Shutdown();
-
     std::shared_ptr<FeatureECS> featureECS = Session->GetFeatureSet()->GetFeature<FeatureECS>();
     featureECS->UnregisterSystem(SteeringSystem);
+    
+    IFeature::Shutdown();
 }
 
 bool FeatureSteering::OnHandleWorldAction(WorldRef world, const FeatureActionArgs& action)

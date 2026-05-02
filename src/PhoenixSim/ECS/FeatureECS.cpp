@@ -980,11 +980,6 @@ void FeatureECS::Initialize(const std::shared_ptr<Phoenix::Session>& session)
     }
 }
 
-void FeatureECS::Shutdown()
-{
-    IFeature::Shutdown();
-}
-
 void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
 {
     PHX_PROFILE_ZONE_SCOPED;
