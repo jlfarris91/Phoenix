@@ -68,6 +68,16 @@ UnitId FeatureUnit::SpawnUnit(
     steeringComp->CollisionMask = (uint32)dataPtr.CollisionFlags().GetValue(lds);
     steeringComp->InnerRadius = dataPtr.Placement().InnerRadius().GetValue(lds);
     steeringComp->OuterRadius = dataPtr.Placement().OuterRadius().GetValue(lds);
+    steeringComp->PreviousPos = transformComp->Transform.Position;
+    SetFlagRef(steeringComp->Flags, ESteerFlags::Active);
+
+    // TODO (jfarris): team != player
+    steeringComp->Team = owner;
+
+    if (dataPtr.Movement().LockFacing().GetValue(lds))
+    {
+        SetFlagRef(steeringComp->Flags, ESteerFlags::LockFacing);
+    }
 
     Data::FootprintPtr footprint;
     if (dataPtr.Placement().Footprint().TryResolveObject(lds, footprint))

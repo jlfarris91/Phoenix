@@ -4,15 +4,17 @@ namespace Phoenix
 {
     std::unordered_map<hash32_t, std::unique_ptr<TypeDescriptor>>& TypeRegistry::GetMap()
     {
-        // Meyers singleton — safe for use during static initialization across TUs.
-        static std::unordered_map<hash32_t, std::unique_ptr<TypeDescriptor>> map;
-        return map;
+        // Heap-allocated and never freed: Variant::DestructActive calls TypeRegistry::Get()
+        // during its own destruction, which can re-enter GetMap() while the Meyers singleton
+        // is mid-teardown. An immortal singleton avoids that use-after-destruction crash.
+        static auto* map = new std::unordered_map<hash32_t, std::unique_ptr<TypeDescriptor>>();
+        return *map;
     }
 
     std::unordered_map<hash32_t, TypeDescriptor*>& TypeRegistry::GetAliasMap()
     {
-        static std::unordered_map<hash32_t, TypeDescriptor*> aliasMap;
-        return aliasMap;
+        static auto* aliasMap = new std::unordered_map<hash32_t, TypeDescriptor*>();
+        return *aliasMap;
     }
 
     const TypeDescriptor* TypeRegistry::Get(FName typeId)

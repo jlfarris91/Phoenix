@@ -223,7 +223,7 @@ namespace Phoenix::Physics::PhysicsSystemDetail
     {
         PHX_PROFILE_ZONE_SCOPED;
 
-        FeaturePhysicsScratchBlock& scratchBlock = world.GetBlockRef<FeaturePhysicsScratchBlock>();
+        FeaturePhysicsScratchBlock& scratchBlock = world.GetBufferUnsafe().GetBlockRef<FeaturePhysicsScratchBlock>();
 
         for (uint32 i = 0; i < count; ++i)
         {

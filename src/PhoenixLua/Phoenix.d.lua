@@ -395,14 +395,16 @@ Phoenix.ScriptOptional_unsigned_int = {}
 function Phoenix.ScriptOptional_unsigned_int.new(t) end
 
 ---@class Phoenix.Steering.SteeringComponent
----@field PreviousPos Phoenix.Vec2
----@field Velocity Phoenix.Vec2
+---@field SpreadingSlack number
 ---@field Mode integer
 ---@field GoalPos Phoenix.Vec2
 ---@field Flags integer
+---@field Team integer
 ---@field CollisionMask integer
 ---@field GoalEntity integer
 ---@field Slack number
+---@field Velocity Phoenix.Vec2
+---@field PreviousPos Phoenix.Vec2
 ---@field BestPos Phoenix.Vec2
 ---@field InnerRadius number
 ---@field OuterRadius number
@@ -418,7 +420,7 @@ function Phoenix.ScriptOptional_unsigned_int.new(t) end
 ---@field SeparationStrength number
 Phoenix.Steering.SteeringComponent = {}
 
----@param t? {PreviousPos?: Phoenix.Vec2, Velocity?: Phoenix.Vec2, Mode?: integer, GoalPos?: Phoenix.Vec2, Flags?: integer, CollisionMask?: integer, GoalEntity?: integer, Slack?: number, BestPos?: Phoenix.Vec2, InnerRadius?: number, OuterRadius?: number, ArrivalRange?: number, MaxSpeed?: number, TurnRateIdle?: number, TurnRateMoving?: number, AccelerationTime?: number, DecelerationTime?: number, AvoidanceRadius?: number, SeparationDelay?: number, SeparationRadius?: number, SeparationStrength?: number}
+---@param t? {SpreadingSlack?: number, Mode?: integer, GoalPos?: Phoenix.Vec2, Flags?: integer, Team?: integer, CollisionMask?: integer, GoalEntity?: integer, Slack?: number, Velocity?: Phoenix.Vec2, PreviousPos?: Phoenix.Vec2, BestPos?: Phoenix.Vec2, InnerRadius?: number, OuterRadius?: number, ArrivalRange?: number, MaxSpeed?: number, TurnRateIdle?: number, TurnRateMoving?: number, AccelerationTime?: number, DecelerationTime?: number, AvoidanceRadius?: number, SeparationDelay?: number, SeparationRadius?: number, SeparationStrength?: number}
 ---@return Phoenix.Steering.SteeringComponent
 function Phoenix.Steering.SteeringComponent.new(t) end
 

@@ -1,7 +1,9 @@
 #include "FeatureDebug.h"
 
 #include "Debug.h"
+#include "DebugCommands.h"
 #include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/Strings/FeatureString.h"
 
 using namespace Phoenix;
@@ -99,6 +101,18 @@ void FeatureDebug::OnWorldInitialize(WorldRef world)
     {
         color = Color(random.Next<uint8>() % 255, random.Next<uint8>() % 255, random.Next<uint8>() % 255, 255);
     }
+
+    ECS::FeatureECS::RegisterCommandHandler<Debug::Commands::DrawRay>(world,
+        [](WorldRef w, const Debug::Commands::DrawRay& cmd)
+        {
+            DrawRay(w, cmd.Start, cmd.Dir, cmd.Color);
+        });
+
+    ECS::FeatureECS::RegisterCommandHandler<Debug::Commands::DrawCircle>(world,
+        [](WorldRef w, const Debug::Commands::DrawCircle& cmd)
+        {
+            DrawCircle(w, cmd.Center, cmd.Radius, cmd.Color);
+        });
 }
 
 void FeatureDebug::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)

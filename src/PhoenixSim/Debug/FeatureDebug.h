@@ -19,6 +19,7 @@ namespace Phoenix
         PHX_DECLARE_FEATURE_TYPE(FeatureDebug)
         {
             FEATURE_WORLD_BLOCK(FeatureDebugScratchBlock, EBufferBlockType::Scratch)
+            FEATURE_CHANNEL(FeatureChannels::WorldInitialize)
             FEATURE_CHANNEL(FeatureChannels::PreWorldUpdate)
             FEATURE_CHANNEL(FeatureChannels::DebugRender)
         }

@@ -5,6 +5,7 @@
 #include "PhoenixSim/ECS/Component.h"
 #include "PhoenixSim/ECS/EntityId.h"
 #include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix::Steering
 {
@@ -12,18 +13,24 @@ namespace Phoenix::Steering
     {
         Idle,
         Move,
-        Turn
+        Turn,
+        Hold
     };
 
     enum class PHOENIX_STEERING_API ESteerFlags
     {
-        None = 0,
-        SeekingGoal = 1,
-        ArrivedAtGoal = 2,
-        Active = 4,
-        LockFacing = 8,
-        FailedPathPlan = 16,
-        Holding = 32
+        None            = 0x0,
+        Active          = 0x1,
+        SeekingGoal     = 0x2,
+        ArrivedAtGoal   = 0x4,
+        FailedPathPlan  = 0x8,
+        LockFacing      = 0x10,
+        SteeringLeft    = 0x20,
+        SteeringRight   = 0x40,
+        Bumped          = 0x80,
+        Followed        = 0x100,
+        Attached        = 0x200,
+        Hidden          = 0x400,
     };
 
     struct PHOENIX_STEERING_API SteeringComponent : ECS::IComponent
@@ -34,12 +41,15 @@ namespace Phoenix::Steering
         ESteerFlags Flags = ESteerFlags::Active;
 
         uint32 CollisionMask = 0;
+        uint32 Team = 0;
 
         ECS::EntityId GoalEntity;
         Vec2 GoalPos;
 
         Vec2 StepPos[2];
+
         Distance Slack;
+        Distance SpreadingSlack;
 
         Vec2 Velocity;
         Vec2 PreviousPos;
@@ -75,31 +85,67 @@ namespace Phoenix::Steering
 
         // The strength of the separation force.
         Value SeparationStrength;
+
+        uint8 PushPriorityAlly = 0;
+        uint8 PushPriorityGlobal = 0;
+        uint8 PriorityPushed = 0;
     };
+}
+
+PHX_DEFINE_ENUM(Phoenix::Steering::ESteerMode)
+{
+    using namespace Phoenix::Steering;
+    registration
+        .Value("Idle", ESteerMode::Idle)
+        .Value("Move", ESteerMode::Move)
+        .Value("Turn", ESteerMode::Turn)
+        .Value("Hold", ESteerMode::Hold);
+}
+
+PHX_DEFINE_ENUM(Phoenix::Steering::ESteerFlags)
+{
+    using namespace Phoenix::Steering;
+    registration
+        .EnumFlags()
+        .Value("None",              ESteerFlags::None)
+        .Value("Active",            ESteerFlags::Active)
+        .Value("SeekingGoal",       ESteerFlags::SeekingGoal)
+        .Value("ArrivedAtGoal",     ESteerFlags::ArrivedAtGoal)
+        .Value("FailedPathPlan",    ESteerFlags::FailedPathPlan)
+        .Value("LockFacing",        ESteerFlags::LockFacing)
+        .Value("SteeringLeft",      ESteerFlags::SteeringLeft)
+        .Value("SteeringRight",     ESteerFlags::SteeringRight)
+        .Value("Bumped",            ESteerFlags::Bumped)
+        .Value("Followed",          ESteerFlags::Followed)
+        .Value("Attached",          ESteerFlags::Attached)
+        .Value("Hidden",            ESteerFlags::Hidden);
 }
 
 PHX_DEFINE_TYPE(Phoenix::Steering::SteeringComponent)
 {
+    using namespace Phoenix::Steering;
     registration
-        .Field("Mode",              &Steering::SteeringComponent::Mode)
-        .Field("Flags",             &Steering::SteeringComponent::Flags)
-        .Field("CollisionMask",     &Steering::SteeringComponent::CollisionMask)
-        .Field("GoalEntity",        &Steering::SteeringComponent::GoalEntity)
-        .Field("GoalPos",           &Steering::SteeringComponent::GoalPos)
-        .Field("Slack",             &Steering::SteeringComponent::Slack)
-        .Field("Velocity",          &Steering::SteeringComponent::Velocity)
-        .Field("PreviousPos",       &Steering::SteeringComponent::PreviousPos)
-        .Field("BestPos",           &Steering::SteeringComponent::BestPos)
-        .Field("InnerRadius",       &Steering::SteeringComponent::InnerRadius)
-        .Field("OuterRadius",       &Steering::SteeringComponent::OuterRadius)
-        .Field("ArrivalRange",      &Steering::SteeringComponent::ArrivalRange)
-        .Field("MaxSpeed",          &Steering::SteeringComponent::MaxSpeed)
-        .Field("TurnRateIdle",      &Steering::SteeringComponent::TurnRateIdle)
-        .Field("TurnRateMoving",    &Steering::SteeringComponent::TurnRateMoving)
-        .Field("AccelerationTime",  &Steering::SteeringComponent::AccelerationTime)
-        .Field("DecelerationTime",  &Steering::SteeringComponent::DecelerationTime)
-        .Field("AvoidanceRadius",   &Steering::SteeringComponent::AvoidanceRadius)
-        .Field("SeparationDelay",   &Steering::SteeringComponent::SeparationDelay)
-        .Field("SeparationRadius",  &Steering::SteeringComponent::SeparationRadius)
-        .Field("SeparationStrength",&Steering::SteeringComponent::SeparationStrength);
+        .Field("Mode",              &SteeringComponent::Mode)
+        .Field("Flags",             &SteeringComponent::Flags)
+        .Field("CollisionMask",     &SteeringComponent::CollisionMask)
+        .Field("Team",              &SteeringComponent::Team)
+        .Field("GoalEntity",        &SteeringComponent::GoalEntity)
+        .Field("GoalPos",           &SteeringComponent::GoalPos)
+        .Field("Slack",             &SteeringComponent::Slack)
+        .Field("SpreadingSlack",    &SteeringComponent::SpreadingSlack)
+        .Field("Velocity",          &SteeringComponent::Velocity)
+        .Field("PreviousPos",       &SteeringComponent::PreviousPos)
+        .Field("BestPos",           &SteeringComponent::BestPos)
+        .Field("InnerRadius",       &SteeringComponent::InnerRadius)
+        .Field("OuterRadius",       &SteeringComponent::OuterRadius)
+        .Field("ArrivalRange",      &SteeringComponent::ArrivalRange)
+        .Field("MaxSpeed",          &SteeringComponent::MaxSpeed)
+        .Field("TurnRateIdle",      &SteeringComponent::TurnRateIdle)
+        .Field("TurnRateMoving",    &SteeringComponent::TurnRateMoving)
+        .Field("AccelerationTime",  &SteeringComponent::AccelerationTime)
+        .Field("DecelerationTime",  &SteeringComponent::DecelerationTime)
+        .Field("AvoidanceRadius",   &SteeringComponent::AvoidanceRadius)
+        .Field("SeparationDelay",   &SteeringComponent::SeparationDelay)
+        .Field("SeparationRadius",  &SteeringComponent::SeparationRadius)
+        .Field("SeparationStrength",&SteeringComponent::SeparationStrength);
 }

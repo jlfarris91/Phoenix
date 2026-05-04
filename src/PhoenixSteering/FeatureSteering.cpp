@@ -10,7 +10,19 @@ using namespace Phoenix;
 using namespace Phoenix::ECS;
 using namespace Phoenix::Steering;
 
-bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, const Vec2& target, Distance range)
+bool FeatureSteering::CanMove(WorldConstRef world, EntityId entity)
+{
+    const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    return steerComp && steerComp->MaxSpeed > 0 && steerComp->Mode != ESteerMode::Hold;
+}
+
+bool FeatureSteering::CanTurn(WorldConstRef world, EntityId entity)
+{
+    const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
+    return steerComp && (steerComp->TurnRateIdle > 0 || steerComp->TurnRateMoving > 0);
+}
+
+bool FeatureSteering::MoveToLocation(WorldRef world, EntityId entity, const Vec2& target, Distance range)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -23,12 +35,16 @@ bool FeatureSteering::MoveToLocation(WorldRef world, const EntityId& entity, con
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->ArrivalRange = range;
     steerComp->Slack = 0;
+    steerComp->SpreadingSlack = 0;
     steerComp->BestPos = Vec2::Max;
+    steerComp->PreviousPos = FeatureECS::GetWorldPosition(world, entity);
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SteeringLeft);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SteeringRight);
     return true;
 }
 
-bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const EntityId& target, Distance range)
+bool FeatureSteering::FollowEntity(WorldRef world, EntityId entity, EntityId target, Distance range)
 {
     if (!FeatureECS::IsEntityValid(world, target))
     {
@@ -46,12 +62,16 @@ bool FeatureSteering::FollowEntity(WorldRef world, const EntityId& entity, const
     steerComp->GoalPos = Vec2::Zero;
     steerComp->ArrivalRange = range;
     steerComp->Slack = 0;
+    steerComp->SpreadingSlack = 0;
     steerComp->BestPos = Vec2::Max;
+    steerComp->PreviousPos = FeatureECS::GetWorldPosition(world, entity);
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SteeringLeft);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SteeringRight);
     return true;
 }
 
-bool FeatureSteering::IsMoving(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::IsMoving(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -62,7 +82,7 @@ bool FeatureSteering::IsMoving(WorldConstRef world, const EntityId& entity)
     return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
-bool FeatureSteering::HasFinishedMoving(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::HasFinishedMoving(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -73,7 +93,7 @@ bool FeatureSteering::HasFinishedMoving(WorldConstRef world, const EntityId& ent
     return steerComp->Mode == ESteerMode::Move && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
-bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const EntityId& target)
+bool FeatureSteering::TurnToFace(WorldRef world, EntityId entity, EntityId target)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -85,12 +105,13 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const E
     steerComp->GoalPos = Vec2::Zero;
     steerComp->GoalEntity = target;
     steerComp->Slack = 0;
+    steerComp->SpreadingSlack = 0;
     steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
-bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const Vec2& target)
+bool FeatureSteering::TurnToFace(WorldRef world, EntityId entity, const Vec2& target)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -102,12 +123,13 @@ bool FeatureSteering::TurnToFace(WorldRef world, const EntityId& entity, const V
     steerComp->GoalPos = target;
     steerComp->GoalEntity = EntityId::Invalid;
     steerComp->Slack = 0;
+    steerComp->SpreadingSlack = 0;
     steerComp->BestPos = Vec2::Max;
     SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, true);
     return true;
 }
 
-bool FeatureSteering::IsTurning(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::IsTurning(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -118,7 +140,7 @@ bool FeatureSteering::IsTurning(WorldConstRef world, const EntityId& entity)
     return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
-bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::HasFinishedTurning(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -129,13 +151,13 @@ bool FeatureSteering::HasFinishedTurning(WorldConstRef world, const EntityId& en
     return steerComp->Mode == ESteerMode::Turn && HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
-TOptional<ESteerMode> FeatureSteering::GetSteeringMode(WorldConstRef world, const EntityId& entity)
+TOptional<ESteerMode> FeatureSteering::GetSteeringMode(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     return steerComp ? steerComp->Mode : TOptional<ESteerMode>();
 }
 
-bool FeatureSteering::IsSeekingGoal(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::IsSeekingGoal(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -146,7 +168,7 @@ bool FeatureSteering::IsSeekingGoal(WorldConstRef world, const EntityId& entity)
     return HasAnyFlags(steerComp->Flags, ESteerFlags::SeekingGoal);
 }
 
-bool FeatureSteering::HasArrivedAtGoal(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::HasArrivedAtGoal(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -157,7 +179,7 @@ bool FeatureSteering::HasArrivedAtGoal(WorldConstRef world, const EntityId& enti
     return HasAnyFlags(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
 }
 
-bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
+bool FeatureSteering::Stop(WorldRef world, EntityId entity)
 {
     SteeringComponent* steerComp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!steerComp)
@@ -167,21 +189,24 @@ bool FeatureSteering::Stop(WorldRef world, const EntityId& entity)
 
     steerComp->Mode = ESteerMode::Idle;
     steerComp->GoalEntity = EntityId::Invalid;
-    steerComp->GoalPos = Vec2::Zero;
+    // steerComp->GoalPos = Vec2::Zero;
     steerComp->Slack = 0;
+    steerComp->SpreadingSlack = 0;
     steerComp->BestPos = Vec2::Max;
-    SetFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal, false);
-    SetFlagRef(steerComp->Flags, ESteerFlags::ArrivedAtGoal, false);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SeekingGoal);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::ArrivedAtGoal);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SteeringLeft);
+    ClearFlagRef(steerComp->Flags, ESteerFlags::SteeringRight);
     return true;
 }
 
-bool FeatureSteering::IsHolding(WorldConstRef world, const EntityId& entity)
+bool FeatureSteering::IsHolding(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
-    return comp && HasAnyFlags(comp->Flags, ESteerFlags::Holding);
+    return comp && comp->Mode == ESteerMode::Hold;
 }
 
-bool FeatureSteering::SetHolding(WorldRef world, const EntityId& entity, bool holding)
+bool FeatureSteering::SetHolding(WorldRef world, EntityId entity, bool holding)
 {
     SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!comp)
@@ -189,11 +214,11 @@ bool FeatureSteering::SetHolding(WorldRef world, const EntityId& entity, bool ho
         return false;
     }
 
-    SetFlagRef(comp->Flags, ESteerFlags::Holding, holding);
+    comp->Mode = ESteerMode::Hold;
     return true;
 }
 
-bool FeatureSteering::UpdateSpeed(WorldRef world, const EntityId& entity, const SteeringSpeedArgs& args)
+bool FeatureSteering::UpdateSpeed(WorldRef world, EntityId entity, const SteeringSpeedArgs& args)
 {
     SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!comp)
@@ -207,7 +232,7 @@ bool FeatureSteering::UpdateSpeed(WorldRef world, const EntityId& entity, const 
     return true;
 }
 
-Distance FeatureSteering::GetEntityInnerRadius(WorldConstRef world, const EntityId& entity)
+Distance FeatureSteering::GetEntityInnerRadius(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!comp)
@@ -218,7 +243,7 @@ Distance FeatureSteering::GetEntityInnerRadius(WorldConstRef world, const Entity
     return comp->InnerRadius;
 }
 
-Distance FeatureSteering::GetEntityOuterRadius(WorldConstRef world, const EntityId& entity)
+Distance FeatureSteering::GetEntityOuterRadius(WorldConstRef world, EntityId entity)
 {
     const SteeringComponent* comp = FeatureECS::GetComponent<SteeringComponent>(world, entity);
     if (!comp)

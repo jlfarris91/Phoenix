@@ -11,7 +11,7 @@ namespace Phoenix::Steering
     {
         struct PathfindingJob;
         struct SteeringJob;
-        struct CollisionTask;
+        struct IntegrateJob;
     }
 
     class PHOENIX_STEERING_API SteeringSystem : public ECS::ISystem
@@ -20,7 +20,7 @@ namespace Phoenix::Steering
         PHX_DECLARE_TYPE_DERIVED(SteeringSystem, Phoenix::ECS::ISystem)
 
         SteeringSystem();
-        ~SteeringSystem();
+        ~SteeringSystem() override;
 
         void OnWorldInitialize(WorldRef world) override;
         void OnPreWorldUpdate(WorldRef world, const ECS::SystemUpdateArgs& args) override;
@@ -28,6 +28,7 @@ namespace Phoenix::Steering
 
         void OnDebugRender(WorldConstRef world, const IDebugState& state, IDebugRenderer& renderer) override;
 
+        bool DrawDebug = false;
         bool MoveTowardsGoal = true;
 
         double DensityScalar = 0.3;
@@ -42,12 +43,13 @@ namespace Phoenix::Steering
         double SlackRateDivisorSlow = 32.0;
         double MaxSlack = 400.0;
 
+        uint32 MaxLookAheadSteps = 20.0;
+
     private:
-        // Update: pathfinding → steering → collision × 2.
+        // Update: pathfinding → steering → integrate → collision
         std::unique_ptr<SteeringDetail::PathfindingJob> PathfindingJob;
         std::unique_ptr<SteeringDetail::SteeringJob>    SteeringJob;
-        std::unique_ptr<SteeringDetail::CollisionTask>  CollisionTask0;
-        std::unique_ptr<SteeringDetail::CollisionTask>  CollisionTask1;
+        std::unique_ptr<SteeringDetail::IntegrateJob>   IntegrateJob;
     };
 }
 
@@ -55,6 +57,7 @@ PHX_DEFINE_TYPE(Phoenix::Steering::SteeringSystem)
 {
     registration
         .ScriptHidden()
+        .Field("DrawDebug", &Steering::SteeringSystem::DrawDebug)
         .Field("MoveTowardsGoal", &Steering::SteeringSystem::MoveTowardsGoal)
         .Field("DensityScalar", &Steering::SteeringSystem::DensityScalar)
         .Field("DensityRadiusScalar", &Steering::SteeringSystem::DensityRadiusScalar)
@@ -65,5 +68,6 @@ PHX_DEFINE_TYPE(Phoenix::Steering::SteeringSystem)
         .Field("SlackIncreaseRateFast", &Steering::SteeringSystem::SlackIncreaseRateFast)
         .Field("SlackRateDivisor", &Steering::SteeringSystem::SlackRateDivisor)
         .Field("SlackRateDivisorSlow", &Steering::SteeringSystem::SlackRateDivisorSlow)
-        .Field("MaxSlack", &Steering::SteeringSystem::MaxSlack);
+        .Field("MaxSlack", &Steering::SteeringSystem::MaxSlack)
+        .Field("MaxLookAheadSteps", &Steering::SteeringSystem::MaxLookAheadSteps);
 }

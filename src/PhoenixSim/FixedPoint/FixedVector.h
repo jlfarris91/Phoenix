@@ -21,7 +21,7 @@ namespace Phoenix
         static const TVec2 Max;
 
         constexpr TVec2() = default;
-        constexpr TVec2(T xy) : X(xy), Y(xy) {}
+        explicit constexpr TVec2(T xy) : X(xy), Y(xy) {}
         constexpr TVec2(T x, T y) : X(x), Y(y) {}
         constexpr TVec2(const Cordic::TCordicVec<T, T>& vec) : X(vec.X), Y(vec.Y) {}
 
