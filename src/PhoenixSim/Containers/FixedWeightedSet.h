@@ -51,7 +51,7 @@ namespace Phoenix
     template <class T, class TWeight>
     BlockBufferLayout TWeightedSetBase<T, TWeight, FixedStoragePolicy>::StaticLayout(const Config& config)
     {
-        return BlockBufferLayout::For<TWeightedSetBase>().Container<TStorage>(config.Capacity);
+        return BlockBufferLayout::For<TWeightedSetBase>().template Container<TStorage>(config.Capacity);
     }
 
     template <class T, class TWeight, class TRandom, class TStoragePolicy>

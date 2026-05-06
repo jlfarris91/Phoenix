@@ -49,7 +49,7 @@ namespace Phoenix
     template <class T>
     BlockBufferLayout TSortedListBase<T, FixedStoragePolicy>::StaticLayout(const Config& config)
     {
-        return BlockBufferLayout::For<TSortedListBase>().Container<TStorage>(config.Capacity);
+        return BlockBufferLayout::For<TSortedListBase>().template Container<TStorage>(config.Capacity);
     }
 
     template <class T, class TGetItemKey, class TStoragePolicy>

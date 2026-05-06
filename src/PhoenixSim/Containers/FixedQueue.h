@@ -39,7 +39,7 @@ namespace Phoenix
     template <class T>
     BlockBufferLayout TQueueBase<T, FixedStoragePolicy>::StaticLayout(const Config& config)
     {
-        return BlockBufferLayout::For<TQueueBase>().Container<TStorage>(config.Capacity);
+        return BlockBufferLayout::For<TQueueBase>().template Container<TStorage>(config.Capacity);
     }
 
     template <class T, class TStoragePolicy, bool AllowOverwrite = false>

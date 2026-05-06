@@ -46,7 +46,7 @@ namespace Phoenix
     template <class T, class TRank>
     BlockBufferLayout TLeaderboardBase<T, TRank, FixedStoragePolicy>::StaticLayout(const Config& config)
     {
-        return BlockBufferLayout::For<TLeaderboardBase>().Container<TStorage>(config.Capacity);
+        return BlockBufferLayout::For<TLeaderboardBase>().template Container<TStorage>(config.Capacity);
     }
 
     template <class T, class TRank, class TStoragePolicy>

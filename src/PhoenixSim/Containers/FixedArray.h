@@ -41,7 +41,7 @@ namespace Phoenix
     template <class T>
     BlockBufferLayout TArrayBase<T, FixedStoragePolicy>::StaticLayout(const Config& config)
     {
-        return BlockBufferLayout::For<TArrayBase>().Container<TStorage>(config.Capacity);
+        return BlockBufferLayout::For<TArrayBase>().template Container<TStorage>(config.Capacity);
     }
 
     template <class T, class TStoragePolicy>

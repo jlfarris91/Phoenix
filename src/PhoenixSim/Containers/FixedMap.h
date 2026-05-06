@@ -47,7 +47,7 @@ namespace Phoenix
     template <class TKey, class TValue>
     BlockBufferLayout TMapBase<TKey, TValue, FixedStoragePolicy>::StaticLayout(const Config& config)
     {
-        return BlockBufferLayout::For<TMapBase>().Container<TStorage>(config.Capacity);
+        return BlockBufferLayout::For<TMapBase>().template Container<TStorage>(config.Capacity);
     }
 
     template <class TKey, class TValue, class TStoragePolicy, class THasher = std::hash<TKey>>
