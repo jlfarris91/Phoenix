@@ -16,11 +16,9 @@
 
 namespace Phoenix::RTS
 {
-    struct PHOENIX_RTS_API FeatureTimersDynamicBlock : BufferBlockBase
+    struct PHOENIX_RTS_API FeatureTimersDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureTimersDynamicBlock)
-
-        struct Config
         {
             uint32 MaxTimers;
         };
@@ -48,7 +46,7 @@ namespace Phoenix::RTS
 
     protected:
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnPreUpdate(const FeatureUpdateArgs& args) override;
         void OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 

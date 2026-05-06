@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 
 #include "PhoenixSim/Actions.h"
-#include "PhoenixSim/Containers/BlockBuffer.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
 #include "PhoenixSim/Services/Service.h"
 
 namespace Phoenix

@@ -19,53 +19,30 @@ namespace Phoenix
     class TStringTableBase<FixedStoragePolicy, FixedStoragePolicy>
     {
     public:
-        struct Config
+
+        PHX_DECLARE_BLOCK_CONTAINER(TStringTableBase)
         {
             uint32 MaxNumStrings = 0;
             uint32 BufferCapacity = 0;
         };
 
-        TStringTableBase() = default;
-
-        template <class TAllocator>
-        TStringTableBase(TAllocator& allocator, const Config& config)
-            : Configuration(config)
-            , Buffer(allocator, config.BufferCapacity)
-            , NameToIndex(allocator, config.MaxNumStrings)
-        {
-        }
-
-        template <class TAllocator, class TOtherBufferStoragePolicy, class TOtherMapStoragePolicy>
-        TStringTableBase(TAllocator& allocator, const Config& config, const TStringTableBase<TOtherBufferStoragePolicy, TOtherMapStoragePolicy>& other)
-            : Configuration(config)
-            , Buffer(allocator, config.BufferCapacity, other.Buffer)
-            , NameToIndex(allocator, config.MaxNumStrings, other.NameToIndex)
-        {
-        }
-
-        PHX_FORCEINLINE const Config& GetConfig() const
-        {
-            return Configuration;
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(const Config& config)
-        {
-            uint32 allocSize = 0;
-            allocSize += TFixedBuffer::GetAllocSizeBytes(config.BufferCapacity);
-            allocSize += TFixedMap<FName, uint32>::GetAllocSizeBytes(config.MaxNumStrings);
-            return allocSize;
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return GetAllocSizeBytes(Configuration);
-        }
-
     protected:
-        Config Configuration;
         TFixedBuffer Buffer;
         TFixedMap<FName, uint32> NameToIndex;
     };
+
+    inline void TStringTableBase<FixedStoragePolicy, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Buffer.Construct(allocator, config.BufferCapacity);
+        NameToIndex.Construct(allocator, config.MaxNumStrings);
+    }
+
+    inline BlockBufferLayout TStringTableBase<FixedStoragePolicy, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TStringTableBase>()
+            .Container<TFixedBuffer>("Buffer", config.BufferCapacity)
+            .Container<TFixedMap<FName, uint32>>("NameToIndex", config.MaxNumStrings);
+    }
 
     template <class TBufferStoragePolicy, class TMapStoragePolicy>
     class PHOENIX_SIM_API TStringTable : public TStringTableBase<TBufferStoragePolicy, TMapStoragePolicy>

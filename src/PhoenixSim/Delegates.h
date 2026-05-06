@@ -103,10 +103,10 @@ namespace Phoenix
     //
     //
 
-    template <class TFunc, class TUserPolicy, class ...TVars>
+    template <class TFunc, class TUserPolicy, class TFn, class ...TVars>
     class TStaticDelegateInstance;
 
-    template <bool bConst, class T, class TFunc, class TUserPolicy, class ...TVars>
+    template <class T, class TFunc, class TUserPolicy, class TMethodPtr, class ...TVars>
     class TSPDelegateInstance;
 
     template <class TFunctor, class TFunc, class TUserPolicy, class ...TVars>
@@ -118,18 +118,19 @@ namespace Phoenix
     //
     //
 
-    template <class TRet, class ...TArgs, class TUserPolicy, class ...TVars>
-    class TStaticDelegateInstance<TRet(TArgs...), TUserPolicy, TVars...> : public TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>
+    template <class TRet, class ...TArgs, class TUserPolicy, class TFn, class ...TVars>
+    class TStaticDelegateInstance<TRet(TArgs...), TUserPolicy, TFn, TVars...> : public TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>
     {
         using Super = TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>;
         using DelegateBase = TUserPolicy::DelegateBase;
 
     public:
 
-        using TFuncPtr = TRet(*)(TArgs..., TVars...);
+        // Preserves the exact function pointer type as written at the bind site (WYSIWYG).
+        using TFuncPtr = TFn;
 
         template <class ...InVars>
-        explicit TStaticDelegateInstance(TFuncPtr func, InVars&&... vars)
+        explicit TStaticDelegateInstance(TFn func, InVars&&... vars)
             : Super(std::forward<InVars>(vars)...)
             , StaticFuncPtr(func)
         {
@@ -153,22 +154,20 @@ namespace Phoenix
 
     private:
 
-        TFuncPtr StaticFuncPtr;
+        TFn StaticFuncPtr;
     };
 
-    template <bool bConst, class T, class TRet, class ...TArgs, class TUserPolicy, class ...TVars>
-    class TSPDelegateInstance<bConst, T, TRet(TArgs...), TUserPolicy, TVars...> : public TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>
+    template <class T, class TRet, class ...TArgs, class TUserPolicy, class TMethodPtr, class ...TVars>
+    class TSPDelegateInstance<T, TRet(TArgs...), TUserPolicy, TMethodPtr, TVars...> : public TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>
     {
         using Super = TDelegateInstanceBase<TRet(TArgs...), TUserPolicy, TVars...>;
         using DelegateBase = TUserPolicy::DelegateBase;
 
     public:
 
-        using TMethodPtr = TMemberFuncPtr<bConst, T, TRet(TArgs..., TVars...)>::type;
-
         template <class ...InVars>
         explicit TSPDelegateInstance(const std::shared_ptr<T>& ptr, TMethodPtr func, InVars&&... vars)
-            : Super(std::forward<TVars>(vars)...)
+            : Super(std::forward<InVars>(vars)...)
             , WeakPtr(ptr)
             , Func(func)
         {
@@ -206,7 +205,7 @@ namespace Phoenix
 
         template <class InFunctor, class ...InVars>
         explicit TFunctorDelegateInstance(InFunctor&& functor, InVars&&... vars)
-            : Super(std::forward<TVars>(vars)...)
+            : Super(std::forward<InVars>(vars)...)
             , Functor(std::forward<InFunctor>(functor))
         {
         }
@@ -446,58 +445,32 @@ namespace Phoenix
         using Super::IsBound;
         using Super::GetHandle;
 
-        template <class ...TVars>
-        static TDelegate CreateStatic(TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func, TVars&&... vars)
+        template <class TFn, class ...TVars>
+        static TDelegate CreateStatic(TFn func, TVars&&... vars)
         {
             TDelegate result;
             result.BindStatic(func, std::forward<TVars>(vars)...);
             return result;
         }
 
-        template <class ...TVars>
-        void BindStatic(TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func, TVars&&... vars)
+        template <class TFn, class ...TVars>
+        void BindStatic(TFn func, TVars&&... vars)
         {
-            Super::template BindInstance<TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>>(func, std::forward<TVars>(vars)...);
+            Super::template BindInstance<TStaticDelegateInstance<TFunc, TUserPolicy, TFn, std::decay_t<TVars>...>>(func, std::forward<TVars>(vars)...);
         }
 
-        template <class T, class ...TVars>
-        static TDelegate CreateSP(
-            const std::shared_ptr<T>& ptr,
-            TMemberFuncPtr<false, T, TRet(TArgs..., std::decay_t<TVars>...)>::type func,
-            TVars&&... vars)
+        template <class T, class TMethodPtr, class ...TVars>
+        static TDelegate CreateSP(const std::shared_ptr<T>& ptr, TMethodPtr func, TVars&&... vars)
         {
             TDelegate result;
             result.BindSP(ptr, func, std::forward<TVars>(vars)...);
             return result;
         }
 
-        template <class T, class ...TVars>
-        static TDelegate CreateSP(
-            const std::shared_ptr<T>& ptr,
-            TMemberFuncPtr<true, T, TRet(TArgs..., std::decay_t<TVars>...)>::type func,
-            TVars&&... vars)
+        template <class T, class TMethodPtr, class ...TVars>
+        void BindSP(const std::shared_ptr<T>& ptr, TMethodPtr func, TVars&&... vars)
         {
-            TDelegate result;
-            result.BindSP(ptr, func, std::forward<TVars>(vars)...);
-            return result;
-        }
-
-        template <class T, class ...TVars>
-        void BindSP(
-            const std::shared_ptr<T>& ptr,
-            TMemberFuncPtr<false, T, TRet(TArgs..., std::decay_t<TVars>...)>::type func,
-            TVars&&... vars)
-        {
-            Super::template BindInstance<TSPDelegateInstance<false, T, TFunc, TUserPolicy, std::decay_t<TVars>...>>(ptr, func, std::forward<TVars>(vars)...);
-        }
-
-        template <class T, class ...TVars>
-        void BindSP(
-            const std::shared_ptr<T>& ptr,
-            TMemberFuncPtr<true, T, TRet(TArgs..., std::decay_t<TVars>...)>::type func,
-            TVars&&... vars)
-        {
-            Super::template BindInstance<TSPDelegateInstance<true, T, TFunc, TUserPolicy, std::decay_t<TVars>...>>(ptr, func, std::forward<TVars>(vars)...);
+            Super::template BindInstance<TSPDelegateInstance<T, TFunc, TUserPolicy, TMethodPtr, std::decay_t<TVars>...>>(ptr, func, std::forward<TVars>(vars)...);
         }
 
         template <class TFunctor, class ...TVars>
@@ -711,28 +684,14 @@ namespace Phoenix
             return Super::AddDelegate(std::forward<Delegate>(delegate));
         }
 
-        template <class ...TVars>
-        DelegateHandle AddStatic(
-            TStaticDelegateInstance<TFunc, TUserPolicy, std::decay_t<TVars>...>::TFuncPtr func,
-            TVars&&... vars)
+        template <class TFn, class ...TVars>
+        DelegateHandle AddStatic(TFn func, TVars&&... vars)
         {
             return Super::AddDelegate(Delegate::CreateStatic(func, std::forward<TVars>(vars)...));
         }
 
-        template <class T, class ...TVars>
-        DelegateHandle AddSP(
-            const std::shared_ptr<T>& ptr,
-            TMemberFuncPtr<false, T, void(TArgs..., std::decay_t<TVars>...)>::type func,
-            TVars&&... vars)
-        {
-            return Super::AddDelegate(Delegate::CreateSP(ptr, func, std::forward<TVars>(vars)...));
-        }
-
-        template <class T, class ...TVars>
-        DelegateHandle AddSP(
-            const std::shared_ptr<T>& ptr,
-            TMemberFuncPtr<true, T, void(TArgs..., std::decay_t<TVars>...)>::type func,
-            TVars&&... vars)
+        template <class T, class TMethodPtr, class ...TVars>
+        DelegateHandle AddSP(const std::shared_ptr<T>& ptr, TMethodPtr func, TVars&&... vars)
         {
             return Super::AddDelegate(Delegate::CreateSP(ptr, func, std::forward<TVars>(vars)...));
         }

@@ -46,28 +46,13 @@ namespace Phoenix::RTS
         using TStorage = TFixedSortedList<Timer, Timer::GetItemKey>;
 
     public:
-
-        FixedTimerManager() = default;
-
-        template <class TAllocator>
-        FixedTimerManager(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        
+        PHX_DECLARE_BLOCK_CONTAINER(FixedTimerManager)
         {
-        }
-
-        template <class TAllocator>
-        FixedTimerManager(TAllocator& allocator, uint32 capacity, const FixedTimerManager& other)
-            : Storage(allocator, capacity, other.Storage)
-            , CurrentTime(other.CurrentTime)
-            , DeltaTime(other.DeltaTime)
-        {
-        }
+            uint32 Capacity;
+        };
 
         uint32 GetCapacity() const;
-
-        static uint32 GetAllocSizeBytes(uint32 capacity);
-
-        uint32 GetAllocSizeBytes() const;
 
         uint32 GetNumActiveTimers() const;
 

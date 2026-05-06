@@ -12,30 +12,15 @@ using namespace Phoenix::Tasks;
 thread_local TaskHandle FeatureTask::CurrentTask = TaskHandle::Invalid;
 std::unordered_map<FName, TaskDefinition> FeatureTask::Definitions;
 
-FeatureTaskDynamicBlock::FeatureTaskDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : Tasks(allocator, { config.MaxTasks, config.MaxTaskSize })
+void FeatureTaskDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    Tasks.Construct(allocator, config.MaxTasks, config.MaxTaskSize);
 }
 
-FeatureTaskDynamicBlock::FeatureTaskDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureTaskDynamicBlock& other)
-    : Tasks(allocator, { .MaxTasks = config.MaxTasks, .MaxTaskSize = config.MaxTaskSize }, other.Tasks)
+BlockBufferLayout FeatureTaskDynamicBlock::StaticLayout(const Config& config)
 {
-}
-
-BufferBlockLayout FeatureTaskDynamicBlock::Layout(Config config)
-{
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureTaskDynamicBlock);
-    layout.AllocSize = FixedTaskList::GetAllocSizeBytes({ config.MaxTasks, config.MaxTaskSize });
-    return layout;
-}
-
-void FeatureTaskDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureTaskDynamicBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureTaskDynamicBlock>()
+        .Container<FixedTaskList>("Tasks", config.MaxTasks, config.MaxTaskSize);
 }
 
 void FeatureTask::RegisterTaskDefinition(const TaskDefinition& definition)
@@ -510,7 +495,7 @@ void FeatureTask::Initialize(const std::shared_ptr<Phoenix::Session>& session)
     }
 }
 
-void FeatureTask::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureTask::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

@@ -4,33 +4,20 @@
 #include "PhoenixSim/Session.h"
 #include "PhoenixSim/Worlds.h"
 
-Phoenix::FeatureStringDynamicBlock::FeatureStringDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : StringTable(allocator, { config.MaxNumStrings, config.MaxBufferCapacity })
+using namespace Phoenix;
+
+void FeatureStringDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    StringTable.Construct(allocator, config.MaxNumStrings, config.MaxBufferCapacity);
 }
 
-Phoenix::FeatureStringDynamicBlock::FeatureStringDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureStringDynamicBlock& other)
-    : StringTable(allocator, { config.MaxNumStrings, config.MaxBufferCapacity }, other.StringTable)
+BlockBufferLayout FeatureStringDynamicBlock::StaticLayout(const Config& config)
 {
+    return BlockBufferLayout::For<FeatureStringDynamicBlock>()
+        .Container<FixedStringTable>("StringTable", config.MaxNumStrings, config.MaxBufferCapacity);
 }
 
-Phoenix::BufferBlockLayout Phoenix::FeatureStringDynamicBlock::Layout(Config config)
-{
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureStringDynamicBlock);
-    layout.AllocSize += FixedStringTable::GetAllocSizeBytes({ config.MaxNumStrings, config.MaxBufferCapacity });
-    return layout;
-}
-
-void Phoenix::FeatureStringDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureStringDynamicBlock(allocator, config);
-}
-
-bool Phoenix::FeatureString::Contains(SessionConstRef session, const FName& name)
+bool FeatureString::Contains(SessionConstRef session, const FName& name)
 {
     if (const FeatureStringDynamicBlock* block = session.GetBlock<FeatureStringDynamicBlock>())
     {
@@ -43,7 +30,7 @@ bool Phoenix::FeatureString::Contains(SessionConstRef session, const FName& name
     return GetStringService().Get(name) != nullptr;
 }
 
-bool Phoenix::FeatureString::Contains(WorldConstRef world, const FName& name)
+bool FeatureString::Contains(WorldConstRef world, const FName& name)
 {
     if (const FeatureStringDynamicBlock* block = world.GetBlock<FeatureStringDynamicBlock>())
     {
@@ -60,7 +47,7 @@ bool Phoenix::FeatureString::Contains(WorldConstRef world, const FName& name)
     return GetStringService().Get(name) != nullptr;
 }
 
-const char* Phoenix::FeatureString::Get(SessionConstRef session, const FName& name)
+const char* FeatureString::Get(SessionConstRef session, const FName& name)
 {
     if (const FeatureStringDynamicBlock* block = session.GetBlock<FeatureStringDynamicBlock>())
     {
@@ -73,7 +60,7 @@ const char* Phoenix::FeatureString::Get(SessionConstRef session, const FName& na
     return GetStringService().Get(name);
 }
 
-const char* Phoenix::FeatureString::Get(WorldConstRef world, const FName& name)
+const char* FeatureString::Get(WorldConstRef world, const FName& name)
 {
     if (const FeatureStringDynamicBlock* block = world.GetBlock<FeatureStringDynamicBlock>())
     {
@@ -90,31 +77,31 @@ const char* Phoenix::FeatureString::Get(WorldConstRef world, const FName& name)
     return GetStringService().Get(name);
 }
 
-const char* Phoenix::FeatureString::Store(SessionRef session, const char* str, uint32 len)
+const char* FeatureString::Store(SessionRef session, const char* str, uint32 len)
 {
     FeatureStringDynamicBlock* block = session.GetBlock<FeatureStringDynamicBlock>();
     return block ? block->StringTable.Store(str, len) : nullptr;
 }
 
-const char* Phoenix::FeatureString::Store(WorldRef world, const char* str, uint32 len)
+const char* FeatureString::Store(WorldRef world, const char* str, uint32 len)
 {
     FeatureStringDynamicBlock* block = world.GetBlock<FeatureStringDynamicBlock>();
     return block ? block->StringTable.Store(str, len) : nullptr;
 }
 
-const char* Phoenix::FeatureString::StoreAs(SessionRef session, const char* str, uint32 len, const FName& name)
+const char* FeatureString::StoreAs(SessionRef session, const char* str, uint32 len, const FName& name)
 {
     FeatureStringDynamicBlock* block = session.GetBlock<FeatureStringDynamicBlock>();
     return block ? block->StringTable.StoreAs(str, len, name) : nullptr;
 }
 
-const char* Phoenix::FeatureString::StoreAs(WorldRef world, const char* str, uint32 len, const FName& name)
+const char* FeatureString::StoreAs(WorldRef world, const char* str, uint32 len, const FName& name)
 {
     FeatureStringDynamicBlock* block = world.GetBlock<FeatureStringDynamicBlock>();
     return block ? block->StringTable.StoreAs(str, len, name) : nullptr;
 }
 
-void Phoenix::FeatureString::OnSessionLayout(const SessionLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureString::OnSessionLayout(const SessionLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnSessionLayout(context, builder);
 
@@ -136,7 +123,7 @@ void Phoenix::FeatureString::OnSessionLayout(const SessionLayoutContext& context
     }
 }
 
-void Phoenix::FeatureString::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureString::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

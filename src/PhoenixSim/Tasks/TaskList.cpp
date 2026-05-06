@@ -135,17 +135,17 @@ TaskKey TaskEntry::GetItemKey::operator()(const TaskEntry& entry) const
     return entry.Key;
 }
 
-uint32 FixedTaskList::GetAllocSizeBytes(const Config& config)
+void FixedTaskList::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
-    uint32 allocSize = 0;
-    allocSize += TFixedSortedList<TaskEntry, TaskEntry::GetItemKey>::GetAllocSizeBytes(config.MaxTasks);
-    allocSize += FixedBlockAllocator::GetAllocSizeBytes({ config.MaxTaskSize, config.MaxTasks });
-    return allocSize;
+    Entries.Construct(allocator, config.MaxTasks);
+    Data.Construct(allocator, config.MaxTaskSize, config.MaxTasks);
 }
 
-uint32 FixedTaskList::GetAllocSizeBytes() const
+BlockBufferLayout FixedTaskList::StaticLayout(const Config& config)
 {
-    return GetAllocSizeBytes(Configuration);
+    return BlockBufferLayout::For<FixedTaskList>()
+        .Container<TFixedSortedList<TaskEntry, TaskEntry::GetItemKey>>("Entries", config.MaxTasks)
+        .Container<FixedBlockAllocator>("Data", config.MaxTaskSize, config.MaxTasks);
 }
 
 uint32 FixedTaskList::GetNum() const

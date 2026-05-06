@@ -30,28 +30,15 @@ namespace Phoenix::ECS
     {
     public:
 
+        PHX_DECLARE_BLOCK_CONTAINER(FixedTagList)
+        {
+            uint32 Capacity;
+        };
+
         using TItem = EntityTag;
         using TStorage = TFixedSortedList<EntityTag, EntityTag::GetItemKey>;
 
-        FixedTagList() = default;
-
-        template <class TAllocator>
-        FixedTagList(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
-        {
-        }
-
-        template <class TAllocator>
-        FixedTagList(TAllocator& allocator, uint32 capacity, const FixedTagList& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
         uint32 GetCapacity() const;
-
-        static uint32 GetAllocSizeBytes(uint32 capacity);
-
-        uint32 GetAllocSizeBytes() const;
 
         const EntityTag* GetData() const;
 

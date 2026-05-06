@@ -1,26 +1,29 @@
 #include "FixedTimerManager.h"
 
-Phoenix::uint32 Phoenix::RTS::FixedTimerManager::GetCapacity() const
+using namespace Phoenix;
+using namespace Phoenix::RTS;
+
+void FixedTimerManager::Construct(BlockBufferAllocator& allocator, const Config& config)
+{
+    Storage.Construct(allocator, config.Capacity);
+}
+
+BlockBufferLayout FixedTimerManager::StaticLayout(const Config& config)
+{
+    return BlockBufferLayout::For<FixedTimerManager>().Container<TStorage>(config.Capacity);
+}
+
+uint32 FixedTimerManager::GetCapacity() const
 {
     return Storage.GetCapacity();
 }
 
-Phoenix::uint32 Phoenix::RTS::FixedTimerManager::GetAllocSizeBytes(uint32 capacity)
-{
-    return TStorage::GetAllocSizeBytes(capacity);
-}
-
-Phoenix::uint32 Phoenix::RTS::FixedTimerManager::GetAllocSizeBytes() const
-{
-    return Storage.GetAllocSizeBytes();
-}
-
-Phoenix::uint32 Phoenix::RTS::FixedTimerManager::GetNumActiveTimers() const
+uint32 FixedTimerManager::GetNumActiveTimers() const
 {
     return Storage.GetNumValidItems();
 }
 
-bool Phoenix::RTS::FixedTimerManager::AcquireTimer(const FName& id, Time duration, bool startNow, bool repeats)
+bool FixedTimerManager::AcquireTimer(const FName& id, Time duration, bool startNow, bool repeats)
 {
     if (IsTimerValid(id))
     {
@@ -33,18 +36,18 @@ bool Phoenix::RTS::FixedTimerManager::AcquireTimer(const FName& id, Time duratio
     return Storage.PushBack({ id, CurrentTime, CurrentTime + duration, duration, flags });
 }
 
-bool Phoenix::RTS::FixedTimerManager::ReleaseTimer(const FName& id)
+bool FixedTimerManager::ReleaseTimer(const FName& id)
 {
     return Storage.RemoveAll(id);
 }
 
-bool Phoenix::RTS::FixedTimerManager::IsTimerValid(const FName& id) const
+bool FixedTimerManager::IsTimerValid(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     return timer && timer->IsValid();
 }
 
-bool Phoenix::RTS::FixedTimerManager::StartTimer(const FName& id, const TOptional<Time>& duration,
+bool FixedTimerManager::StartTimer(const FName& id, const TOptional<Time>& duration,
     const TOptional<bool>& repeats)
 {
     Timer* timer = Storage.GetItem(id);
@@ -57,7 +60,7 @@ bool Phoenix::RTS::FixedTimerManager::StartTimer(const FName& id, const TOptiona
     return true;
 }
 
-bool Phoenix::RTS::FixedTimerManager::StopTimer(const FName& id)
+bool FixedTimerManager::StopTimer(const FName& id)
 {
     Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -69,7 +72,7 @@ bool Phoenix::RTS::FixedTimerManager::StopTimer(const FName& id)
     return true;
 }
 
-bool Phoenix::RTS::FixedTimerManager::RestartTimer(const FName& id)
+bool FixedTimerManager::RestartTimer(const FName& id)
 {
     Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -81,7 +84,7 @@ bool Phoenix::RTS::FixedTimerManager::RestartTimer(const FName& id)
     return true;
 }
 
-bool Phoenix::RTS::FixedTimerManager::PauseTimer(const FName& id)
+bool FixedTimerManager::PauseTimer(const FName& id)
 {
     Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid() || HasNoneFlags(timer->Flags, ETimerFlags::Running))
@@ -93,7 +96,7 @@ bool Phoenix::RTS::FixedTimerManager::PauseTimer(const FName& id)
     return true;
 }
 
-bool Phoenix::RTS::FixedTimerManager::ResumeTimer(const FName& id)
+bool FixedTimerManager::ResumeTimer(const FName& id)
 {
     Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid() || HasNoneFlags(timer->Flags, ETimerFlags::Paused))
@@ -105,25 +108,25 @@ bool Phoenix::RTS::FixedTimerManager::ResumeTimer(const FName& id)
     return true;
 }
 
-bool Phoenix::RTS::FixedTimerManager::IsRunning(const FName& id) const
+bool FixedTimerManager::IsRunning(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     return timer && timer->IsValid() && HasAnyFlags(timer->Flags, ETimerFlags::Running);
 }
 
-bool Phoenix::RTS::FixedTimerManager::IsPaused(const FName& id) const
+bool FixedTimerManager::IsPaused(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     return timer && timer->IsValid() && HasAnyFlags(timer->Flags, ETimerFlags::Paused);
 }
 
-bool Phoenix::RTS::FixedTimerManager::IsExpired(const FName& id) const
+bool FixedTimerManager::IsExpired(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     return timer && timer->IsValid() && HasAnyFlags(timer->Flags, ETimerFlags::Paused);
 }
 
-Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetStartTime(const FName& id) const
+TOptional<TFixed<6>> FixedTimerManager::GetStartTime(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -133,7 +136,7 @@ Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetStart
     return timer->StartTime;
 }
 
-Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetEndTime(const FName& id) const
+TOptional<TFixed<6>> FixedTimerManager::GetEndTime(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -143,7 +146,7 @@ Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetEndTi
     return timer->EndTime;
 }
 
-Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetDuration(const FName& id) const
+TOptional<TFixed<6>> FixedTimerManager::GetDuration(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -153,7 +156,7 @@ Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetDurat
     return timer->Duration;
 }
 
-Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetTimeElapsed(const FName& id) const
+TOptional<TFixed<6>> FixedTimerManager::GetTimeElapsed(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -164,7 +167,7 @@ Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetTimeE
     return Time(CurrentTime - timer->StartTime);
 }
 
-Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetTimeRemaining(const FName& id) const
+TOptional<TFixed<6>> FixedTimerManager::GetTimeRemaining(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -175,7 +178,7 @@ Phoenix::TOptional<Phoenix::TFixed<6>> Phoenix::RTS::FixedTimerManager::GetTimeR
     return Time(timer->StartTime + timer->Duration - CurrentTime);
 }
 
-Phoenix::TOptional<Phoenix::RTS::ETimerFlags> Phoenix::RTS::FixedTimerManager::GetTimerFlags(const FName& id) const
+TOptional<ETimerFlags> FixedTimerManager::GetTimerFlags(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -185,7 +188,7 @@ Phoenix::TOptional<Phoenix::RTS::ETimerFlags> Phoenix::RTS::FixedTimerManager::G
     return timer->Flags;
 }
 
-const Phoenix::RTS::Timer* Phoenix::RTS::FixedTimerManager::GetTimer(const FName& id) const
+const Timer* FixedTimerManager::GetTimer(const FName& id) const
 {
     const Timer* timer = Storage.GetItem(id);
     if (!timer || !timer->IsValid())
@@ -195,7 +198,7 @@ const Phoenix::RTS::Timer* Phoenix::RTS::FixedTimerManager::GetTimer(const FName
     return timer;
 }
 
-void Phoenix::RTS::FixedTimerManager::Tick(Time currentTime)
+void FixedTimerManager::Tick(Time currentTime)
 {
     PHX_ASSERT(currentTime > CurrentTime);
     DeltaTime = currentTime - CurrentTime;
@@ -209,7 +212,7 @@ void Phoenix::RTS::FixedTimerManager::Tick(Time currentTime)
     });
 }
 
-void Phoenix::RTS::FixedTimerManager::StartTimerInternal(Timer& timer, const TOptional<Time>& duration,
+void FixedTimerManager::StartTimerInternal(Timer& timer, const TOptional<Time>& duration,
     const TOptional<bool>& repeats) const
 {
     PHX_ASSERT(timer.IsValid());
@@ -231,7 +234,7 @@ void Phoenix::RTS::FixedTimerManager::StartTimerInternal(Timer& timer, const TOp
     }
 }
 
-void Phoenix::RTS::FixedTimerManager::StopTimerInternal(Timer& timer)
+void FixedTimerManager::StopTimerInternal(Timer& timer)
 {
     PHX_ASSERT(timer.IsValid());
     ClearFlagRef(timer.Flags, ETimerFlags::Running);
@@ -239,7 +242,7 @@ void Phoenix::RTS::FixedTimerManager::StopTimerInternal(Timer& timer)
     ClearFlagRef(timer.Flags, ETimerFlags::Expired);
 }
 
-void Phoenix::RTS::FixedTimerManager::RestartTimerInternal(Timer& timer) const
+void FixedTimerManager::RestartTimerInternal(Timer& timer) const
 {
     PHX_ASSERT(timer.IsValid());
     timer.StartTime = CurrentTime;
@@ -249,19 +252,19 @@ void Phoenix::RTS::FixedTimerManager::RestartTimerInternal(Timer& timer) const
     ClearFlagRef(timer.Flags, ETimerFlags::Expired);
 }
 
-void Phoenix::RTS::FixedTimerManager::PauseTimerInternal(Timer& timer)
+void FixedTimerManager::PauseTimerInternal(Timer& timer)
 {
     PHX_ASSERT(timer.IsValid());
     SetFlagRef(timer.Flags, ETimerFlags::Paused);
 }
 
-void Phoenix::RTS::FixedTimerManager::ResumeTimerInternal(Timer& timer)
+void FixedTimerManager::ResumeTimerInternal(Timer& timer)
 {
     PHX_ASSERT(timer.IsValid());
     ClearFlagRef(timer.Flags, ETimerFlags::Paused);
 }
 
-void Phoenix::RTS::FixedTimerManager::TickTimer(Timer& timer) const
+void FixedTimerManager::TickTimer(Timer& timer) const
 {
     PHX_ASSERT(timer.IsValid());
 

@@ -29,28 +29,15 @@ namespace Phoenix::ECS
     {
     public:
 
+        PHX_DECLARE_BLOCK_CONTAINER(FixedGroupList)
+        {
+            uint32 Capacity;
+        };
+
         using TItem = GroupEntity;
         using TStorage = TFixedSortedList<GroupEntity, GroupEntity::GetItemKey>;
 
-        FixedGroupList() = default;
-
-        template <class TAllocator>
-        FixedGroupList(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
-        {
-        }
-
-        template <class TAllocator>
-        FixedGroupList(TAllocator& allocator, uint32 capacity, const FixedGroupList& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
         uint32 GetCapacity() const;
-
-        static uint32 GetAllocSizeBytes(uint32 capacity);
-
-        uint32 GetAllocSizeBytes() const;
 
         const GroupEntity* GetData() const;
 

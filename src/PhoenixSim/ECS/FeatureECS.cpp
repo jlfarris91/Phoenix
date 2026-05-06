@@ -1,4 +1,4 @@
-﻿
+
 #include "PhoenixSim/ECS/FeatureECS.h"
 #include "PhoenixSim/Reflection/Registration.h"
 
@@ -159,69 +159,34 @@ namespace FeatureECSDetail
 // FeatureECSDynamicBlock
 // ============================================================================
 
-FeatureECSDynamicBlock::FeatureECSDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : Entities(allocator, config.MaxEntities)
-    , Tags(allocator, config.MaxTags)
-    , Groups(allocator, config.MaxGroups)
-    , ArchetypeManager(allocator, config.ArchetypeManager)
+void FeatureECSDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    Entities.Construct(allocator, config.MaxEntities);
+    ArchetypeManager.Construct(allocator, config.ArchetypeManager);
+    Tags.Construct(allocator, config.MaxTags);
+    Groups.Construct(allocator, config.MaxGroups);
 }
 
-FeatureECSDynamicBlock::FeatureECSDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureECSDynamicBlock& other)
-    : Entities(allocator, config.MaxEntities, other.Entities)
-    , Tags(allocator, config.MaxTags, other.Tags)
-    , Groups(allocator, config.MaxGroups, other.Groups)
-    , ArchetypeManager(allocator, config.ArchetypeManager, other.ArchetypeManager)
+BlockBufferLayout FeatureECSDynamicBlock::StaticLayout(const Config& config)
 {
+    return BlockBufferLayout::For<FeatureECSDynamicBlock>()
+        .Container<FixedEntityList>("Entities", config.MaxEntities)
+        .Container<ECS::ArchetypeManager>("ArchetypeManager", config.ArchetypeManager)
+        .Container<FixedTagList>("Tags", config.MaxTags)
+        .Container<FixedGroupList>("Groups", config.MaxGroups);
 }
 
-BufferBlockLayout FeatureECSDynamicBlock::Layout(Config config)
+void FeatureECSScratchBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureECSDynamicBlock);
-    layout.AllocSize += FixedEntityList::GetAllocSizeBytes(config.MaxEntities);
-    layout.AllocSize += FixedTagList::GetAllocSizeBytes(config.MaxTags);
-    layout.AllocSize += FixedGroupList::GetAllocSizeBytes(config.MaxGroups);
-    layout.AllocSize += ArchetypeManager::GetAllocSizeBytes(config.ArchetypeManager);
-    return layout;
+    SortedEntities.Construct(allocator, config.MaxEntities);
+    SortedEntityIndex.Construct(allocator, config.MaxEntities);
 }
 
-void FeatureECSDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
+BlockBufferLayout FeatureECSScratchBlock::StaticLayout(const Config& config)
 {
-    new (dest) FeatureECSDynamicBlock(allocator, config);
-}
-
-FeatureECSScratchBlock::FeatureECSScratchBlock(BlockBufferAllocator& allocator, const Config& config)
-    : SortedEntities(allocator, config.MaxEntities)
-    , SortedEntityIndex(allocator, config.MaxEntities)
-{
-}
-
-FeatureECSScratchBlock::FeatureECSScratchBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureECSScratchBlock& other)
-    : SortedEntities(allocator, config.MaxEntities, other.SortedEntities)
-    , SortedEntityIndex(allocator, config.MaxEntities, other.SortedEntityIndex)
-    , SortedEntityCount(other.SortedEntityCount.load())
-{
-}
-
-BufferBlockLayout FeatureECSScratchBlock::Layout(Config config)
-{
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureECSScratchBlock);
-    layout.AllocSize += TFixedArray<EntityTransform>::GetAllocSizeBytes(config.MaxEntities);
-    layout.AllocSize += TFixedArray<uint32>::GetAllocSizeBytes(config.MaxEntities);
-    return layout;
-}
-
-void FeatureECSScratchBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureECSScratchBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureECSScratchBlock>()
+        .Container<TFixedArray<EntityTransform>>("SortedEntities", config.MaxEntities)
+        .Container<TFixedArray<uint32>>("SortedEntityIndex", config.MaxEntities);
 }
 
 FOnEntityAcquired& FeatureECS::OnEntityAcquired()
@@ -1079,7 +1044,7 @@ bool FeatureECS::OnPostHandleAction(const FeatureActionArgs& action)
     return false;
 }
 
-void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureECS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

@@ -15,29 +15,15 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-FeatureEffectsDynamicBlock::FeatureEffectsDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
+void FeatureEffectsDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    Responses.Construct(allocator, config.MaxEffectResponses);
 }
 
-FeatureEffectsDynamicBlock::FeatureEffectsDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureEffectsDynamicBlock& other)
-    : Responses(allocator, config.MaxEffectResponses, other.Responses)
+BlockBufferLayout FeatureEffectsDynamicBlock::StaticLayout(const Config& config)
 {
-}
-
-BufferBlockLayout FeatureEffectsDynamicBlock::Layout(Config config)
-{
-    BufferBlockLayout result;
-    result.BlockSize = sizeof(FeatureEffectsDynamicBlock);
-    result.AllocSize += FixedResponseList::GetAllocSizeBytes(config.MaxEffectResponses);
-    return result;
-}
-
-void FeatureEffectsDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureEffectsDynamicBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureEffectsDynamicBlock>()
+        .Container<FixedResponseList>("Responses", config.MaxEffectResponses);
 }
 
 void FeatureEffects::RegisterEffectHandler(const std::shared_ptr<IEffectHandler>& handler)
@@ -618,7 +604,7 @@ void FeatureEffects::Shutdown()
     IFeature::Shutdown();
 }
 
-void FeatureEffects::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureEffects::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

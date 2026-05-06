@@ -17,37 +17,29 @@ namespace Phoenix
     class TSetBase<TKey, FixedStoragePolicy>
     {
     public:
-
-        TSetBase() = default;
-
-        template <class TAllocator>
-        TSetBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        
+        PHX_DECLARE_BLOCK_CONTAINER(TSetBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TSetBase(TAllocator& allocator, uint32 capacity, const TSetBase<TKey, TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity, other.Storage)
-            , Size(other.Size)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TStorage = TFixedStorage<TKey>;
         TStorage Storage;
         uint32 Size = 0;
     };
+
+    template <class TKey>
+    void TSetBase<TKey, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class TKey>
+    BlockBufferLayout TSetBase<TKey, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TSetBase>().Container<TStorage>(config.Capacity);
+    }
 
     template <class TKey, class TStoragePolicy, class THasher = std::hash<TKey>>
     class TSet : TSetBase<TKey, TStoragePolicy>

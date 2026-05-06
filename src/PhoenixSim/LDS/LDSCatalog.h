@@ -28,58 +28,32 @@ namespace Phoenix::LDS
     class TLDSCatalogBase<FixedStoragePolicy>
     {
     public:
-        using TStorage = TLDSRecordStore<FixedStoragePolicy>;
 
-        struct Config
+        PHX_DECLARE_BLOCK_CONTAINER(TLDSCatalogBase)
         {
             uint32 MaxObjectRecords;
             uint32 MaxTypeRecords;
         };
 
-        TLDSCatalogBase() = default;
-
-        template <class TAllocator>
-        TLDSCatalogBase(TAllocator& allocator, const Config& config)
-            : Configuration(config)
-            , Objects(allocator, config.MaxObjectRecords)
-            , Types(allocator, config.MaxTypeRecords)
-        {
-        }
-
-        template <class TAllocator>
-        TLDSCatalogBase(TAllocator& allocator, const Config& config, const TLDSCatalogBase& other)
-            : Configuration(config)
-            , Objects(allocator, config.MaxObjectRecords, other.Objects)
-            , Types(allocator, config.MaxTypeRecords, other.Types)
-        {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TLDSCatalogBase(TAllocator& allocator, const Config& config, const TLDSCatalogBase<TOtherStoragePolicy>& other)
-            : Configuration(config)
-            , Objects(allocator, config.MaxObjectRecords, other.Objects)
-            , Types(allocator, config.MaxTypeRecords, other.Types)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(const Config& config)
-        {
-            uint32 allocSize = 0;
-            allocSize += TStorage::GetAllocSizeBytes(config.MaxObjectRecords);
-            allocSize += TStorage::GetAllocSizeBytes(config.MaxTypeRecords);
-            return allocSize;
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return GetAllocSizeBytes(Configuration);
-        }
+        using TStorage = TLDSRecordStore<FixedStoragePolicy>;
 
     protected:
-        Config Configuration;
         TStorage Objects;
         TStorage Types;
     };
+
+    inline void TLDSCatalogBase<FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Objects.Construct(allocator, config.MaxObjectRecords);
+        Types.Construct(allocator, config.MaxTypeRecords);
+    }
+
+    inline BlockBufferLayout TLDSCatalogBase<FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TLDSCatalogBase>()
+            .Container<TStorage>("Objects", config.MaxObjectRecords)
+            .Container<TStorage>("Types", config.MaxTypeRecords);
+    }
 
     template <class TStoragePolicy>
     class PHOENIX_SIM_API TLDSCatalog : public TLDSCatalogBase<TStoragePolicy>
@@ -91,7 +65,7 @@ namespace Phoenix::LDS
 
     public:
 
-        using TStorage = typename Super::TStorage;
+        using TStorage = Super::TStorage;
 
         TStorage& GetObjectStore()
         {

@@ -29,19 +29,19 @@ EntityId EntityTag::GetItemKey::operator()(const EntityTag& item) const
     return item.Entity;
 }
 
+void FixedTagList::Construct(BlockBufferAllocator& allocator, const Config& config)
+{
+    Storage.Construct(allocator, config.Capacity);
+}
+
+BlockBufferLayout FixedTagList::StaticLayout(const Config& config)
+{
+    return BlockBufferLayout::For<FixedTagList>().Container<TStorage>(config.Capacity);
+}
+
 uint32 FixedTagList::GetCapacity() const
 {
     return Storage.GetCapacity();
-}
-
-uint32 FixedTagList::GetAllocSizeBytes(uint32 capacity)
-{
-    return TStorage::GetAllocSizeBytes(capacity);
-}
-
-uint32 FixedTagList::GetAllocSizeBytes() const
-{
-    return Storage.GetAllocSizeBytes();
 }
 
 const EntityTag* FixedTagList::GetData() const

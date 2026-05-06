@@ -26,40 +26,10 @@ namespace Phoenix
     {
     public:
 
-        TMapBase() = default;
-
-        template <class TAllocator>
-        TMapBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TMapBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TMapBase(TAllocator& allocator, uint32 capacity, const TMapBase<TKey, TValue, TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity)
-        {
-            // for (const TItem& element : other)
-            // {
-            //     if (element.Key != TKey{})
-            //     {
-            //         Insert(element);
-            //     }
-            //     if (Storage.IsFull())
-            //     {
-            //         break;
-            //     }
-            // }
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TItem = TFixedMapElement<TKey, TValue>;
@@ -67,6 +37,18 @@ namespace Phoenix
         TStorage Storage;
         uint32 Size = 0;
     };
+
+    template <class TKey, class TValue>
+    void TMapBase<TKey, TValue, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class TKey, class TValue>
+    BlockBufferLayout TMapBase<TKey, TValue, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TMapBase>().Container<TStorage>(config.Capacity);
+    }
 
     template <class TKey, class TValue, class TStoragePolicy, class THasher = std::hash<TKey>>
     class TMap : public TMapBase<TKey, TValue, TStoragePolicy>

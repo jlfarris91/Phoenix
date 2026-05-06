@@ -226,7 +226,7 @@ WorldSharedPtr WorldManager::NewWorld(const NewWorldArgs& args)
         layoutContext.Config = *worldJsonConfig;
     }
 
-    BlockBufferLayoutBuilder layoutBuilder;
+    BlockBufferConfigBuilder layoutBuilder;
 
     // TODO (jfarris): allow filter features for world
     // TODO (jfarris): sort features by dependencies so ie ECS is laid-out before steering

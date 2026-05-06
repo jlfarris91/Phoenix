@@ -11,28 +11,15 @@ namespace Phoenix::ECS
     {
     public:
 
+        PHX_DECLARE_BLOCK_CONTAINER(FixedEntityList)
+        {
+            uint32 Capacity;
+        };
+
         using TItem = Entity;
         using TStorage = TFixedArray<Entity>;
 
-        FixedEntityList() = default;
-
-        template <class TAllocator>
-        FixedEntityList(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
-        {
-        }
-
-        template <class TAllocator>
-        FixedEntityList(TAllocator& allocator, uint32 capacity, const FixedEntityList& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
         uint32 GetCapacity() const;
-
-        static uint32 GetAllocSizeBytes(uint32 capacity);
-
-        uint32 GetAllocSizeBytes() const;
 
         const Entity* GetData() const;
 

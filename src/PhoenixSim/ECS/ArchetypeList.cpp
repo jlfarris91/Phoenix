@@ -5,19 +5,21 @@
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 
-uint32 FixedArchetypeList::GetAllocSizeBytes(uint32 capacity)
+void FixedArchetypeList::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
-    return capacity;
+    Id = config.Id;
+    Definition = config.Definition;
+    Data.Construct(allocator, config.Capacity);
 }
 
-uint32 FixedArchetypeList::GetAllocSizeBytes() const
+BlockBufferLayout FixedArchetypeList::StaticLayout(const Config& config)
 {
-    return GetAllocSizeBytes(GetCapacity());
+    return BlockBufferLayout::For<FixedArchetypeList>().Container<TFixedStorage<uint8>>(config.Capacity);
 }
 
 uint32 FixedArchetypeList::GetCapacity() const
 {
-    return Capacity;
+    return Data.GetCapacity();
 }
 
 uint32 FixedArchetypeList::GetId() const
@@ -72,7 +74,7 @@ uint32 FixedArchetypeList::GetNumActiveInstances() const
 
 uint32 FixedArchetypeList::GetInstanceCapacity() const
 {
-    return Capacity / GetEntityTotalSize();
+    return GetCapacity() / GetEntityTotalSize();
 }
 
 bool FixedArchetypeList::IsValid(const Handle& handle) const

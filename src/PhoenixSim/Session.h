@@ -3,6 +3,7 @@
 #include <shared_mutex>
 #include <nlohmann/json.hpp>
 
+#include "PhoenixSim/BlockBuffer/BlockBufferOwner.h"
 #include "PhoenixSim/Containers/Optional.h"
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/FPSCalc.h"

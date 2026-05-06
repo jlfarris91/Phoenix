@@ -30,30 +30,10 @@ namespace Phoenix
     {
     public:
 
-        TWeightedSetBase() = default;
-
-        template <class TAllocator>
-        TWeightedSetBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TWeightedSetBase)
         {
-        }
-
-        template <class TAllocator>
-        TWeightedSetBase(TAllocator& allocator, uint32 capacity, const TWeightedSetBase& other)
-            : Storage(allocator, capacity, other.Storage)
-            , TotalWeight(other.TotalWeight)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TItem = WeightedItem<T, TWeight>;
@@ -61,6 +41,18 @@ namespace Phoenix
         TStorage Storage;
         TWeight TotalWeight = {};
     };
+
+    template <class T, class TWeight>
+    void TWeightedSetBase<T, TWeight, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class T, class TWeight>
+    BlockBufferLayout TWeightedSetBase<T, TWeight, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TWeightedSetBase>().Container<TStorage>(config.Capacity);
+    }
 
     template <class T, class TWeight, class TRandom, class TStoragePolicy>
     class TWeightedSet : public TWeightedSetBase<T, TWeight, TStoragePolicy>

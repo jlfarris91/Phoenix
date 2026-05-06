@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <cstring>
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Utils.h"
@@ -48,31 +47,14 @@ namespace Phoenix
         {
         public:
 
+            PHX_DECLARE_BLOCK_CONTAINER(FixedArchetypeList)
+            {
+                uint32 Capacity;
+                uint32 Id;
+                ArchetypeDefinition Definition;
+            };
+
             using Handle = ArchetypeHandle;
-
-            FixedArchetypeList() = default;
-
-            template <class TAllocator>
-            FixedArchetypeList(TAllocator& allocator, uint32 capacity, const ArchetypeDefinition& definition, uint32 id = 0)
-                : Capacity(capacity)
-                , Id(id)
-                , Definition(definition)
-                , Data(allocator, capacity)
-            {
-            }
-
-            template <class TAllocator>
-            FixedArchetypeList(TAllocator& allocator, uint32 capacity, const FixedArchetypeList& other)
-                : Capacity(capacity)
-                , Id(other.Id)
-                , Definition(other.Definition)
-                , Data(allocator, capacity, other.Data)
-            {
-            }
-
-            static uint32 GetAllocSizeBytes(uint32 capacity);
-
-            uint32 GetAllocSizeBytes() const;
 
             uint32 GetCapacity() const;
 
@@ -284,20 +266,19 @@ namespace Phoenix
             template <class T>
             T GetComponentRef(uint32 index)
             {
-                auto ptr = GetEntityComponentPtr<typename std::remove_cv_t<typename std::remove_pointer_t<typename std::remove_reference_t<T>>>>(index);
+                auto ptr = GetEntityComponentPtr<std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<T>>>>(index);
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 
             template <class T>
             T GetComponentRef(uint32 index) const
             {
-                auto ptr = const_cast<typename std::remove_cv_t<typename std::remove_pointer_t<typename std::remove_reference_t<T>>>*>(GetEntityComponentPtr<typename std::remove_cv_t<typename std::remove_pointer_t<typename std::remove_reference_t<T>>>>(index));
+                auto ptr = const_cast<std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<T>>>*>(GetEntityComponentPtr<std::remove_cv_t<std::remove_pointer_t<std::remove_reference_t<T>>>>(index));
                 return ComponentAccessor<T>::GetComponentRef(ptr);
             }
 
             uint32 FindFreeSlot();
 
-            uint32 Capacity = 0;
             uint32 Id = 0;
             ArchetypeDefinition Definition;
             uint32 NumInstances = 0;

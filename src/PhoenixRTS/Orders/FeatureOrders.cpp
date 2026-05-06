@@ -19,30 +19,15 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::ECS;
 using namespace Phoenix::RTS;
 
-FeatureOrdersDynamicBlock::FeatureOrdersDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : OrderQueue(allocator, config.MaxOrders)
+void FeatureOrdersDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    OrderQueue.Construct(allocator, config.MaxOrders);
 }
 
-FeatureOrdersDynamicBlock::FeatureOrdersDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureOrdersDynamicBlock& other)
-    : OrderQueue(allocator, config.MaxOrders, other.OrderQueue)
+BlockBufferLayout FeatureOrdersDynamicBlock::StaticLayout(const Config& config)
 {
-}
-
-BufferBlockLayout FeatureOrdersDynamicBlock::Layout(Config config)
-{
-    BufferBlockLayout result;
-    result.BlockSize = sizeof(FeatureOrdersDynamicBlock);
-    result.AllocSize += FixedOrderQueue::GetAllocSizeBytes(config.MaxOrders);
-    return result;
-}
-
-void FeatureOrdersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureOrdersDynamicBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureOrdersDynamicBlock>()
+        .Container<FixedOrderQueue>("OrderQueue", config.MaxOrders);
 }
 
 void FeatureOrders::RegisterCommandHandler(const std::shared_ptr<ICommandHandler>& handler)
@@ -340,7 +325,7 @@ void FeatureOrders::Shutdown()
     IFeature::Shutdown();
 }
 
-void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureOrders::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

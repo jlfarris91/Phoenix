@@ -17,11 +17,9 @@ namespace Phoenix::Tasks
 {
     class FixedTaskList;
 
-    struct PHOENIX_SIM_API FeatureTaskDynamicBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureTaskDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureTaskDynamicBlock)
-
-        struct Config
         {
             uint32 MaxTasks = 0;
             uint32 MaxTaskSize = 0;
@@ -240,7 +238,7 @@ namespace Phoenix::Tasks
 
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 

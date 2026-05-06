@@ -29,19 +29,19 @@ EntityId GroupEntity::GetItemKey::operator()(const GroupEntity& item) const
     return item.Group;
 }
 
+void FixedGroupList::Construct(BlockBufferAllocator& allocator, const Config& config)
+{
+    Storage.Construct(allocator, config.Capacity);
+}
+
+BlockBufferLayout FixedGroupList::StaticLayout(const Config& config)
+{
+    return BlockBufferLayout::For<FixedGroupList>().Container<TStorage>(config.Capacity);
+}
+
 uint32 FixedGroupList::GetCapacity() const
 {
     return Storage.GetCapacity();
-}
-
-uint32 FixedGroupList::GetAllocSizeBytes(uint32 capacity)
-{
-    return TStorage::GetAllocSizeBytes(capacity);
-}
-
-uint32 FixedGroupList::GetAllocSizeBytes() const
-{
-    return Storage.GetAllocSizeBytes();
 }
 
 const GroupEntity* FixedGroupList::GetData() const

@@ -114,31 +114,11 @@ namespace Phoenix::Tasks
     {
     public:
 
-        struct Config
+        PHX_DECLARE_BLOCK_CONTAINER(FixedTaskList)
         {
             uint32 MaxTasks = 0;
             uint32 MaxTaskSize = 0;
         };
-
-        template <class TAllocator>
-        FixedTaskList(TAllocator& allocator, const Config& config)
-            : Configuration(config)
-            , Entries(allocator, config.MaxTasks)
-            , Data(allocator, { config.MaxTaskSize, config.MaxTasks })
-        {
-        }
-
-        template <class TAllocator>
-        FixedTaskList(TAllocator& allocator, const Config& config, const FixedTaskList& other)
-            : Configuration(other.Configuration)
-            , Entries(allocator, config.MaxTasks, other.Entries)
-            , Data(allocator, { config.MaxTaskSize, config.MaxTasks }, other.Data)
-        {
-        }
-
-        static uint32 GetAllocSizeBytes(const Config& config);
-
-        uint32 GetAllocSizeBytes() const;
 
         // Gets the total number of tasks in the data buffer, including invalid tasks pending pruning.
         uint32 GetNum() const;
