@@ -7,7 +7,7 @@ Session* IService::GetSession() const
     return Session.get();
 }
 
-void IService::OnSessionLayout(const SessionLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void IService::OnSessionLayout(const SessionLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
 }
 
@@ -22,7 +22,7 @@ void IService::Shutdown()
     Session.reset();
 }
 
-void IService::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void IService::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
 }
 

@@ -53,11 +53,9 @@ namespace Phoenix::ECS
     class ISystem;
     struct EntityQuery;
 
-    struct PHOENIX_SIM_API FeatureECSDynamicBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureECSDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureECSDynamicBlock)
-
-        struct Config
         {
             uint32 MaxEntities = 0;
             uint32 MaxTags = 0;
@@ -66,16 +64,14 @@ namespace Phoenix::ECS
         };
 
         FixedEntityList Entities;
+        ArchetypeManager ArchetypeManager;
         FixedTagList Tags;
         FixedGroupList Groups;
-        ArchetypeManager ArchetypeManager;
     };
 
-    struct PHOENIX_SIM_API FeatureECSScratchBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureECSScratchBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureECSScratchBlock)
-
-        struct Config
         {
             uint32 MaxEntities = 0;
         };
@@ -716,7 +712,7 @@ namespace Phoenix::ECS
         bool OnHandleAction(const FeatureActionArgs& action) override;
         bool OnPostHandleAction(const FeatureActionArgs& action) override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
 

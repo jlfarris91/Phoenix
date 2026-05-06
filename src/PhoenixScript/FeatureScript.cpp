@@ -9,22 +9,15 @@
 
 using namespace Phoenix;
 
-FeatureScriptDynamicBlock::FeatureScriptDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : WasmMemory(allocator, config.WasmMemoryCapacity)
+void FeatureScriptDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    WasmMemory.Construct(allocator, config.WasmMemoryCapacity);
 }
 
-BufferBlockLayout FeatureScriptDynamicBlock::Layout(Config config)
+BlockBufferLayout FeatureScriptDynamicBlock::StaticLayout(const Config& config)
 {
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureScriptDynamicBlock);
-    layout.AllocSize += TFixedStorage<uint8>::GetAllocSizeBytes(config.WasmMemoryCapacity);
-    return layout;
-}
-
-void FeatureScriptDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureScriptDynamicBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureScriptDynamicBlock>()
+        .Container<TFixedStorage<uint8>>("WasmMemory", config.WasmMemoryCapacity);
 }
 
 // ── FeatureScript ─────────────────────────────────────────────────────────────
@@ -77,7 +70,7 @@ void FeatureScript::OnPostUpdate(const FeatureUpdateArgs& args)
     }
 }
 
-void FeatureScript::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureScript::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

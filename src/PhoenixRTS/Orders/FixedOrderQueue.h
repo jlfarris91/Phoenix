@@ -42,26 +42,13 @@ namespace Phoenix::RTS
         using TStorage = TFixedSortedList<EntityOrder, EntityOrder::GetItemKey>;
 
     public:
-
-        FixedOrderQueue() = default;
-
-        template <class TAllocator>
-        FixedOrderQueue(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        
+        PHX_DECLARE_BLOCK_CONTAINER(FixedOrderQueue)
         {
-        }
-
-        template <class TAllocator>
-        FixedOrderQueue(TAllocator& allocator, uint32 capacity, const FixedOrderQueue& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
+            uint32 Capacity;
+        };
 
         uint32 GetCapacity() const;
-
-        static uint32 GetAllocSizeBytes(uint32 capacity);
-
-        uint32 GetAllocSizeBytes() const;
 
         uint32 GetNum() const;
 

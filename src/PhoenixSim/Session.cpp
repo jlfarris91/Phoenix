@@ -58,7 +58,7 @@ std::shared_ptr<Session> Session::Create(const SessionCtorArgs& args)
         SessionLayoutContext layoutContext;
         layoutContext.Config = session->ConfigService->GetSessionConfig();
         
-        BlockBufferLayoutBuilder layoutBuilder;
+        BlockBufferConfigBuilder layoutBuilder;
 
         for (const std::shared_ptr<IFeature>& feature : session->FeatureSet->GetFeatures())
         {

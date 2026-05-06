@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cassert>
-#include <cstring>
 
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Containers/FixedMemory.h"
@@ -23,37 +22,27 @@ namespace Phoenix
 
     public:
 
-        TArrayBase() = default;
-
-        template <class TAllocator>
-        TArrayBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TArrayBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TArrayBase(TAllocator& allocator, uint32 capacity, const TArrayBase<T, TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity)
-        {
-            uint32 minSize = std::min(capacity, other.Size);
-            memcpy(Storage.GetData(), other.Storage.GetData(), minSize);
-            Size = std::min(capacity, other.Size);
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         TStorage Storage;
         uint32 Size = 0;
     };
+
+    template <class T>
+    void TArrayBase<T, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class T>
+    BlockBufferLayout TArrayBase<T, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TArrayBase>().template Container<TStorage>(config.Capacity);
+    }
 
     template <class T, class TStoragePolicy>
     class TArray : public TArrayBase<T, TStoragePolicy>

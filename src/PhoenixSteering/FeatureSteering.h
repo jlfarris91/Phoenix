@@ -20,7 +20,7 @@ namespace Phoenix::Steering
         uint64 ZCode;
     };
 
-    struct PHOENIX_STEERING_API FeatureSteeringScratchBlock : BufferBlockBase
+    struct PHOENIX_STEERING_API FeatureSteeringScratchBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureSteeringScratchBlock)
 

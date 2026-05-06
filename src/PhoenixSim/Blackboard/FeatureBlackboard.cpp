@@ -3,37 +3,24 @@
 
 #include "PhoenixSim/Session.h"
 #include "PhoenixSim/Worlds.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferAllocator.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferLayout.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Blackboard;
 
-FeatureBlackboardBlock::FeatureBlackboardBlock(BlockBufferAllocator& allocator, const Config& config)
-    : Blackboard(allocator, config.MaxBlackboardItems)
+void FeatureBlackboardBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    Blackboard.Construct(allocator, config.MaxBlackboardItems);
 }
 
-FeatureBlackboardBlock::FeatureBlackboardBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureBlackboardBlock& other)
-    : Blackboard(allocator, config.MaxBlackboardItems, other.Blackboard)
+BlockBufferLayout FeatureBlackboardBlock::StaticLayout(const Config& config)
 {
+    return BlockBufferLayout::For<FeatureBlackboardBlock>()
+        .Container<FixedBlackboard>("Blackboard", config.MaxBlackboardItems);
 }
 
-BufferBlockLayout FeatureBlackboardBlock::Layout(Config config)
-{
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureBlackboardBlock);
-    layout.AllocSize = FixedBlackboard::GetAllocSizeBytes(config.MaxBlackboardItems);
-    return layout;
-}
-
-void FeatureBlackboardBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureBlackboardBlock(allocator, config);
-}
-
-void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureBlackboard::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

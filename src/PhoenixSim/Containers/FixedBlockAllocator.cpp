@@ -1,50 +1,54 @@
 #include "PhoenixSim/Containers/FixedBlockAllocator.h"
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetAllocSizeBytes(const Config& config)
+using namespace Phoenix;
+
+void FixedBlockAllocator::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
-    uint32 allocSize = 0;
-    allocSize += TFixedArray<Block>::GetAllocSizeBytes(config.Capacity);
-    allocSize += TFixedStorage<uint8>::GetAllocSizeBytes(config.Capacity * config.BlockSize);
-    allocSize += TFixedMap<uint32, uint32>::GetAllocSizeBytes(config.Capacity);
-    return allocSize;
+    Configuration = config;
+    Blocks.Construct(allocator, config.Capacity);
+    BlockData.Construct(allocator, config.Capacity * config.BlockSize);
+    IndexMap.Construct(allocator, config.Capacity);
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetAllocSizeBytes() const
+BlockBufferLayout FixedBlockAllocator::StaticLayout(const Config& config)
 {
-    return GetAllocSizeBytes(Configuration);
+    return BlockBufferLayout::For<FixedBlockAllocator>()
+        .Container<TFixedArray<Block>>("Blocks", config.Capacity)
+        .Container<TFixedStorage<uint8>>("BlockData", config.Capacity * config.BlockSize)
+        .Container<TFixedMap<uint32, uint32>>("IndexMap", config.Capacity);
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetNumBlocks() const
+uint32 FixedBlockAllocator::GetNumBlocks() const
 {
     return Blocks.GetNum();
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetNumOccupiedBlocks() const
+uint32 FixedBlockAllocator::GetNumOccupiedBlocks() const
 {
     return NumOccupiedBlocks;
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockCapacity() const
+uint32 FixedBlockAllocator::GetBlockCapacity() const
 {
     return Configuration.Capacity;
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockSize() const
+uint32 FixedBlockAllocator::GetBlockSize() const
 {
     return Configuration.BlockSize;
 }
 
-bool Phoenix::FixedBlockAllocator::IsEmpty() const
+bool FixedBlockAllocator::IsEmpty() const
 {
     return NumOccupiedBlocks == 0;
 }
 
-bool Phoenix::FixedBlockAllocator::IsFull() const
+bool FixedBlockAllocator::IsFull() const
 {
     return NumOccupiedBlocks == Configuration.Capacity;
 }
 
-bool Phoenix::FixedBlockAllocator::IsValid(Handle handle) const
+bool FixedBlockAllocator::IsValid(Handle handle) const
 {
     if (handle.Id == Index<uint32>::None)
     {
@@ -55,7 +59,7 @@ bool Phoenix::FixedBlockAllocator::IsValid(Handle handle) const
     return Blocks.IsValidIndex(index) && Blocks[index].Id == handle.Id;
 }
 
-Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::Allocate(uint32 userData)
+FixedBlockAllocator::Handle FixedBlockAllocator::Allocate(uint32 userData)
 {
     if (IsFull())
     {
@@ -72,7 +76,7 @@ Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::Allocate(uint
     return { block.Id };
 }
 
-Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::Allocate(
+FixedBlockAllocator::Handle FixedBlockAllocator::Allocate(
     uint32 userData,
     const void* source,
     uint32 size)
@@ -97,7 +101,7 @@ Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::Allocate(
     return { block.Id };
 }
 
-bool Phoenix::FixedBlockAllocator::Deallocate(const Handle& handle)
+bool FixedBlockAllocator::Deallocate(const Handle& handle)
 {
     if (!IsValid(handle))
     {
@@ -114,7 +118,7 @@ bool Phoenix::FixedBlockAllocator::Deallocate(const Handle& handle)
     return true;
 }
 
-void* Phoenix::FixedBlockAllocator::GetPtr(const Handle& handle)
+void* FixedBlockAllocator::GetPtr(const Handle& handle)
 {
     uint32 index = GetBlockIndex(handle);
     if (!Blocks.IsValidIndex(index))
@@ -125,7 +129,7 @@ void* Phoenix::FixedBlockAllocator::GetPtr(const Handle& handle)
     return GetBlockDataPtr(index);
 }
 
-const void* Phoenix::FixedBlockAllocator::GetPtr(const Handle& handle) const
+const void* FixedBlockAllocator::GetPtr(const Handle& handle) const
 {
     uint32 index = GetBlockIndex(handle);
     if (!Blocks.IsValidIndex(index))
@@ -136,7 +140,7 @@ const void* Phoenix::FixedBlockAllocator::GetPtr(const Handle& handle) const
     return GetBlockDataPtr(index);
 }
 
-void Phoenix::FixedBlockAllocator::Compact()
+void FixedBlockAllocator::Compact()
 {
     if (Blocks.IsEmpty())
     {
@@ -189,7 +193,7 @@ void Phoenix::FixedBlockAllocator::Compact()
     Blocks.SetSize(NumOccupiedBlocks);
 }
 
-Phoenix::FixedBlockAllocator::ConstIter::ConstIter(
+FixedBlockAllocator::ConstIter::ConstIter(
     const FixedBlockAllocator* owner,
     uint32 index,
     uint32 numBlocks,
@@ -202,7 +206,7 @@ Phoenix::FixedBlockAllocator::ConstIter::ConstIter(
     Index = std::min(Owner->FindNextOccupiedBlockIndex(Index), NumBlocks);
 }
 
-Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::ConstIter::operator*() const
+FixedBlockAllocator::Handle FixedBlockAllocator::ConstIter::operator*() const
 {
     if (!Owner->Blocks.IsValidIndex(Index))
     {
@@ -212,7 +216,7 @@ Phoenix::FixedBlockAllocator::Handle Phoenix::FixedBlockAllocator::ConstIter::op
     return { Owner->Blocks[Index].Id };
 }
 
-Phoenix::FixedBlockAllocator::ConstIter& Phoenix::FixedBlockAllocator::ConstIter::operator++()
+FixedBlockAllocator::ConstIter& FixedBlockAllocator::ConstIter::operator++()
 {
     // TODO (jfarris): Uncomment-out this assert once we have refactored AttackAbilitySystem
     // PHX_ASSERT(BlockIdGen == Owner->BlockIdGen);
@@ -220,7 +224,7 @@ Phoenix::FixedBlockAllocator::ConstIter& Phoenix::FixedBlockAllocator::ConstIter
     return *this;
 }
 
-bool Phoenix::FixedBlockAllocator::ConstIter::operator==(const ConstIter& other) const
+bool FixedBlockAllocator::ConstIter::operator==(const ConstIter& other) const
 {
     // Note that we compare the BlockIdGen to detect if the allocator was modified since the iterator was created.
     // If it was, then the iterator is considered invalid and not equal to any other iterator (including itself).
@@ -230,22 +234,22 @@ bool Phoenix::FixedBlockAllocator::ConstIter::operator==(const ConstIter& other)
            (Owner == other.Owner && Index == other.Index && NumBlocks == other.NumBlocks);
 }
 
-bool Phoenix::FixedBlockAllocator::ConstIter::operator!=(const ConstIter& other) const
+bool FixedBlockAllocator::ConstIter::operator!=(const ConstIter& other) const
 {
     return !(*this == other);
 }
 
-Phoenix::FixedBlockAllocator::ConstIter Phoenix::FixedBlockAllocator::begin() const
+FixedBlockAllocator::ConstIter FixedBlockAllocator::begin() const
 {
     return { this, 0, Blocks.GetNum(), BlockIdGen };
 }
 
-Phoenix::FixedBlockAllocator::ConstIter Phoenix::FixedBlockAllocator::end() const
+FixedBlockAllocator::ConstIter FixedBlockAllocator::end() const
 {
     return { this, Blocks.GetNum(), Blocks.GetNum(), BlockIdGen };
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockIndex(const Handle& handle) const
+uint32 FixedBlockAllocator::GetBlockIndex(const Handle& handle) const
 {
     if (const uint32* indexPtr = IndexMap.GetPtr(handle.Id))
     {
@@ -255,22 +259,22 @@ Phoenix::uint32 Phoenix::FixedBlockAllocator::GetBlockIndex(const Handle& handle
     return handle.Id;
 }
 
-Phoenix::uint8* Phoenix::FixedBlockAllocator::GetBlockDataPtr(uint32 index)
+uint8* FixedBlockAllocator::GetBlockDataPtr(uint32 index)
 {
     return BlockData.GetData() + static_cast<size_t>(index * Configuration.BlockSize);
 }
 
-const Phoenix::uint8* Phoenix::FixedBlockAllocator::GetBlockDataPtr(uint32 index) const
+const uint8* FixedBlockAllocator::GetBlockDataPtr(uint32 index) const
 {
     return BlockData.GetData() + static_cast<size_t>(index * Configuration.BlockSize);
 }
 
-bool Phoenix::FixedBlockAllocator::IsBlockOccupied(uint32 index) const
+bool FixedBlockAllocator::IsBlockOccupied(uint32 index) const
 {
     return Blocks.IsValidIndex(index) && Blocks[index].Id != Index<uint32>::None;
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::FindNextOccupiedBlockIndex(uint32 index) const
+uint32 FixedBlockAllocator::FindNextOccupiedBlockIndex(uint32 index) const
 {
     while (index < Blocks.GetNum() && !IsBlockOccupied(index))
     {
@@ -279,7 +283,7 @@ Phoenix::uint32 Phoenix::FixedBlockAllocator::FindNextOccupiedBlockIndex(uint32 
     return index;
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::FindFreeBlock() const
+uint32 FixedBlockAllocator::FindFreeBlock() const
 {
     for (uint32 i = 0; i < Blocks.GetNum(); ++i)
     {
@@ -289,7 +293,7 @@ Phoenix::uint32 Phoenix::FixedBlockAllocator::FindFreeBlock() const
     return Index<uint32>::None;
 }
 
-Phoenix::uint32 Phoenix::FixedBlockAllocator::AllocateBlock(uint32 userData)
+uint32 FixedBlockAllocator::AllocateBlock(uint32 userData)
 {
     uint32 index = FindFreeBlock();
 

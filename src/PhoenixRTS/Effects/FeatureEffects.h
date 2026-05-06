@@ -34,11 +34,9 @@ namespace Phoenix::RTS
     class IResponseHandler;
     struct ResponseContext;
 
-    struct PHOENIX_RTS_API FeatureEffectsDynamicBlock : BufferBlockBase
+    struct PHOENIX_RTS_API FeatureEffectsDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureEffectsDynamicBlock)
-
-        struct Config
         {
             uint32 MaxEffectResponses = PHX_RTS_MAX_RESPONSES;
         };
@@ -46,7 +44,7 @@ namespace Phoenix::RTS
         FixedResponseList Responses;
     };
 
-    struct PHOENIX_RTS_API FeatureEffectsScratchBlock : BufferBlockBase
+    struct PHOENIX_RTS_API FeatureEffectsScratchBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureEffectsScratchBlock)
 
@@ -229,7 +227,7 @@ namespace Phoenix::RTS
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
 
         void ProcessDeferredEffects(WorldRef world);

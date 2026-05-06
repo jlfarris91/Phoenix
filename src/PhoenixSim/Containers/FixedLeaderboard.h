@@ -26,35 +26,28 @@ namespace Phoenix
     {
     public:
 
-        TLeaderboardBase() = default;
-
-        template <class TAllocator>
-        TLeaderboardBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TLeaderboardBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TLeaderboardBase(TAllocator& allocator, uint32 capacity, const TLeaderboardBase<T, TRank, TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TItem = TLeaderboardItem<T, TRank>;
         using TStorage = TFixedArray<TItem>;
         TStorage Storage;
     };
+
+    template <class T, class TRank>
+    void TLeaderboardBase<T, TRank, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class T, class TRank>
+    BlockBufferLayout TLeaderboardBase<T, TRank, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TLeaderboardBase>().template Container<TStorage>(config.Capacity);
+    }
 
     template <class T, class TRank, class TStoragePolicy>
     class TLeaderboard : TLeaderboardBase<T, TRank, TStoragePolicy>

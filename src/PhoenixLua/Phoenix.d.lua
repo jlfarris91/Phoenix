@@ -228,6 +228,19 @@ Phoenix.Physics.BodyComponent = {}
 ---@return Phoenix.Physics.BodyComponent
 function Phoenix.Physics.BodyComponent.new(t) end
 
+---@class Phoenix.Physics.FeaturePhysicsScratchBlock
+---@field SortedEntities any
+---@field Contacts any
+---@field ContactPairs any
+---@field ContactPairSet any
+---@field ContactFreeHead integer
+---@field CollisionLines any
+Phoenix.Physics.FeaturePhysicsScratchBlock = {}
+
+---@param t? {SortedEntities?: any, Contacts?: any, ContactPairs?: any, ContactPairSet?: any, ContactFreeHead?: integer, CollisionLines?: any}
+---@return Phoenix.Physics.FeaturePhysicsScratchBlock
+function Phoenix.Physics.FeaturePhysicsScratchBlock.new(t) end
+
 ---@class Phoenix.RTS.Command
 ---@field Flags integer
 ---@field Sender integer

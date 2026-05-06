@@ -3,19 +3,19 @@
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 
+void FixedEntityList::Construct(BlockBufferAllocator& allocator, const Config& config)
+{
+    Storage.Construct(allocator, config.Capacity);
+}
+
+BlockBufferLayout FixedEntityList::StaticLayout(const Config& config)
+{
+    return BlockBufferLayout::For<FixedEntityList>().Container<TStorage>(config.Capacity);
+}
+
 uint32 FixedEntityList::GetCapacity() const
 {
     return Storage.GetCapacity();
-}
-
-uint32 FixedEntityList::GetAllocSizeBytes(uint32 capacity)
-{
-    return TStorage::GetAllocSizeBytes(capacity);
-}
-
-uint32 FixedEntityList::GetAllocSizeBytes() const
-{
-    return Storage.GetAllocSizeBytes();
 }
 
 const Entity* FixedEntityList::GetData() const

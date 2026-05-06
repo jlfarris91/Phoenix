@@ -11,14 +11,14 @@ namespace Phoenix::Pathfinding
     using NavMesh = TFixedCDTMesh2<8192, uint32, Distance, uint16>;
 #endif
 
-    struct PHOENIX_SIM_API FeatureNavMeshStaticBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureNavMeshStaticBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureNavMeshStaticBlock)
 
         NavMesh StaticNavMesh;
     };
 
-    struct PHOENIX_SIM_API FeatureNavMeshDynamicBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureNavMeshDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureNavMeshDynamicBlock)
 
@@ -31,7 +31,7 @@ namespace Phoenix::Pathfinding
         bool bFixDelaunayTriangulation = true;
     };
 
-    struct PHOENIX_SIM_API FeatureNavMeshScratchBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureNavMeshScratchBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureNavMeshScratchBlock)
 

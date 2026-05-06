@@ -25,11 +25,9 @@ namespace Phoenix::RTS
     struct CommandContext;
     class ICommandHandler;
 
-    struct PHOENIX_RTS_API FeatureOrdersDynamicBlock : BufferBlockBase
+    struct PHOENIX_RTS_API FeatureOrdersDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureOrdersDynamicBlock)
-
-        struct Config
         {
             uint32 MaxOrders = PHX_RTS_ORDER_QUEUE_MAX_ORDERS;
         };
@@ -147,7 +145,7 @@ namespace Phoenix::RTS
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
         bool OnHandleWorldAction(WorldRef world, const FeatureActionArgs& args) override;
 

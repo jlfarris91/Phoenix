@@ -6,30 +6,15 @@
 using namespace Phoenix;
 using namespace Phoenix::RTS;
 
-FeatureTimersDynamicBlock::FeatureTimersDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : TimerManager(allocator, config.MaxTimers)
+void FeatureTimersDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    TimerManager.Construct(allocator, config.MaxTimers);
 }
 
-FeatureTimersDynamicBlock::FeatureTimersDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureTimersDynamicBlock& other)
-    : TimerManager(allocator, config.MaxTimers, other.TimerManager)
+BlockBufferLayout FeatureTimersDynamicBlock::StaticLayout(const Config& config)
 {
-}
-
-BufferBlockLayout FeatureTimersDynamicBlock::Layout(Config config)
-{
-    BufferBlockLayout result;
-    result.BlockSize = sizeof(FeatureTimersDynamicBlock);
-    result.AllocSize += FixedTimerManager::GetAllocSizeBytes(config.MaxTimers);
-    return result;
-}
-
-void FeatureTimersDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureTimersDynamicBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureTimersDynamicBlock>()
+        .Container<FixedTimerManager>("TimerManager", config.MaxTimers);
 }
 
 FixedTimerManager* FeatureTimers::GetSessionTimerManager(SessionRef session)
@@ -66,7 +51,7 @@ const FixedTimerManager* FeatureTimers::GetWorldTimerManager(WorldConstRef world
     return block ? &block->TimerManager : nullptr;
 }
 
-void FeatureTimers::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureTimers::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

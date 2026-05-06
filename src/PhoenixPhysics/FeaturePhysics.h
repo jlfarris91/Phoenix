@@ -66,12 +66,12 @@ namespace Phoenix::Physics
         }
     };
 
-    struct PHOENIX_PHYSICS_API FeaturePhysicsDynamicBlock : BufferBlockBase
+    struct PHOENIX_PHYSICS_API FeaturePhysicsDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeaturePhysicsDynamicBlock)
     };
 
-    struct PHOENIX_PHYSICS_API FeaturePhysicsScratchBlock : BufferBlockBase
+    struct PHOENIX_PHYSICS_API FeaturePhysicsScratchBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeaturePhysicsScratchBlock);
 
@@ -118,4 +118,17 @@ namespace Phoenix::Physics
 
         std::shared_ptr<PhysicsSystem> PhysicsSystem;
     };
+}
+
+PHX_DEFINE_TYPE(Phoenix::Physics::FeaturePhysicsScratchBlock)
+{
+    registration
+        .Field("SortedEntities", &Physics::FeaturePhysicsScratchBlock::SortedEntities)
+        // .Field("SortedEntityCount", &Physics::FeaturePhysicsScratchBlock::SortedEntityCount)
+        .Field("ContactPairs", &Physics::FeaturePhysicsScratchBlock::ContactPairs)
+        // .Field("ContactPairsCount", &Physics::FeaturePhysicsScratchBlock::ContactPairsCount)
+        .Field("ContactPairSet", &Physics::FeaturePhysicsScratchBlock::ContactPairSet)
+        .Field("ContactFreeHead", &Physics::FeaturePhysicsScratchBlock::ContactFreeHead)
+        .Field("Contacts", &Physics::FeaturePhysicsScratchBlock::Contacts)
+        .Field("CollisionLines", &Physics::FeaturePhysicsScratchBlock::CollisionLines);
 }

@@ -4,7 +4,8 @@
 #include "PhoenixSim/Platform.h"
 
 #include <array>
-#include <cstring>
+
+#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
 
 namespace Phoenix
 {
@@ -137,23 +138,10 @@ namespace Phoenix
             SetZero();
         }
 
-        template <class TAllocator>
-        TContiguousStorage(TAllocator& allocator, uint32 capacity)
-            : Capacity(capacity)
-            , Data(allocator.template Allocate<T>(capacity))
+        PHX_DECLARE_BLOCK_CONTAINER(TContiguousStorage)
         {
-            SetZero();
-        }
-
-        template <class TAllocator>
-        TContiguousStorage(TAllocator& allocator, uint32 capacity, const TContiguousStorage& other)
-            : TContiguousStorage(allocator, capacity)
-        {
-            SetZero();
-
-            uint32 minSize = std::min(capacity, other.GetCapacity());
-            memcpy(GetData(), other.GetData(), minSize);
-        }
+            uint32 Capacity;
+        };
 
         PHX_FORCEINLINE static bool CanGrow()
         {
@@ -190,16 +178,6 @@ namespace Phoenix
             return *(Data.Get() + index);
         }
 
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return sizeof(T) * capacity;
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return GetAllocSizeBytes(Capacity);
-        }
-
         PHX_FORCEINLINE void SetZero()
         {
             T* item = begin();
@@ -234,6 +212,21 @@ namespace Phoenix
         uint32 Capacity = 0;
         TSelfOffsetRef<T> Data;
     };
+
+    template <class T>
+    void TContiguousStorage<T, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Capacity = config.Capacity;
+        Data.Reset(allocator.Allocate<T>(Capacity));
+        SetZero();
+    }
+
+    template <class T>
+    BlockBufferLayout TContiguousStorage<T, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        uint32 allocSize = config.Capacity * sizeof(T);
+        return BlockBufferLayout::For<TContiguousStorage>(allocSize);
+    }
 
     template <class T>
     using TFixedStorage = TContiguousStorage<T, FixedStoragePolicy>;

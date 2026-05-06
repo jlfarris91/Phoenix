@@ -1,28 +1,24 @@
 #include "ArchetypeManager.h"
 
-#include <cstring>
-
 using namespace Phoenix;
 using namespace Phoenix::ECS;
 
-uint32 ArchetypeManager::GetAllocSizeBytes(const Config& config)
+void ArchetypeManager::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
-    uint32 allocSize = 0;
-    allocSize += TComponentDefMap::GetAllocSizeBytes(config.MaxComponentDefs);
-    allocSize += TArchetypeDefMap::GetAllocSizeBytes(config.MaxArchetypeDefs);
-    allocSize += TEntityHandleMap::GetAllocSizeBytes(config.MaxEntities);
-
-    FixedBlockAllocator::Config allocatorConfig;
-    allocatorConfig.BlockSize = config.ArchetypeListSize + sizeof(TArchetypeList);
-    allocatorConfig.Capacity = config.MaxArchetypeLists;
-    allocSize += TArchetypeListAllocator::GetAllocSizeBytes(allocatorConfig);
-
-    return allocSize;
+    Configuration = config;
+    EntityHandles.Construct(allocator, config.MaxEntities);
+    ArchetypeLists.Construct(allocator, static_cast<uint32>(config.ArchetypeListSize + sizeof(TArchetypeList)), config.MaxArchetypeLists);
+    ComponentDefinitions.Construct(allocator, config.MaxComponentDefs);
+    ArchetypeDefinitions.Construct(allocator, config.MaxArchetypeDefs);
 }
 
-uint32 ArchetypeManager::GetAllocSizeBytes() const
+BlockBufferLayout ArchetypeManager::StaticLayout(const Config& config)
 {
-    return GetAllocSizeBytes(Configuration);
+    return BlockBufferLayout::For<ArchetypeManager>()
+        .Container<TEntityHandleMap>("EntityHandles", config.MaxEntities)
+        .Container<TArchetypeListAllocator>("ArchetypeLists", static_cast<uint32>(config.ArchetypeListSize + sizeof(TArchetypeList)), config.MaxArchetypeLists)
+        .Container<TComponentDefMap>("ComponentDefinitions", config.MaxComponentDefs)
+        .Container<TArchetypeDefMap>("ArchetypeDefinitions", config.MaxArchetypeDefs);
 }
 
 bool ArchetypeManager::IsValid(TArchetypeHandle handle) const
@@ -34,7 +30,7 @@ bool ArchetypeManager::IsValid(TArchetypeHandle handle) const
 uint32 ArchetypeManager::GetNumActiveArchetypes() const
 {
     uint32 total = 0;
-    for (const TBlockHandle& handle : ArchetypeLists)
+    for (TBlockHandle handle : ArchetypeLists)
     {
         if (const TArchetypeList* list = ArchetypeLists.GetPtr<TArchetypeList>(handle))
         {
@@ -529,7 +525,10 @@ ArchetypeManager::TArchetypeList* ArchetypeManager::FindOrAddArchetypeList(const
         return nullptr;
     }
 
-    TBlockHandle handle = ArchetypeLists.Allocate<TArchetypeList>(archetypeDef->GetArchetypeHash(), *archetypeDef);
+    TBlockHandle handle = ArchetypeLists.Allocate<TArchetypeList>(
+        archetypeDef->GetArchetypeHash(),
+        0u,
+        *archetypeDef);
 
     list = ArchetypeLists.GetPtr<TArchetypeList>(handle);
     if (list)

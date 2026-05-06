@@ -66,15 +66,7 @@ namespace Phoenix
         {
         public:
 
-            using TArchetypeList = FixedArchetypeList;
-            using TArchetypeListAllocator = FixedBlockAllocator;
-            using TBlockHandle = TArchetypeListAllocator::Handle;
-            using TArchetypeHandle = TArchetypeList::Handle;
-            using TComponentDefMap = TFixedMap<FName, ComponentDefinition>;
-            using TArchetypeDefMap = TFixedMap<FName, ArchetypeDefinition>;
-            using TEntityHandleMap = TFixedMap<EntityId, TArchetypeHandle>;
-
-            struct Config
+            PHX_DECLARE_BLOCK_CONTAINER(ArchetypeManager)
             {
                 uint32 MaxComponentDefs = 0;
                 uint32 MaxArchetypeDefs = 0;
@@ -83,31 +75,13 @@ namespace Phoenix
                 uint32 MaxEntities = 0;
             };
 
-            ArchetypeManager() = default;
-
-            template <class TAllocator>
-            ArchetypeManager(TAllocator& allocator, const Config& config)
-                : ComponentDefinitions(allocator, config.MaxComponentDefs)
-                , ArchetypeDefinitions(allocator, config.MaxArchetypeDefs)
-                , ArchetypeLists(allocator, { static_cast<uint32>(config.ArchetypeListSize + sizeof(TArchetypeList)), config.MaxArchetypeLists })
-                , EntityHandles(allocator, config.MaxEntities)
-                , Configuration(config)
-            {
-            }
-
-            template <class TAllocator>
-            ArchetypeManager(TAllocator& allocator, const Config& config, const ArchetypeManager& other)
-                : ComponentDefinitions(allocator, config.MaxComponentDefs, other.ComponentDefinitions)
-                , ArchetypeDefinitions(allocator, config.MaxArchetypeDefs, other.ArchetypeDefinitions)
-                , ArchetypeLists(allocator, { static_cast<uint32>(config.ArchetypeListSize + sizeof(TArchetypeList)), config.MaxArchetypeLists }, other.ArchetypeLists)
-                , EntityHandles(allocator, config.MaxEntities, other.EntityHandles)
-                , Configuration(config)
-            {
-            }
-
-            static uint32 GetAllocSizeBytes(const Config& config);
-
-            uint32 GetAllocSizeBytes() const;
+            using TArchetypeList = FixedArchetypeList;
+            using TArchetypeListAllocator = FixedBlockAllocator;
+            using TBlockHandle = TArchetypeListAllocator::Handle;
+            using TArchetypeHandle = TArchetypeList::Handle;
+            using TComponentDefMap = TFixedMap<FName, ComponentDefinition>;
+            using TArchetypeDefMap = TFixedMap<FName, ArchetypeDefinition>;
+            using TEntityHandleMap = TFixedMap<EntityId, TArchetypeHandle>;
 
             bool IsValid(TArchetypeHandle handle) const;
 
@@ -442,15 +416,15 @@ namespace Phoenix
 
             TArchetypeList* FindOrAddArchetypeList(const FName& archetypeIdOrHash);
 
+            TEntityHandleMap EntityHandles;
+
+            TArchetypeListAllocator ArchetypeLists;
+
             // A mapping of component id to component definition.
             TComponentDefMap ComponentDefinitions;
 
             // A mapping of archetype hash to archetype definition.
             TArchetypeDefMap ArchetypeDefinitions;
-
-            TArchetypeListAllocator ArchetypeLists;
-
-            TEntityHandleMap EntityHandles;
 
             Config Configuration;
 

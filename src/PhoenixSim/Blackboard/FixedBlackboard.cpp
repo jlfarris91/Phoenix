@@ -85,6 +85,16 @@ bool BlackboardQuery::operator()(const BlackboardItem& item) const noexcept
     return true;
 }
 
+void FixedBlackboard::Construct(BlockBufferAllocator& allocator, const Config& config)
+{
+    Storage.Construct(allocator, config.Capacity);
+}
+
+BlockBufferLayout FixedBlackboard::StaticLayout(const Config& config)
+{
+    return BlockBufferLayout::For<FixedBlackboard>().Container<TStorage>(config.Capacity);
+}
+
 uint32 FixedBlackboard::GetCapacity() const
 {
     return Storage.GetCapacity();
@@ -98,16 +108,6 @@ FixedBlackboard::TItem* FixedBlackboard::GetData()
 const FixedBlackboard::TItem* FixedBlackboard::GetData() const
 {
     return Storage.GetData();
-}
-
-uint32 FixedBlackboard::GetAllocSizeBytes(uint32 capacity)
-{
-    return TStorage::GetAllocSizeBytes(capacity);
-}
-
-uint32 FixedBlackboard::GetAllocSizeBytes() const
-{
-    return Storage.GetAllocSizeBytes();
 }
 
 void FixedBlackboard::Sort()

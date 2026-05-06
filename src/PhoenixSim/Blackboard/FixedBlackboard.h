@@ -6,6 +6,7 @@
 #include "PhoenixSim/Platform.h"
 #include "PhoenixSim/Name.h"
 #include "PhoenixSim/Profiling.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
 #include "PhoenixSim/Containers/FixedSortedList.h"
 
 namespace Phoenix::Blackboard
@@ -213,30 +214,20 @@ namespace Phoenix::Blackboard
     {
     public:
 
+        PHX_DECLARE_BLOCK_CONTAINER(FixedBlackboard)
+        {
+            uint32 Capacity;
+        };
+
         friend struct BlackboardValues;
 
         using TItem = BlackboardItem;
         using TStorage = TFixedSortedList<BlackboardItem, BlackboardItem::GetItemKey>;
 
-        FixedBlackboard() = default;
-
-        template <class TAllocator>
-        FixedBlackboard(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
-        {
-        }
-
-        template <class TAllocator>
-        FixedBlackboard(TAllocator& allocator, uint32 capacity, const FixedBlackboard& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
         uint32 GetCapacity() const;
         TItem* GetData();
         const TItem* GetData() const;
-        static uint32 GetAllocSizeBytes(uint32 capacity);
-        uint32 GetAllocSizeBytes() const;
+
         void Sort();
 
         uint32 GetNum() const;

@@ -19,37 +19,28 @@ namespace Phoenix
     {
     public:
 
-        TQueueBase() = default;
-
-        template <class TAllocator>
-        TQueueBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TQueueBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TQueueBase(TAllocator& allocator, uint32 capacity, const TQueueBase<T, TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity, other.Storage)
-            , Start(other.Start)
-            , End(other.End)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TStorage = TFixedStorage<T>;
         TStorage Storage;
         uint32 Start = 0, End = 0;
     };
+
+    template <class T>
+    void TQueueBase<T, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class T>
+    BlockBufferLayout TQueueBase<T, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TQueueBase>().template Container<TStorage>(config.Capacity);
+    }
 
     template <class T, class TStoragePolicy, bool AllowOverwrite = false>
     class TQueue : TQueueBase<T, TStoragePolicy>

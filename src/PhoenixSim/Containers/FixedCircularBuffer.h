@@ -5,6 +5,6 @@
 
 namespace Phoenix
 {
-    template <class T>
-    using TFixedCircularBuffer = TQueue<T, true>;
+    template <class T, class TStoragePolicy>
+    using TFixedCircularBuffer = TQueue<T, TStoragePolicy, true>;
 }

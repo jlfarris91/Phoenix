@@ -14,11 +14,9 @@ namespace Phoenix::LDS
 
 namespace Phoenix::LDS
 {
-    struct PHOENIX_SIM_API FeatureLDSDynamicBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureLDSDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureLDSDynamicBlock)
-
-        struct Config
         {
             uint32 MaxObjectRecords = 0;
             uint32 MaxTypeRecords = 0;
@@ -103,7 +101,7 @@ namespace Phoenix::LDS
         void Initialize(const std::shared_ptr<Phoenix::Session>& session) override;
         void Shutdown() override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
 

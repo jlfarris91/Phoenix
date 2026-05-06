@@ -16,9 +16,9 @@ namespace Phoenix
     {
     protected:
         using TStorage = TArray<T, TStoragePolicy>;
-        TStorage Storage;
         uint32 SortedNum = 0;
         uint32 NumValidItems = 0;
+        TStorage Storage;
     };
 
     template <class T>
@@ -28,35 +28,30 @@ namespace Phoenix
 
         TSortedListBase() = default;
 
-        template <class TAllocator>
-        TSortedListBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TSortedListBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TSortedListBase(TAllocator& allocator, uint32 capacity, const TSortedListBase<T, TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TStorage = TFixedArray<T>;
-        TStorage Storage;
         uint32 SortedNum = 0;
         uint32 NumValidItems = 0;
+        TStorage Storage;
     };
-    
+
+    template <class T>
+    void TSortedListBase<T, FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    template <class T>
+    BlockBufferLayout TSortedListBase<T, FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TSortedListBase>().template Container<TStorage>(config.Capacity);
+    }
+
     template <class T, class TGetItemKey, class TStoragePolicy>
     class TSortedList : public TSortedListBase<T, TStoragePolicy>
     {

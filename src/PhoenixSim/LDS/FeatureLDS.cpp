@@ -13,35 +13,15 @@ using namespace Phoenix::LDS;
 using namespace Phoenix::LDS::Json;
 namespace fs = std::filesystem;
 
-FeatureLDSDynamicBlock::FeatureLDSDynamicBlock(BlockBufferAllocator& allocator, const Config& config)
-    : Catalog(allocator, { config.MaxObjectRecords, config.MaxTypeRecords })
+void FeatureLDSDynamicBlock::Construct(BlockBufferAllocator& allocator, const Config& config)
 {
+    Catalog.Construct(allocator, config.MaxObjectRecords, config.MaxTypeRecords);
 }
 
-FeatureLDSDynamicBlock::FeatureLDSDynamicBlock(
-    BlockBufferAllocator& allocator,
-    const Config& config,
-    const FeatureLDSDynamicBlock& other)
-    : Catalog(allocator, { config.MaxObjectRecords, config.MaxTypeRecords }, other.Catalog)
+BlockBufferLayout FeatureLDSDynamicBlock::StaticLayout(const Config& config)
 {
-}
-
-BufferBlockLayout FeatureLDSDynamicBlock::Layout(Config config)
-{
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(FeatureLDSDynamicBlock);
-
-    struct FixedLDSCatalog::Config catalogConfig;
-    catalogConfig.MaxObjectRecords = config.MaxObjectRecords;
-    catalogConfig.MaxTypeRecords = config.MaxTypeRecords;
-    layout.AllocSize = FixedLDSCatalog::GetAllocSizeBytes(catalogConfig);
-
-    return layout;
-}
-
-void FeatureLDSDynamicBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) FeatureLDSDynamicBlock(allocator, config);
+    return BlockBufferLayout::For<FeatureLDSDynamicBlock>()
+        .Container<FixedLDSCatalog>("Catalog", config.MaxObjectRecords, config.MaxTypeRecords);
 }
 
 std::shared_ptr<HeapLDSCatalog> FeatureLDS::GetStaticSessionCatalog()
@@ -157,7 +137,7 @@ void FeatureLDS::Shutdown()
     IFeature::Shutdown();
 }
 
-void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder)
+void FeatureLDS::OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder)
 {
     IFeature::OnWorldLayout(context, builder);
 

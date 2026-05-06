@@ -21,11 +21,9 @@ namespace Phoenix
 {
     class WasmRuntime;
 
-    struct PHOENIX_SCRIPT_API FeatureScriptDynamicBlock : public BufferBlockBase
+    struct PHOENIX_SCRIPT_API FeatureScriptDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureScriptDynamicBlock)
-
-        struct Config
         {
             uint32 WasmMemoryCapacity = PHX_SCRIPT_WASM_MEMORY_CAPACITY;
         };
@@ -105,7 +103,7 @@ namespace Phoenix
         void OnUpdate(const FeatureUpdateArgs& args) override;
         void OnPostUpdate(const FeatureUpdateArgs& args) override;
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
         void OnWorldInitialize(WorldRef world) override;
         void OnWorldShutdown(WorldRef world) override;
 

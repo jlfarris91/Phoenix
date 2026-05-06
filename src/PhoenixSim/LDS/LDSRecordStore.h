@@ -1,4 +1,4 @@
-﻿
+
 #pragma once
 
 #include "LDSRecord.h"
@@ -18,34 +18,26 @@ namespace Phoenix::LDS
     class TLDSRecordStoreBase<FixedStoragePolicy>
     {
     public:
-        TLDSRecordStoreBase() = default;
 
-        template <class TAllocator>
-        TLDSRecordStoreBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TLDSRecordStoreBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TLDSRecordStoreBase(TAllocator& allocator, uint32 capacity, const TLDSRecordStoreBase<TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TStorage = TFixedSortedList<LDSRecord, LDSRecord::GetItemKey>;
         TStorage Storage;
     };
+
+    inline void TLDSRecordStoreBase<FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    inline BlockBufferLayout TLDSRecordStoreBase<FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TLDSRecordStoreBase>().Container<TStorage>(config.Capacity);
+    }
 
     template <class TStoragePolicy>
     class PHOENIX_SIM_API TLDSRecordStore : public TLDSRecordStoreBase<TStoragePolicy>

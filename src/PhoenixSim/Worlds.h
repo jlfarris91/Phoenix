@@ -3,10 +3,9 @@
 #include <nlohmann/json.hpp>
 
 #include "Config.h"
-#include "SessionFwd.h"
 #include "PhoenixSim/Actions.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferOwner.h"
 #include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/Containers/BlockBuffer.h"
 #include "PhoenixSim/Random.h"
 #include "PhoenixSim/WorldsFwd.h"
 #include "PhoenixSim/Reflection/Registration.h"

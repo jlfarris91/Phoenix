@@ -25,7 +25,7 @@ namespace Phoenix::RTS
         ECS::EntityId GroupId;
     };
 
-    struct PHOENIX_RTS_API FeatureSelectionDynamicBlock : BufferBlockBase
+    struct PHOENIX_RTS_API FeatureSelectionDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureSelectionDynamicBlock)
 

@@ -1,11 +1,8 @@
-#include "PhoenixSim/Containers/BlockBuffer.h"
+#include "PhoenixSim/BlockBuffer/BlockBuffer.h"
 
 #include <algorithm>
-#include <cstring>
 #include <malloc.h>
 
-#include "FixedArray.h"
-#include "PhoenixSim/Logging.h"
 #include "PhoenixSim/Profiling.h"
 #include "PhoenixSim/Utils.h"
 
@@ -71,8 +68,8 @@ BlockBuffer::BlockBuffer(const BlockBufferConfig& config)
     for (Block& block : Blocks)
     {
         block.Offset = size;
-        blockSize += block.Definition.Layout.BlockSize;
-        allocSize += block.Definition.Layout.AllocSize;
+        blockSize += block.Definition.Layout.GetHeaderSize();
+        allocSize += block.Definition.Layout.GetAllocSize();
         size = blockSize + allocSize;
     }
 
@@ -84,13 +81,14 @@ BlockBuffer::BlockBuffer(const BlockBufferConfig& config)
     for (Block& block : Blocks)
     {
         uint8* blockPtr = dataPtr + block.Offset;
-        uint32 blockTotalSize = block.Definition.Layout.BlockSize + block.Definition.Layout.AllocSize;
+        uint32 blockTotalSize = block.Definition.Layout.GetAllocSize();
         std::memset(blockPtr, 0, blockTotalSize);
 
         if (block.Definition.ConstructFn.IsBound())
         {
-            uint8* blockAllocPtr = blockPtr + block.Definition.Layout.BlockSize;
-            BlockBufferAllocator allocator(blockAllocPtr, 0, block.Definition.Layout.AllocSize);
+            uint8* blockAllocPtr = blockPtr + block.Definition.Layout.GetHeaderSize();
+            uint32 totalAllocSize = block.Definition.Layout.GetAllocSize();
+            BlockBufferAllocator allocator(blockAllocPtr, 0, totalAllocSize);
             block.Definition.ConstructFn.Execute(blockPtr, allocator);
         }
         else if (block.Definition.Type)
@@ -406,70 +404,4 @@ void BlockBuffer::AllocateMemory(uint32 size)
     Data.reset(data);
     Size = size;
     SystemPageSize = pageSize;
-}
-
-struct TestBlock : BufferBlockBase
-{
-    PHX_DECLARE_BLOCK_WITH_ALLOC(TestBlock);
-
-    struct Config
-    {
-        uint32 MaxItems = 32;
-    };
-
-    TFixedArray<int32> Test;
-};
-
-TestBlock::TestBlock(BlockBufferAllocator& allocator, const Config& config)
-    : Test(allocator, config.MaxItems)
-{
-}
-
-TestBlock::TestBlock(BlockBufferAllocator& allocator, const Config& config, const TestBlock& other)
-    : Test(allocator, config.MaxItems, other.Test)
-{
-}
-
-BufferBlockLayout TestBlock::Layout(Config config)
-{
-    BufferBlockLayout layout;
-    layout.BlockSize = sizeof(TestBlock);
-    layout.AllocSize = TFixedArray<int32>::GetAllocSizeBytes(config.MaxItems);
-    return layout;
-}
-
-void TestBlock::Construct(void* dest, BlockBufferAllocator& allocator, Config config)
-{
-    new (dest) TestBlock(allocator, config);
-}
-
-void Phoenix::BlockBufferRunTests()
-{
-    BlockBufferConfig bufferConfig;
-    bufferConfig.RegisterBlockWithAlloc<TestBlock>(EBufferBlockType::Dynamic, TestBlock::Config{ 64 });
-
-    BlockBuffer buffer(bufferConfig);
-
-    TestBlock& block = buffer.GetBlockRef<TestBlock>();
-
-    PHX_ASSERT(block.Test.IsEmpty());
-    PHX_ASSERT(block.Test.GetCapacity() == 64);
-
-    int32 (*a)[64] = reinterpret_cast<int32(*)[64]>(block.Test.GetData());
-
-    for (uint32 i = 0; i < block.Test.GetCapacity(); ++i)
-    {
-        block.Test.PushBack(i);
-    }
-
-    BlockBuffer buffer2 = buffer;
-
-    TestBlock& block2 = buffer2.GetBlockRef<TestBlock>();
-
-    PHX_ASSERT(block2.Test.IsFull());
-
-    for (uint32 i = 0; i < block2.Test.GetNum(); ++i)
-    {
-        LogInfo("item[{0}] = {1}", i, block2.Test[i]);
-    }
 }

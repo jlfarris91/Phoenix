@@ -1,4 +1,4 @@
-﻿
+
 #pragma once
 
 #include <algorithm>
@@ -24,29 +24,11 @@ namespace Phoenix
     class TBufferBase<FixedStoragePolicy>
     {
     public:
-        TBufferBase() = default;
 
-        template <class TAllocator>
-        TBufferBase(TAllocator& allocator, uint32 capacity)
-            : Storage(allocator, capacity)
+        PHX_DECLARE_BLOCK_CONTAINER(TBufferBase)
         {
-        }
-
-        template <class TAllocator, class TOtherStoragePolicy>
-        TBufferBase(TAllocator& allocator, uint32 capacity, const TBufferBase<TOtherStoragePolicy>& other)
-            : Storage(allocator, capacity, other.Storage)
-        {
-        }
-
-        PHX_FORCEINLINE static uint32 GetAllocSizeBytes(uint32 capacity)
-        {
-            return TStorage::GetAllocSizeBytes(capacity);
-        }
-
-        PHX_FORCEINLINE uint32 GetAllocSizeBytes() const
-        {
-            return Storage.GetAllocSizeBytes();
-        }
+            uint32 Capacity;
+        };
 
     protected:
         using TStorage = TFixedStorage<uint8>;
@@ -55,6 +37,16 @@ namespace Phoenix
         uint32 ReadPos = 0;
         uint32 Size = 0;
     };
+
+    inline void TBufferBase<FixedStoragePolicy>::Construct(BlockBufferAllocator& allocator, const Config& config)
+    {
+        Storage.Construct(allocator, config.Capacity);
+    }
+
+    inline BlockBufferLayout TBufferBase<FixedStoragePolicy>::StaticLayout(const Config& config)
+    {
+        return BlockBufferLayout::For<TBufferBase>().Container<TStorage>(config.Capacity);
+    }
 
     template <class TStoragePolicy>
     class PHOENIX_SIM_API TBuffer : public TBufferBase<TStoragePolicy>

@@ -2,7 +2,7 @@
 #pragma once
 
 #include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Containers/BlockBuffer.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
 #include "PhoenixSim/Containers/FixedArray.h"
 #include "PhoenixSim/Containers/FixedMap.h"
 
@@ -11,8 +11,8 @@ namespace Phoenix
     class PHOENIX_SIM_API FixedBlockAllocator
     {
     public:
-
-        struct Config
+        
+        PHX_DECLARE_BLOCK_CONTAINER(FixedBlockAllocator)
         {
             uint32 BlockSize = 0;
             uint32 Capacity = 0;
@@ -28,32 +28,6 @@ namespace Phoenix
             uint32 Id = 0;
             uint32 UserData = 0;
         };
-
-        FixedBlockAllocator() = default;
-
-        template <class TAllocator>
-        FixedBlockAllocator(TAllocator& allocator, const Config& config)
-            : Configuration(config)
-            , Blocks(allocator, config.Capacity)
-            , BlockData(allocator, config.Capacity * config.BlockSize)
-            , IndexMap(allocator, config.Capacity)
-        {
-        }
-
-        template <class TAllocator>
-        FixedBlockAllocator(TAllocator& allocator, const Config& config, const FixedBlockAllocator& other)
-            : Configuration({ .BlockSize = other.Configuration.BlockSize, .Capacity = config.Capacity })
-            , BlockIdGen(other.BlockIdGen)
-            , NumOccupiedBlocks(other.NumOccupiedBlocks)
-            , Blocks(allocator, config.Capacity, other.Blocks)
-            , BlockData(allocator, config.Capacity * other.Configuration.BlockSize, other.BlockData)
-            , IndexMap(allocator, config.Capacity, other.IndexMap)
-        {
-        }
-
-        static uint32 GetAllocSizeBytes(const Config& config);
-
-        uint32 GetAllocSizeBytes() const;
 
         uint32 GetNumBlocks() const;
 
@@ -91,7 +65,7 @@ namespace Phoenix
 
             uint32 allocSize = Configuration.BlockSize - sizeof(T);
             BlockBufferAllocator allocator(blockDataPtr, sizeof(T), allocSize);
-            new (blockDataPtr) T(allocator, allocSize, std::forward<TArgs>(args)...);
+            static_cast<T*>(blockDataPtr)->Construct(allocator, allocSize, std::forward<TArgs>(args)...);
 
             Block& block = Blocks[index];
             return { block.Id };

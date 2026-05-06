@@ -6,12 +6,12 @@
 
 namespace Phoenix
 {
-    struct PHOENIX_SIM_API FeatureDebugScratchBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureDebugScratchBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK(FeatureDebugScratchBlock)
 
         TInlineArray<DebugShape, 8192> Shapes;
-        Color Colors[1024];
+        Color Colors[256];
     };
 
     class PHOENIX_SIM_API FeatureDebug : public IFeature

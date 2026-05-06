@@ -6,11 +6,9 @@
 
 namespace Phoenix
 {
-    struct PHOENIX_SIM_API FeatureStringDynamicBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureStringDynamicBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureStringDynamicBlock)
-
-        struct Config
         {
             uint32 MaxNumStrings = 0;
             uint32 MaxBufferCapacity = 0;
@@ -53,7 +51,7 @@ namespace Phoenix
 
     protected:
 
-        void OnSessionLayout(const SessionLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnSessionLayout(const SessionLayoutContext& context, BlockBufferConfigBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
     };
 }

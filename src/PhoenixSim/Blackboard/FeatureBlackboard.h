@@ -3,7 +3,7 @@
 
 #include "PhoenixSim/Features.h"
 #include "PhoenixSim/Blackboard/FixedBlackboard.h"
-#include "PhoenixSim/Containers/BlockBuffer.h"
+#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
 #include "PhoenixSim/SessionFwd.h"
 
 #ifndef PHX_BLACKBOARD_MAX_GLOBAL_SIZE
@@ -16,11 +16,9 @@
 
 namespace Phoenix::Blackboard
 {
-    struct PHOENIX_SIM_API FeatureBlackboardBlock : BufferBlockBase
+    struct PHOENIX_SIM_API FeatureBlackboardBlock : BlockBufferBlock
     {
         PHX_DECLARE_BLOCK_WITH_ALLOC(FeatureBlackboardBlock)
-
-        struct Config
         {
             uint32 MaxBlackboardItems;
         };
@@ -37,7 +35,7 @@ namespace Phoenix::Blackboard
 
     public:
 
-        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferLayoutBuilder& builder) override;
+        void OnWorldLayout(const WorldLayoutContext& context, BlockBufferConfigBuilder& builder) override;
 
         void OnPostUpdate(const FeatureUpdateArgs& args) override;
         void OnPostWorldUpdate(WorldRef world, const FeatureUpdateArgs& args) override;
