@@ -78,6 +78,7 @@
 // Tools
 #include "Tools/CameraTool.h"
 #include "Tools/EntityTool.h"
+#include "Tools/MemoryTool.h"
 #include "Tools/NavMeshTool.h"
 #include "Tools/PlayerController.h"
 
@@ -148,6 +149,9 @@ std::shared_ptr<ISDLTool> GPlayerController;
 std::shared_ptr<ISDLTool> GCameraTool;
 std::shared_ptr<ISDLTool> GEntityTool;
 std::shared_ptr<ISDLTool> GNavMeshTool;
+
+// ===== Memory Tool =====
+MemoryTool GMemoryTool;
 
 // ===== World View =====
 WorldDoubleBuffer GWorldView;
@@ -283,6 +287,7 @@ void OnPostWorldUpdate(WorldConstRef world)
 {
     PHX_PROFILE_ZONE_SCOPED;
     GWorldView.OnSimUpdate(world);
+    GMemoryTool.OnSimUpdate(world, *GSession);
 }
 
 bool LoadLineModel(
@@ -1315,6 +1320,8 @@ void RenderPhoenixUI()
         ImGui::EndTabBar();
     }
     ImGui::End();
+
+    GMemoryTool.DrawWindow(io.DeltaTime);
 
     ShowConsole(&GShowConsoleWindow);
 }

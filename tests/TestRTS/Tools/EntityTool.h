@@ -25,6 +25,7 @@ struct EntityTool : public ISDLTool
     float BrushSize = 10.0f;
     uint32_t SpawnCount = 1;
     uint8_t Player = 0;
+    bool RandomPlayer = false;
     float MoveSpeed = 10.0f;
     float PushForce = 100.0f;
 
@@ -38,6 +39,7 @@ PHX_DEFINE_TYPE(EntityTool)
         .Field("BrushSize", &EntityTool::BrushSize)
         .Field("SpawnCount", &EntityTool::SpawnCount)
         .Field("Player", &EntityTool::Player)
+        .Field("RandomPlayer", &EntityTool::RandomPlayer)
         .Field("MoveSpeed", &EntityTool::MoveSpeed)
         .Field("PushForce", &EntityTool::PushForce);
 }
