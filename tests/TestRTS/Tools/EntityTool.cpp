@@ -1,6 +1,7 @@
 
 #include "EntityTool.h"
 
+#include <imgui.h>
 #include <SDL3/SDL_events.h>
 
 #include <PhoenixSim/Actions.h>
@@ -8,7 +9,6 @@
 #include <PhoenixSim/FixedPoint/FixedVector.h>
 
 #include "../imgui/ImGuiUtils.h"
-#include "../sdl/SDLDebugState.h"
 #include "../sdl/SDLDebugRenderer.h"
 
 using namespace Phoenix;
@@ -19,7 +19,7 @@ EntityTool::EntityTool(const std::shared_ptr<Phoenix::Session>& session)
     UnitLabels = { "Lancer", "Archer", "Tower" };
 }
 
-void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
+void EntityTool::OnAppRenderWorld(WorldConstRef, IDebugState& state, IDebugRenderer& renderer)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
@@ -34,14 +34,14 @@ void EntityTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDL
     }
 }
 
-void EntityTool::OnAppRenderUI(ImGuiIO& io)
+void EntityTool::OnAppRenderUI()
 {
     ImGui::TextDisabled("Units:");
     ImGui::Spacing();
     WrapPanel(UnitLabels, SelectedUnitIndex);
 }
 
-void EntityTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
+void EntityTool::OnAppEvent(WorldConstRef world, IDebugState& state, const void* eventData)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 

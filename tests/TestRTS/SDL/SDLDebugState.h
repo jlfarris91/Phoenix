@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include <SDL3/SDL_events.h>
@@ -11,8 +10,6 @@
 
 struct SDLDebugState : Phoenix::IDebugState
 {
-    SDLDebugState(SDLViewport* viewport);
-
     bool KeyDown(uint32_t keycode) const override;
     bool KeyUp(uint32_t keycode) const override;
     bool KeyPressed(uint32_t keycode) const override;
@@ -25,9 +22,12 @@ struct SDLDebugState : Phoenix::IDebugState
 
     Phoenix::Vec2 GetWorldMousePos() const override;
 
-    void ProcessAppEvent(SDL_Event* event);
+    SDLViewport* GetViewport() const;
+    void SetViewport(SDLViewport* viewport);
 
-    SDLViewport* Viewport;
+    void OnAppEvent(const SDL_Event* event);
+
+    SDLViewport* Viewport = nullptr;
     std::map<uint8_t, bool> MouseButtonStates;
     std::map<uint8_t, bool> PrevMouseButtonStates;
     std::map<SDL_Keycode, bool> KeyStates;

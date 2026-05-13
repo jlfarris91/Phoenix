@@ -26,7 +26,7 @@ struct MemoryTool
     void OnSimUpdate(Phoenix::WorldConstRef world, const Phoenix::Session& session);
 
     // Called from the render thread each frame.
-    void DrawWindow(float deltaTime);
+    void Draw(float deltaTime);
 
 private:
     struct BlockInfo

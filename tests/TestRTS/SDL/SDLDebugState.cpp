@@ -5,11 +5,6 @@
 
 using namespace Phoenix;
 
-SDLDebugState::SDLDebugState(SDLViewport* viewport)
-    : Viewport(viewport)
-{
-}
-
 bool SDLDebugState::KeyDown(uint32 keycode) const
 {
     auto iter = KeyStates.find(keycode);
@@ -72,13 +67,27 @@ bool SDLDebugState::MouseButtonReleased(uint8 button) const
 
 Vec2 SDLDebugState::GetWorldMousePos() const
 {
+    if (!Viewport)
+    {
+        return Vec2::Zero;
+    }
+
     float mx, my;
     SDL_GetMouseState(&mx, &my);
-
     return Viewport->ViewportPosToWorldPos(Viewport->WindowPosToViewportPos({ mx, my }));
 }
 
-void SDLDebugState::ProcessAppEvent(SDL_Event* event)
+SDLViewport* SDLDebugState::GetViewport() const
+{
+    return Viewport;
+}
+
+void SDLDebugState::SetViewport(SDLViewport* viewport)
+{
+    Viewport = viewport;
+}
+
+void SDLDebugState::OnAppEvent(const SDL_Event* event)
 {
     PrevKeyStates = KeyStates;
     PrevMouseButtonStates = MouseButtonStates;

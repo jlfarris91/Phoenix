@@ -18,9 +18,9 @@
 extern bool GGameWindowHovered;
 
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer);
-void OnAppRenderWorld();
+void OnAppTick();
 void OnAppRenderUI();
-void OnAppEvent(SDL_Event* event);
+void OnAppEvent(const SDL_Event* event);
 void OnAppShutdown();
 
 // Main code
@@ -153,7 +153,7 @@ int main(int, char**)
         SDL_RenderClear(renderer);
 
         // Render world
-        OnAppRenderWorld();
+        OnAppTick();
 
         // Start the Dear ImGui frame
         ImGui_ImplSDLRenderer3_NewFrame();

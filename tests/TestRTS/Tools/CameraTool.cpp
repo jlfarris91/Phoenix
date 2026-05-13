@@ -12,27 +12,26 @@
 
 using namespace Phoenix;
 
-CameraTool::CameraTool(std::shared_ptr<Phoenix::Session> session, SDLCamera* camera, SDLViewport* viewport)
+const char* CameraTool::GetDescription() const
+{
+    return "Pan (right-drag or arrow keys) and zoom (scroll wheel) the game viewport camera.";
+}
+
+CameraTool::CameraTool(const std::shared_ptr<Phoenix::Session>& session, SDLCamera* camera, SDLViewport* viewport)
     : Session(session)
     , Camera(camera)
     , Viewport(viewport)
 {
 }
 
-void CameraTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
-{
-}
-
-void CameraTool::OnAppRenderUI(ImGuiIO& io)
-{
-}
-
-void CameraTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
+void CameraTool::OnAppEvent(WorldConstRef, IDebugState& state, const void* eventData)
 {
     float mx, my;
     SDL_GetMouseState(&mx, &my);
     SDL_FPoint mouseWindowPos = { mx, my };
     Vec2 mouseWorldPos = state.GetWorldMousePos();
+
+    const SDL_Event* event = static_cast<const SDL_Event*>(eventData);
 
     if (event->type == SDL_EVENT_MOUSE_MOTION)
     {

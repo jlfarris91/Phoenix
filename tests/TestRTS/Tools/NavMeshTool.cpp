@@ -20,7 +20,7 @@ NavMeshTool::NavMeshTool(std::shared_ptr<Phoenix::Session> session)
 {
 }
 
-void NavMeshTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
+void NavMeshTool::OnAppRenderWorld(WorldConstRef world, IDebugState& state, IDebugRenderer& renderer)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
@@ -119,11 +119,7 @@ void NavMeshTool::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SD
     }
 }
 
-void NavMeshTool::OnAppRenderUI(ImGuiIO& io)
-{
-}
-
-void NavMeshTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
+void NavMeshTool::OnAppEvent(WorldConstRef world, IDebugState& state, const void* eventData)
 {
     auto mouseWorldPos = state.GetWorldMousePos();
 
@@ -155,7 +151,7 @@ void NavMeshTool::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Even
     }
 }
 
-void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, const NavMesh& mesh)
+void NavMeshTool::RenderMesh(IDebugState& state, IDebugRenderer& renderer, const NavMesh& mesh)
 {
     if (bDrawVertCircles)
     {
@@ -321,8 +317,8 @@ void NavMeshTool::RenderMesh(SDLDebugState& state, SDLDebugRenderer& renderer, c
 }
 
 void NavMeshTool::RenderPath(
-    SDLDebugState& state,
-    SDLDebugRenderer& renderer,
+    IDebugState& state,
+    IDebugRenderer& renderer,
     const NavMesh& mesh,
     const TMeshPath<NavMesh>& meshPath)
 {
@@ -385,7 +381,12 @@ void NavMeshTool::RenderPath(
     }
 }
 
-void NavMeshTool::RenderCircumcircle(SDLDebugRenderer& renderer, const Vec2& a, const Vec2& b, const Vec2& c, const Color& color)
+void NavMeshTool::RenderCircumcircle(
+    IDebugRenderer& renderer,
+    const Vec2& a,
+    const Vec2& b,
+    const Vec2& c,
+    const Color& color)
 {
     auto a2 = a.X*a.X + a.Y*a.Y;
     auto b2 = b.X*b.X + b.Y*b.Y;

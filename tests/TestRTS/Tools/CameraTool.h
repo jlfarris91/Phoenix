@@ -6,7 +6,7 @@
 #include <PhoenixSim/Containers/Optional.h>
 
 #include "../sdl/SDLCamera.h"
-#include "../sdl/SDLTool.h"
+#include "../App/Tool.h"
 
 namespace Phoenix
 {
@@ -16,17 +16,17 @@ namespace Phoenix
 struct SDLViewport;
 struct SDLCamera;
 
-struct CameraTool : public ISDLTool
+class CameraTool : public ITool
 {
-    PHX_DECLARE_TYPE_DERIVED(CameraTool, ISDLTool)
+    PHX_DECLARE_TYPE_DERIVED(CameraTool, ITool)
 
-    const char* GetDescription() const override { return "Pan (right-drag or arrow keys) and zoom (scroll wheel) the game viewport camera."; }
+public:
 
-    CameraTool(std::shared_ptr<Phoenix::Session> session, SDLCamera* camera, SDLViewport* viewport);
+    const char* GetDescription() const override;
 
-    void OnAppRenderWorld(Phoenix::WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
-    void OnAppRenderUI(ImGuiIO& io) override;
-    void OnAppEvent(Phoenix::WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+    CameraTool(const std::shared_ptr<Phoenix::Session>& session, SDLCamera* camera, SDLViewport* viewport);
+
+    void OnAppEvent(Phoenix::WorldConstRef world, Phoenix::IDebugState& state, const void* eventData) override;
 
     std::shared_ptr<Phoenix::Session> Session;
     SDLCamera* Camera;

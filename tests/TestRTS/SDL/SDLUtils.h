@@ -11,10 +11,10 @@ struct SDLViewport;
 struct SDLDebugRenderer;
 
 void DrawGrid(
-    SDL_Window* window,
-    SDLDebugRenderer* renderer,
-    const SDLViewport* viewport,
-    const SDLCamera* camera);
+    SDL_Rect rect,
+    SDLDebugRenderer& renderer,
+    const SDLViewport& viewport,
+    const SDLCamera& camera);
 
 void DrawSelectionCircle(
     Phoenix::WorldConstRef world,

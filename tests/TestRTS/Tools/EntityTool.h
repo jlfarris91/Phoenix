@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "../sdl/SDLTool.h"
+#include "../App/Tool.h"
 #include "PhoenixSim/Reflection/Registration.h"
 
 namespace Phoenix
@@ -9,17 +9,21 @@ namespace Phoenix
     class Session;
 }
 
-struct EntityTool : public ISDLTool
+class EntityTool : public ITool
 {
-    PHX_DECLARE_TYPE_DERIVED(EntityTool, ISDLTool)
+    PHX_DECLARE_TYPE_DERIVED(EntityTool, ITool)
+
+public:
 
     const char* GetDescription() const override { return "Spawn and manipulate entities in the world using brush-based placement."; }
 
     EntityTool(const std::shared_ptr<Phoenix::Session>& session);
 
-    void OnAppRenderWorld(Phoenix::WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
-    void OnAppRenderUI(ImGuiIO& io) override;
-    void OnAppEvent(Phoenix::WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+    void OnAppRenderWorld(Phoenix::WorldConstRef world, Phoenix::IDebugState& state, Phoenix::IDebugRenderer& renderer) override;
+    void OnAppRenderUI() override;
+    void OnAppEvent(Phoenix::WorldConstRef world, Phoenix::IDebugState& state, const void* eventData) override;
+
+private:
 
     std::shared_ptr<Phoenix::Session> Session;
     float BrushSize = 10.0f;

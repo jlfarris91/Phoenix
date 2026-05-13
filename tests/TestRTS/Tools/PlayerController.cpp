@@ -33,17 +33,17 @@ PlayerController::PlayerController(const std::shared_ptr<Phoenix::Session>& sess
 
 void PlayerController::OnActivated()
 {
-    ISDLTool::OnActivated();
+    ITool::OnActivated();
     SDL_CaptureMouse(true);
 }
 
 void PlayerController::OnDeactivated()
 {
-    ISDLTool::OnDeactivated();
+    ITool::OnDeactivated();
     SDL_CaptureMouse(false);
 }
 
-void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer)
+void PlayerController::OnAppRenderWorld(WorldConstRef world, IDebugState& state, IDebugRenderer& renderer)
 {
     Vec2 mouseWorldPos = state.GetWorldMousePos();
 
@@ -51,13 +51,16 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 
     constexpr uint32 playerId = 0;
     const FName groupId = FName::None;
+    
+    SDLDebugState& sdlDebugState = static_cast<SDLDebugState&>(state);
+    SDLDebugRenderer& sdlDebugRenderer = static_cast<SDLDebugRenderer&>(renderer);
 
     const LDS::ILDSQueryContext& lds = *LDS::FeatureLDS::StaticGetWorldQueryContext(world);
 
     if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet())
     {
-        Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragStart));
-        Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragEnd));
+        Vec2 boxSelectDragStartWS = sdlDebugState.Viewport->ViewportPosToWorldPos(sdlDebugState.Viewport->WindowPosToViewportPos(*BoxSelectDragStart));
+        Vec2 boxSelectDragEndWS = sdlDebugState.Viewport->ViewportPosToWorldPos(sdlDebugState.Viewport->WindowPosToViewportPos(*BoxSelectDragEnd));
 
         Vec2 min;
         min.X = std::min(boxSelectDragStartWS.X, boxSelectDragEndWS.X);
@@ -74,12 +77,12 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
 
         for (const EntityTransform& entity : entities)
         {
-            DrawSelectionCircle(world, renderer, entity.EntityId);
+            DrawSelectionCircle(world, sdlDebugRenderer, entity.EntityId);
         }
     }
     else if (FeatureUnit::UnitIsAlive(world, UnitId(HoverTarget)))
     {
-        DrawSelectionCircle(world, renderer, HoverTarget);
+        DrawSelectionCircle(world, sdlDebugRenderer, HoverTarget);
     }
 
     EntityId selectionGroup = FeatureSelection::GetPlayerSelection(world, playerId, groupId);
@@ -91,7 +94,7 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
             return;
         }
 
-        DrawSelectionCircle(world, renderer, entityId);
+        DrawSelectionCircle(world, sdlDebugRenderer, entityId);
 
         Vec2 lastTargetPos = transformPtr->Position;
         FeatureOrders::ForEachOrder(world, UnitId(entityId), [&](const Order& order)
@@ -109,16 +112,16 @@ void PlayerController::OnAppRenderWorld(WorldConstRef world, SDLDebugState& stat
     });
 }
 
-void PlayerController::OnAppRenderUI(ImGuiIO& io)
-{
-}
-
-void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL_Event* event)
+void PlayerController::OnAppEvent(WorldConstRef world, IDebugState& state, const void* eventData)
 {
     float mx, my;
     SDL_GetMouseState(&mx, &my);
     SDL_FPoint mouseWindowPos = { mx, my };
     Vec2 mouseWorldPos = state.GetWorldMousePos();
+    
+    SDLDebugState& sdlDebugState = static_cast<SDLDebugState&>(state);
+
+    const SDL_Event* event = static_cast<const SDL_Event*>(eventData);
 
     if (event->type == SDL_EVENT_KEY_DOWN)
     {
@@ -201,8 +204,8 @@ void PlayerController::OnAppEvent(WorldConstRef world, SDLDebugState& state, SDL
     {
         if (BoxSelectDragStart.IsSet() && BoxSelectDragEnd.IsSet() && distance(*BoxSelectDragStart, *BoxSelectDragEnd) > DragThreshold)
         {
-            Vec2 boxSelectDragStartWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragStart));
-            Vec2 boxSelectDragEndWS = state.Viewport->ViewportPosToWorldPos(state.Viewport->WindowPosToViewportPos(*BoxSelectDragEnd));
+            Vec2 boxSelectDragStartWS = sdlDebugState.Viewport->ViewportPosToWorldPos(sdlDebugState.Viewport->WindowPosToViewportPos(*BoxSelectDragStart));
+            Vec2 boxSelectDragEndWS = sdlDebugState.Viewport->ViewportPosToWorldPos(sdlDebugState.Viewport->WindowPosToViewportPos(*BoxSelectDragEnd));
 
             Vec2 min;
             min.X = std::min(boxSelectDragStartWS.X, boxSelectDragEndWS.X);

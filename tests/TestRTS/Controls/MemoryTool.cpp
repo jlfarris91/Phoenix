@@ -748,7 +748,7 @@ void MemoryTool::DrawBufferBar(const char* label, BufferView& view, FlameGraphVi
 
 // ── DrawWindow ────────────────────────────────────────────────────────────────
 
-void MemoryTool::DrawWindow(float deltaTime)
+void MemoryTool::Draw(float deltaTime)
 {
     PendingData localWorld, localSession;
     bool hasNew = false;
@@ -779,9 +779,6 @@ void MemoryTool::DrawWindow(float deltaTime)
     };
     AdvanceAndPrune(WorldView);
     AdvanceAndPrune(SessionView);
-
-    ImGui::SetNextWindowSize({ 720.0f, 400.0f }, ImGuiCond_FirstUseEver);
-    ImGui::Begin("Memory");
 
     // ── Legend ────────────────────────────────────────────────────────────────
     {
@@ -815,6 +812,4 @@ void MemoryTool::DrawWindow(float deltaTime)
 
     DrawBufferBar("World",   WorldView,   WorldFGView);
     DrawBufferBar("Session", SessionView, SessionFGView);
-
-    ImGui::End();
 }

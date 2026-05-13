@@ -1,5 +1,6 @@
 ﻿#include "SDLUtils.h"
 
+#include <imgui_internal.h>
 #include <SDL3/SDL_video.h>
 
 #include "SDLCamera.h"
@@ -17,16 +18,13 @@ using namespace Phoenix;
 using PhoenixColor = Phoenix::Color;
 
 void DrawGrid(
-    SDL_Window* window,
-    SDLDebugRenderer* renderer,
-    const SDLViewport* viewport,
-    const SDLCamera* camera)
-{
-    int32 windowWidth, windowHeight;
-    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-    
-    auto tl = viewport->ViewportPosToWorldPos({ 0, 0 });
-    auto br = viewport->ViewportPosToWorldPos({ (float)windowWidth, (float)windowHeight });
+    SDL_Rect rect,
+    SDLDebugRenderer& renderer,
+    const SDLViewport& viewport,
+    const SDLCamera& camera)
+{    
+    auto tl = viewport.ViewportPosToWorldPos({ (float)rect.x, (float)rect.y });
+    auto br = viewport.ViewportPosToWorldPos({ (float)rect.w, (float)rect.h });
 
     tl.X = Clamp(tl.X, Distance::Min, Distance::Max);
     tl.Y = Clamp(tl.Y, Distance::Min, Distance::Max);
@@ -37,21 +35,21 @@ void DrawGrid(
 
     int32 step = 1 << MortonCodeGridBits;
 
-    while (viewport->WorldVecToViewportVec(Vec2(step, 0)).x <= 10)
+    while (viewport.WorldVecToViewportVec(Vec2(step, 0)).x <= 10)
     {
         step *= 10;
     }
 
     float minVisStep = step / 10.0f;
-    float minVisStepAlpha = viewport->WorldVecToViewportVec(Vec2(minVisStep, 0)).x;
+    float minVisStepAlpha = viewport.WorldVecToViewportVec(Vec2(minVisStep, 0)).x;
     minVisStepAlpha = Clamp(minVisStepAlpha / 10.0f, 0.0f, 1.0f);
 
     int32 steps = int32(m / step);
 
     m *= 0.5;
 
-    auto minX = (int32)(((float)camera->Position.X - m) / step) * step;
-    auto minY = (int32)(((float)camera->Position.Y - m) / step) * step;
+    auto minX = (int32)(((float)camera.Position.X - m) / step) * step;
+    auto minY = (int32)(((float)camera.Position.Y - m) / step) * step;
 
     auto calculateColor = [minVisStepAlpha, step](int32 s, PhoenixColor& color)
     {
@@ -105,8 +103,8 @@ void DrawGrid(
         Distance x = stepX;
         Distance y = stepY;
 
-        renderer->DrawLine(Vec2(x, Distance::Min), Vec2(x, Distance::Max), colorX);
-        renderer->DrawLine(Vec2(Distance::Min, y), Vec2(Distance::Max, y), colorY);
+        renderer.DrawLine(Vec2(x, Distance::Min), Vec2(x, Distance::Max), colorX);
+        renderer.DrawLine(Vec2(Distance::Min, y), Vec2(Distance::Max, y), colorY);
     }
 }
 

@@ -7,7 +7,7 @@
 #include <PhoenixSim/ECS/EntityId.h>
 
 #include "../sdl/SDLCamera.h"
-#include "../sdl/SDLTool.h"
+#include "../App/Tool.h"
 
 namespace Phoenix
 {
@@ -17,9 +17,11 @@ namespace Phoenix
 struct SDLViewport;
 struct SDLCamera;
 
-struct PlayerController : public ISDLTool
+class PlayerController : public ITool
 {
-    PHX_DECLARE_TYPE_DERIVED(PlayerController, ISDLTool)
+    PHX_DECLARE_TYPE_DERIVED(PlayerController, ITool)
+
+public:
 
     const char* GetDescription() const override { return "Select and issue orders to units. Left-click to select, right-click to move or attack."; }
 
@@ -27,9 +29,10 @@ struct PlayerController : public ISDLTool
 
     void OnActivated() override;
     void OnDeactivated() override;
-    void OnAppRenderWorld(Phoenix::WorldConstRef world, SDLDebugState& state, SDLDebugRenderer& renderer) override;
-    void OnAppRenderUI(ImGuiIO& io) override;
-    void OnAppEvent(Phoenix::WorldConstRef world, SDLDebugState& state, SDL_Event* event) override;
+    void OnAppRenderWorld(Phoenix::WorldConstRef world, Phoenix::IDebugState& state, Phoenix::IDebugRenderer& renderer) override;
+    void OnAppEvent(Phoenix::WorldConstRef world, Phoenix::IDebugState& state, const void* eventData) override;
+
+private:
 
     std::shared_ptr<Phoenix::Session> Session;
     SDLCamera* Camera;
