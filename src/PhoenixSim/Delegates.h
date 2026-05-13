@@ -703,6 +703,6 @@ namespace Phoenix
     };
 }
 
-#define PHX_DECLARE_DELEGATE(DelegateName, ...) typedef TDelegate<void(__VA_ARGS__)> DelegateName
-#define PHX_DECLARE_DELEGATE_RET(DelegateName, ReturnType, ...) typedef TDelegate<ReturnType(__VA_ARGS__)> DelegateName
-#define PHX_DECLARE_MULTICAST_DELEGATE(DelegateName, ...) typedef TMulticastDelegate<void(__VA_ARGS__)> DelegateName
+#define PHX_DECLARE_DELEGATE(DelegateName, ...) typedef Phoenix::TDelegate<void(__VA_ARGS__)> DelegateName
+#define PHX_DECLARE_DELEGATE_RET(DelegateName, ReturnType, ...) typedef Phoenix::TDelegate<ReturnType(__VA_ARGS__)> DelegateName
+#define PHX_DECLARE_MULTICAST_DELEGATE(DelegateName, ...) typedef Phoenix::TMulticastDelegate<void(__VA_ARGS__)> DelegateName

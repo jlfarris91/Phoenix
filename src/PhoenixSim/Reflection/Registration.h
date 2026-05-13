@@ -42,6 +42,7 @@ namespace Phoenix
 
 #define _PHX_TYPE_COMMON(type, ...) \
     private: \
+        friend class Phoenix::TypeRegistrar<type>; \
         inline static const bool _s_phx_type_init_ = ( \
             [] { Phoenix::TypeDescriptorBuilder<type>{}.template Bases<__VA_ARGS__>(); }(), true); \
     public:
