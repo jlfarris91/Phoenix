@@ -100,16 +100,60 @@ The MPMC is correct (textbook Vyukov). `JobScheduler` mixes orderings — `Remai
 - No per-worker stats exposed (counters for "jobs completed", "jobs stolen") — Tracy zones only.
 - No `std::execution`-style sender/receiver vocabulary (long-term consideration only).
 
-## Implementation order
+## Implementation status
 
-1. **#1 — Cache-line padding** (low risk, ~10 lines, immediate measurable win).
-2. **#6 — PAUSE in caller-side waits** (small, isolated, predictable).
-3. **#4 — Task pool / kill `std::function` + `shared_ptr` on hot path** (medium; touches `Submit()` API).
-4. **#3 — `ParallelForEach` → `ParallelRange` shim** (small; one helper).
-5. **#2 — Chase-Lev per-worker deque** (large; reshapes the scheduler internals).
-6. **#5 — Fibers** (large + invasive; depends on #2 being stable). Justified specifically by PhysicsSystem's iterative solver and PhoenixLua reentrancy.
+| Step | Commit(s) | Status |
+|---|---|---|
+| Docs + pinning tests | `35ec511` | ✅ landed |
+| **#1** Cache-line padding | `8684ae9` | ✅ landed |
+| **#6** PAUSE backoff on caller-side waits; real PAUSE on POSIX | `7f2ce68` | ✅ landed |
+| **#4** `TInlineCallable<void(), 128>` in Task body | `a1c0fc4` | ✅ landed |
+| **#3** `ParallelForEach` shim + `InFlight` counter (fixes `WaitIdle` TOCTOU) | `2e20825` | ✅ landed |
+| **#2a** `TChaseLevDeque<T>` template + tests | `794346f` | ✅ landed |
+| **#2b/c** Slab + per-worker deques + submission inbox in `ThreadPool` | `af0069b` | ✅ landed |
+| **#5a** `ECS::ParallelForEntities<TComponents...>` primitive | — | open |
+| **#5b** Fibers | — | deferred (see below) |
+| **#7** Memory-ordering audit on ARM hardware | — | open (recheck on real Apple Silicon / Switch box) |
 
-Each step lands behind pinning tests (`tests/unit/PhoenixSim/test_parallel.cpp`) that capture the existing observable behavior so regressions are caught regardless of how the internals are reorganized.
+45 tests / 15,505 assertions, 10+ consecutive clean runs as of `af0069b`.
+
+## #5 fibers — deferred, with reasoning
+
+The initial roadmap entry justified fibers with "PhysicsSystem's iterative solver and PhoenixLua reentrancy." A close read of `src/PhoenixPhysics/PhysicsSystem.cpp` and `src/PhoenixSim/ECS/JobScheduler.cpp` shows that the PhysicsSystem half of that justification is **wrong** — fibers wouldn't change anything there.
+
+### What PhysicsSystem actually does
+
+`PhysicsSystem` holds three bespoke `JobScheduler` instances (`IntegrateVelocitiesScheduler`, `CalculateContactPairsScheduler`, `IntegrateScheduler`). Each registers exactly one job and never uses the multi-job DAG features. They exist because:
+
+- `IJob<TComponents...>` gives free per-archetype batching and the per-entity `Execute(world, e, cb, comp...)` signature.
+- These jobs need to run **multiple times per frame** inside `OnPostWorldUpdate`'s iteration loop — `FeatureECS::RegisterJob` only runs jobs once per frame, so the bespoke schedulers are the workaround.
+
+`OnPostWorldUpdate` runs on the **main thread**, not on a worker. Its `ExecuteScheduler` and `WorldTaskQueue::Flush` calls block the main thread while workers process — no worker is ever blocked. The "I'm a worker stuck waiting for jobs" problem fibers solve doesn't exist here.
+
+### The actual design smell is a missing primitive
+
+What PhysicsSystem wants is a single function:
+
+```cpp
+template <class... TComponents, class Fn>
+void ECS::ParallelForEntities(WorldRef world, Fn&& fn);
+```
+
+It resolves matching archetypes via `EntityQueryBuilder`, fans batches into the thread pool, joins on `WaitIdle`. Same primitives `JobScheduler::Execute` already uses, minus the multi-job DAG bookkeeping.
+
+With that primitive, `PhysicsSystem::OnPostWorldUpdate` becomes a flat loop of `ParallelForEntities` / `ParallelRange` calls. The three `JobScheduler` members and their `OnWorldInitialize` setup vanish, as do the `IntegrateVelocitiesJob`, `CalculateContactPairsJob`, `IntegrateJob` class definitions (they collapse to lambdas at the call site).
+
+That's tracked as **#5a** above.
+
+### Where fibers would still earn their keep
+
+| Use case | Fiber benefit |
+|---|---|
+| **PhoenixLua scripts that want to `await` events** | Scripts run on the main thread today; any blocking wait freezes the whole sim. A fiber-aware `wait_for(event)` from a script would park the script's fiber and let the main thread keep ticking. |
+| **Asset streaming during a frame** | "Wait for the texture I/O without burning a worker." The canonical Naughty Dog example. |
+| **Cooperative multi-frame computation** | Path planning, AI deliberation — tasks that pause across frame boundaries. |
+
+None of these are PhysicsSystem use cases. **#5b stays open**, but only worth committing to when one of the three use cases above becomes a concrete, scheduled need. Building fibers speculatively would deliver a maintenance tax (per-platform asm stack switching, debugger friction, stack sizing) for no PhysicsSystem benefit.
 
 ## References
 
