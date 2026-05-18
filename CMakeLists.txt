@@ -77,12 +77,12 @@ add_subdirectory(src/Phoenix.Sim.Lua)
 
 add_subdirectory(src/Phoenix)
 add_subdirectory(src/Phoenix.App)
-add_subdirectory(src/Phoenix.Editor/Core)
-add_subdirectory(src/Phoenix.Runtime/Core)
+add_subdirectory(src/Phoenix.Editor)
+add_subdirectory(src/Phoenix.Runtime)
 
 if(PE_BUILD_STANDALONE)
-    add_subdirectory(src/Phoenix.Editor/ImGui)
-    add_subdirectory(src/Phoenix.Runtime/SDL3)
+    add_subdirectory(src/Phoenix.Editor.ImGui)
+    add_subdirectory(src/Phoenix.Runtime.SDL3)
     add_subdirectory(apps/Phoenix.Editor)
 endif()
 
