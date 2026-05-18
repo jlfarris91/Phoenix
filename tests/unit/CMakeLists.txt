@@ -7,6 +7,12 @@ add_executable(Phoenix.Tests ${UNIT_TEST_SRC})
 target_link_libraries(Phoenix.Tests
     PRIVATE
         Phoenix.Sim
+        Phoenix.Sim.Blackboard
+        Phoenix.Sim.Debug
+        Phoenix.Sim.Tasks
+        Phoenix.Sim.ECS
+        Phoenix.Sim.LDS
+        Phoenix.Sim.Strings
         doctest::doctest
 )
 
