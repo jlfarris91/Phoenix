@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <memory>      // std::destroy_at — works around MSVC's pseudo-dtor quirk
 #include <new>
 #include <type_traits>
 #include <utility>
@@ -55,7 +56,13 @@ namespace Phoenix
             },
             [](void* p)
             {
-                static_cast<TDecayed*>(p)->~TDecayed();
+                // std::destroy_at rather than the explicit pseudo-destructor
+                // call (->~TDecayed()). MSVC rejects the latter when
+                // TDecayed is a lambda type with a non-trivial destructor —
+                // the destructor name does not lexically match the lambda's
+                // compiler-generated name, and MSVC's pseudo-destructor
+                // lookup fails. std::destroy_at sidesteps the lookup.
+                std::destroy_at(static_cast<TDecayed*>(p));
             },
         };
 
