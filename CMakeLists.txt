@@ -83,7 +83,7 @@ add_subdirectory(src/Phoenix.Runtime)
 if(PE_BUILD_STANDALONE)
     add_subdirectory(src/Phoenix.Editor.ImGui)
     add_subdirectory(src/Phoenix.Runtime.SDL3)
-    add_subdirectory(apps/Phoenix.Editor)
+    add_subdirectory(apps/PhoenixEditor)
 endif()
 
 # ── Tools (code generators — not needed for WASM builds) ─────────────────────
