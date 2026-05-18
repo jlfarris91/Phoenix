@@ -25,9 +25,13 @@ namespace Phoenix
     //     capture or raise the buffer size at the typedef site.
     //
     // Layout: small invoker function pointer + small vtable pointer + the
-    // inline storage. Move-only by default to keep the hot path tight; copy
-    // is implemented because Task is currently copied through the MPMC
-    // ring buffer (which is itself slated for removal in #2 / Chase-Lev).
+    // inline storage. Move semantics are noexcept; copy is implemented
+    // because Task is copied at two API points: ThreadPool::Submit
+    // copy-assigns the incoming Task into its slab slot, and
+    // TaskQueue::Enqueue(const Task&) / ::Flush() buffer Tasks by value
+    // in their per-group vectors. The TInlineCallable copy invokes the
+    // captured callable's copy constructor — which for the lambdas used
+    // in the engine is itself trivial.
     //
     // The vtable is a static constexpr per target type, so the cost beyond
     // the buffer is one pointer per instance (Invoker).
