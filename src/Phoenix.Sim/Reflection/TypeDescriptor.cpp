@@ -3,7 +3,7 @@
 #include <ranges>
 
 #include "TypeRegistry.h"
-#include "PhoenixSim/Flags.h"
+#include "Phoenix.Sim/Flags.h"
 
 Phoenix::FTypeName Phoenix::TypeDescriptor::GetTypeName() const
 {

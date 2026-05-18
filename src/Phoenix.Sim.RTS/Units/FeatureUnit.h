@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixRTS/Orders/Commands.h"
-#include "PhoenixRTS/TargetFiltering/TargetScanLevel.h"
-#include "PhoenixRTS/Teams/Teams.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
+#include "Phoenix.Sim.RTS/Orders/Commands.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetScanLevel.h"
+#include "Phoenix.Sim.RTS/Teams/Teams.h"
 
 namespace Phoenix::ECS
 {

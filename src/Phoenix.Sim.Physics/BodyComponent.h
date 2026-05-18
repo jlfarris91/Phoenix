@@ -1,11 +1,11 @@
 ﻿
 #pragma once
 
-#include "PhoenixPhysics/DLLExport.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/ECS/Component.h"
-#include "PhoenixSim/FixedPoint/FixedTypes.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim.Physics/DLLExport.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/ECS/Component.h"
+#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
 namespace Phoenix::Physics
 {

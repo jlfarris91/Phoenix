@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/Registration.h"
-#include "PhoenixSim/Scripting/IScriptBindings.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix.Sim/Scripting/IScriptBindings.h"
 
 namespace Phoenix::RTS
 {

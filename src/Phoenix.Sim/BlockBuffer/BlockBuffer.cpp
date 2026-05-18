@@ -1,10 +1,10 @@
-#include "PhoenixSim/BlockBuffer/BlockBuffer.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBuffer.h"
 
 #include <algorithm>
 #include <malloc.h>
 
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Utils.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Utils.h"
 
 using namespace Phoenix;
 

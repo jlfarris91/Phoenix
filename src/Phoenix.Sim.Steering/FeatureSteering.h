@@ -1,12 +1,12 @@
 #pragma once
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
-#include "PhoenixSteering/DLLExport.h"
-#include "PhoenixSteering/SteeringComponent.h"
-#include "PhoenixSteering/SteeringSystem.h"
+#include "Phoenix.Sim.Steering/DLLExport.h"
+#include "Phoenix.Sim.Steering/SteeringComponent.h"
+#include "Phoenix.Sim.Steering/SteeringSystem.h"
 
 namespace Phoenix::Steering
 {

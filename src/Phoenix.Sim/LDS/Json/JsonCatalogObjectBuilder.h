@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/LDS/Json/JsonCatalogBuilderBase.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/LDS/Json/JsonCatalogBuilderBase.h"
 
 namespace Phoenix::LDS::Json
 {

@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Reflection/Registration.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
 
 namespace Phoenix
 {

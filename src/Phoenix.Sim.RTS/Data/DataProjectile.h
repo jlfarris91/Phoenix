@@ -3,8 +3,8 @@
 
 #include "DataProjectileLaunch.h"
 #include "DataProjectileMovement.h"
-#include "PhoenixRTS/Data/DataProjectileActor.h"
-#include "PhoenixRTS/Data/DataProjectileImpact.h"
+#include "Phoenix.Sim.RTS/Data/DataProjectileActor.h"
+#include "Phoenix.Sim.RTS/Data/DataProjectileImpact.h"
 
 namespace Phoenix::RTS::Data
 {

@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataWeapon.h"
+#include "Phoenix.Sim.RTS/Data/DataWeapon.h"
 
 using namespace Phoenix::RTS::Data;
 

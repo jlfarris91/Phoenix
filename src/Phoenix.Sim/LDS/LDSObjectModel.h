@@ -3,25 +3,25 @@
 
 #include "LDSQueryContext.h"
 
-#include "PhoenixSim/LDS/ObjectModel/LDSForwardDecls.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSForwardDecls.h"
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayUtil.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayUtil.h"
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSEnumFlagsPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectArrayPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectRefArrayPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectRefPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSRecordPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSValueArrayPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSEnumFlagsPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectArrayPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectRefArrayPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectRefPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSRecordPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValueArrayPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValuePtr.h"
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSArrayTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSEnumTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSNumericTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSObjectTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSArrayTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSEnumTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSNumericTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSObjectTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.h"
 
 #define PHX_LDS_DECLARE_OBJECT_PTR(ptr, type) \
     ptr() = default; \

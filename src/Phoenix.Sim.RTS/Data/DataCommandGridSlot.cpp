@@ -1,5 +1,5 @@
 ﻿
-#include "PhoenixRTS/Data/DataCommandGridSlot.h"
+#include "Phoenix.Sim.RTS/Data/DataCommandGridSlot.h"
 
 using namespace Phoenix::RTS::Data;
 

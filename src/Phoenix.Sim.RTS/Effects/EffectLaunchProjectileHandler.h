@@ -1,7 +1,7 @@
 ﻿#pragma once
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Effects/Effects.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Effects/Effects.h"
 
 namespace Phoenix::RTS
 {    

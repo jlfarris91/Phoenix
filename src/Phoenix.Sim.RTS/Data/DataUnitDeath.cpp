@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataUnitDeath.h"
+#include "Phoenix.Sim.RTS/Data/DataUnitDeath.h"
 
 using namespace Phoenix::RTS::Data;
 

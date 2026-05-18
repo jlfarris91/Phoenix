@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataEffectTarget.h"
+#include "Phoenix.Sim.RTS/Data/DataEffectTarget.h"
 
 using namespace Phoenix::RTS::Data;
 

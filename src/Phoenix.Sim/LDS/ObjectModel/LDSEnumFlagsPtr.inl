@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/LDS/LDSQueryContext.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/LDS/LDSQueryContext.h"
 
 namespace Phoenix::LDS
 {

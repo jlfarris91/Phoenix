@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/LDS/LDSRecordQueryFlags.h"
-#include "PhoenixSim/LDS/LDSValue.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSForwardDecls.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSRecordPath.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/LDS/LDSRecordQueryFlags.h"
+#include "Phoenix.Sim/LDS/LDSValue.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSForwardDecls.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSRecordPath.h"
 
 namespace Phoenix::LDS
 {
@@ -50,4 +50,4 @@ namespace Phoenix::LDS
     };
 }
 
-#include "PhoenixSim/LDS/ObjectModel/LDSRecordPtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSRecordPtr.inl"

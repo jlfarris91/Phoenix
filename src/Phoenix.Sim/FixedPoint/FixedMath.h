@@ -1,8 +1,8 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/FixedPoint/FixedCordic.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/FixedPoint/FixedCordic.h"
 
 namespace Phoenix
 {

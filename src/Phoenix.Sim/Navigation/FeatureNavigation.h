@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/FixedPoint/FixedLine.h"
-#include "PhoenixSim/Mesh/Mesh2.h"
-#include "PhoenixSim/Mesh/MeshPath.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix.Sim/Mesh/Mesh2.h"
+#include "Phoenix.Sim/Mesh/MeshPath.h"
 
 namespace Phoenix::Pathfinding
 {

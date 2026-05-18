@@ -1,14 +1,14 @@
 #include "TargetScanner.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Abilities/FeatureAbilities.h"
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixRTS/Weapons/Weapons.h"
-#include "PhoenixSteering/FeatureSteering.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/Weapons/Weapons.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

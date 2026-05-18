@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/Services/ServiceLocator.h"
+#include "Phoenix.Sim/Services/ServiceLocator.h"
 
 namespace Phoenix
 {

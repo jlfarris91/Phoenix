@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PhoenixSim/ECS/Component.h"
-#include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/ECS/Component.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix::RTS
 {

@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataProjectileActor.h"
+#include "Phoenix.Sim.RTS/Data/DataProjectileActor.h"
 
 bool Phoenix::RTS::Data::ProjectileActor::Read(const LDS::LDSReadObjectArgs& args, ProjectileActor& outItem)
 {

@@ -8,9 +8,9 @@
 
 #include "FlameGraph.h"
 
-#include <PhoenixSim/Reflection/TypeDescriptor.h>
-#include <PhoenixSim/Session.h>
-#include <PhoenixSim/Worlds.h>
+#include <Phoenix.Sim/Reflection/TypeDescriptor.h>
+#include <Phoenix.Sim/Session.h>
+#include <Phoenix.Sim/Worlds.h>
 
 using namespace Phoenix;
 

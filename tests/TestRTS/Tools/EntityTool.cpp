@@ -3,9 +3,9 @@
 
 #include <SDL3/SDL_events.h>
 
-#include <PhoenixSim/Actions.h>
-#include <PhoenixSim/Session.h>
-#include <PhoenixSim/FixedPoint/FixedVector.h>
+#include <Phoenix.Sim/Actions.h>
+#include <Phoenix.Sim/Session.h>
+#include <Phoenix.Sim/FixedPoint/FixedVector.h>
 
 #include "../imgui/ImGuiUtils.h"
 #include "../sdl/SDLDebugState.h"

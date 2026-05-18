@@ -1,10 +1,10 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/Blackboard/FixedBlackboard.h"
-#include "PhoenixSim/FixedPoint/FixedPoint.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/Blackboard/FixedBlackboard.h"
+#include "Phoenix.Sim/FixedPoint/FixedPoint.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
 namespace Phoenix::Blackboard
 {

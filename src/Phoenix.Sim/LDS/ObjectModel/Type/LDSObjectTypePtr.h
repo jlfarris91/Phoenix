@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSArrayTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSEnumTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSNumericTypePtr.h"
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSArrayTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSEnumTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSNumericTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.h"
 
 namespace Phoenix::LDS
 {
@@ -40,4 +40,4 @@ namespace Phoenix::LDS
     };
 }
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSObjectTypePtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSObjectTypePtr.inl"

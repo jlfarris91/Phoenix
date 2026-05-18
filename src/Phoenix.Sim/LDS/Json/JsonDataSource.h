@@ -2,8 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Platform.h"
 
 namespace Phoenix::LDS::Json
 {

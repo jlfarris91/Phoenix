@@ -1,25 +1,25 @@
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixSim/Reflection/Registration.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
 
-#include "PhoenixSim/LDS/FeatureLDS.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixPhysics/FeaturePhysics.h"
-#include "PhoenixPhysics/BodyComponent.h"
+#include "Phoenix.Sim.Physics/FeaturePhysics.h"
+#include "Phoenix.Sim.Physics/BodyComponent.h"
 
-#include "PhoenixSteering/SteeringComponent.h"
+#include "Phoenix.Sim.Steering/SteeringComponent.h"
 
-#include "PhoenixRTS/Abilities/AbilityHandler.h"
-#include "PhoenixRTS/Abilities/FeatureAbilities.h"
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixRTS/Units/UnitComponent.h"
-#include "PhoenixRTS/Units/UnitSystem.h"
-#include "PhoenixRTS/Vitals/FeatureVitals.h"
-#include "PhoenixRTS/Vitals/VitalComponent.h"
-#include "PhoenixSteering/FeatureSteering.h"
+#include "Phoenix.Sim.RTS/Abilities/AbilityHandler.h"
+#include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/Units/UnitComponent.h"
+#include "Phoenix.Sim.RTS/Units/UnitSystem.h"
+#include "Phoenix.Sim.RTS/Vitals/FeatureVitals.h"
+#include "Phoenix.Sim.RTS/Vitals/VitalComponent.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

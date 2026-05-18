@@ -1,13 +1,13 @@
-#include "PhoenixRTS/Effects/EffectDamageHandler.h"
+#include "Phoenix.Sim.RTS/Effects/EffectDamageHandler.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/Data/DataEffectDamage.h"
-#include "PhoenixRTS/Effects/EffectComponent.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/Vitals/Damage.h"
-#include "PhoenixRTS/Vitals/FeatureVitals.h"
+#include "Phoenix.Sim.RTS/Data/DataEffectDamage.h"
+#include "Phoenix.Sim.RTS/Effects/EffectComponent.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Vitals/Damage.h"
+#include "Phoenix.Sim.RTS/Vitals/FeatureVitals.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

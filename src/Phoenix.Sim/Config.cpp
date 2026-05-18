@@ -1,4 +1,4 @@
-#include "PhoenixSim/Config.h"
+#include "Phoenix.Sim/Config.h"
 
 #include <fstream>
 

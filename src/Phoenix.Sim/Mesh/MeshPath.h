@@ -3,10 +3,10 @@
 
 #include <algorithm>
 
-#include "PhoenixSim/Containers/FixedQueue.h"
-#include "PhoenixSim/Containers/FixedMap.h"
-#include "PhoenixSim/Mesh/Mesh2.h"
-#include "PhoenixSim/Profiling.h"
+#include "Phoenix.Sim/Containers/FixedQueue.h"
+#include "Phoenix.Sim/Containers/FixedMap.h"
+#include "Phoenix.Sim/Mesh/Mesh2.h"
+#include "Phoenix.Sim/Profiling.h"
 
 namespace Phoenix
 {

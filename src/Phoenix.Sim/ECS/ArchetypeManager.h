@@ -1,15 +1,15 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/WorldsFwd.h"
-#include "PhoenixSim/Containers/FixedMap.h"
-#include "PhoenixSim/Containers/FixedBlockAllocator.h"
-#include "PhoenixSim/ECS/ArchetypeDefinition.h"
-#include "PhoenixSim/ECS/ArchetypeList.h"
-#include "PhoenixSim/ECS/EntityQuery.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/WorldsFwd.h"
+#include "Phoenix.Sim/Containers/FixedMap.h"
+#include "Phoenix.Sim/Containers/FixedBlockAllocator.h"
+#include "Phoenix.Sim/ECS/ArchetypeDefinition.h"
+#include "Phoenix.Sim/ECS/ArchetypeList.h"
+#include "Phoenix.Sim/ECS/EntityQuery.h"
 
 namespace Phoenix
 {

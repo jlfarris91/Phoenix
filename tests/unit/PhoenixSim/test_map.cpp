@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedMap.h"
+#include "Phoenix.Sim/Containers/FixedMap.h"
 
 using namespace Phoenix;
 

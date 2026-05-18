@@ -1,8 +1,8 @@
 #pragma once
 
 #include "StringTable.h"
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/SessionFwd.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/SessionFwd.h"
 
 namespace Phoenix
 {

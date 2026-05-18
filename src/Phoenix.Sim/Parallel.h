@@ -8,10 +8,10 @@
 #include <thread>
 #include <vector>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/InlineCallable.h"
-#include "PhoenixSim/Containers/ChaseLevDeque.h"
-#include "PhoenixSim/Containers/MPMCQueue.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/InlineCallable.h"
+#include "Phoenix.Sim/Containers/ChaseLevDeque.h"
+#include "Phoenix.Sim/Containers/MPMCQueue.h"
 
 namespace Phoenix
 {

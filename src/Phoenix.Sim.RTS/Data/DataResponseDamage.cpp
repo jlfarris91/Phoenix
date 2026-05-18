@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataResponseDamage.h"
+#include "Phoenix.Sim.RTS/Data/DataResponseDamage.h"
 
 using namespace Phoenix::RTS::Data;
 

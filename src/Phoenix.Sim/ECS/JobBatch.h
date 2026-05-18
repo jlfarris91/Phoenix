@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/ECS/ArchetypeDefinition.h"
+#include "Phoenix.Sim/ECS/ArchetypeDefinition.h"
 
 namespace Phoenix::ECS
 {

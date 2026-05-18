@@ -2,7 +2,7 @@
 #pragma once
 
 #include "../sdl/SDLTool.h"
-#include "PhoenixSim/Reflection/Registration.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
 
 namespace Phoenix
 {

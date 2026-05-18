@@ -2,7 +2,7 @@
 #pragma once
 
 #include "DataProjectile.h"
-#include "PhoenixRTS/Data/DataEffect.h"
+#include "Phoenix.Sim.RTS/Data/DataEffect.h"
 
 namespace Phoenix::RTS::Data
 {

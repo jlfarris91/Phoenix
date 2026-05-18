@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixSim/FixedPoint/FixedTypes.h"
+#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
 
 namespace Phoenix
 {

@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataFootprint.h"
+#include "Phoenix.Sim.RTS/Data/DataFootprint.h"
 
 using namespace Phoenix::RTS::Data;
 

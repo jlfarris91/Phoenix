@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedArray.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
 
 using namespace Phoenix;
 

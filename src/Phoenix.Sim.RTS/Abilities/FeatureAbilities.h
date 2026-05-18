@@ -1,8 +1,8 @@
 ﻿#pragma once
 
 #include "AbilityHandler.h"
-#include "PhoenixSim/Features.h"
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix::RTS
 {

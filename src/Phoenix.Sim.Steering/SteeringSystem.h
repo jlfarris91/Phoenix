@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSteering/DLLExport.h"
-#include "PhoenixSim/ECS/JobScheduler.h"
-#include "PhoenixSim/ECS/System.h"
+#include "Phoenix.Sim.Steering/DLLExport.h"
+#include "Phoenix.Sim/ECS/JobScheduler.h"
+#include "Phoenix.Sim/ECS/System.h"
 
 namespace Phoenix::Steering
 {

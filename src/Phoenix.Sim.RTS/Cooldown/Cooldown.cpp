@@ -1,4 +1,4 @@
-#include "PhoenixRTS/Cooldown/Cooldown.h"
+#include "Phoenix.Sim.RTS/Cooldown/Cooldown.h"
 
 bool Phoenix::RTS::Cooldown::IsCooldownActive(
     const World& world,

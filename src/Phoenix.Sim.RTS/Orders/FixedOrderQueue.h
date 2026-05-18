@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/Containers/FixedSortedList.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim/Containers/FixedSortedList.h"
 
-#include "PhoenixRTS/Orders/Orders.h"
+#include "Phoenix.Sim.RTS/Orders/Orders.h"
 
 namespace Phoenix::RTS
 {

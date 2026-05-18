@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedSortedList.h"
+#include "Phoenix.Sim/Containers/FixedSortedList.h"
 
 using namespace Phoenix;
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Worlds.h"
-#include "PhoenixSim/Tasks/TaskDefinition.h"
-#include "PhoenixSim/Tasks/TaskList.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Worlds.h"
+#include "Phoenix.Sim/Tasks/TaskDefinition.h"
+#include "Phoenix.Sim/Tasks/TaskList.h"
 
 #ifndef PHX_TASKS_MAX_TASKS
 #define PHX_TASKS_MAX_TASKS (32768 * 4)

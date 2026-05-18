@@ -1,13 +1,13 @@
-#include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
+#include "Phoenix.Sim.RTS/Abilities/States/WeaponAbilityStates.h"
 
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixSteering/FeatureSteering.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
 
-#include "PhoenixRTS/Data/DataWeapon.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Weapons/Weapons.h"
+#include "Phoenix.Sim.RTS/Data/DataWeapon.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Weapons/Weapons.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Blackboard;

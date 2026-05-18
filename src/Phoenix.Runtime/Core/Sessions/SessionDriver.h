@@ -3,30 +3,33 @@
 #include <unordered_map>
 
 #include "SessionHandle.h"
-#include <PhoenixSim/Session.h>
+#include <Phoenix.Sim/Session.h>
 
-class SessionInstance;
-class WorldDoubleBuffer;
-
-class SessionDriver
+namespace Phoenix
 {
-public:
+    class SessionInstance;
+    class WorldDoubleBuffer;
 
-    SessionHandle CreateSession(const Phoenix::SessionCtorArgs& args);
-    void DestroySession(SessionHandle handle);
+    class SessionDriver
+    {
+    public:
 
-    SessionInstance* FindInstance(SessionHandle handle);
+        SessionHandle CreateSession(const SessionCtorArgs& args);
+        void DestroySession(SessionHandle handle);
 
-    std::vector<SessionInstance*> GetSessions() const;
+        SessionInstance* FindInstance(SessionHandle handle);
 
-    PHX_DECLARE_MULTICAST_DELEGATE(FSessionCreated, SessionInstance*);
-    FSessionCreated OnSessionCreated;
+        std::vector<SessionInstance*> GetSessions() const;
 
-    PHX_DECLARE_MULTICAST_DELEGATE(FSessionDestroyed, SessionInstance*);
-    FSessionDestroyed OnSessionDestroyed;
+        PHX_DECLARE_MULTICAST_DELEGATE(FSessionCreated, SessionInstance*);
+        FSessionCreated OnSessionCreated;
 
-private:
+        PHX_DECLARE_MULTICAST_DELEGATE(FSessionDestroyed, SessionInstance*);
+        FSessionDestroyed OnSessionDestroyed;
 
-    std::unordered_map<uint32_t, std::unique_ptr<SessionInstance>> Sessions;
-    SessionHandle SessionIdGen = 0;
-};
+    private:
+
+        std::unordered_map<uint32_t, std::unique_ptr<SessionInstance>> Sessions;
+        SessionHandle SessionIdGen = 0;
+    };
+}

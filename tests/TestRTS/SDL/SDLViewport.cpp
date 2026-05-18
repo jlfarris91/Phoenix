@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL_render.h>
 
-#include <PhoenixSim/Platform.h>
+#include <Phoenix.Sim/Platform.h>
 
 #include "SDLCamera.h"
 

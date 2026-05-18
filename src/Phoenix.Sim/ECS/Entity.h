@@ -1,8 +1,8 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/ECS/ArchetypeHandle.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/ECS/ArchetypeHandle.h"
 
 namespace Phoenix::ECS
 {

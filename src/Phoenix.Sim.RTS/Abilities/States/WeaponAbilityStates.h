@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/FixedPoint/FixedTypes.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
 
-#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
-#include "PhoenixRTS/Effects/EffectId.h"
+#include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"
+#include "Phoenix.Sim.RTS/Effects/EffectId.h"
 
 namespace Phoenix::RTS
 {

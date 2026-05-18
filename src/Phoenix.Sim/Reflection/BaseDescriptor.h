@@ -3,7 +3,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/Platform.h"
 
 namespace Phoenix
 {

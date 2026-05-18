@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayUtil.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayUtil.h"
 
 namespace Phoenix::LDS
 {

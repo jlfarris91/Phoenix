@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/FixedPoint/FixedBox.h"
-#include "PhoenixSim/FixedPoint/FixedMath.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/FixedPoint/FixedBox.h"
+#include "Phoenix.Sim/FixedPoint/FixedMath.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
 namespace Phoenix
 {
@@ -357,4 +357,4 @@ namespace Phoenix
     using DefaultFixedCDTMesh2 = TFixedCDTMesh2<8192, uint32, Distance, uint16>;
 }
 
-#include "PhoenixSim/Mesh/Mesh2.inl"
+#include "Phoenix.Sim/Mesh/Mesh2.inl"

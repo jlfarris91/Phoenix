@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
-#include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
+#include "Phoenix.Sim.RTS/Abilities/States/WeaponAbilityStates.h"
 
 namespace Phoenix::ECS
 {

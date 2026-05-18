@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "PhoenixSim/Worlds.h"
-#include "PhoenixSim/Parallel.h"
-#include "PhoenixSim/Profiling.h"
+#include "Phoenix.Sim/Worlds.h"
+#include "Phoenix.Sim/Parallel.h"
+#include "Phoenix.Sim/Profiling.h"
 
 namespace Phoenix
 {

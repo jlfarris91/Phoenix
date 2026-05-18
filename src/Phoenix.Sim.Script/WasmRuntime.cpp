@@ -3,10 +3,10 @@
 #include <fstream>
 #include <vector>
 
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Scripting/IScriptBindings.h"
-#include "PhoenixSim/Scripting/ScriptModuleBuilder.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Scripting/IScriptBindings.h"
+#include "Phoenix.Sim/Scripting/ScriptModuleBuilder.h"
 
 using namespace Phoenix;
 

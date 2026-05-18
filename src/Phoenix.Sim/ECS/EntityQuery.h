@@ -5,11 +5,11 @@
 #include <functional>
 #include <vector>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/ECS/ArchetypeDefinition.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/ECS/ArchetypeDefinition.h"
 
 namespace Phoenix::ECS
 {

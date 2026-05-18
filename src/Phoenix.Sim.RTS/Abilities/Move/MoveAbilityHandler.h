@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "PhoenixSim/ECS/System.h"
+#include "Phoenix.Sim/ECS/System.h"
 
-#include "PhoenixRTS/Abilities/AbilityComponent.h"
-#include "PhoenixRTS/Abilities/AbilityHandler.h"
-#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
+#include "Phoenix.Sim.RTS/Abilities/AbilityComponent.h"
+#include "Phoenix.Sim.RTS/Abilities/AbilityHandler.h"
+#include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"
 
 namespace Phoenix::RTS
 {

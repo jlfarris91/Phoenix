@@ -1,7 +1,7 @@
 #include "LDSFeatureQueryContext.h"
 
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix::LDS;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/TypeName.h"
+#include "Phoenix.Sim/Reflection/TypeName.h"
 
 namespace Phoenix
 {

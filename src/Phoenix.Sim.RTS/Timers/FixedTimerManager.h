@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/Containers/FixedSortedList.h"
-#include "PhoenixSim/FixedPoint/FixedTypes.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/Containers/FixedSortedList.h"
+#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix::RTS
 {

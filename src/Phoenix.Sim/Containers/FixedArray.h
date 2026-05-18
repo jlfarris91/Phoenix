@@ -2,8 +2,8 @@
 
 #include <cassert>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Containers/FixedMemory.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Containers/FixedMemory.h"
 
 namespace Phoenix
 {

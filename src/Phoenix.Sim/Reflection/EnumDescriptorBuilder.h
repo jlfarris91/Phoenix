@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/EnumValueDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Reflection/EnumValueDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
 
 namespace Phoenix
 {

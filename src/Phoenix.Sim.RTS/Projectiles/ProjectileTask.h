@@ -1,8 +1,8 @@
 #pragma once
 
 #include "ProjectileState.h"
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixSim/Tasks/TaskBase.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim/Tasks/TaskBase.h"
 
 namespace Phoenix::RTS
 {

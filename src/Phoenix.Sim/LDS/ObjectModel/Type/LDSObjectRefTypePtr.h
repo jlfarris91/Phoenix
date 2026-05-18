@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectRefPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectRefPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValuePtr.h"
 
 namespace Phoenix::LDS
 {
@@ -27,4 +27,4 @@ namespace Phoenix::LDS
     using TLDSObjectRefTypePtr = TLDSObjectRefTypePtrBase<TObjectRefPtr>;
 }
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.inl"

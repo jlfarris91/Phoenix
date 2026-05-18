@@ -1,12 +1,12 @@
 #pragma once
 
-#include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/Features.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim/Features.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Data/DataVital.h"
-#include "PhoenixRTS/Vitals/Damage.h"
-#include "PhoenixRTS/Vitals/Vitals.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Data/DataVital.h"
+#include "Phoenix.Sim.RTS/Vitals/Damage.h"
+#include "Phoenix.Sim.RTS/Vitals/Vitals.h"
 
 namespace Phoenix::RTS
 {

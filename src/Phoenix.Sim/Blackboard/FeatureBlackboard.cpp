@@ -1,10 +1,10 @@
 
 #include "FeatureBlackboard.h"
 
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferAllocator.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferLayout.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Worlds.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferAllocator.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferLayout.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Blackboard;

@@ -1,8 +1,8 @@
 
-#include "PhoenixSim/LDS/ObjectModel/LDSRecordPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSRecordPtr.h"
 
-#include "PhoenixSim/LDS/LDSRecordStore.h"
-#include "PhoenixSim/LDS/LDSQueryContext.h"
+#include "Phoenix.Sim/LDS/LDSRecordStore.h"
+#include "Phoenix.Sim/LDS/LDSQueryContext.h"
 
 using namespace Phoenix::LDS;
 

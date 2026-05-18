@@ -1,11 +1,11 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
+#include "Phoenix.Sim/Features.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Data/DataProjectile.h"
-#include "PhoenixRTS/Effects/EffectId.h"
-#include "PhoenixRTS/Projectiles/ProjectileId.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Data/DataProjectile.h"
+#include "Phoenix.Sim.RTS/Effects/EffectId.h"
+#include "Phoenix.Sim.RTS/Projectiles/ProjectileId.h"
 
 namespace Phoenix::RTS
 {

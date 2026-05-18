@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Data/DataActor.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Data/DataActor.h"
 
 namespace Phoenix::RTS::Data
 {

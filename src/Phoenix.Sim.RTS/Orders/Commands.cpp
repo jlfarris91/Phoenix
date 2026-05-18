@@ -1,6 +1,6 @@
-#include "PhoenixRTS/Orders/Commands.h"
+#include "Phoenix.Sim.RTS/Orders/Commands.h"
 
-#include "PhoenixSim/Flags.h"
+#include "Phoenix.Sim/Flags.h"
 
 bool Phoenix::RTS::FromVerb(const FName& verb, ECommandFlags& outFlags)
 {

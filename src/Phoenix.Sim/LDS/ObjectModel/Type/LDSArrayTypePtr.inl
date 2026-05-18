@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSArrayTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSArrayTypePtr.h"
 
 namespace Phoenix::LDS
 {

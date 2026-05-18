@@ -1,8 +1,8 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValuePtr.h"
 
 namespace Phoenix::LDS
 {
@@ -92,4 +92,4 @@ namespace Phoenix::LDS
     };
 }
 
-#include "PhoenixSim/LDS/ObjectModel/LDSValueArrayPtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValueArrayPtr.inl"

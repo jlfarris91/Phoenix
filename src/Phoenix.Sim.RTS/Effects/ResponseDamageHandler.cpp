@@ -1,10 +1,10 @@
-#include "PhoenixRTS/Effects/ResponseDamageHandler.h"
+#include "Phoenix.Sim.RTS/Effects/ResponseDamageHandler.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/Data/DataResponseDamage.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Data/DataResponseDamage.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

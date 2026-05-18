@@ -5,8 +5,8 @@
 #include <string>
 #include <locale>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Logging.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Logging.h"
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {

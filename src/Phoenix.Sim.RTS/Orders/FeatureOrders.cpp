@@ -1,18 +1,18 @@
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixSim/Reflection/Registration.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Profiling.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Profiling.h"
 
-#include "PhoenixRTS/Abilities/FeatureAbilities.h"
-#include "PhoenixRTS/Orders/CommandHandler.h"
-#include "PhoenixRTS/Selection/FeatureSelection.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixSim/Logging.h"
+#include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"
+#include "Phoenix.Sim.RTS/Orders/CommandHandler.h"
+#include "Phoenix.Sim.RTS/Selection/FeatureSelection.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
+#include "Phoenix.Sim/Logging.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

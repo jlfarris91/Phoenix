@@ -1,7 +1,7 @@
-#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
+#include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"
 
-#include "PhoenixSteering/FeatureSteering.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
 
 using namespace Phoenix; 
 using namespace Phoenix::ECS; 

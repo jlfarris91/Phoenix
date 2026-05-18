@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Utils.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/ECS/Entity.h"
+#include "Phoenix.Sim/Utils.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/ECS/Entity.h"
 
 namespace Phoenix::ECS
 {

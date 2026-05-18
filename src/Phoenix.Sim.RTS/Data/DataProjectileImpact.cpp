@@ -1,5 +1,5 @@
 ﻿
-#include "PhoenixRTS/Data/DataProjectileImpact.h"
+#include "Phoenix.Sim.RTS/Data/DataProjectileImpact.h"
 
 using namespace Phoenix::RTS::Data;
 

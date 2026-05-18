@@ -1,8 +1,8 @@
-#include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetFiltering.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
 
-#include "PhoenixRTS/Data/DataTargetFilter.h"
+#include "Phoenix.Sim.RTS/Data/DataTargetFilter.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

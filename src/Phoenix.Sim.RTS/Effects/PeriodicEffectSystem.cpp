@@ -1,15 +1,15 @@
 
-#include "PhoenixRTS/Effects/PeriodicEffectSystem.h"
+#include "Phoenix.Sim.RTS/Effects/PeriodicEffectSystem.h"
 
-#include "PhoenixRTS/ECS/ECSCommands.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/ECS/SystemJob.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim.RTS/ECS/ECSCommands.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/Effects/PeriodicEffectComponent.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Effects/PeriodicEffectComponent.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

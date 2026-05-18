@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/FixedPoint/FixedTransform.h"
-#include "PhoenixSim/ECS/Component.h"
-#include "PhoenixSim/ECS/EntityId.h"
+#include "Phoenix.Sim/FixedPoint/FixedTransform.h"
+#include "Phoenix.Sim/ECS/Component.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
 
 namespace Phoenix::ECS
 {

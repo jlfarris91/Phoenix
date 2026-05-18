@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/BlockBuffer/BlockBufferDefinition.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferEnums.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferDefinition.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferEnums.h"
 
 namespace Phoenix
 {

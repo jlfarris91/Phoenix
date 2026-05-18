@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataUnitVision.h"
+#include "Phoenix.Sim.RTS/Data/DataUnitVision.h"
 
 using namespace Phoenix::RTS::Data;
 

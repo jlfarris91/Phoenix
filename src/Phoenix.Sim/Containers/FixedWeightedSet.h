@@ -1,10 +1,10 @@
 #pragma once
 
 #include "FixedMemory.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Random.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/FixedPoint/FixedMath.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Random.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/FixedPoint/FixedMath.h"
 
 namespace Phoenix
 {

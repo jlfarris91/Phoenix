@@ -3,11 +3,11 @@
 
 #include <algorithm>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
-#include "PhoenixSim/Containers/FixedSortedList.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferRegistration.h"
+#include "Phoenix.Sim/Containers/FixedSortedList.h"
 
 namespace Phoenix::Blackboard
 {

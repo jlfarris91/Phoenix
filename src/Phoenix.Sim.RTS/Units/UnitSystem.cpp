@@ -1,15 +1,15 @@
-#include "PhoenixRTS/Units/UnitSystem.h"
+#include "Phoenix.Sim.RTS/Units/UnitSystem.h"
 
-#include "PhoenixSim/ECS/ECSCommands.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/ECS/SystemJob.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/ECSCommands.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/ECS/ECSCommands.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixRTS/TargetFiltering/TargetScanner.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Units/UnitComponent.h"
+#include "Phoenix.Sim.RTS/ECS/ECSCommands.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetScanner.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Units/UnitComponent.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

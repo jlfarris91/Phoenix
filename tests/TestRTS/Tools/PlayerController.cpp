@@ -2,23 +2,23 @@
 
 #include <SDL3/SDL_events.h>
 
-#include <PhoenixSim/ECS/FeatureECS.h>
-#include <PhoenixSim/FixedPoint/FixedVector.h>
-#include <PhoenixSim/Flags.h>
-#include <PhoenixSim/Session.h>
+#include <Phoenix.Sim/ECS/FeatureECS.h>
+#include <Phoenix.Sim/FixedPoint/FixedVector.h>
+#include <Phoenix.Sim/Flags.h>
+#include <Phoenix.Sim/Session.h>
 
-#include <PhoenixRTS/Orders/Commands.h>
-#include <PhoenixRTS/Selection/FeatureSelection.h>
-#include <PhoenixRTS/Orders/FeatureOrders.h>
-#include <PhoenixRTS/Units/UnitId.h>
+#include <Phoenix.Sim.RTS/Orders/Commands.h>
+#include <Phoenix.Sim.RTS/Selection/FeatureSelection.h>
+#include <Phoenix.Sim.RTS/Orders/FeatureOrders.h>
+#include <Phoenix.Sim.RTS/Units/UnitId.h>
 
 #include "../sdl/SDLCamera.h"
 #include "../sdl/SDLDebugState.h"
 #include "../sdl/SDLDebugRenderer.h"
 #include "../sdl/SDLUtils.h"
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

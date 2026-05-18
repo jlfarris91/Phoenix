@@ -8,4 +8,5 @@ target_include_directories(PhoenixRuntime.Core PUBLIC
 
 target_link_libraries(PhoenixRuntime.Core PUBLIC
     PhoenixApp.Core
+    PhoenixSim
 )

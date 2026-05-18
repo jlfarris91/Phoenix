@@ -1,4 +1,4 @@
-#include "PhoenixSim/LDS/ObjectModel/LDSEnumFlagsPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSEnumFlagsPtr.h"
 
 using namespace Phoenix::LDS;
 

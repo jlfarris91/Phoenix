@@ -1,18 +1,18 @@
-﻿#include "PhoenixRTS/Projectiles/FeatureProjectile.h"
+﻿#include "Phoenix.Sim.RTS/Projectiles/FeatureProjectile.h"
 
 #include "ProjectileTask.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixSteering/SteeringComponent.h"
+#include "Phoenix.Sim.Steering/SteeringComponent.h"
 
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Effects/EffectComponent.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/Effects/PeriodicEffectComponent.h"
-#include "PhoenixRTS/Projectiles/ProjectileComponent.h"
-#include "PhoenixSim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Effects/EffectComponent.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Effects/PeriodicEffectComponent.h"
+#include "Phoenix.Sim.RTS/Projectiles/ProjectileComponent.h"
+#include "Phoenix.Sim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

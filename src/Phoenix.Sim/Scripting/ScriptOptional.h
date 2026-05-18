@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/TypeDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Reflection/TypeDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
 
 namespace Phoenix
 {

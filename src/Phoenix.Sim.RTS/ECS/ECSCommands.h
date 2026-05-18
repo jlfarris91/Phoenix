@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PhoenixRTS/Effects/EffectId.h"
-#include "PhoenixRTS/Orders/Commands.h"
-#include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixSim/Name.h"
+#include "Phoenix.Sim.RTS/Effects/EffectId.h"
+#include "Phoenix.Sim.RTS/Orders/Commands.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
+#include "Phoenix.Sim/Name.h"
 
 namespace Phoenix::ECS::Commands
 {

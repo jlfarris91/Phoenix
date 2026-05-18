@@ -1,8 +1,8 @@
 #include "FeatureDebug.h"
 
 #include "Debug.h"
-#include "PhoenixSim/Worlds.h"
-#include "PhoenixSim/Strings/FeatureString.h"
+#include "Phoenix.Sim/Worlds.h"
+#include "Phoenix.Sim/Strings/FeatureString.h"
 
 using namespace Phoenix;
 

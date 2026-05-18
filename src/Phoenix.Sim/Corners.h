@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/Platform.h"
 
 namespace Phoenix
 {

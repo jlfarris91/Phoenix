@@ -7,7 +7,7 @@
 
 #include "JobBatch.h"
 #include "SystemJob.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
 namespace Phoenix
 {

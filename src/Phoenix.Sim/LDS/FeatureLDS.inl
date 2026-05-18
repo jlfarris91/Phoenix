@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
 namespace Phoenix::LDS
 {

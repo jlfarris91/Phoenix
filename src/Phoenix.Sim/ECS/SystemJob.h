@@ -2,12 +2,12 @@
 
 #include <utility>
 
-#include "PhoenixSim/ECS/ArchetypeList.h"
-#include "PhoenixSim/ECS/CommandBuffer.h"
-#include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/ECS/EntityQuery.h"
-#include "PhoenixSim/ECS/JobBatch.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/ECS/ArchetypeList.h"
+#include "Phoenix.Sim/ECS/CommandBuffer.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim/ECS/EntityQuery.h"
+#include "Phoenix.Sim/ECS/JobBatch.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
 namespace Phoenix { class IFeature; }
 

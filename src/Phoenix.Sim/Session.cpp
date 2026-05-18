@@ -1,10 +1,10 @@
-﻿#include "PhoenixSim/Session.h"
+﻿#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixSim/Config.h"
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Services/ServiceContainerBuilder.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Config.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
+#include "Phoenix.Sim/Worlds.h"
 
 #include <algorithm>
 #include <thread>

@@ -6,9 +6,9 @@
 #include <vector>
 #include <tuple>
 
-#include "PhoenixSim/Utils.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Utils.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
 namespace Phoenix
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
 namespace Phoenix::RTS
 {

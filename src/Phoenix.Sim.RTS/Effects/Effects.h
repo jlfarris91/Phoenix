@@ -1,14 +1,14 @@
 #pragma once
 
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/ECS/EntityId.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Services/Service.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Effects/EffectId.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Effects/EffectId.h"
 
 namespace Phoenix::LDS
 {

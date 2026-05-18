@@ -4,9 +4,9 @@
 #include <mutex>
 #include <vector>
 
-#include <PhoenixSim/FPSCalc.h>
-#include <PhoenixSim/Platform.h>
-#include <PhoenixSim/Worlds.h>
+#include <Phoenix.Sim/FPSCalc.h>
+#include <Phoenix.Sim/Platform.h>
+#include <Phoenix.Sim/Worlds.h>
 
 namespace Phoenix
 {

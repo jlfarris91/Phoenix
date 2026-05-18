@@ -3,7 +3,7 @@
 #include <string>
 #include <source_location>
 
-#include "PhoenixSim/Name.h"
+#include "Phoenix.Sim/Name.h"
 
 namespace Phoenix
 {

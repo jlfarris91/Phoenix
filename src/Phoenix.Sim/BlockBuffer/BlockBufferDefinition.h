@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PhoenixSim/Delegates.h"
+#include "Phoenix.Sim/Delegates.h"
 
-#include "PhoenixSim/BlockBuffer/BlockBufferAllocator.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferLayout.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferAllocator.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferLayout.h"
 
 namespace Phoenix
 {

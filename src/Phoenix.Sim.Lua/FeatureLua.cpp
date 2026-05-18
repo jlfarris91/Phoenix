@@ -1,5 +1,5 @@
 
-#include "PhoenixLua/FeatureLua.h"
+#include "Phoenix.Sim.Lua/FeatureLua.h"
 
 #include <filesystem>
 
@@ -11,11 +11,11 @@
 #include <unistd.h>
 #endif
 
-#include "PhoenixLua/LuaWasmEnvironment.h"
-#include "PhoenixScript/FeatureScript.h"
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim.Lua/LuaWasmEnvironment.h"
+#include "Phoenix.Sim.Script/FeatureScript.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;
 

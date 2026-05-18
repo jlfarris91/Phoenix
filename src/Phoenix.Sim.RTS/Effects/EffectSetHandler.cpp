@@ -1,9 +1,9 @@
-#include "PhoenixRTS/Effects/EffectSetHandler.h"
+#include "Phoenix.Sim.RTS/Effects/EffectSetHandler.h"
 
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/Data/DataEffectSet.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Data/DataEffectSet.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

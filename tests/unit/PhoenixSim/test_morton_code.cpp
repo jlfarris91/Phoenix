@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <PhoenixSim/MortonCode.h>
+#include <Phoenix.Sim/MortonCode.h>
 
 using namespace Phoenix;
 

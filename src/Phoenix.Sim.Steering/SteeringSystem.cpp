@@ -1,19 +1,19 @@
 
 #include <algorithm>
 
-#include "PhoenixSteering/SteeringSystem.h"
+#include "Phoenix.Sim.Steering/SteeringSystem.h"
 
-#include "PhoenixSim/Debug/Debug.h"
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/MortonCode.h"
-#include "PhoenixSim/WorldTaskQueue.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/ECS/SystemJob.h"
-#include "PhoenixSim/ECS/TransformComponent.h"
-#include "PhoenixSim/Navigation/FeatureNavigation.h"
-#include "PhoenixPhysics/FeaturePhysics.h"
-#include "PhoenixSteering/FeatureSteering.h"
-#include "PhoenixSteering/SteeringComponent.h"
+#include "Phoenix.Sim/Debug/Debug.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix.Sim/WorldTaskQueue.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim/ECS/TransformComponent.h"
+#include "Phoenix.Sim/Navigation/FeatureNavigation.h"
+#include "Phoenix.Sim.Physics/FeaturePhysics.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
+#include "Phoenix.Sim.Steering/SteeringComponent.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

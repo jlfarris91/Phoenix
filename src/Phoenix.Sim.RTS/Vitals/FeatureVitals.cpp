@@ -1,14 +1,14 @@
-#include "PhoenixRTS/Vitals/FeatureVitals.h"
+#include "Phoenix.Sim.RTS/Vitals/FeatureVitals.h"
 
 #include "VitalsTask.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Vitals/Damage.h"
-#include "PhoenixRTS/Vitals/VitalComponent.h"
-#include "PhoenixSim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Vitals/Damage.h"
+#include "Phoenix.Sim.RTS/Vitals/VitalComponent.h"
+#include "Phoenix.Sim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

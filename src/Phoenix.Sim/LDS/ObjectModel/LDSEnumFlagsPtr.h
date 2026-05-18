@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSRecordPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSRecordPtr.h"
 
 // TODO (jfarris): do we even need this?
 namespace Phoenix::LDS
@@ -77,4 +77,4 @@ namespace Phoenix::LDS
     };
 }
 
-#include "PhoenixSim/LDS/ObjectModel/LDSEnumFlagsPtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSEnumFlagsPtr.inl"

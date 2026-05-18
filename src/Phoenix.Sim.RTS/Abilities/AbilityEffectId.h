@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/ECS/EntityId.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
 
 namespace Phoenix::RTS
 {

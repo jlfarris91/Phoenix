@@ -2,9 +2,9 @@
 
 #include <nlohmann/json.hpp>
 
-#include "PhoenixSim/Actions.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
-#include "PhoenixSim/Services/Service.h"
+#include "Phoenix.Sim/Actions.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferRegistration.h"
+#include "Phoenix.Sim/Services/Service.h"
 
 namespace Phoenix
 {

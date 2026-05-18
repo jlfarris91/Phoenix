@@ -1,6 +1,6 @@
-#include "PhoenixSim/Reflection/MemberDescriptor.h"
+#include "Phoenix.Sim/Reflection/MemberDescriptor.h"
 
-#include "PhoenixSim/Flags.h"
+#include "Phoenix.Sim/Flags.h"
 
 const std::string& Phoenix::MemberDescriptor::GetCategory() const
 {

@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Containers/FixedSortedList.h"
-#include "PhoenixSim/ECS/EntityId.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Containers/FixedSortedList.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
 
 namespace Phoenix::ECS
 {

@@ -3,8 +3,8 @@
 #include <cstdio>
 #include <ctime>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Logging.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Logging.h"
 
 std::string Phoenix::GetLogStringWithUnixTime(ELogLevel level, const std::string& msg)
 {

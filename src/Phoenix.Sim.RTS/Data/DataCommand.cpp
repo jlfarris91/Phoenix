@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataCommand.h"
+#include "Phoenix.Sim.RTS/Data/DataCommand.h"
 
 using namespace Phoenix::LDS;
 using namespace Phoenix::RTS::Data;

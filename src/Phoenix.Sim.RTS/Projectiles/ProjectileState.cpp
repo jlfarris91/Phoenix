@@ -1,7 +1,7 @@
 #include "ProjectileState.h"
 
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/Projectiles/ProjectileId.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Projectiles/ProjectileId.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

@@ -1,10 +1,10 @@
-#include "PhoenixSteering/FeatureSteering.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
 
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/MortonCode.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSteering/SteeringComponent.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.Steering/SteeringComponent.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

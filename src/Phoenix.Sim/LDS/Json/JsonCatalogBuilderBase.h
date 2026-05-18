@@ -2,10 +2,10 @@
 
 #include <nlohmann/json.hpp>
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/LDS/LDSCatalog.h"
-#include "PhoenixSim/LDS/LDSCatalogQueryContext.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/LDS/LDSCatalog.h"
+#include "Phoenix.Sim/LDS/LDSCatalogQueryContext.h"
 
 namespace Phoenix::LDS::Json
 {

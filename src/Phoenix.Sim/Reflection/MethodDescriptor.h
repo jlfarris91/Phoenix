@@ -3,8 +3,8 @@
 #include <span>
 
 #include "GenericFunction.h"
-#include "PhoenixSim/Reflection/MemberDescriptor.h"
-#include "PhoenixSim/Reflection/Variant.h"
+#include "Phoenix.Sim/Reflection/MemberDescriptor.h"
+#include "Phoenix.Sim/Reflection/Variant.h"
 
 namespace Phoenix
 {

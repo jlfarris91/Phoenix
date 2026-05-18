@@ -1,8 +1,8 @@
-#include "PhoenixRTS/Orders/CommandHandler.h"
+#include "Phoenix.Sim.RTS/Orders/CommandHandler.h"
 
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixRTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
 
 Phoenix::FName Phoenix::RTS::ICommandHandler::GetCommandId() const
 {

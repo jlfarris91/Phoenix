@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/Containers/FixedMemory.h"
-#include "PhoenixSim/LDS/LDSObjectModel.h"
-#include "PhoenixSim/LDS/LDSRecordStore.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/Containers/FixedMemory.h"
+#include "Phoenix.Sim/LDS/LDSObjectModel.h"
+#include "Phoenix.Sim/LDS/LDSRecordStore.h"
 
 namespace Phoenix::LDS
 {

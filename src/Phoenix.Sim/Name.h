@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Hashing.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Hashing.h"
 
 #ifndef PHOENIX_SIM_NAME_ENTRIES
 #define PHOENIX_SIM_NAME_ENTRIES 1

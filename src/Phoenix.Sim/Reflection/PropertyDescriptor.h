@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/MemberDescriptor.h"
+#include "Phoenix.Sim/Reflection/MemberDescriptor.h"
 
 namespace Phoenix
 {

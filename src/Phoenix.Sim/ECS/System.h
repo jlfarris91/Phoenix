@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Actions.h"
-#include "PhoenixSim/Reflection/Registration.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/Actions.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
 namespace Phoenix
 {

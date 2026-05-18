@@ -1,11 +1,11 @@
-#include "PhoenixScript/FeatureScript.h"
+#include "Phoenix.Sim.Script/FeatureScript.h"
 
 #include <filesystem>
 
 #include "WasmRuntime.h"
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;
 

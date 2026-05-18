@@ -1,11 +1,11 @@
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Services/Service.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Services/Service.h"
 
-#include "PhoenixRTS/Orders/Commands.h"
-#include "PhoenixRTS/Orders/Orders.h"
-#include "PhoenixRTS/Units/UnitId.h"
+#include "Phoenix.Sim.RTS/Orders/Commands.h"
+#include "Phoenix.Sim.RTS/Orders/Orders.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
 
 namespace Phoenix::RTS
 {

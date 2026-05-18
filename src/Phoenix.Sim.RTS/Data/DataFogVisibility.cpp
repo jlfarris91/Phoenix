@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataFogVisibility.h"
+#include "Phoenix.Sim.RTS/Data/DataFogVisibility.h"
 
 using namespace Phoenix::RTS::Data;
 

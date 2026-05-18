@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Containers/FixedBuffer.h"
-#include "PhoenixSim/Containers/FixedMap.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Containers/FixedBuffer.h"
+#include "Phoenix.Sim/Containers/FixedMap.h"
 
 namespace Phoenix
 {

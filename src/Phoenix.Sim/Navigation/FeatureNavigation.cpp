@@ -3,11 +3,11 @@
 
 #include <cstdio>   // For snprintf
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/Debug/Debug.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/Debug/Debug.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Pathfinding;

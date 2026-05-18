@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
-#include "PhoenixRTS/Effects/EffectId.h"
+#include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"
+#include "Phoenix.Sim.RTS/Effects/EffectId.h"
 
 namespace Phoenix::RTS
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixRTS/Effects/Responses.h"
+#include "Phoenix.Sim.RTS/Effects/Responses.h"
 
 namespace Phoenix::RTS
 {

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSObjectRefTypePtr.h"
 
 namespace Phoenix::LDS
 {

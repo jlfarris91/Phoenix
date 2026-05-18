@@ -5,13 +5,13 @@
 #include "SDLCamera.h"
 #include "SDLDebugRenderer.h"
 #include "SDLViewport.h"
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/MortonCode.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using PhoenixColor = Phoenix::Color;

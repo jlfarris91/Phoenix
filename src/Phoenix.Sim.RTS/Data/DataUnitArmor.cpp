@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataUnitArmor.h"
+#include "Phoenix.Sim.RTS/Data/DataUnitArmor.h"
 
 using namespace Phoenix::RTS::Data;
 

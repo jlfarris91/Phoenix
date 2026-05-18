@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Debug/DebugShape.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/Debug/DebugShape.h"
 
 namespace Phoenix
 {

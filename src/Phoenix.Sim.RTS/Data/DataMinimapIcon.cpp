@@ -1,5 +1,5 @@
 ﻿
-#include "PhoenixRTS/Data/DataMinimapIcon.h"
+#include "Phoenix.Sim.RTS/Data/DataMinimapIcon.h"
 
 using namespace Phoenix::RTS::Data;
 

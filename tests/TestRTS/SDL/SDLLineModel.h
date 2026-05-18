@@ -3,9 +3,9 @@
 
 #include <filesystem>
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/FixedPoint/FixedLine.h"
-#include "PhoenixSim/FixedPoint/FixedTransform.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix.Sim/FixedPoint/FixedTransform.h"
 
 namespace Phoenix
 {

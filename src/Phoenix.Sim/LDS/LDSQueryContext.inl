@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectSerializer.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectSerializer.h"
 
 namespace Phoenix::LDS
 {

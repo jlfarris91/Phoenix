@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "PhoenixRTS/Data/DataComponent.h"
-#include "PhoenixRTS/Data/DataEffect.h"
-#include "PhoenixRTS/Data/DataTargetFilter.h"
-#include "PhoenixRTS/Data/DataIcon.h"
-#include "PhoenixRTS/Data/DataWeaponAmmo.h"
+#include "Phoenix.Sim.RTS/Data/DataComponent.h"
+#include "Phoenix.Sim.RTS/Data/DataEffect.h"
+#include "Phoenix.Sim.RTS/Data/DataTargetFilter.h"
+#include "Phoenix.Sim.RTS/Data/DataIcon.h"
+#include "Phoenix.Sim.RTS/Data/DataWeaponAmmo.h"
 
 namespace Phoenix::RTS::Data
 {

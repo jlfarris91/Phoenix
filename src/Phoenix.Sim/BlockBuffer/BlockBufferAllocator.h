@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/OffsetRef.h"
+#include "Phoenix.Sim/OffsetRef.h"
 
 namespace Phoenix
 {

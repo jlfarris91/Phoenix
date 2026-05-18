@@ -2,8 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Platform.h"
 #include "Services/Service.h"
 
 namespace Phoenix

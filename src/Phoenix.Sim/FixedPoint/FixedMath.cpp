@@ -1,5 +1,5 @@
 ﻿
-#include "PhoenixSim/FixedPoint/FixedMath.h"
+#include "Phoenix.Sim/FixedPoint/FixedMath.h"
 #include <climits>  // For INT_MIN, INT_MAX
 
 using namespace Phoenix;

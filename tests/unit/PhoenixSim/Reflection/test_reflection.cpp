@@ -1,9 +1,9 @@
 #include <doctest/doctest.h>
 #include <cmath>
-#include <PhoenixSim/Reflection/Registration.h>
-#include <PhoenixSim/Reflection/TypeRegistry.h>
-#include <PhoenixSim/FixedPoint/FixedTransform.h>   // Vec2 (external type)
-#include <PhoenixSim/FixedPoint/FixedTypes.h>         // Distance
+#include <Phoenix.Sim/Reflection/Registration.h>
+#include <Phoenix.Sim/Reflection/TypeRegistry.h>
+#include <Phoenix.Sim/FixedPoint/FixedTransform.h>   // Vec2 (external type)
+#include <Phoenix.Sim/FixedPoint/FixedTypes.h>         // Distance
 
 using namespace Phoenix;
 

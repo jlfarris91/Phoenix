@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL_video.h>
 
-#include <PhoenixSim/FixedPoint/FixedVector.h>
+#include <Phoenix.Sim/FixedPoint/FixedVector.h>
 
 struct SDL_Renderer;
 struct SDLCamera;

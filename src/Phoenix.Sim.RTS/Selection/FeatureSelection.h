@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/ECS/EntityId.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 #ifndef PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER
 #define PHX_RTS_MAX_PLAYER_SELECTION_GROUPS_PER_PLAYER 4

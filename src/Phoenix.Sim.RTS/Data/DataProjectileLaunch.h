@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "PhoenixRTS/Data/DataFXActor.h"
+#include "Phoenix.Sim.RTS/Data/DataFXActor.h"
 
 namespace Phoenix::RTS::Data
 {

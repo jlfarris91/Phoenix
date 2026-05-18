@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "PhoenixSim/Corners.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Corners.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
 namespace Phoenix
 {

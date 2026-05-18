@@ -2,9 +2,9 @@
 
 #include "TaskBase.h"
 #include "TaskList.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Tasks;

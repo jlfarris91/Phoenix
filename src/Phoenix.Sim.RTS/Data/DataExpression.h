@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/LDSObjectModel.h"
+#include "Phoenix.Sim/LDS/LDSObjectModel.h"
 
 namespace Phoenix::RTS::Data
 {

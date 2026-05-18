@@ -1,12 +1,12 @@
 
-#include "PhoenixLua/LuaWasmEnvironment.h"
+#include "Phoenix.Sim.Lua/LuaWasmEnvironment.h"
 
 #include <cstdint>
 #include <cstring>
 #include <fstream>
 #include <vector>
 
-#include "PhoenixSim/Logging.h"
+#include "Phoenix.Sim/Logging.h"
 
 using namespace Phoenix;
 

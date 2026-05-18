@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
-#include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixSim/Tasks/TaskBase.h"
+#include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
+#include "Phoenix.Sim/Tasks/TaskBase.h"
 
 namespace Phoenix::RTS
 {

@@ -1,5 +1,5 @@
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSEnumTypePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSEnumTypePtr.h"
 
 using namespace Phoenix::LDS;
 

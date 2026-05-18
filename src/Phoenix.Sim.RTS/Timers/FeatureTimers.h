@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/SessionFwd.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/SessionFwd.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Timers/FixedTimerManager.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Timers/FixedTimerManager.h"
 
 #ifndef PHX_MAX_SESSION_TIMERS
 #define PHX_MAX_SESSION_TIMERS 1024

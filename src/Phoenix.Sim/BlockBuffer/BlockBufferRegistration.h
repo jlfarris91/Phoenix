@@ -1,9 +1,9 @@
 #pragma once
 
-#include "PhoenixSim/BlockBuffer/BlockBufferAllocator.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferBlock.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferConfig.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferLayout.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferAllocator.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferBlock.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferConfig.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferLayout.h"
 
 #define PHX_BLOCK_BUFFER_COMMON(type) \
     struct Config; \

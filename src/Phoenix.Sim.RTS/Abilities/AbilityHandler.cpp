@@ -1,10 +1,10 @@
 
-#include "PhoenixRTS/Abilities/AbilityHandler.h"
+#include "Phoenix.Sim.RTS/Abilities/AbilityHandler.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixRTS/Abilities/FeatureAbilities.h"
-#include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
+#include "Phoenix.Sim/Session.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

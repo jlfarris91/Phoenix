@@ -2,7 +2,7 @@
 
 #include "SessionInstance.h"
 
-using namespace Phoenix;
+namespace Phoenix {
 
 SessionHandle SessionDriver::CreateSession(const SessionCtorArgs& args)
 {
@@ -47,3 +47,5 @@ std::vector<SessionInstance*> SessionDriver::GetSessions() const
     }
     return result;
 }
+
+} // namespace Phoenix

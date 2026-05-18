@@ -5,9 +5,9 @@
 
 #include <nlohmann/json.hpp>
 
-#include <PhoenixSim/Actions.h>
-#include <PhoenixSim/Session.h>
-#include <PhoenixSim/FixedPoint/FixedVector.h>
+#include <Phoenix.Sim/Actions.h>
+#include <Phoenix.Sim/Session.h>
+#include <Phoenix.Sim/FixedPoint/FixedVector.h>
 
 #include "../sdl/SDLDebugState.h"
 #include "../sdl/SDLDebugRenderer.h"

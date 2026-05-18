@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixSim/Name.h"
+#include "Phoenix.Sim/Name.h"
 
 namespace Phoenix::LDS
 {

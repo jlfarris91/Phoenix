@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataFXActor.h"
+#include "Phoenix.Sim.RTS/Data/DataFXActor.h"
 
 bool Phoenix::RTS::Data::FXActor::Read(const LDS::LDSReadObjectArgs& args, FXActor& outItem)
 {

@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataVitalStats.h"
+#include "Phoenix.Sim.RTS/Data/DataVitalStats.h"
 
 using namespace Phoenix::RTS::Data;
 

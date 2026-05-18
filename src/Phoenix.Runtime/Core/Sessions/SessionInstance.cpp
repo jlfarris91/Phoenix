@@ -1,8 +1,10 @@
 #include "SessionInstance.h"
 
-#include "WorldDoubleBuffer.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Session.h"
+#include "../Worlds/WorldDoubleBuffer.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Session.h"
+
+namespace Phoenix {
 
 SessionInstance::SessionInstance(uint32_t id, const Phoenix::SessionCtorArgs& args)
     : Id(id)
@@ -177,3 +179,5 @@ void SessionInstance::OnShutdown()
 {
     Session->Shutdown();
 }
+
+} // namespace Phoenix

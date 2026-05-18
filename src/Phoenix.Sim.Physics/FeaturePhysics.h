@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/FixedPoint/FixedPoint.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/FixedPoint/FixedLine.h"
-#include "PhoenixPhysics/PhysicsSystem.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/FixedPoint/FixedPoint.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix.Sim.Physics/PhysicsSystem.h"
 
 #ifndef PHX_PHS_MAX_CONTACTS_PER_ENTITY
 #define PHX_PHS_MAX_CONTACTS_PER_ENTITY 8

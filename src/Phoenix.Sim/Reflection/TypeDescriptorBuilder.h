@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/FieldAccessor.h"
-#include "PhoenixSim/Reflection/FieldDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/MethodDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/MethodDescriptorString.h"
-#include "PhoenixSim/Reflection/PropertyAccessor.h"
-#include "PhoenixSim/Reflection/PropertyDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/TypeDescriptor.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Reflection/FieldAccessor.h"
+#include "Phoenix.Sim/Reflection/FieldDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/MethodDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/MethodDescriptorString.h"
+#include "Phoenix.Sim/Reflection/PropertyAccessor.h"
+#include "Phoenix.Sim/Reflection/PropertyDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/TypeDescriptor.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
 
 namespace Phoenix
 {

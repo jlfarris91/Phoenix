@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/MemberDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/PropertyDescriptor.h"
-#include "PhoenixSim/Utils.h"
+#include "Phoenix.Sim/Reflection/MemberDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/PropertyDescriptor.h"
+#include "Phoenix.Sim/Utils.h"
 
 namespace Phoenix
 {

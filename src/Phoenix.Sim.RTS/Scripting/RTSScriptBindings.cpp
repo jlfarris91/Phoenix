@@ -1,7 +1,7 @@
-#include "PhoenixRTS/Scripting/RTSScriptBindings.h"
+#include "Phoenix.Sim.RTS/Scripting/RTSScriptBindings.h"
 
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

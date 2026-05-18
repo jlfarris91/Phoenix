@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/LDS/LDSRecordQueryFlags.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSForwardDecls.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/LDS/LDSRecordQueryFlags.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSForwardDecls.h"
 
 namespace Phoenix::LDS
 {
@@ -102,4 +102,4 @@ namespace Phoenix::LDS
     };
 }
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayUtil.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayUtil.inl"

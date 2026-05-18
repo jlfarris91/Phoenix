@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedLeaderboard.h"
+#include "Phoenix.Sim/Containers/FixedLeaderboard.h"
 
 using namespace Phoenix;
 

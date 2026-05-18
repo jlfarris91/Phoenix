@@ -1,11 +1,11 @@
 #pragma once
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/FixedPoint/FixedCircle.h"
-#include "PhoenixSim/FixedPoint/FixedLine.h"
-#include "PhoenixSim/FixedPoint/FixedBox.h"
-#include "PhoenixSim/FixedPoint/FixedEllipse.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/FixedPoint/FixedCircle.h"
+#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix.Sim/FixedPoint/FixedBox.h"
+#include "Phoenix.Sim/FixedPoint/FixedEllipse.h"
 
 namespace Phoenix
 {

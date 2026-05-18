@@ -6,10 +6,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include <PhoenixSim/WorldsFwd.h>
+#include <Phoenix.Sim/WorldsFwd.h>
 
-#include "PhoenixSim/BlockBuffer/BlockBufferEnums.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferLayout.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferEnums.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferLayout.h"
 
 #include "FlameGraph.h"
 

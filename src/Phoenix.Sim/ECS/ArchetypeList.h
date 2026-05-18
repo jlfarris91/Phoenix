@@ -1,11 +1,11 @@
 ﻿#pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Utils.h"
-#include "PhoenixSim/ECS/ArchetypeHandle.h"
-#include "PhoenixSim/ECS/ArchetypeDefinition.h"
-#include "PhoenixSim/ECS/EntityId.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Utils.h"
+#include "Phoenix.Sim/ECS/ArchetypeHandle.h"
+#include "Phoenix.Sim/ECS/ArchetypeDefinition.h"
+#include "Phoenix.Sim/ECS/EntityId.h"
 
 namespace Phoenix
 {

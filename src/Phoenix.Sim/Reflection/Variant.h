@@ -14,10 +14,10 @@
 #include <cstddef>
 #include <cstring>
 
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Reflection/TypeName.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Reflection/TypeName.h"
 
 namespace Phoenix
 {

@@ -22,50 +22,50 @@
 #include "imgui.h"
 
 // Phoenix
-#include <PhoenixSim/Color.h>
-#include <PhoenixSim/MortonCode.h>
-#include <PhoenixSim/FPSCalc.h>
-#include <PhoenixSim/Parallel.h>
-#include <PhoenixSim/Session.h>
-#include <PhoenixSim/Worlds.h>
-#include <PhoenixSim/Features.h>
+#include <Phoenix.Sim/Color.h>
+#include <Phoenix.Sim/MortonCode.h>
+#include <Phoenix.Sim/FPSCalc.h>
+#include <Phoenix.Sim/Parallel.h>
+#include <Phoenix.Sim/Session.h>
+#include <Phoenix.Sim/Worlds.h>
+#include <Phoenix.Sim/Features.h>
 
 // Phoenix features
-#include <PhoenixSim/Debug/FeatureDebug.h>
-#include <PhoenixSim/Strings/FeatureString.h>
-#include <PhoenixSim/LDS/FeatureLDS.h>
-#include <PhoenixSim/Blackboard/FeatureBlackboard.h>
-#include <PhoenixSim/ECS/FeatureECS.h>
-#include <PhoenixSim/Tasks/FeatureTask.h>
-#include <PhoenixSim/Navigation/FeatureNavigation.h>
-#include "PhoenixSim/Services/ServiceContainerBuilder.h"
-#include <PhoenixPhysics/FeaturePhysics.h>
-#include <PhoenixPhysics/BodyComponent.h>
-#include <PhoenixSteering/FeatureSteering.h>
-#include <PhoenixSim/Tasks/FeatureTask.h>
+#include <Phoenix.Sim/Debug/FeatureDebug.h>
+#include <Phoenix.Sim/Strings/FeatureString.h>
+#include <Phoenix.Sim/LDS/FeatureLDS.h>
+#include <Phoenix.Sim/Blackboard/FeatureBlackboard.h>
+#include <Phoenix.Sim/ECS/FeatureECS.h>
+#include <Phoenix.Sim/Tasks/FeatureTask.h>
+#include <Phoenix.Sim/Navigation/FeatureNavigation.h>
+#include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
+#include <Phoenix.Sim.Physics/FeaturePhysics.h>
+#include <Phoenix.Sim.Physics/BodyComponent.h>
+#include <Phoenix.Sim.Steering/FeatureSteering.h>
+#include <Phoenix.Sim/Tasks/FeatureTask.h>
 
 // Script Features
-#include <PhoenixScript/FeatureScript.h>
-#include <PhoenixLua/FeatureLua.h>
+#include <Phoenix.Sim.Script/FeatureScript.h>
+#include <Phoenix.Sim.Lua/FeatureLua.h>
 
 // RTS Features
-#include <PhoenixRTS/Units/FeatureUnit.h>
-#include <PhoenixRTS/Abilities/FeatureAbilities.h>
-#include <PhoenixRTS/Effects/FeatureEffects.h>
-#include <PhoenixRTS/Orders/FeatureOrders.h>
-#include <PhoenixRTS/Projectiles/FeatureProjectile.h>
-#include <PhoenixRTS/Selection/FeatureSelection.h>
+#include <Phoenix.Sim.RTS/Units/FeatureUnit.h>
+#include <Phoenix.Sim.RTS/Abilities/FeatureAbilities.h>
+#include <Phoenix.Sim.RTS/Effects/FeatureEffects.h>
+#include <Phoenix.Sim.RTS/Orders/FeatureOrders.h>
+#include <Phoenix.Sim.RTS/Projectiles/FeatureProjectile.h>
+#include <Phoenix.Sim.RTS/Selection/FeatureSelection.h>
 
 // RTS Misc
-#include <PhoenixRTS/Abilities/Move/MoveAbilityHandler.h>
-#include <PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h>
-#include <PhoenixRTS/Effects/EffectDamageHandler.h>
-#include <PhoenixRTS/Effects/EffectLaunchProjectileHandler.h>
-#include <PhoenixRTS/Effects/ResponseDamageHandler.h>
-#include <PhoenixRTS/Data/DataProjectile.h>
-#include <PhoenixRTS/Projectiles/ProjectileComponent.h>
-#include <PhoenixRTS/Data/DataUnit.h>
-#include <PhoenixRTS/Units/UnitComponent.h>
+#include <Phoenix.Sim.RTS/Abilities/Move/MoveAbilityHandler.h>
+#include <Phoenix.Sim.RTS/Abilities/Attack/AttackAbilityHandler.h>
+#include <Phoenix.Sim.RTS/Effects/EffectDamageHandler.h>
+#include <Phoenix.Sim.RTS/Effects/EffectLaunchProjectileHandler.h>
+#include <Phoenix.Sim.RTS/Effects/ResponseDamageHandler.h>
+#include <Phoenix.Sim.RTS/Data/DataProjectile.h>
+#include <Phoenix.Sim.RTS/Projectiles/ProjectileComponent.h>
+#include <Phoenix.Sim.RTS/Data/DataUnit.h>
+#include <Phoenix.Sim.RTS/Units/UnitComponent.h>
 
 // SDL impl
 #include "SDL/SDLCamera.h"

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixSim/Reflection/BaseDescriptor.h"
-#include "PhoenixSim/Reflection/Variant.h"
+#include "Phoenix.Sim/Reflection/BaseDescriptor.h"
+#include "Phoenix.Sim/Reflection/Variant.h"
 
 namespace Phoenix
 {

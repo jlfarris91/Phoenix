@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixRTS/Data/DataComponent.h"
+#include "Phoenix.Sim.RTS/Data/DataComponent.h"
 
 namespace Phoenix::RTS::Data
 {

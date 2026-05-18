@@ -6,8 +6,8 @@
 #include <string>
 #include <vector>
 
-#include "PhoenixLua/DLLExport.h"
-#include "PhoenixSim/Features.h"
+#include "Phoenix.Sim.Lua/DLLExport.h"
+#include "Phoenix.Sim/Features.h"
 
 namespace Phoenix
 {

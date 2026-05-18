@@ -1,9 +1,9 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSObjectPtr.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSObjectPtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValuePtr.h"
 
 namespace Phoenix::LDS
 {
@@ -36,4 +36,4 @@ namespace Phoenix::LDS
     using TLDSObjectRefArrayTypePtr = TLDSArrayTypePtrBase<TObjectRefItemPtr, TObjectRefArrayPtr>;
 }
 
-#include "PhoenixSim/LDS/ObjectModel/Type/LDSArrayTypePtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/Type/LDSArrayTypePtr.inl"

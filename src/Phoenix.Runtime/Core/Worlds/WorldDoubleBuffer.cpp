@@ -1,5 +1,7 @@
 #include "WorldDoubleBuffer.h"
 
+namespace Phoenix {
+
 void WorldDoubleBuffer::OnSimUpdate(Phoenix::WorldConstRef world)
 {
     if (!Enabled)
@@ -88,7 +90,9 @@ double WorldDoubleBuffer::GetUpdateRate() const
     return UpdateCalc.GetFPS();
 }
 
-Phoenix::uint32 WorldDoubleBuffer::GetAccumulatedDirtyPageCount() const
+uint32 WorldDoubleBuffer::GetAccumulatedDirtyPageCount() const
 {
     return AccumulatedDirtyPageCount;
 }
+
+} // namespace Phoenix

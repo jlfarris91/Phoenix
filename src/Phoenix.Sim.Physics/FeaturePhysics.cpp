@@ -1,9 +1,9 @@
-﻿#include "PhoenixPhysics/FeaturePhysics.h"
+﻿#include "Phoenix.Sim.Physics/FeaturePhysics.h"
 
-#include "PhoenixSim/MortonCode.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixPhysics/BodyComponent.h"
+#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim.Physics/BodyComponent.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

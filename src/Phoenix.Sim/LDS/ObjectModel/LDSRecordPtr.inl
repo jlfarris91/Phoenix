@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixSim/LDS/LDSQueryContext.h"
+#include "Phoenix.Sim/LDS/LDSQueryContext.h"
 
 namespace Phoenix::LDS
 {

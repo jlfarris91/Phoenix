@@ -3,12 +3,12 @@
 #include <string>
 #include <vector>
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Reflection/MethodDescriptor.h"
-#include "PhoenixSim/Reflection/MethodDescriptorString.h"
-#include "PhoenixSim/Reflection/TypeDescriptorBuilder.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
-#include "PhoenixSim/Scripting/ScriptOptional.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Reflection/MethodDescriptor.h"
+#include "Phoenix.Sim/Reflection/MethodDescriptorString.h"
+#include "Phoenix.Sim/Reflection/TypeDescriptorBuilder.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Scripting/ScriptOptional.h"
 
 namespace Phoenix
 {

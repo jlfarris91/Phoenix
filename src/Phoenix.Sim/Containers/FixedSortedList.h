@@ -4,10 +4,10 @@
 
 #include <algorithm>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Utils.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Containers/FixedMemory.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Utils.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/Containers/FixedMemory.h"
 
 namespace Phoenix
 {

@@ -1,13 +1,13 @@
-#include "PhoenixRTS/Effects/Responses.h"
+#include "Phoenix.Sim.RTS/Effects/Responses.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixRTS/Cooldown/Cooldown.h"
-#include "PhoenixRTS/Data/DataResponse.h"
-#include "PhoenixRTS/Effects/EffectComponent.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
+#include "Phoenix.Sim.RTS/Cooldown/Cooldown.h"
+#include "Phoenix.Sim.RTS/Data/DataResponse.h"
+#include "Phoenix.Sim.RTS/Effects/EffectComponent.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetFiltering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::RTS;

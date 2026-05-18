@@ -1,10 +1,10 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/LDS/LDSObjectModel.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/LDS/LDSObjectModel.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix::RTS::Data
 {

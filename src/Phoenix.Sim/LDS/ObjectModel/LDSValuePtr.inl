@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValuePtr.h"
 
 namespace Phoenix::LDS
 {

@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/ObjectModel/LDSArrayUtil.h"
-#include "PhoenixSim/LDS/LDSQueryContext.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSArrayUtil.h"
+#include "Phoenix.Sim/LDS/LDSQueryContext.h"
 
 namespace Phoenix::LDS
 {

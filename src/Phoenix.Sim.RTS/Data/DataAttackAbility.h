@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/LDSObjectModel.h"
+#include "Phoenix.Sim/LDS/LDSObjectModel.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Data/DataAbility.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Data/DataAbility.h"
 
 namespace Phoenix::RTS::Data
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix
 {

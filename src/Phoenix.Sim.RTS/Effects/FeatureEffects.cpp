@@ -1,14 +1,14 @@
-#include "PhoenixRTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixRTS/Effects/Effects.h"
-#include "PhoenixRTS/Effects/EffectComponent.h"
-#include "PhoenixRTS/Effects/EffectSetHandler.h"
-#include "PhoenixRTS/Effects/Responses.h"
-#include "PhoenixRTS/Effects/PeriodicEffectSystem.h"
+#include "Phoenix.Sim.RTS/Effects/Effects.h"
+#include "Phoenix.Sim.RTS/Effects/EffectComponent.h"
+#include "Phoenix.Sim.RTS/Effects/EffectSetHandler.h"
+#include "Phoenix.Sim.RTS/Effects/Responses.h"
+#include "Phoenix.Sim.RTS/Effects/PeriodicEffectSystem.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

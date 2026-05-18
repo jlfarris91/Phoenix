@@ -1,9 +1,9 @@
 #include "MoveAbilityTask.h"
 
 #include "MoveAbilityHandler.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixRTS/Orders/Orders.h"
-#include "PhoenixSteering/FeatureSteering.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/Orders/Orders.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

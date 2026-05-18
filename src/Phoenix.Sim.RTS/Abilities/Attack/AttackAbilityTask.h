@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixRTS/Abilities/Attack/AttackAbilityStates.h"
-#include "PhoenixSim/Tasks/TaskBase.h"
+#include "Phoenix.Sim.RTS/Abilities/Attack/AttackAbilityStates.h"
+#include "Phoenix.Sim/Tasks/TaskBase.h"
 
 namespace Phoenix::RTS
 {

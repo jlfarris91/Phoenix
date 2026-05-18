@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "PhoenixSim/LDS/LDSObjectModel.h"
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Data/DataCooldown.h"
-#include "PhoenixRTS/Data/DataEffect.h"
-#include "PhoenixRTS/Data/DataTargetFilter.h"
+#include "Phoenix.Sim/LDS/LDSObjectModel.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Data/DataCooldown.h"
+#include "Phoenix.Sim.RTS/Data/DataEffect.h"
+#include "Phoenix.Sim.RTS/Data/DataTargetFilter.h"
 
 namespace Phoenix::RTS::Data
 {

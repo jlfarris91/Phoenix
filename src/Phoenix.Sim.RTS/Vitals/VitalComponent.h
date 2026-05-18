@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "PhoenixSim/ECS/Component.h"
+#include "Phoenix.Sim/ECS/Component.h"
 
-#include "PhoenixRTS/Vitals/Vitals.h"
+#include "Phoenix.Sim.RTS/Vitals/Vitals.h"
 
 #ifndef PHX_RTS_MAX_VITALS
 #define PHX_RTS_MAX_VITALS 3

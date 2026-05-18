@@ -6,12 +6,12 @@
 #include <type_traits>
 #include <unordered_map>
 
-#include "PhoenixScript/DLLExport.h"
-#include "PhoenixScript/WasmEnvironment.h"
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Containers/FixedMemory.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim.Script/DLLExport.h"
+#include "Phoenix.Sim.Script/WasmEnvironment.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Containers/FixedMemory.h"
+#include "Phoenix.Sim/Worlds.h"
 
 #ifndef PHX_SCRIPT_WASM_MEMORY_CAPACITY
 #define PHX_SCRIPT_WASM_MEMORY_CAPACITY (4 * 1024 * 1024 * 10) // 10x 4 MiB default memory size

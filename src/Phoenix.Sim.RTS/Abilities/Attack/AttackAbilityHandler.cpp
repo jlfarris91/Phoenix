@@ -1,23 +1,23 @@
 
-#include "PhoenixRTS/Abilities/Attack/AttackAbilityHandler.h"
+#include "Phoenix.Sim.RTS/Abilities/Attack/AttackAbilityHandler.h"
 
 #include "AttackAbilityTask.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixPhysics/BodyComponent.h"
+#include "Phoenix.Sim.Physics/BodyComponent.h"
 
-#include "PhoenixSteering/FeatureSteering.h"
+#include "Phoenix.Sim.Steering/FeatureSteering.h"
 
-#include "PhoenixRTS/Data/DataAttackAbility.h"
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Orders/FeatureOrders.h"
-#include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Units/UnitId.h"
-#include "PhoenixRTS/Weapons/Weapons.h"
-#include "PhoenixSim/Session.h"
-#include "PhoenixSim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.RTS/Data/DataAttackAbility.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetFiltering.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
+#include "Phoenix.Sim.RTS/Weapons/Weapons.h"
+#include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

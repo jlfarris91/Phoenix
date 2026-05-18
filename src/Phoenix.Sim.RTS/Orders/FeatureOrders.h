@@ -1,11 +1,11 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/Worlds.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Orders/FixedOrderQueue.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Orders/FixedOrderQueue.h"
 
 #ifndef PHX_RTS_ORDER_QUEUE_MAX_ORDERS
 #define PHX_RTS_ORDER_QUEUE_MAX_ORDERS 4096

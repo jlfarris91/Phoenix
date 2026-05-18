@@ -1,4 +1,4 @@
-#include "PhoenixScript/WasmEnvironment.h"
+#include "Phoenix.Sim.Script/WasmEnvironment.h"
 
 #include <algorithm>
 #include <fstream>
@@ -21,10 +21,10 @@
 
 #include "WasmRuntime.h"
 #include "WasmUtility.h"
-#include "PhoenixSim/Logging.h"
-#include "PhoenixSim/Reflection/Variant.h"
-#include "PhoenixSim/Worlds.h"
-#include "PhoenixSim/Scripting/IScriptRuntime.h"
+#include "Phoenix.Sim/Logging.h"
+#include "Phoenix.Sim/Reflection/Variant.h"
+#include "Phoenix.Sim/Worlds.h"
+#include "Phoenix.Sim/Scripting/IScriptRuntime.h"
 
 using namespace Phoenix;
 

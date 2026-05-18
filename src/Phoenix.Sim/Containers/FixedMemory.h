@@ -1,11 +1,11 @@
 #pragma once
 
-#include "PhoenixSim/OffsetRef.h"
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/OffsetRef.h"
+#include "Phoenix.Sim/Platform.h"
 
 #include <array>
 
-#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferRegistration.h"
 
 namespace Phoenix
 {

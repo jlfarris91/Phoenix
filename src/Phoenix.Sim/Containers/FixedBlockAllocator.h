@@ -1,10 +1,10 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/BlockBuffer/BlockBufferRegistration.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Containers/FixedMap.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/BlockBuffer/BlockBufferRegistration.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/Containers/FixedMap.h"
 
 namespace Phoenix
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PhoenixRTS/Abilities/States/CommonAbilityStates.h"
-#include "PhoenixRTS/Abilities/States/WeaponAbilityStates.h"
+#include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"
+#include "Phoenix.Sim.RTS/Abilities/States/WeaponAbilityStates.h"
 
 namespace Phoenix::RTS
 {

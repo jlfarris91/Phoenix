@@ -1,15 +1,15 @@
-#include "PhoenixRTS/Weapons/Weapons.h"
+#include "Phoenix.Sim.RTS/Weapons/Weapons.h"
 
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/LDS/FeatureLDS.h"
 
-#include "PhoenixRTS/Data/DataUnit.h"
-#include "PhoenixRTS/Data/DataWeapon.h"
-#include "PhoenixRTS/Data/DataWeaponAmmo.h"
-#include "PhoenixRTS/Effects/FeatureEffects.h"
-#include "PhoenixRTS/TargetFiltering/TargetFiltering.h"
-#include "PhoenixRTS/Units/FeatureUnit.h"
-#include "PhoenixRTS/Units/UnitId.h"
+#include "Phoenix.Sim.RTS/Data/DataUnit.h"
+#include "Phoenix.Sim.RTS/Data/DataWeapon.h"
+#include "Phoenix.Sim.RTS/Data/DataWeaponAmmo.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetFiltering.h"
+#include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

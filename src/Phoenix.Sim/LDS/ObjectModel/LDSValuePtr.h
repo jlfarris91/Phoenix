@@ -1,11 +1,11 @@
 
 #pragma once
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/FixedPoint/FixedTypes.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/LDS/LDSRecordQueryFlags.h"
-#include "PhoenixSim/LDS/ObjectModel/LDSRecordPtr.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/LDS/LDSRecordQueryFlags.h"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSRecordPtr.h"
 
 namespace Phoenix::LDS
 {
@@ -59,4 +59,4 @@ namespace Phoenix::LDS
     using ColorPtr = TLDSValuePtr<Color>;
 }
 
-#include "PhoenixSim/LDS/ObjectModel/LDSValuePtr.inl"
+#include "Phoenix.Sim/LDS/ObjectModel/LDSValuePtr.inl"

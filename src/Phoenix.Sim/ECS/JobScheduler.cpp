@@ -5,11 +5,11 @@
 #include <queue>
 #include <thread>
 
-#include "PhoenixSim/ECS/ArchetypeManager.h"
-#include "PhoenixSim/ECS/CommandBuffer.h"
-#include "PhoenixSim/ECS/SystemJob.h"
-#include "PhoenixSim/Parallel.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/ECS/ArchetypeManager.h"
+#include "Phoenix.Sim/ECS/CommandBuffer.h"
+#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim/Parallel.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

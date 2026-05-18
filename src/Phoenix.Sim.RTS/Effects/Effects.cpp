@@ -1,8 +1,8 @@
-#include "PhoenixRTS/Effects/Effects.h"
+#include "Phoenix.Sim.RTS/Effects/Effects.h"
 
-#include "PhoenixSim/Session.h"
+#include "Phoenix.Sim/Session.h"
 
-#include "PhoenixRTS/Effects/FeatureEffects.h"
+#include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 
 Phoenix::FName Phoenix::RTS::IEffectHandler::GetEffectTypeId() const
 {

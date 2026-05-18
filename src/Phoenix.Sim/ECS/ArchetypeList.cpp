@@ -1,6 +1,6 @@
 #include "ArchetypeList.h"
 
-#include "PhoenixSim/Profiling.h"
+#include "Phoenix.Sim/Profiling.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

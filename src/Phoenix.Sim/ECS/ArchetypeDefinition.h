@@ -3,10 +3,10 @@
 
 #include <algorithm>
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
 
 #ifndef PHX_ECS_ARCHETYPE_MAX_COMPS
 #define PHX_ECS_ARCHETYPE_MAX_COMPS 8

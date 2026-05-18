@@ -1,17 +1,17 @@
 
-#include "PhoenixPhysics/PhysicsSystem.h"
-#include "PhoenixSim/Reflection/Registration.h"
+#include "Phoenix.Sim.Physics/PhysicsSystem.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
 
-#include "PhoenixSim/Color.h"
-#include "PhoenixSim/Debug/Debug.h"
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/MortonCode.h"
-#include "PhoenixSim/Profiling.h"
-#include "PhoenixSim/WorldTaskQueue.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
-#include "PhoenixSim/ECS/SystemJob.h"
-#include "PhoenixPhysics/BodyComponent.h"
-#include "PhoenixPhysics/FeaturePhysics.h"
+#include "Phoenix.Sim/Color.h"
+#include "Phoenix.Sim/Debug/Debug.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix.Sim/WorldTaskQueue.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim.Physics/BodyComponent.h"
+#include "Phoenix.Sim.Physics/FeaturePhysics.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

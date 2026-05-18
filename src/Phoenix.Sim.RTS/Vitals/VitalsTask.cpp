@@ -3,7 +3,7 @@
 #include "Damage.h"
 #include "FeatureVitals.h"
 #include "VitalComponent.h"
-#include "PhoenixSim/ECS/FeatureECS.h"
+#include "Phoenix.Sim/ECS/FeatureECS.h"
 
 void Phoenix::RTS::VitalsTask::OnCreate(WorldRef world, uint32)
 {

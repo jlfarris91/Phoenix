@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhoenixSim/Containers/Optional.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
-#include "PhoenixRTS/Orders/Commands.h"
-#include "PhoenixRTS/TargetFiltering/TargetScanLevel.h"
-#include "PhoenixRTS/Units/UnitId.h"
+#include "Phoenix.Sim.RTS/Orders/Commands.h"
+#include "Phoenix.Sim.RTS/TargetFiltering/TargetScanLevel.h"
+#include "Phoenix.Sim.RTS/Units/UnitId.h"
 
 namespace Phoenix::LDS
 {

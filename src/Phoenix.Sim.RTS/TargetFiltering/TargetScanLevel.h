@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/Platform.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix::RTS
 {

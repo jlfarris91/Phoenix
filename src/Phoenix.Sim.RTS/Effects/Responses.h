@@ -1,12 +1,12 @@
 #pragma once
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Services/Service.h"
-#include "PhoenixSim/WorldsFwd.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Effects/EffectId.h"
-#include "PhoenixRTS/Data/DataResponse.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Effects/EffectId.h"
+#include "Phoenix.Sim.RTS/Data/DataResponse.h"
 
 namespace Phoenix::LDS
 {

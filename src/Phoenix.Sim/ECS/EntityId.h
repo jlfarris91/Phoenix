@@ -1,8 +1,8 @@
 ﻿
 #pragma once
 
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/Reflection/Registration.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
 
 namespace Phoenix::ECS
 {

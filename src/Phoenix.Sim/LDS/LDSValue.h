@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PhoenixSim/Name.h"
-#include "PhoenixSim/Platform.h"
-#include "PhoenixSim/FixedPoint/FixedTypes.h"
+#include "Phoenix.Sim/Name.h"
+#include "Phoenix.Sim/Platform.h"
+#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
 
 namespace Phoenix::LDS
 {

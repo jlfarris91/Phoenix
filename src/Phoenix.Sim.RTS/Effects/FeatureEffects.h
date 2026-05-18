@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PhoenixSim/Features.h"
-#include "PhoenixSim/Containers/FixedArray.h"
-#include "PhoenixSim/FixedPoint/FixedVector.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim/Features.h"
+#include "Phoenix.Sim/Containers/FixedArray.h"
+#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix.Sim/Worlds.h"
 
-#include "PhoenixRTS/DLLExport.h"
-#include "PhoenixRTS/Effects/Effects.h"
-#include "PhoenixRTS/Effects/FixedResponseList.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/Effects/Effects.h"
+#include "Phoenix.Sim.RTS/Effects/FixedResponseList.h"
 
 #ifndef PHX_RTS_MAX_RESPONSES
 #define PHX_RTS_MAX_RESPONSES 4096

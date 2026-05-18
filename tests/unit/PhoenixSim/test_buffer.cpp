@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedBuffer.h"
+#include "Phoenix.Sim/Containers/FixedBuffer.h"
 
 using namespace Phoenix;
 

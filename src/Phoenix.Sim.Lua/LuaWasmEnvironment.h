@@ -5,8 +5,8 @@
 #include <memory>
 #include <string>
 
-#include "PhoenixLua/DLLExport.h"
-#include "PhoenixScript/WasmEnvironment.h"
+#include "Phoenix.Sim.Lua/DLLExport.h"
+#include "Phoenix.Sim.Script/WasmEnvironment.h"
 
 namespace Phoenix
 {

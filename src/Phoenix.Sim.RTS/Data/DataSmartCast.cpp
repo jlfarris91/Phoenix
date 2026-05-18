@@ -1,5 +1,5 @@
 
-#include "PhoenixRTS/Data/DataSmartCast.h"
+#include "Phoenix.Sim.RTS/Data/DataSmartCast.h"
 
 using namespace Phoenix::RTS::Data;
 

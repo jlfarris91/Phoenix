@@ -3,7 +3,7 @@
 #include "Hashing.h"
 #include "Utils.h"
 #include "FixedPoint/FixedVector.h"
-#include "PhoenixSim/Platform.h"
+#include "Phoenix.Sim/Platform.h"
 
 namespace Phoenix
 {

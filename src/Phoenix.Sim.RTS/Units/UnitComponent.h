@@ -1,8 +1,8 @@
 #pragma once
 
-#include "PhoenixSim/ECS/Component.h"
+#include "Phoenix.Sim/ECS/Component.h"
 
-#include "PhoenixRTS/DLLExport.h"
+#include "Phoenix.Sim.RTS/DLLExport.h"
 
 namespace Phoenix::RTS
 {
