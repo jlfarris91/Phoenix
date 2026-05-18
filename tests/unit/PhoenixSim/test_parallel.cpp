@@ -7,7 +7,7 @@
 #include <thread>
 #include <vector>
 
-#include "PhoenixSim/Parallel.h"
+#include "Phoenix/Parallel.h"
 
 using namespace Phoenix;
 using namespace std::chrono_literals;

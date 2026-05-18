@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 using namespace Phoenix;
 

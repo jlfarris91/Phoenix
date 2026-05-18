@@ -15,7 +15,8 @@
       "toolset": "host=x64",
       "cacheVariables": {
         "PHX_BUILD_TESTS": "ON",
-        "VCPKG_MANIFEST_FEATURES": "testapp;tests"
+        "PE_BUILD_STANDALONE": "ON",
+        "VCPKG_MANIFEST_FEATURES": "testapp;tests;standalone"
       }
     },
     {

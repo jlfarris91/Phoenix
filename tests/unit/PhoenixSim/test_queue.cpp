@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedQueue.h"
+#include "Phoenix.Sim/Containers/FixedQueue.h"
 
 using namespace Phoenix;
 

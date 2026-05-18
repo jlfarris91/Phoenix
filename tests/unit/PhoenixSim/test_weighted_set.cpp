@@ -1,7 +1,7 @@
 
 #include <doctest/doctest.h>
 
-#include "PhoenixSim/Containers/FixedWeightedSet.h"
+#include "Phoenix.Sim/Containers/FixedWeightedSet.h"
 
 using namespace Phoenix;
 

@@ -2,31 +2,37 @@ find_package(doctest CONFIG REQUIRED)
 
 file(GLOB_RECURSE UNIT_TEST_SRC "*.cpp")
 
-add_executable(PhoenixTests ${UNIT_TEST_SRC})
+add_executable(Phoenix.Tests ${UNIT_TEST_SRC})
 
-target_link_libraries(PhoenixTests
+target_link_libraries(Phoenix.Tests
     PRIVATE
-        PhoenixSim
+        Phoenix.Sim
+        Phoenix.Sim.Blackboard
+        Phoenix.Sim.Debug
+        Phoenix.Sim.Tasks
+        Phoenix.Sim.ECS
+        Phoenix.Sim.LDS
+        Phoenix.Sim.Strings
         doctest::doctest
 )
 
-# Force the linker to include all object files from PhoenixSim so that
+# Force the linker to include all object files from Phoenix.Sim so that
 # static-initializer-only TUs (e.g. FixedTypeRegistrations.cpp) are not
 # dead-stripped before they have a chance to register their types.
 if(MSVC)
-    target_link_options(PhoenixTests PRIVATE
-        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>)
+    target_link_options(Phoenix.Tests PRIVATE
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim>)
 elseif(APPLE)
-    target_link_options(PhoenixTests PRIVATE -Wl,-force_load,$<TARGET_FILE:PhoenixSim>)
+    target_link_options(Phoenix.Tests PRIVATE -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim>)
 else()
-    target_link_options(PhoenixTests PRIVATE
-        -Wl,--whole-archive $<TARGET_FILE:PhoenixSim> -Wl,--no-whole-archive)
+    target_link_options(Phoenix.Tests PRIVATE
+        -Wl,--whole-archive $<TARGET_FILE:Phoenix.Sim> -Wl,--no-whole-archive)
 endif()
 
-target_include_directories(PhoenixTests
+target_include_directories(Phoenix.Tests
     PRIVATE
         ${CMAKE_SOURCE_DIR}/src
 )
 
 include(doctest)
-doctest_discover_tests(PhoenixTests)
+doctest_discover_tests(Phoenix.Tests)

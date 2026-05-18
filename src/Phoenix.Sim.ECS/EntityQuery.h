@@ -1,0 +1,292 @@
+﻿
+#pragma once
+
+#include <algorithm>
+#include <functional>
+#include <vector>
+
+#include "Phoenix/Platform.h"
+#include "Phoenix/Name.h"
+#include "Phoenix/Profiling.h"
+#include "Phoenix/Containers/Optional.h"
+#include "Phoenix.Sim.ECS/ArchetypeDefinition.h"
+
+namespace Phoenix::ECS
+{
+    enum class PHOENIX_SIM_API EComponentAccess : uint8
+    {
+        Read = 1,
+        Write = 2,
+        ReadWrite = 3
+    };
+
+    template <class>
+    struct ComponentAccessFromT {};
+
+    template <class T>
+    struct ComponentAccessFromT<const T&> { static constexpr EComponentAccess ComponentAccess = EComponentAccess::Read; };
+
+    template <class T>
+    struct ComponentAccessFromT<T&> { static constexpr EComponentAccess ComponentAccess = EComponentAccess::ReadWrite; };
+
+    template <class T, class TEquality = std::equal_to<T>>
+    struct EntityQueryFilterSet
+    {
+        std::vector<T> Items;
+
+        EntityQueryFilterSet& AddAll(const EntityQueryFilterSet& other)
+        {
+            static TEquality equality;
+            for (const T& otherItem : other.Items)
+            {
+                if (std::find(Items.begin(), Items.end(), otherItem) == Items.end())
+                {
+                    Items.push_back(otherItem);
+                }
+            }
+            return *this;
+        }
+
+        EntityQueryFilterSet& RemoveAll(const EntityQueryFilterSet& other)
+        {
+            static TEquality equality;
+            erase_if(Items, [&](const T& item)
+            {
+                return std::ranges::any_of(other.Items, [&](const T& otherItem)
+                {
+                    return equality(item, otherItem);
+                });
+            });
+            return *this;
+        }
+    };
+
+    using EntityQueryFilterComponentSet = EntityQueryFilterSet<std::tuple<FName, EComponentAccess>>;
+    using EntityQueryFilterTagSet = EntityQueryFilterSet<FName>;
+
+    struct PHOENIX_SIM_API EntityQuery
+    {
+        template <class TArchetypeDefinition = ArchetypeDefinition>
+        bool PassesFilter(const TArchetypeDefinition& definition) const
+        {
+            PHX_PROFILE_ZONE_SCOPED;
+
+            // None
+            if (!ComponentsNone.Items.empty())
+            {
+                for (auto && [id, access] : ComponentsNone.Items)
+                {
+                    for (const ComponentDefinition& comp : definition)
+                    {
+                        if (comp.Id == id)
+                            return false;
+                    }
+                }
+            }
+            // Any
+            if (!ComponentsAny.Items.empty())
+            {
+                bool any = false;
+                for (auto && [id, access] : ComponentsAny.Items)
+                {
+                    for (const ComponentDefinition& comp : definition)
+                    {
+                        if (comp.Id == id)
+                        {
+                            any = true;
+                            break;
+                        }
+                    }
+                    if (any)
+                    {
+                        break;
+                    }
+                }
+                if (!any)
+                {
+                    return false;
+                }                    
+            }
+            // All
+            if (!ComponentsAll.Items.empty())
+            {
+                bool all = true;
+                for (auto && [id, access] : ComponentsAll.Items)
+                {
+                    bool found = false;
+                    for (const ComponentDefinition& comp : definition)
+                    {
+                        if (comp.Id == id)
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (!found)
+                    {
+                        all = false;
+                        break;
+                    }
+                }
+                if (!all)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        void Reset()
+        {
+            ArchetypeId.Reset();
+            EntityName.Reset();
+            ComponentsAll.Items.clear();
+            ComponentsAny.Items.clear();
+            ComponentsNone.Items.clear();
+            TagsAll.Items.clear();
+            TagsAny.Items.clear();
+            TagsNone.Items.clear();
+        }
+
+    private:
+
+        friend class EntityQueryBuilder;
+
+        TOptional<FName> ArchetypeId;
+        TOptional<FName> EntityName;
+        EntityQueryFilterComponentSet ComponentsAll;
+        EntityQueryFilterComponentSet ComponentsAny;
+        EntityQueryFilterComponentSet ComponentsNone;
+        EntityQueryFilterTagSet TagsAll;
+        EntityQueryFilterTagSet TagsAny;
+        EntityQueryFilterTagSet TagsNone;
+    };
+
+    class PHOENIX_SIM_API EntityQueryBuilder
+    {
+    public:
+
+        const EntityQuery& GetQuery() const
+        {
+            return Query;
+        }
+
+        EntityQueryBuilder& Reset()
+        {
+            Query.Reset();
+            return *this;
+        }
+
+        EntityQueryBuilder& WithArchetype(const FName& name)
+        {
+            Query.ArchetypeId = name;
+            return *this;
+        }
+
+        EntityQueryBuilder& WithName(const FName& name)
+        {
+            Query.EntityName = name;
+            return *this;
+        }
+
+        EntityQueryBuilder& RequireAllTags(const EntityQueryFilterTagSet& set)
+        {
+            Query.TagsAll.AddAll(set);
+            Query.TagsAny.RemoveAll(set);
+            Query.TagsNone.RemoveAll(set);
+            return *this;
+        }
+
+        template <class ...T>
+        EntityQueryBuilder& RequireAllTags(T&& ...tags) requires ((std::is_same_v<T, FName>) && ...)
+        {
+            EntityQueryFilterTagSet set;
+            (set.Items.push_back(tags), ...);
+            return RequireAllTags(set);
+        }
+
+        EntityQueryBuilder& RequireAnyTags(const EntityQueryFilterTagSet& set)
+        {
+            Query.TagsAny.AddAll(set);
+            Query.TagsAll.RemoveAll(set);
+            Query.TagsNone.RemoveAll(set);
+            return *this;
+        }
+
+        template <class ...T>
+        EntityQueryBuilder& RequireAnyTags(T&& ...tags) requires ((std::is_same_v<T, FName>) && ...)
+        {
+            EntityQueryFilterTagSet set;
+            (set.Items.push_back(tags), ...);
+            return RequireAnyTags(set);
+        }
+
+        EntityQueryBuilder& RequireNoneTags(const EntityQueryFilterTagSet& set)
+        {
+            Query.TagsNone.AddAll(set);
+            Query.TagsAll.RemoveAll(set);
+            Query.TagsAny.RemoveAll(set);
+            return *this;
+        }
+
+        template <class ...T>
+        EntityQueryBuilder& RequireNoneTags(T&& ...tags) requires ((std::is_same_v<T, FName>) && ...)
+        {
+            EntityQueryFilterTagSet set;
+            (set.Items.push_back(tags), ...);
+            return RequireNoneTags(set);
+        }
+
+        EntityQueryBuilder& RequireAllComponents(const EntityQueryFilterComponentSet& set)
+        {
+            Query.ComponentsAll.AddAll(set);
+            Query.ComponentsAny.RemoveAll(set);
+            Query.ComponentsNone.RemoveAll(set);
+            return *this;
+        }
+
+        template <class ...TComponents>
+        EntityQueryBuilder& RequireAllComponents(EComponentAccess access = EComponentAccess::ReadWrite)
+        {
+            EntityQueryFilterComponentSet set;
+            ((set.Items.push_back(std::make_tuple(StaticTypeName<Underlying_T<TComponents>>::TypeId, access))), ...);
+            return RequireAllComponents(set);
+        }
+
+        EntityQueryBuilder& RequireAnyComponents(const EntityQueryFilterComponentSet& set)
+        {
+            Query.ComponentsAny.AddAll(set);
+            Query.ComponentsAll.RemoveAll(set);
+            Query.ComponentsNone.RemoveAll(set);
+            return *this;
+        }
+
+        template <class ...TComponents>
+        EntityQueryBuilder& RequireAnyComponents(EComponentAccess access = EComponentAccess::ReadWrite)
+        {
+            EntityQueryFilterComponentSet set;
+            ((set.Items.push_back(std::make_tuple(StaticTypeName<Underlying_T<TComponents>>::TypeId, access))), ...);
+            return RequireAnyComponents(set);
+        }
+
+        EntityQueryBuilder& RequireNoneComponents(const EntityQueryFilterComponentSet& set)
+        {
+            Query.ComponentsNone.AddAll(set);
+            Query.ComponentsAll.RemoveAll(set);
+            Query.ComponentsAny.RemoveAll(set);
+            return *this;
+        }
+
+        template <class ...TComponents>
+        EntityQueryBuilder& RequireNoneComponents(EComponentAccess access = EComponentAccess::ReadWrite)
+        {
+            EntityQueryFilterComponentSet set;
+            ((set.Items.push_back(std::make_tuple(StaticTypeName<Underlying_T<TComponents>>::TypeId, access))), ...);
+            return RequireAnyComponents(set);
+        }
+
+    private:
+
+        EntityQuery Query;
+    };
+}

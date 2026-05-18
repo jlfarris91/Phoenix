@@ -1,0 +1,14 @@
+#pragma once
+
+#include "Phoenix.Sim.RTS/Effects/Responses.h"
+
+namespace Phoenix::RTS
+{
+    class PHOENIX_RTS_API ResponseDamageHandler final : public ResponseHandlerBase
+    {
+        PHX_DECLARE_TYPE(ResponseDamageHandler, ResponseHandlerBase)
+    public:
+        ResponseDamageHandler();
+        bool Execute(WorldRef world, const ResponseContext& context) const override;
+    };
+}

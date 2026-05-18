@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <PhoenixSim/Hashing.h>
+#include <Phoenix/Hashing.h>
 
 using namespace Phoenix;
 
