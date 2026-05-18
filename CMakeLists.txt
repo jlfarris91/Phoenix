@@ -1,36 +1,30 @@
-
+cmake_minimum_required(VERSION 3.25)
 
 # Auto-install vcpkg if not found
 if(NOT DEFINED VCPKG_ROOT)
-	set(VCPKG_ROOT "${CMAKE_SOURCE_DIR}/vcpkg")
+    set(VCPKG_ROOT "${CMAKE_SOURCE_DIR}/vcpkg")
 endif()
 if(NOT EXISTS "${VCPKG_ROOT}/vcpkg.exe")
-	message(STATUS "vcpkg not found, installing...")
-	execute_process(COMMAND git clone https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}")
-	execute_process(COMMAND "${VCPKG_ROOT}/bootstrap-vcpkg.bat")
+    message(STATUS "vcpkg not found, installing...")
+    execute_process(COMMAND git clone https://github.com/microsoft/vcpkg.git "${VCPKG_ROOT}")
+    execute_process(COMMAND "${VCPKG_ROOT}/bootstrap-vcpkg.bat")
 endif()
-
-# Use vcpkg toolchain file
 set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 
-cmake_minimum_required(VERSION 3.20)
 project(Phoenix LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;ReleaseWithSymbols" CACHE STRING "Configs" FORCE)
 
-# The Runtime Library (/MD vs /MDd)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 
-# Definitions
 add_compile_definitions(
     $<$<CONFIG:Debug>:DEBUG>
     $<$<CONFIG:Release,ReleaseWithSymbols>:NDEBUG>
 )
 
-# Tells CMake that for the project's 'ReleaseWithSymbols' configuration,
-# it should use the 'Release' version of any imported targets.
 set(CMAKE_MAP_IMPORTED_CONFIG_RELEASEWITHSYMBOLS RELEASE)
 set(CMAKE_CXX_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_CXX_FLAGS_RELEASE} /Zi" CACHE STRING "" FORCE)
 set(CMAKE_EXE_LINKER_FLAGS_RELEASEWITHSYMBOLS "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG" CACHE STRING "" FORCE)
@@ -44,11 +38,33 @@ add_compile_options(
     $<$<CXX_COMPILER_ID:GNU>:-fpermissive>
 )
 
-# Set natvis visualizer for all targets
 set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.natvis")
 
+# ── Options ───────────────────────────────────────────────────────────────────
+
+option(PHX_USE_PCH           "Use precompiled headers"                      ON)
+option(PHX_BUILD_TESTAPP     "Build TestRTS demo application"               ON)
+option(PHX_BUILD_TESTS       "Build unit tests"                             OFF)
+option(PE_BUILD_STANDALONE   "Build the standalone Phoenix Editor app"      OFF)
+
+# ── Packages ──────────────────────────────────────────────────────────────────
+
 find_package(nlohmann_json CONFIG REQUIRED)
-find_package(inja CONFIG REQUIRED)
+
+if(NOT EMSCRIPTEN)
+    find_package(inja CONFIG REQUIRED)
+endif()
+
+if(PHX_BUILD_TESTAPP OR PE_BUILD_STANDALONE)
+    find_package(SDL3  CONFIG REQUIRED)
+    find_package(imgui CONFIG REQUIRED)
+endif()
+
+if(PHX_BUILD_TESTS)
+    find_package(doctest CONFIG REQUIRED)
+endif()
+
+# ── Core simulation libraries ─────────────────────────────────────────────────
 
 add_subdirectory(src/Phoenix.Sim)
 add_subdirectory(src/Phoenix.Sim.Physics)
@@ -56,19 +72,37 @@ add_subdirectory(src/Phoenix.Sim.Steering)
 add_subdirectory(src/Phoenix.Sim.RTS)
 add_subdirectory(src/Phoenix.Sim.Script)
 add_subdirectory(src/Phoenix.Sim.Lua)
-if(NOT EMSCRIPTEN)
-    add_subdirectory(tools/PhoenixAPIGen)   # dumps api.json; consumed by downstream generators
-    add_subdirectory(tools/PhoenixWasmGen)  # generates host_api.h
-    add_subdirectory(tools/PhoenixLuaGen)      # generates lua_bridge.c
-    add_subdirectory(tools/PhoenixLuaRuntime)  # Lua runtime compiled to WASM
+
+# ── App / Editor / Runtime framework ─────────────────────────────────────────
+
+add_subdirectory(src/Phoenix)
+add_subdirectory(src/Phoenix.App)
+add_subdirectory(src/Phoenix.Editor/Core)
+add_subdirectory(src/Phoenix.Runtime/Core)
+
+if(PE_BUILD_STANDALONE)
+    add_subdirectory(src/Phoenix.Editor/ImGui)
+    add_subdirectory(src/Phoenix.Runtime/SDL3)
+    add_subdirectory(apps/Phoenix.Editor)
 endif()
-option(PHX_BUILD_TESTAPP "Build TestRTS test application" ON)
-option(PHX_BUILD_TESTS "Build unit tests" OFF)
-option(PHX_USE_PCH "Use precompiled headers" ON)
-if(NOT EMSCRIPTEN AND PHX_BUILD_TESTAPP)
+
+# ── Tools (code generators — not needed for WASM builds) ─────────────────────
+
+if(NOT EMSCRIPTEN)
+    add_subdirectory(tools/PhoenixAPIGen)
+    add_subdirectory(tools/PhoenixWasmGen)
+    add_subdirectory(tools/PhoenixLuaGen)
+    add_subdirectory(tools/PhoenixLuaRuntime)
+endif()
+
+# ── Tests ─────────────────────────────────────────────────────────────────────
+
+if(PHX_BUILD_TESTAPP AND NOT EMSCRIPTEN)
     add_subdirectory(tests/TestRTS)
 endif()
+
 if(PHX_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests/unit)
+    add_subdirectory(tests/Phoenix.Editor)
 endif()

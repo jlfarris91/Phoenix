@@ -1,5 +1,5 @@
 {
-  "name": "phoenixsim",
+  "name": "phoenix",
   "version-string": "1.0.0",
   "dependencies": [
     "nlohmann-json",
@@ -21,6 +21,22 @@
         },
         "sdl3",
         "tracy"
+      ]
+    },
+    "standalone": {
+      "description": "Dependencies for the standalone Phoenix Editor desktop application",
+      "dependencies": [
+        "sdl3",
+        {
+          "name": "imgui",
+          "features": [
+            "docking-experimental",
+            "sdl3-binding",
+            "opengl3-binding",
+            "freetype",
+            "freetype-svg"
+          ]
+        }
       ]
     }
   }
