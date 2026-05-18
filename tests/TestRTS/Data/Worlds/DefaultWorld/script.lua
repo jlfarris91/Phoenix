@@ -1,4 +1,4 @@
-local SPAWN_INTERVAL     = 1
+local SPAWN_INTERVAL     = 0.05
 local ROTATION_SPEED     = 2 * math.pi  -- one full revolution per second of sim time
 local spawnTimer         = 0
 local waveIndex          = 0
@@ -29,8 +29,8 @@ function OnWorldUpdate()
         spawnTimer = spawnTimer - SPAWN_INTERVAL
         waveIndex = waveIndex + 1
 
-        local unitData = (waveIndex % 2 == 0) and "Lancer" or "Archer"
-        local owner = 1 -- (wave % 9) + 1
+        local unitData = "Archer" -- (waveIndex % 2 == 0) and "Lancer" or "Archer"
+        local owner = (waveIndex % 9) + 1
         local angle = math.random() * 2 * math.pi
         local pos = Phoenix.Vec2.FromPolar(angle, 10.0)
 

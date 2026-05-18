@@ -62,7 +62,7 @@ add_library(PhoenixScript ${PHOENIXSCRIPT_SRC})
 
 target_include_directories(PhoenixScript
     PUBLIC
-        ${CMAKE_SOURCE_DIR}/src
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
 )
 
 target_link_libraries(PhoenixScript
