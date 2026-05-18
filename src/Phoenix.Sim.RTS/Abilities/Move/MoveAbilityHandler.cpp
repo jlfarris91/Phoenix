@@ -2,8 +2,8 @@
 #include "Phoenix.Sim.RTS/Abilities/Move/MoveAbilityHandler.h"
 
 #include "MoveAbilityTask.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.Physics/BodyComponent.h"
 

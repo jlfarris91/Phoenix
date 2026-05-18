@@ -1,9 +1,9 @@
 #include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Flags.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/Profiling.h"
 

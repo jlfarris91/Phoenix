@@ -7,5 +7,5 @@ target_include_directories(Phoenix.App PUBLIC
 )
 
 target_link_libraries(Phoenix.App PUBLIC
-    Phoenix.Reflection
+    Phoenix
 )

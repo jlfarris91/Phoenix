@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.RTS/Vitals/FeatureVitals.h"
 
 #include "VitalsTask.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Logging.h"
 #include "Phoenix.Sim/Session.h"
 

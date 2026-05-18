@@ -1,10 +1,10 @@
 
 #include <doctest/doctest.h>
 
-#include "Phoenix.Sim/LDS/LDSCatalog.h"
-#include "Phoenix.Sim/LDS/Json/JsonCatalogObjectBuilder.h"
-#include "Phoenix.Sim/LDS/Json/JsonCatalogTypeBuilder.h"
-#include "Phoenix.Sim/LDS/Json/JsonDataSource.h"
+#include "Phoenix.Sim.LDS/LDSCatalog.h"
+#include "Phoenix.Sim.LDS/Json/JsonCatalogObjectBuilder.h"
+#include "Phoenix.Sim.LDS/Json/JsonCatalogTypeBuilder.h"
+#include "Phoenix.Sim.LDS/Json/JsonDataSource.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

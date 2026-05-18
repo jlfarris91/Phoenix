@@ -4,7 +4,7 @@
 #include <cstdlib> // for rand(), remove once we have a deterministic rand
 
 #include "Phoenix.Sim/FixedPoint/FixedMath.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
 namespace Phoenix
 {

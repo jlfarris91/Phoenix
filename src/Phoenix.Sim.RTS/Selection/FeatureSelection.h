@@ -3,7 +3,7 @@
 
 #include "Phoenix.Sim/Features.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
-#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 

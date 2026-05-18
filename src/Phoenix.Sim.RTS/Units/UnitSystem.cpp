@@ -1,9 +1,9 @@
 #include "Phoenix.Sim.RTS/Units/UnitSystem.h"
 
-#include "Phoenix.Sim/ECS/ECSCommands.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/ECS/SystemJob.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/ECSCommands.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/SystemJob.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.RTS/ECS/ECSCommands.h"
 #include "Phoenix.Sim.RTS/Orders/FeatureOrders.h"

@@ -31,13 +31,13 @@
 #include <Phoenix.Sim/Features.h>
 
 // Phoenix features
-#include <Phoenix.Sim/Debug/FeatureDebug.h>
-#include <Phoenix.Sim/Strings/FeatureString.h>
-#include <Phoenix.Sim/LDS/FeatureLDS.h>
-#include <Phoenix.Sim/Blackboard/FeatureBlackboard.h>
-#include <Phoenix.Sim/ECS/FeatureECS.h>
+#include <Phoenix.Sim.Debug/FeatureDebug.h>
+#include <Phoenix.Sim.Strings/FeatureString.h>
+#include <Phoenix.Sim.LDS/FeatureLDS.h>
+#include <Phoenix.Sim.Blackboard/FeatureBlackboard.h>
+#include <Phoenix.Sim.ECS/FeatureECS.h>
 #include <Phoenix.Sim/Tasks/FeatureTask.h>
-#include <Phoenix.Sim/Navigation/FeatureNavigation.h>
+#include <Phoenix.Sim.Nav/FeatureNavigation.h>
 #include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
 #include <Phoenix.Sim.Physics/FeaturePhysics.h>
 #include <Phoenix.Sim.Physics/BodyComponent.h>

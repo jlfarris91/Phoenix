@@ -7,8 +7,8 @@
 #include <imgui.h>
 #include <imgui_internal.h>
 
-#include "Phoenix.Sim/ECS/JobScheduler.h"
-#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim.ECS/JobScheduler.h"
+#include "Phoenix.Sim.ECS/SystemJob.h"
 #include "Phoenix.Sim/Name.h"
 
 using namespace Phoenix;

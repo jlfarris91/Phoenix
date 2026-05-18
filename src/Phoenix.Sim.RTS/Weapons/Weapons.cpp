@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.RTS/Weapons/Weapons.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.RTS/Data/DataUnit.h"
 #include "Phoenix.Sim.RTS/Data/DataWeapon.h"

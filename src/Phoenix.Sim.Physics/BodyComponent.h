@@ -3,7 +3,7 @@
 
 #include "Phoenix.Sim.Physics/DLLExport.h"
 #include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/ECS/Component.h"
+#include "Phoenix.Sim.ECS/Component.h"
 #include "Phoenix.Sim/FixedPoint/FixedTypes.h"
 #include "Phoenix.Sim/FixedPoint/FixedVector.h"
 

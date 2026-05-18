@@ -6,7 +6,13 @@ if(PHX_USE_PCH)
     target_precompile_headers(Phoenix.Sim.Steering PRIVATE ../Phoenix.Sim/pch.h)
 endif()
 target_compile_definitions(Phoenix.Sim.Steering PUBLIC PHX_PROFILE_ENABLE)
-target_link_libraries(Phoenix.Sim.Steering PUBLIC Phoenix.Sim Phoenix.Sim.Physics)
+target_link_libraries(Phoenix.Sim.Steering PUBLIC
+    Phoenix.Sim
+    Phoenix.Sim.ECS
+    Phoenix.Sim.Debug
+    Phoenix.Sim.Nav
+    Phoenix.Sim.Physics
+)
 # Heavy template instantiation in job types can overflow MSVC's debug-info linker pass.
 # /DEBUG:FASTLINK avoids merging all type info into one PDB pass, preventing LNK1000.
 if(MSVC)

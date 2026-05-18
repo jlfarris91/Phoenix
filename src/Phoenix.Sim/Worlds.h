@@ -8,7 +8,7 @@
 #include "Phoenix.Sim/Containers/Optional.h"
 #include "Phoenix.Sim/Random.h"
 #include "Phoenix.Sim/WorldsFwd.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
 namespace Phoenix
 {

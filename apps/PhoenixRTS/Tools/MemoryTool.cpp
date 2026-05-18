@@ -8,7 +8,7 @@
 
 #include "FlameGraph.h"
 
-#include <Phoenix.Sim/Reflection/TypeDescriptor.h>
+#include <Phoenix/Reflection/TypeDescriptor.h>
 #include <Phoenix.Sim/Session.h>
 #include <Phoenix.Sim/Worlds.h>
 

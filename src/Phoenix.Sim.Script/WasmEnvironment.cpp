@@ -22,7 +22,7 @@
 #include "WasmRuntime.h"
 #include "WasmUtility.h"
 #include "Phoenix.Sim/Logging.h"
-#include "Phoenix.Sim/Reflection/Variant.h"
+#include "Phoenix/Reflection/Variant.h"
 #include "Phoenix.Sim/Worlds.h"
 #include "Phoenix.Sim/Scripting/IScriptRuntime.h"
 

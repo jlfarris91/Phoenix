@@ -1,6 +1,6 @@
 #include "Phoenix.Sim.RTS/Abilities/States/WeaponAbilityStates.h"
 
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.Steering/FeatureSteering.h"
 

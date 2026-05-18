@@ -3,7 +3,7 @@
 
 #include "Phoenix.Sim/Platform.h"
 #include "Phoenix.Sim/FixedPoint/FixedTypes.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
 namespace Phoenix
 {

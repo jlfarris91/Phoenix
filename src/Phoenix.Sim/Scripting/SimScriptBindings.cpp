@@ -1,7 +1,7 @@
 #include "Phoenix.Sim/Scripting/SimScriptBindings.h"
 
-#include "Phoenix.Sim/Blackboard/FeatureBlackboard.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.Blackboard/FeatureBlackboard.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;

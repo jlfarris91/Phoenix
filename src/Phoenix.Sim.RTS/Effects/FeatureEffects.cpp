@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 #include "Phoenix.Sim/Session.h"
 
 #include "Phoenix.Sim.RTS/Effects/Effects.h"

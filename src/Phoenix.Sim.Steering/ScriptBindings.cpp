@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.Steering/ScriptBindings.h"
 
 #include "FeatureSteering.h"
-#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Steering;

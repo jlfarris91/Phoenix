@@ -2,7 +2,7 @@
 
 #include <SDL3/SDL_events.h>
 
-#include <Phoenix.Sim/ECS/FeatureECS.h>
+#include <Phoenix.Sim.ECS/FeatureECS.h>
 #include <Phoenix.Sim/FixedPoint/FixedVector.h>
 #include <Phoenix.Sim/Flags.h>
 #include <Phoenix.Sim/Session.h>
@@ -18,7 +18,7 @@
 #include "../sdl/SDLUtils.h"
 #include "Phoenix.Sim.RTS/Data/DataUnit.h"
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

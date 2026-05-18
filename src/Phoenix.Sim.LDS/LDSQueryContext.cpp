@@ -1,0 +1,8 @@
+#include "Phoenix.Sim.LDS/LDSQueryContext.h"
+
+using namespace Phoenix::LDS;
+
+bool ILDSQueryContext::RecordExists(const LDSRecordPath& path, ELDSRecordQueryFlags flags) const
+{
+    return QueryRecord(path, flags) != nullptr;
+}

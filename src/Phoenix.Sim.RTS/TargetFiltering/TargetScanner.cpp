@@ -1,7 +1,7 @@
 #include "TargetScanner.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
 #include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"

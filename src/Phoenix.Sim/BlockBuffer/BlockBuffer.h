@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 #include "Phoenix.Sim/Name.h"
 
 #include "Phoenix.Sim/BlockBuffer/BlockBufferConfig.h"

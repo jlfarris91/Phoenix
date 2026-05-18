@@ -20,7 +20,20 @@ if(MSVC)
     target_compile_options(PhoenixRTS PRIVATE /bigobj)
 endif()
 target_include_directories(PhoenixRTS PUBLIC ../../src)
-target_link_libraries(PhoenixRTS PUBLIC Phoenix.Sim Phoenix.Sim.Physics Phoenix.Sim.Steering Phoenix.Sim.Lua Phoenix.Sim.RTS Phoenix.Sim.Script)
+target_link_libraries(PhoenixRTS PUBLIC
+    Phoenix.Sim
+    Phoenix.Sim.Blackboard
+    Phoenix.Sim.Debug
+    Phoenix.Sim.ECS
+    Phoenix.Sim.LDS
+    Phoenix.Sim.Nav
+    Phoenix.Sim.Strings
+    Phoenix.Sim.Physics
+    Phoenix.Sim.Steering
+    Phoenix.Sim.Lua
+    Phoenix.Sim.RTS
+    Phoenix.Sim.Script
+)
 
 # Force the linker to include all object files from libs that self-register via
 # static initializers (PHX_DEFINE_TYPE, IScriptBindings).  Without this, MSVC

@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Reflection/MethodDescriptor.h"
+#include "Phoenix/Reflection/MethodDescriptor.h"
 
 namespace Phoenix
 {

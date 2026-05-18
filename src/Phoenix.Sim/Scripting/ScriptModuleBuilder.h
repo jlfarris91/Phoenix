@@ -4,10 +4,10 @@
 #include <vector>
 
 #include "Phoenix.Sim/Name.h"
-#include "Phoenix.Sim/Reflection/MethodDescriptor.h"
-#include "Phoenix.Sim/Reflection/MethodDescriptorString.h"
-#include "Phoenix.Sim/Reflection/TypeDescriptorBuilder.h"
-#include "Phoenix.Sim/Reflection/TypeRegistry.h"
+#include "Phoenix/Reflection/MethodDescriptor.h"
+#include "Phoenix/Reflection/MethodDescriptorString.h"
+#include "Phoenix/Reflection/TypeDescriptorBuilder.h"
+#include "Phoenix/Reflection/TypeRegistry.h"
 #include "Phoenix.Sim/Scripting/ScriptOptional.h"
 
 namespace Phoenix

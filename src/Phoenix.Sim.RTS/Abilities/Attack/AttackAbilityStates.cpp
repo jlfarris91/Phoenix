@@ -4,7 +4,7 @@
 #include "Phoenix.Sim.RTS/Data/DataWeapon.h"
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
 #include "Phoenix.Sim.RTS/Weapons/Weapons.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 #include "Phoenix.Sim.Steering/FeatureSteering.h"
 
 using namespace Phoenix;

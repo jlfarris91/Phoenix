@@ -1,7 +1,7 @@
 #pragma once
 
 #include "EffectId.h"
-#include "Phoenix.Sim/ECS/Component.h"
+#include "Phoenix.Sim.ECS/Component.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 

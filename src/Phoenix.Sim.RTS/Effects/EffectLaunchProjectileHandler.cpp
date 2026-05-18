@@ -1,14 +1,14 @@
 #include "Phoenix.Sim.RTS/Effects/EffectLaunchProjectileHandler.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.RTS/Data/DataEffectLaunchProjectile.h"
 #include "Phoenix.Sim.RTS/Effects/EffectComponent.h"
 #include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 #include "Phoenix.Sim.RTS/Projectiles/FeatureProjectile.h"
 #include "Phoenix.Sim.RTS/Projectiles/ProjectileComponent.h"
-#include "Phoenix.Sim/ECS/System.h"
+#include "Phoenix.Sim.ECS/System.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

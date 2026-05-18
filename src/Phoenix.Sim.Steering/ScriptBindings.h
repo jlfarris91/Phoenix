@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 #include "Phoenix.Sim/Scripting/IScriptBindings.h"
 
 namespace Phoenix::Steering

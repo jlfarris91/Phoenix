@@ -6,7 +6,13 @@ if(PHX_USE_PCH)
     target_precompile_headers(Phoenix.Sim.RTS PRIVATE ../Phoenix.Sim/pch.h)
 endif()
 target_compile_definitions(Phoenix.Sim.RTS PUBLIC PHX_PROFILE_ENABLE)
-target_link_libraries(Phoenix.Sim.RTS PUBLIC Phoenix.Sim Phoenix.Sim.Physics Phoenix.Sim.Steering)
+target_link_libraries(Phoenix.Sim.RTS PUBLIC
+    Phoenix.Sim
+    Phoenix.Sim.ECS
+    Phoenix.Sim.LDS
+    Phoenix.Sim.Physics
+    Phoenix.Sim.Steering
+)
 
 # Install rules
 install(TARGETS Phoenix.Sim.RTS

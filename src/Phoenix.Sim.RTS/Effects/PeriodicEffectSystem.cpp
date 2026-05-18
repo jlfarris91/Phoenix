@@ -2,9 +2,9 @@
 #include "Phoenix.Sim.RTS/Effects/PeriodicEffectSystem.h"
 
 #include "Phoenix.Sim.RTS/ECS/ECSCommands.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/ECS/SystemJob.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/SystemJob.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 #include "Phoenix.Sim/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 

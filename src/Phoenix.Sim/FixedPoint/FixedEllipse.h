@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
 namespace Phoenix
 {

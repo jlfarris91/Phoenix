@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.RTS/Effects/EffectDamageHandler.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.RTS/Data/DataEffectDamage.h"
 #include "Phoenix.Sim.RTS/Effects/EffectComponent.h"

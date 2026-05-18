@@ -2,8 +2,8 @@
 #pragma once
 
 #include "Phoenix.Sim.Steering/DLLExport.h"
-#include "Phoenix.Sim/ECS/Component.h"
-#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim.ECS/Component.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
 #include "Phoenix.Sim/FixedPoint/FixedVector.h"
 
 namespace Phoenix::Steering

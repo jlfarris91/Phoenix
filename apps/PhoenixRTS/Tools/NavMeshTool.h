@@ -3,7 +3,7 @@
 #include <Phoenix.Sim/Color.h>
 #include <Phoenix.Sim/FixedPoint/FixedVector.h>
 #include <Phoenix.Sim/Containers/Optional.h>
-#include <Phoenix.Sim/Navigation/FeatureNavigation.h>
+#include <Phoenix.Sim.Nav/FeatureNavigation.h>
 
 #include "../sdl/SDLTool.h"
 

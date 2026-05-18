@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
 #include "Phoenix.Sim/Containers/FixedSortedList.h"
 
 #include "Phoenix.Sim.RTS/Orders/Orders.h"

@@ -1,8 +1,8 @@
 #include <doctest/doctest.h>
-#include <Phoenix.Sim/Reflection/GenericFunction.h>
-#include <Phoenix.Sim/Reflection/Variant.h>
+#include <Phoenix/Reflection/GenericFunction.h>
+#include <Phoenix/Reflection/Variant.h>
 
-#include "Phoenix.Sim/Reflection/TypeDescriptor.h"
+#include "Phoenix/Reflection/TypeDescriptor.h"
 
 using namespace Phoenix;
 

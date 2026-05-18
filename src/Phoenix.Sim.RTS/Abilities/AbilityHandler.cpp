@@ -1,7 +1,7 @@
 
 #include "Phoenix.Sim.RTS/Abilities/AbilityHandler.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"
 #include "Phoenix.Sim.RTS/Units/UnitId.h"
 #include "Phoenix.Sim/Session.h"

@@ -4,7 +4,7 @@
 
 #include "Phoenix.Sim/Logging.h"
 #include "Phoenix.Sim/Worlds.h"
-#include "Phoenix.Sim/Reflection/TypeDescriptor.h"
+#include "Phoenix/Reflection/TypeDescriptor.h"
 
 using namespace Phoenix;
 

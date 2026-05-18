@@ -6,7 +6,11 @@ if(PHX_USE_PCH)
     target_precompile_headers(Phoenix.Sim.Physics PRIVATE ../Phoenix.Sim/pch.h)
 endif()
 target_compile_definitions(Phoenix.Sim.Physics PUBLIC PHX_PROFILE_ENABLE)
-target_link_libraries(Phoenix.Sim.Physics PUBLIC Phoenix.Sim)
+target_link_libraries(Phoenix.Sim.Physics PUBLIC
+    Phoenix.Sim
+    Phoenix.Sim.ECS
+    Phoenix.Sim.Debug
+)
 # Heavy template instantiation in job types can overflow MSVC's debug-info linker pass.
 if(MSVC)
     target_link_options(Phoenix.Sim.Physics PRIVATE $<$<CONFIG:Debug>:/DEBUG:FASTLINK>)

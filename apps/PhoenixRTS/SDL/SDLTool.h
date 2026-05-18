@@ -5,7 +5,7 @@
 #include <imgui_impl_sdl3.h>
 
 #include <Phoenix.Sim/WorldsFwd.h>
-#include <Phoenix.Sim/Reflection/Registration.h>
+#include <Phoenix/Reflection/Registration.h>
 
 struct SDLDebugRenderer;
 struct SDLDebugState;

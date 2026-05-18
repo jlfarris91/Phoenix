@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Phoenix.Sim/LDS/LDSObjectModel.h"
+#include "Phoenix.Sim.LDS/LDSObjectModel.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 #include "Phoenix.Sim.RTS/Data/DataEffectTarget.h"

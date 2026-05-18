@@ -10,8 +10,8 @@
 #include "Phoenix.Sim/Color.h"
 #include "Phoenix.Sim/MortonCode.h"
 #include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 using namespace Phoenix;
 using PhoenixColor = Phoenix::Color;

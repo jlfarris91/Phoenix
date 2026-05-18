@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Phoenix.Sim/ECS/System.h"
+#include "Phoenix.Sim.ECS/System.h"
 
 #include "Phoenix.Sim.RTS/Abilities/AbilityComponent.h"
 #include "Phoenix.Sim.RTS/Abilities/AbilityHandler.h"

@@ -2,8 +2,8 @@
 #pragma once
 
 #include "Phoenix.Sim.Physics/DLLExport.h"
-#include "Phoenix.Sim/ECS/JobScheduler.h"
-#include "Phoenix.Sim/ECS/System.h"
+#include "Phoenix.Sim.ECS/JobScheduler.h"
+#include "Phoenix.Sim.ECS/System.h"
 
 namespace Phoenix
 {

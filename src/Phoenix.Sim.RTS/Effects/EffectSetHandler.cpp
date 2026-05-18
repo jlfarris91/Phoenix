@@ -1,6 +1,6 @@
 #include "Phoenix.Sim.RTS/Effects/EffectSetHandler.h"
 
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.RTS/Data/DataEffectSet.h"
 #include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"

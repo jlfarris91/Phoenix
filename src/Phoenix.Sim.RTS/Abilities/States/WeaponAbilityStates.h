@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/ECS/EntityId.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
 #include "Phoenix.Sim/FixedPoint/FixedTypes.h"
 
 #include "Phoenix.Sim.RTS/Abilities/States/CommonAbilityStates.h"

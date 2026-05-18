@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Phoenix.Sim.Script/DLLExport.h"
-#include "Phoenix.Sim/Reflection/MethodDescriptor.h"
+#include "Phoenix/Reflection/MethodDescriptor.h"
 #include "Phoenix.Sim/Scripting/IScriptRuntime.h"
 
 namespace Phoenix

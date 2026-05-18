@@ -35,8 +35,8 @@
 #include <nlohmann/json.hpp>
 
 #include "Phoenix.Sim.Script/WasmUtility.h"
-#include "Phoenix.Sim/Reflection/Variant.h"
-#include "Phoenix.Sim/Reflection/TypeRegistry.h"
+#include "Phoenix/Reflection/Variant.h"
+#include "Phoenix/Reflection/TypeRegistry.h"
 #include "Phoenix.Sim/Scripting/IScriptBindings.h"
 #include "Phoenix.Sim/Scripting/ScriptModuleBuilder.h"
 #include "Phoenix.Sim/Worlds.h"

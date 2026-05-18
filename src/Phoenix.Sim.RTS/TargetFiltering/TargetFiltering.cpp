@@ -1,6 +1,6 @@
 #include "Phoenix.Sim.RTS/TargetFiltering/TargetFiltering.h"
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 
 #include "Phoenix.Sim.RTS/Data/DataTargetFilter.h"
 

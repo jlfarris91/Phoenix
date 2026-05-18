@@ -2,8 +2,8 @@
 #include "Phoenix.Sim.RTS/Abilities/Attack/AttackAbilityHandler.h"
 
 #include "AttackAbilityTask.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
 
 #include "Phoenix.Sim.Physics/BodyComponent.h"
 

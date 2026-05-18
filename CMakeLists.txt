@@ -64,9 +64,23 @@ if(PHX_BUILD_TESTS)
     find_package(doctest CONFIG REQUIRED)
 endif()
 
-# ── Core simulation libraries ─────────────────────────────────────────────────
+# ── Core libraries ────────────────────────────────────────────────────────────
 
+add_subdirectory(src/Phoenix)
 add_subdirectory(src/Phoenix.Sim)
+
+# ── Phoenix.Sim feature libraries ─────────────────────────────────────────────
+
+add_subdirectory(src/Phoenix.Sim.Blackboard)
+add_subdirectory(src/Phoenix.Sim.Strings)
+add_subdirectory(src/Phoenix.Sim.Debug)
+add_subdirectory(src/Phoenix.Sim.Mesh)
+add_subdirectory(src/Phoenix.Sim.Nav)
+add_subdirectory(src/Phoenix.Sim.ECS)
+add_subdirectory(src/Phoenix.Sim.LDS)
+
+# ── Domain simulation libraries ───────────────────────────────────────────────
+
 add_subdirectory(src/Phoenix.Sim.Physics)
 add_subdirectory(src/Phoenix.Sim.Steering)
 add_subdirectory(src/Phoenix.Sim.RTS)
@@ -75,7 +89,6 @@ add_subdirectory(src/Phoenix.Sim.Lua)
 
 # ── App / Editor / Runtime framework ─────────────────────────────────────────
 
-add_subdirectory(src/Phoenix)
 add_subdirectory(src/Phoenix.App)
 add_subdirectory(src/Phoenix.Editor)
 add_subdirectory(src/Phoenix.Runtime)

@@ -3,8 +3,8 @@
 
 #include "Phoenix.Sim/Actions.h"
 #include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/ECS/EntityId.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
+#include "Phoenix/Reflection/Registration.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 

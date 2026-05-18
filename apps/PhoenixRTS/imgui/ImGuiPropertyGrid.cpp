@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "Phoenix.Sim/FixedPoint/FixedPoint.h"
-#include "Phoenix.Sim/Reflection/PropertyDescriptor.h"
-#include "Phoenix.Sim/Reflection/TypeDescriptor.h"
+#include "Phoenix/Reflection/PropertyDescriptor.h"
+#include "Phoenix/Reflection/TypeDescriptor.h"
 
 using namespace Phoenix;
 

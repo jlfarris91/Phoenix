@@ -1,15 +1,15 @@
 
 #include "Phoenix.Sim.Physics/PhysicsSystem.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
 #include "Phoenix.Sim/Color.h"
-#include "Phoenix.Sim/Debug/Debug.h"
+#include "Phoenix.Sim.Debug/Debug.h"
 #include "Phoenix.Sim/Flags.h"
 #include "Phoenix.Sim/MortonCode.h"
 #include "Phoenix.Sim/Profiling.h"
 #include "Phoenix.Sim/WorldTaskQueue.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
-#include "Phoenix.Sim/ECS/SystemJob.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/SystemJob.h"
 #include "Phoenix.Sim.Physics/BodyComponent.h"
 #include "Phoenix.Sim.Physics/FeaturePhysics.h"
 

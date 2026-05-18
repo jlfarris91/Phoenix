@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.RTS/Selection/FeatureSelection.h"
 
-#include "Phoenix.Sim/ECS/EntityId.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/EntityId.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

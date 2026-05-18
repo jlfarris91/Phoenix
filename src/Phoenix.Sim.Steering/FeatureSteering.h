@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
 #include "Phoenix.Sim/FixedPoint/FixedVector.h"
 

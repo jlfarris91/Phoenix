@@ -2,7 +2,7 @@
 
 #include "Phoenix.Sim/Name.h"
 #include "Phoenix.Sim/FixedPoint/FixedTypes.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Containers/Optional.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"

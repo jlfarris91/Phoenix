@@ -1,8 +1,8 @@
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
-#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix/Reflection/Registration.h"
 
-#include "Phoenix.Sim/LDS/FeatureLDS.h"
-#include "Phoenix.Sim/ECS/FeatureECS.h"
+#include "Phoenix.Sim.LDS/FeatureLDS.h"
+#include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Logging.h"
 #include "Phoenix.Sim/Session.h"
 
