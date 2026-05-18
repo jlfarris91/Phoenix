@@ -67,7 +67,7 @@ set(LUA_WASM "${CMAKE_CURRENT_BINARY_DIR}/lua.wasm")
 add_lua_wasm_script(
     OUTPUT     "${LUA_WASM}"
     TARGET     TestRTS
-    DEFS_DEST  "${CMAKE_SOURCE_DIR}/src/PhoenixLua/Phoenix.d.lua"
+    DEFS_DEST  "${CMAKE_SOURCE_DIR}/src/Phoenix.Sim.Lua/Phoenix.d.lua"
 )
 # Copy lua.wasm next to the TestRTS executable after each build.
 add_custom_command(TARGET TestRTS POST_BUILD
