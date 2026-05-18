@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <malloc.h>
 
-#include "Phoenix.Sim/Profiling.h"
-#include "Phoenix.Sim/Utils.h"
+#include "Phoenix/Profiling.h"
+#include "Phoenix/Utils.h"
 
 using namespace Phoenix;
 

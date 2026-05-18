@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix.Sim.LDS/LDSRecordQueryFlags.h"
 #include "Phoenix.Sim.LDS/LDSRecordStore.h"
 #include "Phoenix.Sim.LDS/ObjectModel/LDSRecordPath.h"

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim.LDS/LDSRecordQueryFlags.h"
 #include "Phoenix.Sim.LDS/LDSValue.h"
 #include "Phoenix.Sim.LDS/ObjectModel/LDSForwardDecls.h"

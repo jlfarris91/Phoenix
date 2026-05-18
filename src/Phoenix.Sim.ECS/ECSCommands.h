@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix.Sim.ECS/EntityId.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 
 namespace Phoenix::ECS::Commands
 {

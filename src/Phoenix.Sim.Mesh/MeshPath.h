@@ -6,7 +6,7 @@
 #include "Phoenix.Sim/Containers/FixedQueue.h"
 #include "Phoenix.Sim/Containers/FixedMap.h"
 #include "Phoenix.Sim.Mesh/Mesh2.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 
 namespace Phoenix
 {

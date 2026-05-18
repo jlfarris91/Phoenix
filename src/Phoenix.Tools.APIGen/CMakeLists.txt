@@ -24,6 +24,7 @@ target_link_libraries(Phoenix.Tools.APIGen PRIVATE
     Phoenix.Sim.Physics
     Phoenix.Sim.Steering
     Phoenix.Sim
+    Phoenix
     nlohmann_json::nlohmann_json
 )
 

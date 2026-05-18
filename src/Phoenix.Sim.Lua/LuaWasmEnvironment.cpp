@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 
 using namespace Phoenix;
 

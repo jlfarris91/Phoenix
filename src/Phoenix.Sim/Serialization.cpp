@@ -2,9 +2,9 @@
 
 #include <ranges>
 
-#include "Phoenix.Sim/Name.h"
-#include "Phoenix.Sim/FixedPoint/FixedPoint.h"
-#include "Phoenix.Sim/FixedPoint/FixedTransform.h"
+#include "Phoenix/Name.h"
+#include "Phoenix/FixedPoint/FixedPoint.h"
+#include "Phoenix/FixedPoint/FixedTransform.h"
 
 namespace Phoenix
 {

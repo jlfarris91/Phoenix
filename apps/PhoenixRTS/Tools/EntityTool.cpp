@@ -5,7 +5,7 @@
 
 #include <Phoenix.Sim/Actions.h>
 #include <Phoenix.Sim/Session.h>
-#include <Phoenix.Sim/FixedPoint/FixedVector.h>
+#include <Phoenix/FixedPoint/FixedVector.h>
 
 #include "../imgui/ImGuiUtils.h"
 #include "../sdl/SDLDebugState.h"

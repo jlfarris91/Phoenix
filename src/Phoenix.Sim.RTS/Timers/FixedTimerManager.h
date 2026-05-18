@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Flags.h"
-#include "Phoenix.Sim/Name.h"
-#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/Flags.h"
+#include "Phoenix/Name.h"
+#include "Phoenix/Containers/Optional.h"
 #include "Phoenix.Sim/Containers/FixedSortedList.h"
-#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
+#include "Phoenix/FixedPoint/FixedTypes.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 

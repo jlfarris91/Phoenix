@@ -4,7 +4,7 @@
 #include <fstream>
 #include <mutex>
 
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
 
 class Logger : public Phoenix::ILogger

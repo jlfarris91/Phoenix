@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Phoenix.Sim/Containers/Optional.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Containers/Optional.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 
 #include "Phoenix.Sim.RTS/Orders/Commands.h"

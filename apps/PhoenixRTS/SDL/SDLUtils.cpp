@@ -7,9 +7,9 @@
 #include "SDLViewport.h"
 #include "Phoenix.Sim.RTS/Data/DataUnit.h"
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
-#include "Phoenix.Sim/Color.h"
-#include "Phoenix.Sim/MortonCode.h"
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Color.h"
+#include "Phoenix/MortonCode.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim.LDS/FeatureLDS.h"
 

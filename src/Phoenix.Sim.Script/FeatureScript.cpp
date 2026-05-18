@@ -3,7 +3,7 @@
 #include <filesystem>
 
 #include "WasmRuntime.h"
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/Worlds.h"
 

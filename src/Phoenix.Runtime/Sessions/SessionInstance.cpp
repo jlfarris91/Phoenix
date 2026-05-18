@@ -1,7 +1,7 @@
 #include "SessionInstance.h"
 
 #include "../Worlds/WorldDoubleBuffer.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 
 namespace Phoenix {

@@ -4,7 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #include "SDLDebugRenderer.h"
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 
 using namespace Phoenix;
 using PhoenixColor = Phoenix::Color;

@@ -3,9 +3,9 @@
 
 #include <unordered_map>
 
-#include "Phoenix.Sim/Delegates.h"
+#include "Phoenix/Delegates.h"
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/Parallel.h"
+#include "Phoenix/Parallel.h"
 #include "Phoenix.Sim/Worlds.h"
 #include "Phoenix.Sim.Blackboard/FeatureBlackboard.h"
 #include "Phoenix.Sim.Blackboard/FixedBlackboard.h"

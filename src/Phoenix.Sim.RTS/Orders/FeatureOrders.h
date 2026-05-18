@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix/Containers/Optional.h"
 #include "Phoenix.Sim/Worlds.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"

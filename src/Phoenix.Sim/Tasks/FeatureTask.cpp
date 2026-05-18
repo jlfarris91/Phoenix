@@ -2,7 +2,7 @@
 
 #include "TaskBase.h"
 #include "TaskList.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/Worlds.h"
 

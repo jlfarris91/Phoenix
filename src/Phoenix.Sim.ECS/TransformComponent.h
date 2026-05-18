@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "Phoenix.Sim/FixedPoint/FixedTransform.h"
+#include "Phoenix/FixedPoint/FixedTransform.h"
 #include "Phoenix.Sim.ECS/Component.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
 

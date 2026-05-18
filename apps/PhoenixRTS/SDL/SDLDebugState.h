@@ -5,7 +5,7 @@
 #include <SDL3/SDL_keycode.h>
 
 #include <Phoenix.Sim.Debug/Debug.h>
-#include <Phoenix.Sim/Platform.h>
+#include <Phoenix/Platform.h>
 
 #include "SDLViewport.h"
 

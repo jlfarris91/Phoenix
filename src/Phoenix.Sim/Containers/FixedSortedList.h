@@ -4,8 +4,8 @@
 
 #include <algorithm>
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Utils.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/Utils.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
 #include "Phoenix.Sim/Containers/FixedMemory.h"
 

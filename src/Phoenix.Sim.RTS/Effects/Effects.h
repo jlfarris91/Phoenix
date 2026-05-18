@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix/Containers/Optional.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim/Services/Service.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 

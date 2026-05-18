@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedLine.h"
 
 namespace Phoenix
 {

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix.Sim/WorldsFwd.h"
-#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
+#include "Phoenix/FixedPoint/FixedTypes.h"
 #include "Phoenix.Sim/Tasks/TaskDefinition.h"
 
 namespace Phoenix::Tasks

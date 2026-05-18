@@ -1,8 +1,8 @@
 #pragma once
 
-#include <Phoenix.Sim/Color.h>
-#include <Phoenix.Sim/FixedPoint/FixedVector.h>
-#include <Phoenix.Sim/Containers/Optional.h>
+#include <Phoenix/Color.h>
+#include <Phoenix/FixedPoint/FixedVector.h>
+#include <Phoenix/Containers/Optional.h>
 #include <Phoenix.Sim.Nav/FeatureNavigation.h>
 
 #include "../sdl/SDLTool.h"

@@ -2,7 +2,7 @@
 
 #include <ranges>
 
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Worlds.h"
 #include "Phoenix/Reflection/TypeDescriptor.h"
 

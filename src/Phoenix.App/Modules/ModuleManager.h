@@ -4,7 +4,7 @@
 #include <vector>
 #include "Module.h"
 #include "Phoenix/Reflection/TypeDescriptor.h"
-#include "Delegates.h"
+#include "Phoenix/Delegates.h"
 
 namespace Phoenix
 {

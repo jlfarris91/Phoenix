@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix/FixedPoint/FixedLine.h"
 #include "Phoenix.Sim.Mesh/Mesh2.h"
 #include "Phoenix.Sim.Mesh/MeshPath.h"
 

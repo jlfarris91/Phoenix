@@ -1,9 +1,9 @@
 
 #pragma once
 
-#include "Phoenix.Sim/Color.h"
-#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/Color.h"
+#include "Phoenix/FixedPoint/FixedTypes.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 #include "Phoenix.Sim.LDS/LDSRecordQueryFlags.h"
 #include "Phoenix.Sim.LDS/ObjectModel/LDSRecordPtr.h"
 

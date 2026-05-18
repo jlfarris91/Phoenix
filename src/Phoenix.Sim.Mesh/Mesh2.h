@@ -1,13 +1,13 @@
 
 #pragma once
 
-#include "Phoenix.Sim/Flags.h"
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Flags.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
-#include "Phoenix.Sim/Containers/Optional.h"
-#include "Phoenix.Sim/FixedPoint/FixedBox.h"
-#include "Phoenix.Sim/FixedPoint/FixedMath.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/Containers/Optional.h"
+#include "Phoenix/FixedPoint/FixedBox.h"
+#include "Phoenix/FixedPoint/FixedMath.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 namespace Phoenix
 {

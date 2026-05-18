@@ -13,7 +13,7 @@
 
 #include "Phoenix.Sim.Lua/LuaWasmEnvironment.h"
 #include "Phoenix.Sim.Script/FeatureScript.h"
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/Worlds.h"
 

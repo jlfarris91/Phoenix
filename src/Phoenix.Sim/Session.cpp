@@ -2,7 +2,7 @@
 
 #include "Phoenix.Sim/Config.h"
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
 #include "Phoenix.Sim/Worlds.h"
 

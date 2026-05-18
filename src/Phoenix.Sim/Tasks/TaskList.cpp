@@ -1,6 +1,6 @@
 #include "TaskList.h"
 
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 
 using namespace Phoenix;
 using namespace Phoenix::Tasks;

@@ -3,7 +3,7 @@
 #include <fstream>
 #include <vector>
 
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/Scripting/IScriptBindings.h"
 #include "Phoenix.Sim/Scripting/ScriptModuleBuilder.h"

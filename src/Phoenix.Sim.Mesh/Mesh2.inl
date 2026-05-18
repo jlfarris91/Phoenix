@@ -3,11 +3,11 @@
 
 #include <algorithm>
 
-#include "Phoenix.Sim/Flags.h"
+#include "Phoenix/Flags.h"
 #include "Phoenix.Sim/Containers/FixedQueue.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim.Mesh/Mesh2.h"
-#include "Phoenix.Sim/Utils.h"
+#include "Phoenix/Utils.h"
 
 #define MESH_TEMPLATE template <uint32 NFaces, class TFaceData, class TVecComp, class TIdx>
 #define MESH_CLASS TFixedCDTMesh2<NFaces, TFaceData, TVecComp, TIdx>

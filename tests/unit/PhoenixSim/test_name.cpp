@@ -1,5 +1,5 @@
 #include <doctest/doctest.h>
-#include <Phoenix.Sim/Name.h>
+#include <Phoenix/Name.h>
 
 using namespace Phoenix;
 

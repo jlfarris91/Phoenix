@@ -100,8 +100,21 @@ namespace Phoenix
     typedef uint32_t uint32;
     typedef uint64_t uint64;
 
+    typedef decltype(PHX_SYS_CLOCK_NOW()) sys_clock_t;
+    typedef std::chrono::duration<sys_clock_t::rep, sys_clock_t::period> sys_clock_dur_t;
+
+    typedef int64 dt_t;
+    typedef uint64 simtime_t;
+
     template <class T>
     struct Index { static constexpr T None = -1; };
 
     constexpr int32 INDEX_NONE = Index<int32>::None;
+
+#ifdef _WIN32
+    std::wstring ToWideString(const std::string& str);
+#endif
+
+    size_t PHOENIX_SIM_API GetNowLocalTimeString(char* buffer, size_t sizeInBytes);
+    size_t PHOENIX_SIM_API GetNowUnixTimeString(char* buffer, size_t sizeInBytes);
 }

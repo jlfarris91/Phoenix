@@ -5,8 +5,8 @@
 #include "Config.h"
 #include "Phoenix.Sim/Actions.h"
 #include "Phoenix.Sim/BlockBuffer/BlockBufferOwner.h"
-#include "Phoenix.Sim/Containers/Optional.h"
-#include "Phoenix.Sim/Random.h"
+#include "Phoenix/Containers/Optional.h"
+#include "Phoenix/Random.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 #include "Phoenix/Reflection/Registration.h"
 

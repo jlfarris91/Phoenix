@@ -2,8 +2,8 @@
 #include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix/Reflection/Registration.h"
 
-#include "Phoenix.Sim/MortonCode.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/MortonCode.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/WorldTaskQueue.h"
 #include "Phoenix.Sim.ECS/ECSCommands.h"

@@ -6,10 +6,10 @@
 #include <memory>
 
 #include "Config.h"
-#include "Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/Flags.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Flags.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 
 using namespace Phoenix;

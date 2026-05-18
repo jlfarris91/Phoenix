@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Name.h"
-#include "Phoenix.Sim/Utils.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/Name.h"
+#include "Phoenix/Utils.h"
 #include "Phoenix.Sim.ECS/ArchetypeHandle.h"
 #include "Phoenix.Sim.ECS/ArchetypeDefinition.h"
 #include "Phoenix.Sim.ECS/EntityId.h"

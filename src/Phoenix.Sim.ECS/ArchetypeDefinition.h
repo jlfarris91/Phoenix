@@ -3,8 +3,8 @@
 
 #include <algorithm>
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
 #include "Phoenix/Reflection/TypeRegistry.h"
 

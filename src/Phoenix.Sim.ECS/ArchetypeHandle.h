@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
 
 namespace Phoenix

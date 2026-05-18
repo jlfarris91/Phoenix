@@ -1,7 +1,7 @@
 ﻿
 #pragma once
 
-#include "Phoenix.Sim/Color.h"
+#include "Phoenix/Color.h"
 #include "Phoenix.Sim.LDS/LDSObjectModel.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"

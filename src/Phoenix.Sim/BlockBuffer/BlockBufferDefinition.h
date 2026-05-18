@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/Delegates.h"
+#include "Phoenix/Delegates.h"
 
 #include "Phoenix.Sim/BlockBuffer/BlockBufferAllocator.h"
 #include "Phoenix.Sim/BlockBuffer/BlockBufferLayout.h"

@@ -22,10 +22,10 @@
 #include "imgui.h"
 
 // Phoenix
-#include <Phoenix.Sim/Color.h>
-#include <Phoenix.Sim/MortonCode.h>
-#include <Phoenix.Sim/FPSCalc.h>
-#include <Phoenix.Sim/Parallel.h>
+#include <Phoenix/Color.h>
+#include <Phoenix/MortonCode.h>
+#include <Phoenix/FPSCalc.h>
+#include <Phoenix/Parallel.h>
 #include <Phoenix.Sim/Session.h>
 #include <Phoenix.Sim/Worlds.h>
 #include <Phoenix.Sim/Features.h>

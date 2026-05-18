@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Phoenix.Sim/OffsetRef.h"
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/OffsetRef.h"
+#include "Phoenix/Platform.h"
 
 #include <array>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim/Services/Service.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 

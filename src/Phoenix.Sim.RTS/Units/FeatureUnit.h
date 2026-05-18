@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 #include "Phoenix.Sim.RTS/Units/UnitId.h"

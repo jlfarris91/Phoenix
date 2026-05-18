@@ -3,9 +3,9 @@
 
 #include <algorithm>
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Name.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/Name.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/BlockBuffer/BlockBufferRegistration.h"
 #include "Phoenix.Sim/Containers/FixedSortedList.h"
 

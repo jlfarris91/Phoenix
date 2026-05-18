@@ -2,9 +2,9 @@
 
 #include "Phoenix.Sim/Containers/FixedArray.h"
 #include "Phoenix.Sim.ECS/FeatureECS.h"
-#include "Phoenix.Sim/FixedPoint/FixedPoint.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/FixedPoint/FixedLine.h"
+#include "Phoenix/FixedPoint/FixedPoint.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedLine.h"
 #include "Phoenix.Sim.Physics/PhysicsSystem.h"
 
 #ifndef PHX_PHS_MAX_CONTACTS_PER_ENTITY

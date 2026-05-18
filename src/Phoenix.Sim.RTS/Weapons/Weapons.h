@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 
 #include "Phoenix.Sim.RTS/Abilities/States/WeaponAbilityStates.h"

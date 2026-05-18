@@ -4,9 +4,9 @@
 #include <nlohmann/json.hpp>
 
 #include "Phoenix.Sim/BlockBuffer/BlockBufferOwner.h"
-#include "Phoenix.Sim/Containers/Optional.h"
+#include "Phoenix/Containers/Optional.h"
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/FPSCalc.h"
+#include "Phoenix/FPSCalc.h"
 #include "Phoenix.Sim/Services/ServiceLocator.h"
 #include "Phoenix.Sim/Worlds.h"
 

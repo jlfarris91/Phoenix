@@ -3,7 +3,7 @@
 
 #include <SDL3/SDL_rect.h>
 
-#include <Phoenix.Sim/Containers/Optional.h>
+#include <Phoenix/Containers/Optional.h>
 #include <Phoenix.Sim.ECS/EntityId.h>
 
 #include "../sdl/SDLCamera.h"

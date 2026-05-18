@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Services/Service.h"
-#include "Delegates.h"
+#include "Phoenix/Delegates.h"
 
 namespace Phoenix
 {

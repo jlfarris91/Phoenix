@@ -3,8 +3,8 @@
 #include <SDL3/SDL_render.h>
 
 #include <Phoenix.Sim.Debug/Debug.h>
-#include <Phoenix.Sim/Color.h>
-#include <Phoenix.Sim/Platform.h>
+#include <Phoenix/Color.h>
+#include <Phoenix/Platform.h>
 
 struct SDLViewport;
 

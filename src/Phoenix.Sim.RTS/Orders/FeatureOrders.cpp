@@ -2,17 +2,17 @@
 #include "Phoenix/Reflection/Registration.h"
 
 #include "Phoenix.Sim.ECS/FeatureECS.h"
-#include "Phoenix.Sim/Flags.h"
+#include "Phoenix/Flags.h"
 #include "Phoenix.Sim.LDS/FeatureLDS.h"
 #include "Phoenix.Sim/Session.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 
 #include "Phoenix.Sim.RTS/Abilities/FeatureAbilities.h"
 #include "Phoenix.Sim.RTS/Orders/CommandHandler.h"
 #include "Phoenix.Sim.RTS/Selection/FeatureSelection.h"
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
 #include "Phoenix.Sim.RTS/Units/UnitId.h"
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

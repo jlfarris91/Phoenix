@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <Phoenix.Sim/FixedPoint/FixedVector.h>
+#include <Phoenix/FixedPoint/FixedVector.h>
 
 struct SDLCamera
 {

@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include "Phoenix.Sim/Flags.h"
+#include "Phoenix/Flags.h"
 #include "Phoenix.Sim/Containers/FixedMemory.h"
 #include "Phoenix.Sim.LDS/LDSObjectModel.h"
 #include "Phoenix.Sim.LDS/LDSRecordStore.h"

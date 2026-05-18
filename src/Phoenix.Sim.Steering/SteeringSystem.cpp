@@ -4,8 +4,8 @@
 #include "Phoenix.Sim.Steering/SteeringSystem.h"
 
 #include "Phoenix.Sim.Debug/Debug.h"
-#include "Phoenix.Sim/Flags.h"
-#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix/Flags.h"
+#include "Phoenix/MortonCode.h"
 #include "Phoenix.Sim/WorldTaskQueue.h"
 #include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim.ECS/SystemJob.h"

@@ -7,7 +7,8 @@
 #include <ranges>
 #include <vector>
 
-#include "Phoenix.Sim/FixedPoint/FixedPoint.h"
+#include "Phoenix/Containers/Optional.h"
+#include "Phoenix/FixedPoint/FixedPoint.h"
 #include "Phoenix/Reflection/PropertyDescriptor.h"
 #include "Phoenix/Reflection/TypeDescriptor.h"
 

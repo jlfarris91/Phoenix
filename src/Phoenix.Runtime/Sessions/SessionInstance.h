@@ -4,9 +4,9 @@
 #include <atomic>
 #include <thread>
 
-#include <Phoenix.Sim/Name.h>
+#include <Phoenix/Name.h>
 #include <Phoenix.Sim/Session.h>
-#include <Phoenix.Sim/Delegates.h>
+#include <Phoenix/Delegates.h>
 
 namespace Phoenix
 {

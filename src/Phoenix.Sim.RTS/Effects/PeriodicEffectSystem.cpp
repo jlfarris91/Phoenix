@@ -5,7 +5,7 @@
 #include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim.ECS/SystemJob.h"
 #include "Phoenix.Sim.LDS/FeatureLDS.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 
 #include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"

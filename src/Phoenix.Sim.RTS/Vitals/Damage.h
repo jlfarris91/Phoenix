@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Phoenix.Sim.ECS/EntityId.h"
-#include "Phoenix.Sim/FixedPoint/FixedTypes.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/FixedPoint/FixedTypes.h"
+#include "Phoenix/Name.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 

@@ -2,7 +2,7 @@
 
 #include <mutex>
 
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 
 namespace Phoenix::ECS
 {

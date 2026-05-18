@@ -1,7 +1,7 @@
 
 #pragma once
 
-#include <Phoenix.Sim/Profiling.h>
+#include <Phoenix/Profiling.h>
 
 namespace Phoenix::Profiling
 {

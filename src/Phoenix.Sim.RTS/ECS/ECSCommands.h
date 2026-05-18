@@ -3,7 +3,7 @@
 #include "Phoenix.Sim.RTS/Effects/EffectId.h"
 #include "Phoenix.Sim.RTS/Orders/Commands.h"
 #include "Phoenix.Sim.RTS/Units/UnitId.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 
 namespace Phoenix::ECS::Commands
 {

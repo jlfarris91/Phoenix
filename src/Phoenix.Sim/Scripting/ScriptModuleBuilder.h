@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 #include "Phoenix/Reflection/MethodDescriptor.h"
 #include "Phoenix/Reflection/MethodDescriptorString.h"
 #include "Phoenix/Reflection/TypeDescriptorBuilder.h"

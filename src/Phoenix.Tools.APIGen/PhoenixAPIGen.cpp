@@ -55,7 +55,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Phoenix.Sim/Flags.h"
+#include "Phoenix/Flags.h"
 #include "Phoenix/Reflection/Registration.h"
 #include "Phoenix/Reflection/TypeDescriptor.h"
 #include "Phoenix/Reflection/TypeRegistry.h"

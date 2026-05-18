@@ -4,8 +4,8 @@
 #include <mutex>
 #include <vector>
 
-#include <Phoenix.Sim/FPSCalc.h>
-#include <Phoenix.Sim/Platform.h>
+#include <Phoenix/FPSCalc.h>
+#include <Phoenix/Platform.h>
 #include <Phoenix.Sim/Worlds.h>
 
 // Double-buffered world view for a sim/render split.

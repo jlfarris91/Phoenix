@@ -2,7 +2,7 @@
 #pragma once
 
 #include "Phoenix.Sim/Actions.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
 #include "Phoenix/Reflection/Registration.h"
 

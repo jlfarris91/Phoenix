@@ -3,10 +3,10 @@
 
 #include <cstdio>   // For snprintf
 
-#include "Phoenix.Sim/Color.h"
+#include "Phoenix/Color.h"
 #include "Phoenix.Sim.Debug/Debug.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
-#include "Phoenix.Sim/Profiling.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
+#include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;

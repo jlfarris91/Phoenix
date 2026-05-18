@@ -2,7 +2,7 @@
 
 #include "VitalsTask.h"
 #include "Phoenix.Sim.ECS/FeatureECS.h"
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Session.h"
 
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"

@@ -4,7 +4,7 @@
 #include "Phoenix/Hashing.h"
 #include "Phoenix/Reflection/TypeName.h"
 
-#include "Delegates.h"
+#include "Phoenix/Delegates.h"
 
 namespace Phoenix
 {

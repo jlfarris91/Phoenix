@@ -3,8 +3,8 @@
 #include <SDL3/SDL_events.h>
 
 #include <Phoenix.Sim.ECS/FeatureECS.h>
-#include <Phoenix.Sim/FixedPoint/FixedVector.h>
-#include <Phoenix.Sim/Flags.h>
+#include <Phoenix/FixedPoint/FixedVector.h>
+#include <Phoenix/Flags.h>
 #include <Phoenix.Sim/Session.h>
 
 #include <Phoenix.Sim.RTS/Orders/Commands.h>

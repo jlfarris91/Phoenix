@@ -1,7 +1,7 @@
 #include "Phoenix.Sim.Steering/FeatureSteering.h"
 
-#include "Phoenix.Sim/Flags.h"
-#include "Phoenix.Sim/MortonCode.h"
+#include "Phoenix/Flags.h"
+#include "Phoenix/MortonCode.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim.Steering/SteeringComponent.h"

@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "Logging.h"
+#include "Phoenix/Logging.h"
 
 using namespace Phoenix;
 

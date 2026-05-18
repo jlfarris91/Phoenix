@@ -2,8 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Phoenix.Sim/Name.h"
-#include "Phoenix.Sim/Logging.h"
+#include "Phoenix/Name.h"
+#include "Phoenix/Logging.h"
 #include "Phoenix.Sim.LDS/LDSCatalog.h"
 #include "Phoenix.Sim.LDS/LDSCatalogQueryContext.h"
 

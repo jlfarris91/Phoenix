@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix/Reflection/MethodDescriptor.h"
 
 namespace Phoenix

@@ -9,7 +9,7 @@
 #include "Phoenix.Sim.Script/DLLExport.h"
 #include "Phoenix.Sim.Script/WasmEnvironment.h"
 #include "Phoenix.Sim/Features.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim/Containers/FixedMemory.h"
 #include "Phoenix.Sim/Worlds.h"
 

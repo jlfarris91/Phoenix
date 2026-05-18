@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix/Reflection/Registration.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 
 #include "Phoenix.Sim/BlockBuffer/BlockBufferConfig.h"
 #include "Phoenix.Sim/BlockBuffer/BlockBufferDefinition.h"

@@ -2,7 +2,7 @@
 
 #include "Phoenix.Sim/Features.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 #include "Phoenix.Sim/Worlds.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"

@@ -1,9 +1,9 @@
 ﻿#pragma once
 
-#include "Phoenix.Sim/Platform.h"
+#include "Phoenix/Platform.h"
 #include "Phoenix.Sim/SessionFwd.h"
 #include "Phoenix.Sim/WorldsFwd.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 #include "Phoenix.Sim.RTS/Orders/CommandHandler.h"
 #include "Phoenix.Sim.RTS/TargetFiltering/TargetScanner.h"

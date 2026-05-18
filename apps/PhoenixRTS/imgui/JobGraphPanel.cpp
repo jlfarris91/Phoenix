@@ -9,7 +9,7 @@
 
 #include "Phoenix.Sim.ECS/JobScheduler.h"
 #include "Phoenix.Sim.ECS/SystemJob.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Name.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

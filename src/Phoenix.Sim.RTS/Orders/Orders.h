@@ -1,10 +1,10 @@
 
 #pragma once
 
-#include "Phoenix.Sim/Platform.h"
-#include "Phoenix.Sim/Name.h"
+#include "Phoenix/Platform.h"
+#include "Phoenix/Name.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 

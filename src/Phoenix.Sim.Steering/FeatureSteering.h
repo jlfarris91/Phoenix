@@ -2,7 +2,7 @@
 
 #include "Phoenix.Sim.ECS/FeatureECS.h"
 #include "Phoenix.Sim/Containers/FixedArray.h"
-#include "Phoenix.Sim/FixedPoint/FixedVector.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 #include "Phoenix.Sim.Steering/DLLExport.h"
 #include "Phoenix.Sim.Steering/SteeringComponent.h"
