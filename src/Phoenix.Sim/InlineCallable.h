@@ -6,7 +6,7 @@
 #include <type_traits>
 #include <utility>
 
-#include "PhoenixSim/Platform.h"
+#include "Phoenix/Platform.h"
 
 namespace Phoenix
 {
