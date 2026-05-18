@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "PhoenixSim/Platform.h"
+#include "PhoenixSim/InlineCallable.h"
 #include "PhoenixSim/Containers/MPMCQueue.h"
 
 namespace Phoenix
@@ -25,7 +26,13 @@ namespace Phoenix
         std::atomic<bool> bIsCompleted;
     };
 
-    using TTaskFunc = std::function<void()>;
+    // Task bodies are stored inline — no heap allocation per Submit. The
+    // 128-byte capacity comfortably holds typical lambda captures used in the
+    // engine (incl. captured std::function<void(WorldRef)> wrappers from
+    // WorldTaskQueue, and ECS Submit closures capturing JobBatch by value).
+    // If a future call site trips the InlineCallable static_assert, either
+    // reduce its capture or bump the capacity here.
+    using TTaskFunc = TInlineCallable<void(), 128>;
     
     class PHOENIX_SIM_API Task
     {
