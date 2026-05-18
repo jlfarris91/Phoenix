@@ -8,6 +8,7 @@ endif()
 target_compile_definitions(Phoenix.Sim.RTS PUBLIC PHX_PROFILE_ENABLE)
 target_link_libraries(Phoenix.Sim.RTS PUBLIC
     Phoenix.Sim
+    Phoenix.Sim.Tasks
     Phoenix.Sim.ECS
     Phoenix.Sim.LDS
     Phoenix.Sim.Physics

@@ -2,7 +2,7 @@
 
 #include "ProjectileState.h"
 #include "Phoenix.Sim.RTS/DLLExport.h"
-#include "Phoenix.Sim/Tasks/TaskBase.h"
+#include "Phoenix.Sim.Tasks/TaskBase.h"
 
 namespace Phoenix::RTS
 {

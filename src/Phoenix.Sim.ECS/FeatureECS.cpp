@@ -11,7 +11,7 @@
 #include "Phoenix.Sim.ECS/System.h"
 #include "Phoenix.Sim.ECS/SystemJob.h"
 #include "Phoenix.Sim.Blackboard/FeatureBlackboard.h"
-#include "Phoenix.Sim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;

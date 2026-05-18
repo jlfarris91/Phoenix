@@ -12,7 +12,7 @@
 #include "Phoenix.Sim.RTS/Effects/FeatureEffects.h"
 #include "Phoenix.Sim.RTS/Effects/PeriodicEffectComponent.h"
 #include "Phoenix.Sim.RTS/Projectiles/ProjectileComponent.h"
-#include "Phoenix.Sim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

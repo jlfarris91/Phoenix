@@ -10,4 +10,5 @@ target_include_directories(Phoenix.Sim.ECS PUBLIC
 target_link_libraries(Phoenix.Sim.ECS PUBLIC
     Phoenix.Sim
     Phoenix.Sim.Blackboard
+    Phoenix.Sim.Tasks
 )

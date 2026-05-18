@@ -36,13 +36,13 @@
 #include <Phoenix.Sim.LDS/FeatureLDS.h>
 #include <Phoenix.Sim.Blackboard/FeatureBlackboard.h>
 #include <Phoenix.Sim.ECS/FeatureECS.h>
-#include <Phoenix.Sim/Tasks/FeatureTask.h>
+#include <Phoenix.Sim.Tasks/FeatureTask.h>
 #include <Phoenix.Sim.Nav/FeatureNavigation.h>
 #include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
 #include <Phoenix.Sim.Physics/FeaturePhysics.h>
 #include <Phoenix.Sim.Physics/BodyComponent.h>
 #include <Phoenix.Sim.Steering/FeatureSteering.h>
-#include <Phoenix.Sim/Tasks/FeatureTask.h>
+#include <Phoenix.Sim.Tasks/FeatureTask.h>
 
 // Script Features
 #include <Phoenix.Sim.Script/FeatureScript.h>

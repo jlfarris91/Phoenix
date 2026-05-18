@@ -76,6 +76,7 @@ add_subdirectory(src/Phoenix.Sim.Strings)
 add_subdirectory(src/Phoenix.Sim.Debug)
 add_subdirectory(src/Phoenix.Sim.Mesh)
 add_subdirectory(src/Phoenix.Sim.Nav)
+add_subdirectory(src/Phoenix.Sim.Tasks)
 add_subdirectory(src/Phoenix.Sim.ECS)
 add_subdirectory(src/Phoenix.Sim.LDS)
 

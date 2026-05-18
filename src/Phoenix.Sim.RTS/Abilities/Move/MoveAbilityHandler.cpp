@@ -19,7 +19,7 @@
 #include "Phoenix.Sim.RTS/Units/UnitComponent.h"
 #include "Phoenix.Sim.RTS/Units/UnitId.h"
 #include "Phoenix.Sim/Session.h"
-#include "Phoenix.Sim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;

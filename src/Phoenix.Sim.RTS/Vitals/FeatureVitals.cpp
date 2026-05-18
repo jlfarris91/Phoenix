@@ -8,7 +8,7 @@
 #include "Phoenix.Sim.RTS/Units/FeatureUnit.h"
 #include "Phoenix.Sim.RTS/Vitals/Damage.h"
 #include "Phoenix.Sim.RTS/Vitals/VitalComponent.h"
-#include "Phoenix.Sim/Tasks/FeatureTask.h"
+#include "Phoenix.Sim.Tasks/FeatureTask.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
