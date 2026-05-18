@@ -43,7 +43,7 @@ set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.nat
 # ── Options ───────────────────────────────────────────────────────────────────
 
 option(PHX_USE_PCH           "Use precompiled headers"                      ON)
-option(PHX_BUILD_TESTAPP     "Build TestRTS demo application"               ON)
+option(PHX_BUILD_TESTAPP     "Build PhoenixRTS demo application"            ON)
 option(PHX_BUILD_TESTS       "Build unit tests"                             OFF)
 option(PE_BUILD_STANDALONE   "Build the standalone Phoenix Editor app"      OFF)
 
@@ -98,7 +98,7 @@ endif()
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
 if(PHX_BUILD_TESTAPP AND NOT EMSCRIPTEN)
-    add_subdirectory(tests/TestRTS)
+    add_subdirectory(apps/PhoenixRTS)
 endif()
 
 if(PHX_BUILD_TESTS)
