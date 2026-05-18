@@ -551,6 +551,18 @@ uint32 TaskQueue::GetNumWorkers() const
     return ThreadPool ? ThreadPool->GetNumWorkers() : 0;
 }
 
+void TaskQueue::Enqueue(const Task& task)
+{
+    PHX_PROFILE_ZONE_SCOPED;
+
+    if (Tasks.empty())
+    {
+        Tasks.emplace_back();
+    }
+
+    Tasks.back().push_back(task);
+}
+
 void TaskQueue::Enqueue(Task&& task)
 {
     PHX_PROFILE_ZONE_SCOPED;

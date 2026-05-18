@@ -164,6 +164,12 @@ namespace Phoenix
         ThreadPool* GetThreadPool() const;
         uint32 GetNumWorkers() const;
 
+        // Explicit const-lvalue overload. Without this, a Task lvalue would
+        // bind through the templated TTaskFunc constructor — which would
+        // then try to wrap the Task itself as a callable inside a 128-byte
+        // inline buffer. Task is ~160 B (TTaskFunc storage plus the
+        // shared_ptr handle), so the TInlineCallable static_assert fires.
+        void Enqueue(const Task& task);
         void Enqueue(Task&& task);
         void Enqueue(TTaskFunc&& work);
         void Enqueue(std::vector<Task>&& tasks);

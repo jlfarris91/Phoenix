@@ -312,6 +312,26 @@ TEST_SUITE("ParallelForEach")
 
 TEST_SUITE("TaskQueue")
 {
+    TEST_CASE("Enqueue accepts a const Task& without wrapping it as a callable")
+    {
+        // Regression: the TInlineCallable<void(), 128> hot-path body refuses
+        // to store anything ≥ 128 B. sizeof(Task) is ~160 B, so binding a
+        // const Task& to the variadic Enqueue overloads must NOT fall
+        // through to Enqueue(TTaskFunc&&) (which would try to wrap the
+        // Task itself as a callable and trip the static_assert). This
+        // happened in CI on every platform on the initial #4 commit. See
+        // WorldTaskQueue::Schedule(WorldRef, const Task&) at the original
+        // call site.
+        ScopedPool s;
+        TaskQueue q(/*id*/ 7u, &s.Pool);
+        std::atomic<int> hit{0};
+        Task t([&] { hit.fetch_add(1, std::memory_order_relaxed); });
+        const Task& cref = t; // bind a const lvalue ref, as WorldTaskQueue does
+        q.Enqueue(cref);
+        q.Flush();
+        CHECK(hit.load() == 1);
+    }
+
     TEST_CASE("Flush runs groups sequentially, tasks within a group run in parallel")
     {
         ScopedPool s;
