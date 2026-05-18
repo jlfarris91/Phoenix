@@ -1,5 +1,5 @@
 
-file(GLOB_RECURSE TESTRTS_SRC "*.cpp" "*.h" "*.inl" "*.json", "*.lua")
+file(GLOB_RECURSE TESTRTS_SRC "*.cpp" "*.h" "*.inl" "*.json" "*.lua")
 
 add_executable(PhoenixRTS ${TESTRTS_SRC})
 
