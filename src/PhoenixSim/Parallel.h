@@ -94,9 +94,13 @@ namespace Phoenix
 
         // Hot atomics on their own cache lines. Done is read by every worker
         // on every loop iteration; ActiveWorkerCount / SpinningWorkerCount are
-        // RMW'd on every task pickup / idle transition. Sharing a line between
-        // them produces false-sharing ping-pong across workers.
+        // RMW'd on every task pickup / idle transition. InFlight is the
+        // authoritative "work outstanding" counter — incremented in Submit
+        // and decremented after task() returns. WaitIdle reads InFlight,
+        // closing the TOCTOU race between dequeue and the previous
+        // ActiveWorkerCount increment.
         alignas(PHX_CACHE_LINE_SIZE) std::atomic<bool> Done = false;
+        alignas(PHX_CACHE_LINE_SIZE) std::atomic<int32_t> InFlight{0};
         alignas(PHX_CACHE_LINE_SIZE) std::atomic<uint32_t> ActiveWorkerCount;
         alignas(PHX_CACHE_LINE_SIZE) std::atomic<uint32_t> SpinningWorkerCount;
     };
@@ -133,14 +137,44 @@ namespace Phoenix
         ThreadPool* ThreadPool;
     };
 
+    // Default granularity floor for ParallelForEach. Submitting one task per
+    // index defeats the queue (push/pop is ~100 ns; a single-index body is
+    // typically ~10-100 ns) — see the Cilk-5 work-first principle. Batching
+    // by at least this many indices per task keeps the body cost an order of
+    // magnitude above the queue cost. Callers with heavier per-index work
+    // should use ParallelRange directly and pick their own minRange.
+    constexpr uint32 kDefaultParallelForEachMinBatch = 64;
+
+    template <class TThreadPool, class TJob>
+    void ParallelRange(TThreadPool& pool, uint32 total, uint32 minRange, const TJob& job)
+    {
+        uint32 desiredRange = total / pool.GetNumWorkers();
+        uint32 actualRange = desiredRange < minRange ? minRange : desiredRange;
+        uint32 start = 0;
+        while (start != total)
+        {
+            uint32 len = actualRange;
+            len = len > (total - start) ? (total - start) : len;
+            pool.Submit([=] { job(start, len); });
+            start += len;
+        }
+        pool.WaitIdle();
+    }
+
     template <class TThreadPool, class TJob>
     void ParallelForEach(TThreadPool& pool, uint32 num, const TJob& job)
     {
-        for (uint32 i = 0; i < num; ++i)
-        {
-            pool.Submit([=] { job(i); });
-        }
-        pool.WaitIdle();
+        // Forward to ParallelRange so the per-index callable is amortised
+        // across batches of at least kDefaultParallelForEachMinBatch items.
+        ParallelRange(pool, num, kDefaultParallelForEachMinBatch,
+            [&job](uint32 start, uint32 len)
+            {
+                const uint32 end = start + len;
+                for (uint32 i = start; i < end; ++i)
+                {
+                    job(i);
+                }
+            });
     }
 
     template <class TJob>
@@ -157,22 +191,6 @@ namespace Phoenix
         {
             job(i);
         }
-    }
-
-    template <class TThreadPool, class TJob>
-    void ParallelRange(TThreadPool& pool, uint32 total, uint32 minRange, const TJob& job)
-    {
-        uint32 desiredRange = total / pool.GetNumWorkers();
-        uint32 actualRange = desiredRange < minRange ? minRange : desiredRange;
-        uint32 start = 0;
-        while (start != total)
-        {
-            uint32 len = actualRange;
-            len = len > (total - start) ? (total - start) : len;
-            pool.Submit([=] { job(start, len); });
-            start += len;
-        }
-        pool.WaitIdle();
     }
 
     template <class TJob>

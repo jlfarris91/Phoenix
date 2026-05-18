@@ -246,6 +246,40 @@ TEST_SUITE("ParallelForEach")
             CHECK(a.load() == 1);
         }
     }
+
+    TEST_CASE("handles small num below the granularity floor")
+    {
+        ScopedPool s;
+        constexpr uint32 N = 4; // smaller than kDefaultParallelForEachMinBatch
+        std::vector<std::atomic<int>> hits(N);
+        for (auto& a : hits) a.store(0);
+        ParallelForEach(s.Pool, N, [&](uint32 i) {
+            hits[i].fetch_add(1, std::memory_order_relaxed);
+        });
+        for (auto& a : hits) CHECK(a.load() == 1);
+    }
+
+    TEST_CASE("handles a large num that gets evenly partitioned")
+    {
+        ScopedPool s;
+        constexpr uint32 N = 4096;
+        std::vector<std::atomic<int>> hits(N);
+        for (auto& a : hits) a.store(0);
+        ParallelForEach(s.Pool, N, [&](uint32 i) {
+            hits[i].fetch_add(1, std::memory_order_relaxed);
+        });
+        for (auto& a : hits) CHECK(a.load() == 1);
+    }
+
+    TEST_CASE("handles num=0 without invoking the job")
+    {
+        ScopedPool s;
+        std::atomic<int> calls{0};
+        ParallelForEach(s.Pool, 0u, [&](uint32) {
+            calls.fetch_add(1, std::memory_order_relaxed);
+        });
+        CHECK(calls.load() == 0);
+    }
 }
 
 TEST_SUITE("TaskQueue")

@@ -197,6 +197,12 @@ std::shared_ptr<TaskHandle> ThreadPool::Submit(const Task& task)
     Task taskCopy = task;
     taskCopy.Handle = handle;
 
+    // Claim a slot in the in-flight count BEFORE enqueueing so WaitIdle can't
+    // observe an interim state where the queue is briefly empty (between
+    // dequeue and the worker's ActiveWorkerCount increment) and conclude no
+    // work is outstanding.
+    InFlight.fetch_add(1, std::memory_order_release);
+
     uint32 attempts = 0;
     while (!TaskQueue.TryEnqueue(taskCopy))
     {
@@ -231,7 +237,7 @@ bool ThreadPool::WaitIdle(std::chrono::milliseconds maxWaitTime) const
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
     SpinBackoff backoff;
-    while (!IsEmpty() || ActiveWorkerCount.load(std::memory_order_acquire) != 0)
+    while (InFlight.load(std::memory_order_acquire) != 0)
     {
         backoff.Tick();
         if (maxWaitTime.count() > 0 && (PHX_SYS_CLOCK_NOW() - startTime) > maxWaitTime)
@@ -258,13 +264,22 @@ void ThreadPool::Worker(uint32 workerId)
 
     Task task;
 
+    auto runOne = [&]()
+    {
+        ActiveWorkerCount.fetch_add(1, std::memory_order_acq_rel);
+        task();
+        ActiveWorkerCount.fetch_sub(1, std::memory_order_acq_rel);
+        // Decrement only AFTER the body has fully completed so WaitIdle's
+        // acquire-load of InFlight can synchronise-with the writes performed
+        // by the task body.
+        InFlight.fetch_sub(1, std::memory_order_acq_rel);
+    };
+
     while (!Done.load(std::memory_order_acquire))
     {
         if (TaskQueue.TryDequeue(task))
         {
-            ActiveWorkerCount.fetch_add(1, std::memory_order_acq_rel);
-            task();
-            ActiveWorkerCount.fetch_sub(1, std::memory_order_acq_rel);
+            runOne();
             continue;
         }
 
@@ -276,9 +291,7 @@ void ThreadPool::Worker(uint32 workerId)
         {
             if (TaskQueue.TryDequeue(task))
             {
-                ActiveWorkerCount.fetch_add(1, std::memory_order_acq_rel);
-                task();
-                ActiveWorkerCount.fetch_sub(1, std::memory_order_acq_rel);
+                runOne();
                 break;
             }
             if (spins < 8)
@@ -300,9 +313,7 @@ void ThreadPool::Worker(uint32 workerId)
 
     while (TaskQueue.TryDequeue(task))
     {
-        ActiveWorkerCount.fetch_add(1, std::memory_order_acq_rel);
-        task();
-        ActiveWorkerCount.fetch_sub(1, std::memory_order_acq_rel);
+        runOne();
     }
 }
 
