@@ -117,6 +117,34 @@ TEST_SUITE("ThreadPool")
         REQUIRE(Task::WaitAll(handles, 30s));
         CHECK(counter.load() == N);
     }
+
+    TEST_CASE("Submit from inside a worker pushes to the worker's own deque")
+    {
+        // A task that spawns sub-tasks is the canonical work-stealing
+        // workload. The continuation submission must land on the running
+        // worker's own Chase-Lev deque (LIFO locality) — never on the
+        // submission inbox. We don't directly observe routing, but the
+        // recursive submission must complete correctly with no losses.
+        ScopedPool s;
+        constexpr int kFanOut = 32;
+        std::atomic<int> leafCounter{0};
+
+        auto root = s.Pool.Submit([&]
+        {
+            std::vector<std::shared_ptr<TaskHandle>> children;
+            children.reserve(kFanOut);
+            for (int i = 0; i < kFanOut; ++i)
+            {
+                children.push_back(s.Pool.Submit([&]
+                {
+                    leafCounter.fetch_add(1, std::memory_order_relaxed);
+                }));
+            }
+            REQUIRE(Task::WaitAll(children, 5s));
+        });
+        REQUIRE(root->WaitForCompleted(10s));
+        CHECK(leafCounter.load() == kFanOut);
+    }
 }
 
 TEST_SUITE("TaskHandle")
