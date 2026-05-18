@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstring>
+
 #include "PhoenixSim/Platform.h"
 
 namespace Phoenix

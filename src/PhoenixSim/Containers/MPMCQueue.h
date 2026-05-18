@@ -4,8 +4,15 @@
 #include <atomic>
 #include <memory>
 
+#include "PhoenixSim/Platform.h"
+
 namespace Phoenix
 {
+    // Bounded MPMC ring buffer (Vyukov). The Enqueue/Dequeue cursors are written
+    // by every producer / every consumer respectively; placing them on the same
+    // cache line as each other (or as the read-only Capacity/Mask/Buffer fields)
+    // causes the line to ping-pong between cores on every operation. We align
+    // each independently-written atomic to its own cache line.
     template <class T>
     class TMPMCQueue
     {
@@ -89,16 +96,25 @@ namespace Phoenix
 
     private:
 
-        struct Cell
+        // Each cell is independently written by one producer and one consumer.
+        // Aligning to a cache line prevents adjacent cells from sharing a line,
+        // which would otherwise serialize producers/consumers operating on
+        // neighboring slots.
+        struct alignas(PHX_CACHE_LINE_SIZE) Cell
         {
             T Data;
             std::atomic<size_t> sequence;
         };
 
+        // Read-only after construction; safe to share a line.
         size_t Capacity;
         size_t Mask;
         std::unique_ptr<Cell[]> Buffer;
-        std::atomic<size_t> EnqueuePos;
-        std::atomic<size_t> DequeuePos;
+
+        // Hot atomics on their own cache lines. Producers contend on EnqueuePos,
+        // consumers contend on DequeuePos; they must not share a line with each
+        // other or with the read-only fields above.
+        alignas(PHX_CACHE_LINE_SIZE) std::atomic<size_t> EnqueuePos;
+        alignas(PHX_CACHE_LINE_SIZE) std::atomic<size_t> DequeuePos;
     };
 }

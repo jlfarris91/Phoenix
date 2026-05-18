@@ -51,7 +51,18 @@
     #define PHX_FORCEINLINE inline __attribute__((always_inline))
     #define _countof(arr) (sizeof(arr) / sizeof((arr)[0]))
     #define sprintf_s(buf, size, ...) snprintf(buf, size, __VA_ARGS__)
-    #define PHX_THREAD_PAUSE() { do {} while(0); }
+    // Emit a real spin-loop hint on POSIX. The previous no-op definition meant
+    // the worker idle path and caller-side waits burned the pipeline on Linux
+    // and macOS. PAUSE/YIELD tells the CPU to back off so SMT siblings can run
+    // and so the memory-order-violation flush on wake is avoided. See §15 of
+    // docs/JobSystemRoadmap.md.
+    #if defined(__x86_64__) || defined(__i386__)
+        #define PHX_THREAD_PAUSE() __builtin_ia32_pause()
+    #elif defined(__aarch64__) || defined(__arm__)
+        #define PHX_THREAD_PAUSE() __asm__ __volatile__("yield" ::: "memory")
+    #else
+        #define PHX_THREAD_PAUSE() do {} while(0)
+    #endif
     #define PHX_DEBUG_BREAK() __builtin_trap()
 #endif
 
@@ -63,6 +74,16 @@
 
 #define PHX_ASSERT(expression) assert((expression))
 
+#endif
+
+// L1 cache-line size in bytes — the granularity at which cache coherence
+// invalidates memory between cores. Hot atomics that are independently written
+// by different cores should be aligned to this to avoid false sharing.
+// 64 covers x86-64 (Intel/AMD, PS5, Xbox Series); Apple Silicon uses 128.
+#if defined(__APPLE__) && defined(__aarch64__)
+    #define PHX_CACHE_LINE_SIZE 128
+#else
+    #define PHX_CACHE_LINE_SIZE 64
 #endif
 
 #ifndef PHX_CONCAT
