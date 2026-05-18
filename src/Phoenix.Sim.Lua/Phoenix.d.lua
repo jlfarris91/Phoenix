@@ -4,6 +4,7 @@
 -- Regenerate: build the PhoenixLuaGen target.
 
 Phoenix = {}
+Phoenix.Debug = {}
 Phoenix.Orders = {}
 Phoenix.Physics = {}
 Phoenix.RTS = {}
@@ -15,6 +16,15 @@ Phoenix.Random = {}
 Phoenix.Steering = {}
 Phoenix.Vitals = {}
 Phoenix.World = {}
+
+---@class Phoenix.Circle2
+---@field Origin Phoenix.Vec2
+---@field Radius number
+Phoenix.Circle2 = {}
+
+---@param t? {Origin?: Phoenix.Vec2, Radius?: number}
+---@return Phoenix.Circle2
+function Phoenix.Circle2.new(t) end
 
 ---@class Phoenix.Color
 ---@field B integer
@@ -190,6 +200,15 @@ Phoenix.ECS.TransformComponent = {}
 ---@param t? {ZCode?: integer, AttachParent?: integer, Transform?: Phoenix.Transform2D}
 ---@return Phoenix.ECS.TransformComponent
 function Phoenix.ECS.TransformComponent.new(t) end
+
+---@class Phoenix.Ellipse2
+---@field Origin Phoenix.Vec2
+---@field Radius Phoenix.Vec2
+Phoenix.Ellipse2 = {}
+
+---@param t? {Origin?: Phoenix.Vec2, Radius?: Phoenix.Vec2}
+---@return Phoenix.Ellipse2
+function Phoenix.Ellipse2.new(t) end
 
 ---@class Phoenix.Physics.BodyComponent
 ---@field Force Phoenix.Vec2
@@ -653,6 +672,37 @@ function Phoenix.Entity:TryGetBlackboardValue_EntityId(arg2) end
 ---@param arg2 integer|string
 ---@return Phoenix.Color|nil
 function Phoenix.Entity:TryGetBlackboardValue_Color(arg2) end
+
+-- Phoenix.Debug
+
+---@param pt Phoenix.Vec2
+---@param radius number
+---@param color Phoenix.Color
+function Phoenix.Debug.DrawCircle(pt, radius, color) end
+
+---@param pt Phoenix.Vec2
+---@param radii Phoenix.Vec2
+---@param color Phoenix.Color
+function Phoenix.Debug.DrawEllipse(pt, radii, color) end
+
+---@param start Phoenix.Vec2
+---@param end Phoenix.Vec2
+---@param color Phoenix.Color
+function Phoenix.Debug.DrawLine(start, end, color) end
+
+---@param start Phoenix.Vec2
+---@param dir Phoenix.Vec2
+---@param color Phoenix.Color
+function Phoenix.Debug.DrawRay(start, dir, color) end
+
+---@param min Phoenix.Vec2
+---@param max Phoenix.Vec2
+---@param color Phoenix.Color
+function Phoenix.Debug.DrawBox(min, max, color) end
+
+---@param index integer
+---@return Phoenix.Color
+function Phoenix.Debug.GetColor(index) end
 
 -- Phoenix.Orders
 

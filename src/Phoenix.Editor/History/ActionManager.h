@@ -7,7 +7,7 @@ namespace Phoenix
 {
     class Action;
 
-    PHXED_DECLARE_MULTICAST_DELEGATE(ActionEvent, std::shared_ptr<const Action>);
+    PHX_DECLARE_MULTICAST_DELEGATE(ActionEvent, std::shared_ptr<const Action>);
     typedef std::function<bool(const std::shared_ptr<const Action>&)> CanPerformActionFunc;
 
     class IActionManager : public IService

@@ -37,7 +37,7 @@ namespace Phoenix
 
         std::vector<IModule*> GetModules() const;
 
-        PHXED_DECLARE_MULTICAST_DELEGATE(ModuleEvent, IModule*);
+        PHX_DECLARE_MULTICAST_DELEGATE(ModuleEvent, IModule*);
         ModuleEvent ModuleRegistered;
         ModuleEvent ModuleUnregistered;
 

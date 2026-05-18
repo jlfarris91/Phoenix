@@ -23,6 +23,13 @@ target_link_libraries(Phoenix.Tools.APIGen PRIVATE
     Phoenix.Sim.RTS
     Phoenix.Sim.Physics
     Phoenix.Sim.Steering
+    Phoenix.Sim.Blackboard
+    Phoenix.Sim.Debug
+    Phoenix.Sim.Tasks
+    Phoenix.Sim.ECS
+    Phoenix.Sim.LDS
+    Phoenix.Sim.Nav
+    Phoenix.Sim.Strings
     Phoenix.Sim
     Phoenix
     nlohmann_json::nlohmann_json
@@ -33,6 +40,13 @@ if(MSVC)
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.RTS>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Physics>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Steering>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Blackboard>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Debug>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Tasks>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.ECS>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.LDS>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Nav>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Strings>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim>
     )
 elseif(APPLE)
@@ -40,6 +54,13 @@ elseif(APPLE)
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.RTS>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Physics>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Steering>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Blackboard>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Debug>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Tasks>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.ECS>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.LDS>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Nav>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Strings>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim>
     )
 else()
@@ -48,6 +69,13 @@ else()
         $<TARGET_FILE:Phoenix.Sim.RTS>
         $<TARGET_FILE:Phoenix.Sim.Physics>
         $<TARGET_FILE:Phoenix.Sim.Steering>
+        $<TARGET_FILE:Phoenix.Sim.Blackboard>
+        $<TARGET_FILE:Phoenix.Sim.Debug>
+        $<TARGET_FILE:Phoenix.Sim.Tasks>
+        $<TARGET_FILE:Phoenix.Sim.ECS>
+        $<TARGET_FILE:Phoenix.Sim.LDS>
+        $<TARGET_FILE:Phoenix.Sim.Nav>
+        $<TARGET_FILE:Phoenix.Sim.Strings>
         $<TARGET_FILE:Phoenix.Sim>
         -Wl,--no-whole-archive
     )

@@ -489,8 +489,11 @@ void FeatureTask::Initialize(const std::shared_ptr<Phoenix::Session>& session)
     auto taskDescriptors = TypeRegistry::GetAllDerivedFrom<TaskBase>();
     for (const TypeDescriptor* taskDescriptor : taskDescriptors)
     {
-        auto methods = taskDescriptor->GetMethods();
-        Variant taskDefinition = methods["GetTaskDefinition"].Execute();
+        const auto& methods = taskDescriptor->GetMethods();
+        auto it = methods.find("GetTaskDefinition");
+        if (it == methods.end())
+            continue;
+        Variant taskDefinition = it->second.Execute();
         RegisterTaskDefinition(*taskDefinition.GetData<TaskDefinition>());
     }
 }

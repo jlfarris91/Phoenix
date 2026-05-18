@@ -92,7 +92,7 @@ add_custom_command(TARGET PhoenixRTS POST_BUILD
 )
 
 # Set working directory to access the data files
-set_property(TARGET PhoenixRTS PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/tests/PhoenixRTS")
+set_property(TARGET PhoenixRTS PROPERTY VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 
 # Post-build step: copy TracyClient.dll to output directory
 add_custom_command(TARGET PhoenixRTS POST_BUILD
