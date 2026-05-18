@@ -79,13 +79,19 @@ namespace Phoenix
 
         void Worker(uint32 workerId);
 
+        // Read-only / cold fields.
         std::string Id;
         std::vector<std::thread> Threads;
         TMPMCQueue<Task> TaskQueue;
-        std::atomic<bool> Done = false;
-        std::atomic<uint32_t> ActiveWorkerCount;
-        std::atomic<uint32_t> SpinningWorkerCount;
         uint32 NumWorkers;
+
+        // Hot atomics on their own cache lines. Done is read by every worker
+        // on every loop iteration; ActiveWorkerCount / SpinningWorkerCount are
+        // RMW'd on every task pickup / idle transition. Sharing a line between
+        // them produces false-sharing ping-pong across workers.
+        alignas(PHX_CACHE_LINE_SIZE) std::atomic<bool> Done = false;
+        alignas(PHX_CACHE_LINE_SIZE) std::atomic<uint32_t> ActiveWorkerCount;
+        alignas(PHX_CACHE_LINE_SIZE) std::atomic<uint32_t> SpinningWorkerCount;
     };
 
     class PHOENIX_SIM_API TaskQueue

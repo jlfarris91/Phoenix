@@ -65,6 +65,16 @@
 
 #endif
 
+// L1 cache-line size in bytes — the granularity at which cache coherence
+// invalidates memory between cores. Hot atomics that are independently written
+// by different cores should be aligned to this to avoid false sharing.
+// 64 covers x86-64 (Intel/AMD, PS5, Xbox Series); Apple Silicon uses 128.
+#if defined(__APPLE__) && defined(__aarch64__)
+    #define PHX_CACHE_LINE_SIZE 128
+#else
+    #define PHX_CACHE_LINE_SIZE 64
+#endif
+
 #ifndef PHX_CONCAT
 #   define PHX_CONCAT(x, y) PHX_CONCAT_INDIRECT(x, y)
 #endif
