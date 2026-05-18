@@ -574,6 +574,12 @@ void FeatureTask::ExecuteTaskOnCreate(WorldRef world, FixedTaskList& tasks, cons
     const TaskDefinition& definition = Definitions[entry.GetType()];
     if (definition.OnCreate)
     {
+        const char* taskName = FName::GetNameEntry(definition.TypeId);
+        const size_t taskNameLen = std::strlen(taskName);
+
+        PHX_PROFILE_ZONE(taskZone);
+        taskZone.Name(taskName, taskNameLen);
+
         ScopedTaskStack _(entry.GetHandle());
         definition.OnCreate(world, entry.GetContext(), data);
     }
@@ -592,6 +598,12 @@ void FeatureTask::ExecuteTaskOnUpdate(WorldRef world, FixedTaskList& tasks, cons
     const TaskDefinition& definition = Definitions[entry.GetType()];
     if (definition.OnUpdate)
     {
+        const char* taskName = FName::GetNameEntry(definition.TypeId);
+        const size_t taskNameLen = std::strlen(taskName);
+
+        PHX_PROFILE_ZONE(taskZone);
+        taskZone.Name(taskName, taskNameLen);
+
         ScopedTaskStack _(entry.GetHandle());
         definition.OnUpdate(world, entry.GetContext(), data);
     }
@@ -616,6 +628,12 @@ TOptional<Action> FeatureTask::ExecuteTaskOnAction(
     const TaskDefinition& definition = Definitions[entry.GetType()];
     if (definition.OnAction)
     {
+        const char* taskName = FName::GetNameEntry(definition.TypeId);
+        const size_t taskNameLen = std::strlen(taskName);
+
+        PHX_PROFILE_ZONE(taskZone);
+        taskZone.Name(taskName, taskNameLen);
+
         ScopedTaskStack _(entry.GetHandle());
         result = definition.OnAction(world, entry.GetContext(), data, action);
     }
@@ -636,6 +654,12 @@ bool FeatureTask::ExecuteTaskOnFinish(WorldRef world, FixedTaskList& tasks, cons
     const TaskDefinition& definition = Definitions[entry.GetType()];
     if (definition.OnFinish)
     {
+        const char* taskName = FName::GetNameEntry(definition.TypeId);
+        const size_t taskNameLen = std::strlen(taskName);
+
+        PHX_PROFILE_ZONE(taskZone);
+        taskZone.Name(taskName, taskNameLen);
+
         ScopedTaskStack _(entry.GetHandle());
         definition.OnFinish(world, entry.GetContext(), data);
     }
