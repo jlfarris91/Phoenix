@@ -89,9 +89,9 @@ endif()
 # ── Tools (code generators — not needed for WASM builds) ─────────────────────
 
 if(NOT EMSCRIPTEN)
-    add_subdirectory(tools/PhoenixAPIGen)
-    add_subdirectory(tools/PhoenixWasmGen)
-    add_subdirectory(tools/PhoenixLuaGen)
+    add_subdirectory(tools/Phoenix.Tools.APIGen)
+    add_subdirectory(tools/Phoenix.Tools.WasmGen)
+    add_subdirectory(tools/Phoenix.Tools.LuaGen)
     add_subdirectory(tools/PhoenixLuaRuntime)
 endif()
 

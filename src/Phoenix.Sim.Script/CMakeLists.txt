@@ -10,7 +10,7 @@ endif()
 #
 # wasm3 is not in vcpkg, so we fetch it from GitHub.
 # The CMake target is "m3" (static library).
-# Only the public header wasm3.h is needed by consumers of PhoenixScript —
+# Only the public header wasm3.h is needed by consumers of Phoenix.Sim.Script —
 # all wasm3 includes are confined to WasmWorldRuntime.cpp.
 
 FetchContent_Declare(
@@ -54,23 +54,23 @@ target_compile_definitions(m3 PRIVATE NASSERTS)
 # Optimization collapses the per-instruction frames and reduces stack depth by
 # ~10x, making Debug builds viable.
 
-# ── PhoenixScript ─────────────────────────────────────────────────────────────
+# ── Phoenix.Sim.Script ─────────────────────────────────────────────────────────────
 
 file(GLOB_RECURSE PHOENIXSCRIPT_SRC "*.cpp" "*.h")
 
-add_library(PhoenixScript ${PHOENIXSCRIPT_SRC})
+add_library(Phoenix.Sim.Script ${PHOENIXSCRIPT_SRC})
 
-target_include_directories(PhoenixScript
+target_include_directories(Phoenix.Sim.Script
     PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/../../src"
 )
 
-target_link_libraries(PhoenixScript
+target_link_libraries(Phoenix.Sim.Script
     PUBLIC
-        PhoenixSim
+        Phoenix.Sim
     PRIVATE
         m3
 )
 
 # wasm3 exports its headers via target_include_directories on "m3",
-# so consumers of PhoenixScript do NOT need to add wasm3 include paths.
+# so consumers of Phoenix.Sim.Script do NOT need to add wasm3 include paths.

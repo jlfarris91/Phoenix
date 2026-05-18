@@ -55,10 +55,10 @@
 
 #include <nlohmann/json.hpp>
 
-#include "PhoenixSim/Flags.h"
-#include "PhoenixSim/Reflection/Registration.h"
-#include "PhoenixSim/Reflection/TypeDescriptor.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Flags.h"
+#include "Phoenix.Sim/Reflection/Registration.h"
+#include "Phoenix.Sim/Reflection/TypeDescriptor.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
 
 using json = nlohmann::ordered_json;
 using namespace Phoenix;

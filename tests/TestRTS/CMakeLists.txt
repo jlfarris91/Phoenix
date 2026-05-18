@@ -20,7 +20,7 @@ if(MSVC)
     target_compile_options(TestRTS PRIVATE /bigobj)
 endif()
 target_include_directories(TestRTS PUBLIC ../../src)
-target_link_libraries(TestRTS PUBLIC PhoenixSim PhoenixPhysics PhoenixSteering PhoenixLua PhoenixRTS PhoenixScript)
+target_link_libraries(TestRTS PUBLIC Phoenix.Sim Phoenix.Sim.Physics Phoenix.Sim.Steering Phoenix.Sim.Lua Phoenix.Sim.RTS Phoenix.Sim.Script)
 
 # Force the linker to include all object files from libs that self-register via
 # static initializers (PHX_DEFINE_TYPE, IScriptBindings).  Without this, MSVC
@@ -30,15 +30,15 @@ target_link_libraries(TestRTS PUBLIC PhoenixSim PhoenixPhysics PhoenixSteering P
 # returns nothing at runtime.
 if(MSVC)
     target_link_options(TestRTS PRIVATE
-        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixSim>
-        /WHOLEARCHIVE:$<TARGET_FILE:PhoenixRTS>)
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim>
+        /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.RTS>)
 elseif(APPLE)
     target_link_options(TestRTS PRIVATE
-        -Wl,-force_load,$<TARGET_FILE:PhoenixSim>
-        -Wl,-force_load,$<TARGET_FILE:PhoenixRTS>)
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim>
+        -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.RTS>)
 else()
     target_link_options(TestRTS PRIVATE
-        -Wl,--whole-archive $<TARGET_FILE:PhoenixSim> $<TARGET_FILE:PhoenixRTS> -Wl,--no-whole-archive)
+        -Wl,--whole-archive $<TARGET_FILE:Phoenix.Sim> $<TARGET_FILE:Phoenix.Sim.RTS> -Wl,--no-whole-archive)
 endif()
 
 # Set the target folder for organization in IDEs

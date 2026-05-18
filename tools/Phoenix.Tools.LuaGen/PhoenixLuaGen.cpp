@@ -34,12 +34,12 @@
 #include <inja/inja.hpp>
 #include <nlohmann/json.hpp>
 
-#include "PhoenixScript/WasmUtility.h"
-#include "PhoenixSim/Reflection/Variant.h"
-#include "PhoenixSim/Reflection/TypeRegistry.h"
-#include "PhoenixSim/Scripting/IScriptBindings.h"
-#include "PhoenixSim/Scripting/ScriptModuleBuilder.h"
-#include "PhoenixSim/Worlds.h"
+#include "Phoenix.Sim.Script/WasmUtility.h"
+#include "Phoenix.Sim/Reflection/Variant.h"
+#include "Phoenix.Sim/Reflection/TypeRegistry.h"
+#include "Phoenix.Sim/Scripting/IScriptBindings.h"
+#include "Phoenix.Sim/Scripting/ScriptModuleBuilder.h"
+#include "Phoenix.Sim/Worlds.h"
 
 using namespace Phoenix;
 using json = nlohmann::json;

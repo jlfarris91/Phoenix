@@ -92,8 +92,8 @@ endif()
 # file loadable by FeatureScript / WasmEnvironment.
 #
 # Build pipeline:
-#   1a. PhoenixWasmGen → host_api.h      (language-agnostic WASM imports)
-#   1b. PhoenixLuaGen  → lua_bridge.c   (Lua stack marshaling)
+#   1a. Phoenix.Tools.WasmGen → host_api.h      (language-agnostic WASM imports)
+#   1b. Phoenix.Tools.LuaGen  → lua_bridge.c   (Lua stack marshaling)
 #   2.  emcc(lua_wasm.c + lua_bridge.c + Lua srcs) → lua.wasm
 #
 # Usage:
@@ -143,26 +143,26 @@ function(add_lua_wasm_script)
         "${_lua_src}/lzio.c"
     )
 
-    # ── Step 1a: Generate host_api.h (PhoenixWasmGen) ──────────────────────
+    # ── Step 1a: Generate host_api.h (Phoenix.Tools.WasmGen) ──────────────────────
     set(HOST_API_H   "${CMAKE_CURRENT_BINARY_DIR}/host_api.h")
     set(LUA_BRIDGE_C "${CMAKE_CURRENT_BINARY_DIR}/lua_bridge.c")
 
     add_custom_command(
         OUTPUT  "${HOST_API_H}"
-        COMMAND $<TARGET_FILE:PhoenixWasmGen>
+        COMMAND $<TARGET_FILE:Phoenix.Tools.WasmGen>
             --host-api "${HOST_API_H}"
-        DEPENDS PhoenixWasmGen GenerateAPI
+        DEPENDS Phoenix.Tools.WasmGen GenerateAPI
         COMMENT "Generating host_api.h from TypeRegistry"
     )
 
-    # ── Step 1b: Generate lua_bridge.c + Phoenix.d.lua (PhoenixLuaGen) ─────────
+    # ── Step 1b: Generate lua_bridge.c + Phoenix.d.lua (Phoenix.Tools.LuaGen) ─────────
     set(LUA_DEFS_FILE "${CMAKE_CURRENT_BINARY_DIR}/Phoenix.d.lua")
     add_custom_command(
         OUTPUT  "${LUA_BRIDGE_C}" "${LUA_DEFS_FILE}"
-        COMMAND $<TARGET_FILE:PhoenixLuaGen>
+        COMMAND $<TARGET_FILE:Phoenix.Tools.LuaGen>
             --lua-bridge "${LUA_BRIDGE_C}"
             --lua-defs   "${LUA_DEFS_FILE}"
-        DEPENDS PhoenixLuaGen GenerateAPI
+        DEPENDS Phoenix.Tools.LuaGen GenerateAPI
         COMMENT "Generating lua_bridge.c from TypeRegistry"
     )
 
