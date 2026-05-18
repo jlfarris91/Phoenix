@@ -14,6 +14,37 @@ uint32 Phoenix::GetCurrentThreadIndex()
     return gCurrentThreadIndex;
 }
 
+namespace
+{
+    // Adaptive caller-side spin: emit a doubling burst of PAUSE/YIELD
+    // instructions for the first few attempts, then fall back to
+    // std::this_thread::yield(). The PAUSE phase keeps wake-up latency in the
+    // nanosecond range on short waits; the yield fallback releases the core
+    // when waits are long. The worker-side idle loop uses the same strategy
+    // (see ThreadPool::Worker).
+    struct SpinBackoff
+    {
+        uint32 Attempts = 0;
+
+        void Tick()
+        {
+            if (Attempts < 8)
+            {
+                const uint32 count = 1u << Attempts;
+                for (uint32 i = 0; i < count; ++i)
+                {
+                    PHX_THREAD_PAUSE();
+                }
+            }
+            else
+            {
+                std::this_thread::yield();
+            }
+            ++Attempts;
+        }
+    };
+}
+
 bool TaskHandle::IsCompleted() const
 {
     return bIsCompleted.load(std::memory_order_acquire);
@@ -22,9 +53,10 @@ bool TaskHandle::IsCompleted() const
 bool TaskHandle::WaitForCompleted(std::chrono::milliseconds maxWaitTime) const
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
+    SpinBackoff backoff;
     while (!IsCompleted())
     {
-        std::this_thread::yield();
+        backoff.Tick();
         if (maxWaitTime.count() > 0 && (PHX_SYS_CLOCK_NOW() - startTime) > maxWaitTime)
         {
             return false;
@@ -68,7 +100,8 @@ void Task::operator()() const
 bool Task::WaitAll(const std::vector<std::shared_ptr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime)
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
-   
+    SpinBackoff backoff;
+
     for (;;)
     {
         bool done = true;
@@ -91,13 +124,14 @@ bool Task::WaitAll(const std::vector<std::shared_ptr<TaskHandle>>& handles, std:
             return false;
         }
 
-        std::this_thread::yield();
+        backoff.Tick();
     }
 }
 
 bool Task::WaitAny(const std::vector<std::shared_ptr<TaskHandle>>& handles, std::chrono::milliseconds maxWaitTime)
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
+    SpinBackoff backoff;
 
     for (;;)
     {
@@ -113,6 +147,8 @@ bool Task::WaitAny(const std::vector<std::shared_ptr<TaskHandle>>& handles, std:
         {
             return false;
         }
+
+        backoff.Tick();
     }
 }
 
@@ -194,9 +230,10 @@ bool ThreadPool::IsEmpty() const
 bool ThreadPool::WaitIdle(std::chrono::milliseconds maxWaitTime) const
 {
     auto startTime = PHX_SYS_CLOCK_NOW();
+    SpinBackoff backoff;
     while (!IsEmpty() || ActiveWorkerCount.load(std::memory_order_acquire) != 0)
     {
-        std::this_thread::yield();
+        backoff.Tick();
         if (maxWaitTime.count() > 0 && (PHX_SYS_CLOCK_NOW() - startTime) > maxWaitTime)
         {
             return false;

@@ -51,7 +51,18 @@
     #define PHX_FORCEINLINE inline __attribute__((always_inline))
     #define _countof(arr) (sizeof(arr) / sizeof((arr)[0]))
     #define sprintf_s(buf, size, ...) snprintf(buf, size, __VA_ARGS__)
-    #define PHX_THREAD_PAUSE() { do {} while(0); }
+    // Emit a real spin-loop hint on POSIX. The previous no-op definition meant
+    // the worker idle path and caller-side waits burned the pipeline on Linux
+    // and macOS. PAUSE/YIELD tells the CPU to back off so SMT siblings can run
+    // and so the memory-order-violation flush on wake is avoided. See §15 of
+    // docs/JobSystemRoadmap.md.
+    #if defined(__x86_64__) || defined(__i386__)
+        #define PHX_THREAD_PAUSE() __builtin_ia32_pause()
+    #elif defined(__aarch64__) || defined(__arm__)
+        #define PHX_THREAD_PAUSE() __asm__ __volatile__("yield" ::: "memory")
+    #else
+        #define PHX_THREAD_PAUSE() do {} while(0)
+    #endif
     #define PHX_DEBUG_BREAK() __builtin_trap()
 #endif
 
