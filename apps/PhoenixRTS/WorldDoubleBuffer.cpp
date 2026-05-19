@@ -9,14 +9,14 @@ void WorldDoubleBuffer::OnSimUpdate(Phoenix::WorldConstRef world)
 
     // If a swap happened, SimView is stale. Patch it before SyncTo so the dirty-page
     // diff in the next step is computed from a correct baseline.
-    // RenderView: both threads read — no write race.
+    // WorldView: both threads read — no write race.
     // SimView: sim-exclusive after the swap — safe to write without a mutex.
     if (SimViewNeedsPatching.load(std::memory_order_acquire))
     {
         SimViewNeedsPatching.store(false, std::memory_order_relaxed);
         if (SimView != nullptr)
         {
-            RenderView->SyncTo(*const_cast<Phoenix::World*>(SimView), PatchSteps);
+            WorldView->SyncTo(*const_cast<Phoenix::World*>(SimView), PatchSteps);
         }
         PatchSteps.clear();
     }
@@ -46,7 +46,7 @@ void WorldDoubleBuffer::OnSimUpdate(Phoenix::WorldConstRef world)
     UpdateCalc.Tick();
 }
 
-void WorldDoubleBuffer::OnRenderFrameStart()
+void WorldDoubleBuffer::Sink()
 {
     if (!NewFrameReady.load(std::memory_order_acquire))
     {
@@ -55,7 +55,7 @@ void WorldDoubleBuffer::OnRenderFrameStart()
 
     {
         std::lock_guard lock(SwapMutex);
-        std::swap(RenderView, SimView);
+        std::swap(WorldView, SimView);
         std::swap(PendingSteps, PatchSteps);
         SimViewNeedsPatching.store(true, std::memory_order_release);
         NewFrameReady.store(false, std::memory_order_relaxed);
@@ -68,9 +68,9 @@ void WorldDoubleBuffer::OnRenderFrameStart()
     }
 }
 
-const Phoenix::World* WorldDoubleBuffer::GetRenderView() const
+const Phoenix::World* WorldDoubleBuffer::GetWorldView() const
 {
-    return RenderView;
+    return WorldView;
 }
 
 bool WorldDoubleBuffer::IsEnabled() const

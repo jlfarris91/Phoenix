@@ -30,7 +30,14 @@ namespace Phoenix
         uint32_t GetId() const;
         Phoenix::Session* GetSession() const;
 
+        // Called on the sim thread to step the session forward.
         void TickSession();
+
+        // Called on the game thread each frame to advance double buffers.
+        void Tick();
+
+        // Returns the stable world view for a given world ID, or null if not yet ready.
+        const Phoenix::World* GetWorldView(Phoenix::FName worldId) const;
 
         PHX_DECLARE_MULTICAST_DELEGATE(FPostWorldUpdate, SessionInstance*, Phoenix::WorldConstRef);
         FPostWorldUpdate OnPostWorldUpdate;

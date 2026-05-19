@@ -149,6 +149,22 @@ void SessionInstance::SessionWorker(SessionInstance* instance)
     instance->bSessionThreadExited = true;
 }
 
+void SessionInstance::Tick()
+{
+    for (auto& [worldId, wdb] : WorldSinks)
+    {
+        wdb->Sink();
+    }
+}
+
+const Phoenix::World* SessionInstance::GetWorldView(Phoenix::FName worldId) const
+{
+    auto it = WorldSinks.find(worldId);
+    if (it == WorldSinks.end())
+        return nullptr;
+    return it->second->GetWorldView();
+}
+
 void SessionInstance::OnPostWorldUpdateImpl(Phoenix::WorldConstRef world)
 {
     WorldDoubleBuffer* worldSink = nullptr;

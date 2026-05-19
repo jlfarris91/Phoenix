@@ -96,6 +96,11 @@ add_subdirectory(src/Phoenix.Runtime)
 
 add_subdirectory(src/Phoenix.Editor.PropertyGrid)
 add_subdirectory(src/Phoenix.Renderer)
+add_subdirectory(src/Phoenix.Scene)
+
+if(NOT EMSCRIPTEN)
+    add_subdirectory(src/Phoenix.Scene.EnTT)
+endif()
 
 if(PE_BUILD_STANDALONE)
     add_subdirectory(src/Phoenix.Editor.ImGui)
