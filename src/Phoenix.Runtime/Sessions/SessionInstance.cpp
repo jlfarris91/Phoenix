@@ -1,6 +1,6 @@
 #include "SessionInstance.h"
 
-#include "../Worlds/WorldDoubleBuffer.h"
+#include "../Worlds/WorldInstance.h"
 #include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 
@@ -151,42 +151,36 @@ void SessionInstance::SessionWorker(SessionInstance* instance)
 
 void SessionInstance::Tick()
 {
-    for (auto& [worldId, wdb] : WorldSinks)
+    for (auto& [worldId, world] : Worlds)
     {
-        wdb->Sink();
+        world->Sink();
     }
+}
+
+WorldInstance* SessionInstance::GetWorldInstance(Phoenix::FName worldId) const
+{
+    auto it = Worlds.find(worldId);
+    if (it == Worlds.end())
+        return nullptr;
+    return it->second.get();
 }
 
 const Phoenix::World* SessionInstance::GetWorldView(Phoenix::FName worldId) const
 {
-    auto it = WorldSinks.find(worldId);
-    if (it == WorldSinks.end())
-        return nullptr;
-    return it->second->GetWorldView();
+    const WorldInstance* world = GetWorldInstance(worldId);
+    return world ? world->GetWorldView() : nullptr;
 }
 
 void SessionInstance::OnPostWorldUpdateImpl(Phoenix::WorldConstRef world)
 {
-    WorldDoubleBuffer* worldSink = nullptr;
-
-    auto iter = WorldSinks.find(world.GetId());
-    if (iter != WorldSinks.end())
+    auto it = Worlds.find(world.GetId());
+    if (it == Worlds.end())
     {
-        worldSink = iter->second.get();
-    }
-    else
-    {
-        auto result = WorldSinks.emplace(world.GetId(), std::make_unique<WorldDoubleBuffer>());
-        if (result.second)
-        {
-            worldSink = result.first->second.get();
-        }
+        auto result = Worlds.emplace(world.GetId(), std::make_unique<WorldInstance>(world.GetId()));
+        it = result.first;
     }
 
-    if (worldSink)
-    {
-        worldSink->OnSimUpdate(world);
-    }
+    it->second->OnSimUpdate(world);
 
     OnPostWorldUpdate.Broadcast(this, world);
 }

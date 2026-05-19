@@ -10,7 +10,7 @@
 
 namespace Phoenix
 {
-    class WorldDoubleBuffer;
+    class WorldInstance;
 
     class SessionInstance : public std::enable_shared_from_this<SessionInstance>
     {
@@ -36,6 +36,9 @@ namespace Phoenix
         // Called on the game thread each frame to advance double buffers.
         void Tick();
 
+        // Returns the WorldInstance for a given world ID, or null if not yet created.
+        WorldInstance* GetWorldInstance(Phoenix::FName worldId) const;
+
         // Returns the stable world view for a given world ID, or null if not yet ready.
         const Phoenix::World* GetWorldView(Phoenix::FName worldId) const;
 
@@ -54,7 +57,7 @@ namespace Phoenix
 
         Phoenix::SessionCtorArgs SessionArgs;
         std::shared_ptr<Phoenix::Session> Session;
-        std::unordered_map<Phoenix::FName, std::unique_ptr<WorldDoubleBuffer>> WorldSinks;
+        std::unordered_map<Phoenix::FName, std::unique_ptr<WorldInstance>> Worlds;
 
         std::unique_ptr<std::thread> SessionThread;
         std::atomic<bool> bSessionThreadWantsExit = false;

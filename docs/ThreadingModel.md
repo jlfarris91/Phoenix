@@ -50,19 +50,39 @@ The render thread never touches a `World`. It only ever sees a `RenderScene` —
 
 ---
 
+## WorldInstance
+
+`src/Phoenix.Runtime/Worlds/WorldInstance.h`
+
+`WorldInstance` owns the `WorldDoubleBuffer` for one world and exposes the game-thread interface for it. Parallel to `SessionInstance` for sessions.
+
+```cpp
+FName             GetId() const;
+void              OnSimUpdate(WorldConstRef world);  // called by SessionInstance internals
+void              Sink();                            // game thread — advance the buffer
+const World*      GetWorldView() const;              // game thread — stable read view
+double            GetUpdateRate() const;
+uint32            GetAccumulatedDirtyPageCount() const;
+```
+
+`SessionInstance` owns `unordered_map<FName, unique_ptr<WorldInstance>>` and creates instances lazily on the first sim update for each world.
+
 ## SessionInstance Game-Thread API
 
 `src/Phoenix.Runtime/Sessions/SessionInstance.h`
 
 ```cpp
-// Called on game thread each frame — advances all WorldDoubleBuffers for this session.
+// Called on game thread each frame — advances all WorldInstances for this session.
 void Tick();
 
-// Returns the stable world view for a given world ID, or null if not yet ready.
+// Returns the WorldInstance for a given world ID, or null if not yet created.
+WorldInstance* GetWorldInstance(FName worldId) const;
+
+// Convenience: returns the stable world view for a given world ID, or null if not yet ready.
 const Phoenix::World* GetWorldView(FName worldId) const;
 ```
 
-`Tick()` iterates all `WorldSinks` and calls `wdb.Sink()` on each. `GetWorldView` returns `wdb.GetWorldView()` for the named world.
+`Tick()` iterates all `Worlds` and calls `world.Sink()` on each. `GetWorldInstance` gives direct access to the `WorldInstance` for richer queries (update rate, dirty page count, etc.).
 
 **Game-thread loop (per session, per frame):**
 ```cpp
@@ -70,6 +90,16 @@ session.Tick();
 if (const World* world = session.GetWorldView("TestWorld"_n))
 {
     enttScene.Gather(*world);   // → RenderScene
+}
+```
+
+Or via `WorldInstance` directly:
+```cpp
+session.Tick();
+if (WorldInstance* wi = session.GetWorldInstance("TestWorld"_n))
+{
+    if (const World* world = wi->GetWorldView())
+        enttScene.Gather(*world);
 }
 ```
 
