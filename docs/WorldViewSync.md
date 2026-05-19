@@ -1,6 +1,8 @@
 # World View Sync
 
-The render thread needs a stable snapshot of simulation state to read while the sim thread advances to the next frame. This doc explores the problem, explains why the naive approaches fail, and documents the strategy we landed on.
+The game thread needs a stable snapshot of simulation state to read while the sim thread advances to the next frame. This doc explores the problem, explains why the naive approaches fail, and documents the strategy we landed on.
+
+> **Terminology note:** This doc uses "render thread" in some places as a historical artifact. The correct term is "game thread" — the thread that runs entity sync, scene gathering, and game logic. The render thread only ever sees `RenderScene` primitives and has no concept of `World`. See [ThreadingModel.md](ThreadingModel.md).
 
 ---
 
