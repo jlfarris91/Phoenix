@@ -16,8 +16,8 @@ WASM sandbox (`Phoenix.Sim.Script` / `Phoenix.Sim.Lua`).
 ## Build pipeline
 
 ```
-Phoenix.Tools.WasmGen  →  host_api.h      (WASM import declarations)
-Phoenix.Tools.LuaGen   →  lua_bridge.c    (Lua ↔ host marshaling)
+Phoenix.Build.WasmGen  →  host_api.h      (WASM import declarations)
+Phoenix.Build.LuaGen   →  lua_bridge.c    (Lua ↔ host marshaling)
 emcc(lua_wasm.c + lua_bridge.c + Lua 5.4) →  lua.wasm
 ```
 

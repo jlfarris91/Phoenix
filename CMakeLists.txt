@@ -102,12 +102,12 @@ if(PE_BUILD_STANDALONE)
     add_subdirectory(apps/PhoenixEditor)
 endif()
 
-# ── Tools (code generators — not needed for WASM builds) ─────────────────────
+# ── Build tools (code generators — not needed for WASM builds) ───────────────
 
 if(NOT EMSCRIPTEN)
-    add_subdirectory(src/Phoenix.Tools.APIGen)
-    add_subdirectory(src/Phoenix.Tools.WasmGen)
-    add_subdirectory(src/Phoenix.Tools.LuaGen)
+    add_subdirectory(src/Phoenix.Build.APIGen)
+    add_subdirectory(src/Phoenix.Build.WasmGen)
+    add_subdirectory(src/Phoenix.Build.LuaGen)
     add_subdirectory(build/LuaRuntime)
 endif()
 

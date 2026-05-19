@@ -1,4 +1,4 @@
-# ── Phoenix.Tools.LuaGen ─────────────────────────────────────────────────────────────
+# ── Phoenix.Build.LuaGen ─────────────────────────────────────────────────────────────
 #
 # Native executable that walks the live TypeRegistry and emits:
 #   lua_bridge.c — Lua stack-marshaling wrappers + register_phoenix_api()
@@ -9,15 +9,15 @@
 #   /WHOLEARCHIVE forces every .obj from each static library to be included so
 #   every PHX_DEFINE_TYPE static initializer runs and populates the TypeRegistry.
 
-add_executable(Phoenix.Tools.LuaGen
+add_executable(Phoenix.Build.LuaGen
     "${CMAKE_CURRENT_LIST_DIR}/PhoenixLuaGen.cpp"
 )
 
-target_include_directories(Phoenix.Tools.LuaGen PRIVATE
+target_include_directories(Phoenix.Build.LuaGen PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 
-target_link_libraries(Phoenix.Tools.LuaGen PRIVATE
+target_link_libraries(Phoenix.Build.LuaGen PRIVATE
     Phoenix.Sim.RTS
     Phoenix.Sim.Physics
     Phoenix.Sim.Steering
@@ -34,7 +34,7 @@ target_link_libraries(Phoenix.Tools.LuaGen PRIVATE
 )
 
 if(MSVC)
-    target_link_options(Phoenix.Tools.LuaGen PRIVATE
+    target_link_options(Phoenix.Build.LuaGen PRIVATE
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.RTS>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Physics>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Steering>
@@ -49,7 +49,7 @@ if(MSVC)
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Script>
     )
 elseif(APPLE)
-    target_link_options(Phoenix.Tools.LuaGen PRIVATE
+    target_link_options(Phoenix.Build.LuaGen PRIVATE
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.RTS>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Physics>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Steering>
@@ -64,7 +64,7 @@ elseif(APPLE)
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Script>
     )
 else()
-    target_link_options(Phoenix.Tools.LuaGen PRIVATE
+    target_link_options(Phoenix.Build.LuaGen PRIVATE
         -Wl,--whole-archive
         $<TARGET_FILE:Phoenix.Sim.RTS>
         $<TARGET_FILE:Phoenix.Sim.Physics>
@@ -82,4 +82,4 @@ else()
     )
 endif()
 
-set_property(TARGET Phoenix.Tools.LuaGen PROPERTY FOLDER "Tools")
+set_property(TARGET Phoenix.Build.LuaGen PROPERTY FOLDER "Build")

@@ -1,4 +1,4 @@
-# ── Phoenix.Tools.WasmGen ────────────────────────────────────────────────────────────
+# ── Phoenix.Build.WasmGen ────────────────────────────────────────────────────────────
 #
 # Native executable that walks the live TypeRegistry and emits:
 #   host_api.h   — language-agnostic WASM import declarations
@@ -9,11 +9,11 @@
 #   /WHOLEARCHIVE forces every .obj from each static library to be included so
 #   every PHX_DEFINE_TYPE static initializer runs and populates the TypeRegistry.
 
-add_executable(Phoenix.Tools.WasmGen
+add_executable(Phoenix.Build.WasmGen
     "${CMAKE_CURRENT_LIST_DIR}/PhoenixWasmGen.cpp"
 )
 
-target_include_directories(Phoenix.Tools.WasmGen PRIVATE
+target_include_directories(Phoenix.Build.WasmGen PRIVATE
     "${CMAKE_SOURCE_DIR}/src"
 )
 
@@ -21,7 +21,7 @@ target_include_directories(Phoenix.Tools.WasmGen PRIVATE
 # PHX_DEFINE_TYPE static initializer runs and populates the TypeRegistry.
 # Without this, the linker dead-strips registration TUs that are not referenced
 # by any symbol in PhoenixWasmGen.cpp, causing types to be absent from the output.
-target_link_libraries(Phoenix.Tools.WasmGen PRIVATE
+target_link_libraries(Phoenix.Build.WasmGen PRIVATE
     Phoenix.Sim.RTS
     Phoenix.Sim.Physics
     Phoenix.Sim.Steering
@@ -38,7 +38,7 @@ target_link_libraries(Phoenix.Tools.WasmGen PRIVATE
 )
 
 if(MSVC)
-    target_link_options(Phoenix.Tools.WasmGen PRIVATE
+    target_link_options(Phoenix.Build.WasmGen PRIVATE
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.RTS>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Physics>
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Steering>
@@ -53,7 +53,7 @@ if(MSVC)
         /WHOLEARCHIVE:$<TARGET_FILE:Phoenix.Sim.Script>
     )
 elseif(APPLE)
-    target_link_options(Phoenix.Tools.WasmGen PRIVATE
+    target_link_options(Phoenix.Build.WasmGen PRIVATE
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.RTS>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Physics>
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Steering>
@@ -68,7 +68,7 @@ elseif(APPLE)
         -Wl,-force_load,$<TARGET_FILE:Phoenix.Sim.Script>
     )
 else()
-    target_link_options(Phoenix.Tools.WasmGen PRIVATE
+    target_link_options(Phoenix.Build.WasmGen PRIVATE
         -Wl,--whole-archive
         $<TARGET_FILE:Phoenix.Sim.RTS>
         $<TARGET_FILE:Phoenix.Sim.Physics>
@@ -86,4 +86,4 @@ else()
     )
 endif()
 
-set_property(TARGET Phoenix.Tools.WasmGen PROPERTY FOLDER "Tools")
+set_property(TARGET Phoenix.Build.WasmGen PROPERTY FOLDER "Build")
