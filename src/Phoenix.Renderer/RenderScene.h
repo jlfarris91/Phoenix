@@ -24,7 +24,8 @@ namespace Phoenix::Renderer
 
     struct RenderScene
     {
-        SceneView View;
+        SceneView     View;
+        HRenderTarget Target;    // invalid = window backbuffer
         std::vector<RenderCommand> Commands;
 
         void Clear();

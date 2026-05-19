@@ -52,6 +52,15 @@ namespace Phoenix::Renderer
         bool operator==(const HMesh2D&) const = default;
     };
 
+    // Opaque handle to an off-screen render target. The backend owns the memory.
+    struct HRenderTarget
+    {
+        uint32_t Id = 0;
+
+        bool IsValid() const { return Id != 0; }
+        bool operator==(const HRenderTarget&) const = default;
+    };
+
     struct Vertex2D
     {
         Vec2f   Pos;
