@@ -94,6 +94,8 @@ add_subdirectory(src/Phoenix.App)
 add_subdirectory(src/Phoenix.Editor)
 add_subdirectory(src/Phoenix.Runtime)
 
+add_subdirectory(src/Phoenix.Editor.PropertyGrid)
+
 if(PE_BUILD_STANDALONE)
     add_subdirectory(src/Phoenix.Editor.ImGui)
     add_subdirectory(src/Phoenix.Runtime.SDL3)
