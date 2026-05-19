@@ -95,10 +95,11 @@ add_subdirectory(src/Phoenix.Editor)
 add_subdirectory(src/Phoenix.Runtime)
 
 add_subdirectory(src/Phoenix.Editor.PropertyGrid)
+add_subdirectory(src/Phoenix.Renderer)
 
 if(PE_BUILD_STANDALONE)
     add_subdirectory(src/Phoenix.Editor.ImGui)
-    add_subdirectory(src/Phoenix.Runtime.SDL3)
+    add_subdirectory(src/Phoenix.Renderer.SDL3)
     add_subdirectory(apps/PhoenixEditor)
 endif()
 
