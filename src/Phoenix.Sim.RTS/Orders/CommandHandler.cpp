@@ -11,14 +11,14 @@ Phoenix::FName Phoenix::RTS::ICommandHandler::GetCommandId() const
 
 void Phoenix::RTS::ICommandHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
-    IService::Initialize(session);
+    ISessionService::Initialize(session);
     OrdersFeature = session->GetFeature<FeatureOrders>();
 }
 
 void Phoenix::RTS::ICommandHandler::Shutdown()
 {
     OrdersFeature.reset();
-    IService::Shutdown();
+    ISessionService::Shutdown();
 }
 
 bool Phoenix::RTS::ICommandHandler::IgnoreCommand(

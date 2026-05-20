@@ -151,7 +151,7 @@ void FeatureAbilities::Initialize(const std::shared_ptr<Phoenix::Session>& sessi
     IFeature::Initialize(session);
 
     std::vector<std::shared_ptr<IAbilityHandler>> handlers;
-    Session->GetServices2<IAbilityHandler>(handlers);
+    Session->ResolveServices<IAbilityHandler>(handlers);
 
     for (const std::shared_ptr<IAbilityHandler>& handler : handlers)
     {

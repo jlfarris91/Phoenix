@@ -7,15 +7,14 @@
 #include "Phoenix/Containers/Optional.h"
 #include "Phoenix.Sim/Features.h"
 #include "Phoenix/FPSCalc.h"
-#include "Phoenix.Sim/Services/ServiceLocator.h"
+#include "Phoenix/Services/ServiceContainer.h"
+#include "Phoenix/Services/ServiceContainerBuilder.h"
 #include "Phoenix.Sim/Worlds.h"
 
 namespace Phoenix
 {
-    class ServiceContainer;
     class WorldManager;
     class IFeature;
-    class ServiceContainerBuilder;
     class IConfigService;
 
     struct PHOENIX_SIM_API SessionCtorArgs
@@ -29,7 +28,7 @@ namespace Phoenix
         std::string BinDirectory;
         TOptional<nlohmann::json> CustomConfig;
 
-        std::shared_ptr<ServiceContainerBuilder> ServiceContainerBuilder;
+        std::shared_ptr<Phoenix::ServiceContainerBuilder> ServiceContainerBuilder;
 
         PostWorldUpdateDelegate OnPostWorldUpdate;
     };
@@ -49,7 +48,7 @@ namespace Phoenix
 
     class PHOENIX_SIM_API Session : public std::enable_shared_from_this<Session>
                                   , public BlockBufferOwner<Session>
-                                  , public ServiceLocator<Session>
+                                  , public Phoenix::ServiceContainerOwner
     {
     public:
 
@@ -85,7 +84,6 @@ namespace Phoenix
 
         FeatureSet* GetFeatureSet() const;
         WorldManager* GetWorldManager() const;
-        ServiceContainer* GetServiceContainer() const;
 
         // Returns the absolute directory to the session data.
         std::string GetDataDirectory() const;
@@ -95,12 +93,6 @@ namespace Phoenix
 
         // Returns the absolute directory for a world.
         std::string GetWorldDirectory(const std::string& worldType) const;
-
-        // Begin ServiceLocator implementation
-        std::shared_ptr<IService> GetService(const FName& typeId) const override;
-        uint32 GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const override;
-        const std::vector<std::shared_ptr<IService>>& GetServices() const override;
-        // End ServiceLocator implementation
 
     private:
 
@@ -117,7 +109,6 @@ namespace Phoenix
         std::shared_ptr<IConfigService> ConfigService;
         std::shared_ptr<FeatureSet> FeatureSet;
         std::shared_ptr<WorldManager> WorldManager;
-        std::shared_ptr<ServiceContainer> ServiceContainer;
 
         std::vector<std::tuple<simtime_t, Action>> ActionQueue;
         std::shared_mutex ActionQueueMutex;

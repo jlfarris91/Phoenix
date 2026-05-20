@@ -5,8 +5,7 @@
 
 #include "AppService.h"
 #include "Phoenix/Flags.h"
-#include "Services/ServiceContainer.h"
-#include "Services/ServiceContainerBuilder.h"
+#include "Phoenix/Services/ServiceContainerBuilder.h"
 
 using namespace Phoenix;
 

@@ -11,14 +11,14 @@ Phoenix::FName Phoenix::RTS::IEffectHandler::GetEffectTypeId() const
 
 void Phoenix::RTS::IEffectHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
-    IService::Initialize(session);
+    ISessionService::Initialize(session);
     EffectsFeature = session->GetFeature<FeatureEffects>();
 }
 
 void Phoenix::RTS::IEffectHandler::Shutdown()
 {
     EffectsFeature.reset();
-    IService::Shutdown();
+    ISessionService::Shutdown();
 }
 
 bool Phoenix::RTS::IEffectHandler::Execute(WorldRef world, const EffectExecuteContext& context) const

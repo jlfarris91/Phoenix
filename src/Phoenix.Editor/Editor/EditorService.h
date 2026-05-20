@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "EditorContextObject.h"
-#include "Services/Service.h"
+#include "Phoenix/Services/IService.h"
 
 namespace Phoenix
 {

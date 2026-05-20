@@ -6,7 +6,7 @@
 #include "EditorService.h"
 #include "Application/Application.h"
 #include "Application/AppService.h"
-#include "Services/ServiceContainer.h"
+#include "Phoenix/Services/ServiceContainer.h"
 #include "UI/Docking/DockManager.h"
 #include "UI/Docking/DockTab.h"
 #include "UI/Menu/MenuManager.h"

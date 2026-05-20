@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 
 namespace Phoenix
 {
-    class PHOENIX_SIM_API IStringService : IService
+    class PHOENIX_SIM_API IStringService : public ISessionService
     {
-        PHX_DECLARE_TYPE(IStringService, IService)
+        PHX_DECLARE_TYPE(IStringService, ISessionService)
 
     public:
 

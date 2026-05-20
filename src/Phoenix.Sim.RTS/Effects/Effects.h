@@ -4,7 +4,7 @@
 #include "Phoenix.Sim.ECS/EntityId.h"
 #include "Phoenix/FixedPoint/FixedVector.h"
 #include "Phoenix/Name.h"
-#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
@@ -51,9 +51,9 @@ namespace Phoenix::RTS
         std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
-    class PHOENIX_RTS_API IEffectHandler : public IService
+    class PHOENIX_RTS_API IEffectHandler : public ISessionService
     {
-        PHX_DECLARE_TYPE(IEffectHandler, IService)
+        PHX_DECLARE_TYPE(IEffectHandler, ISessionService)
 
     public:
 

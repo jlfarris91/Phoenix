@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix/Name.h"
-#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
@@ -27,9 +27,9 @@ namespace Phoenix::RTS
         std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
-    class PHOENIX_RTS_API IResponseHandler : public IService
+    class PHOENIX_RTS_API IResponseHandler : public ISessionService
     {
-        PHX_DECLARE_TYPE(IResponseHandler, IService)
+        PHX_DECLARE_TYPE(IResponseHandler, ISessionService)
         
     public:
 

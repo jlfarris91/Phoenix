@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Phoenix/Reflection/Registration.h"
+#include <memory>
+
+#include "Phoenix/Services/IService.h"
 #include "Phoenix.Sim/WorldsFwd.h"
 
 namespace Phoenix
@@ -10,14 +12,13 @@ namespace Phoenix
     struct WorldLayoutContext;
     struct BlockBufferConfigBuilder;
 
-    class PHOENIX_SIM_API IService : public std::enable_shared_from_this<IService>
+    class PHOENIX_SIM_API ISessionService : public Phoenix::IService
     {
-        PHX_DECLARE_TYPE_INTERFACE(IService)
+        PHX_DECLARE_TYPE_DERIVED(ISessionService, Phoenix::IService)
 
     public:
-        virtual ~IService() = default;
+        virtual ~ISessionService() = default;
 
-        // Gets the session that this service belongs to.
         Session* GetSession() const;
 
         virtual void OnSessionLayout(const SessionLayoutContext& context, BlockBufferConfigBuilder& builder);
@@ -29,7 +30,6 @@ namespace Phoenix
         virtual void OnWorldShutdown(WorldRef world);
 
     protected:
-
         std::shared_ptr<Session> Session;
     };
 }

@@ -560,7 +560,7 @@ void FeatureEffects::Initialize(const std::shared_ptr<Phoenix::Session>& session
     RegisterEffectHandler<EffectSetHandler>();
 
     std::vector<std::shared_ptr<IEffectHandler>> effectHandlers;
-    Session->GetServices2<IEffectHandler>(effectHandlers);
+    Session->ResolveServices<IEffectHandler>(effectHandlers);
 
     for (const auto& effectHandler : effectHandlers)
     {
@@ -568,7 +568,7 @@ void FeatureEffects::Initialize(const std::shared_ptr<Phoenix::Session>& session
     }
 
     std::vector<std::shared_ptr<IResponseHandler>> responseHandlers;
-    Session->GetServices2<IResponseHandler>(responseHandlers);
+    Session->ResolveServices<IResponseHandler>(responseHandlers);
 
     for (const auto& responseHandler : responseHandlers)
     {

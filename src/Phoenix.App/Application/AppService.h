@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AppContextObject.h"
-#include "Services/Service.h"
+#include "Phoenix/Services/IService.h"
 
 namespace Phoenix
 {

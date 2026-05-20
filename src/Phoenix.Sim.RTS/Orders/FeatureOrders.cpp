@@ -299,7 +299,7 @@ void FeatureOrders::Initialize(const std::shared_ptr<Phoenix::Session>& session)
     IFeature::Initialize(session);
 
     std::vector<std::shared_ptr<ICommandHandler>> handlers;
-    Session->GetServices2<ICommandHandler>(handlers);
+    Session->ResolveServices<ICommandHandler>(handlers);
 
     for (const std::shared_ptr<ICommandHandler>& handler : handlers)
     {

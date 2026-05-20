@@ -4,7 +4,7 @@
 
 #include "Phoenix/Name.h"
 #include "Phoenix/Platform.h"
-#include "Services/Service.h"
+#include "Services/ISessionService.h"
 
 namespace Phoenix
 {
@@ -76,9 +76,9 @@ namespace Phoenix
         std::unordered_map<FName, WorldJsonConfig> WorldConfigs;
     };
 
-    class PHOENIX_SIM_API IConfigService : public IService
+    class PHOENIX_SIM_API IConfigService : public ISessionService
     {
-        PHX_DECLARE_TYPE_DERIVED(IConfigService, IService)
+        PHX_DECLARE_TYPE_DERIVED(IConfigService, ISessionService)
 
         virtual bool LoadConfig(const std::filesystem::path& dataDir, const std::string& configName) = 0;
         virtual const SessionJsonConfig& GetSessionConfig() const = 0;

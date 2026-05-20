@@ -11,6 +11,7 @@
 #include "Phoenix/Flags.h"
 #include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 
 using namespace Phoenix;
 
@@ -185,7 +186,7 @@ WorldManager::WorldManager(const WorldManagerCtorArgs& args)
     , FeatureSet(args.FeatureSet)
     , OnPostWorldUpdate(args.OnPostWorldUpdate)
 {
-    ConfigService = Session->GetServiceAs<IConfigService>();
+    ConfigService = Session->ResolveService<IConfigService>();
 }
 
 void WorldManager::Shutdown()
@@ -406,12 +407,11 @@ void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
         feature->OnWorldInitialize(world);
     }
 
-    for (const std::shared_ptr<IService>& service : Session->GetServices())
+    for (const auto& service : Session->GetServiceContainer()->GetInstances())
     {
-        if (!IsA<IFeature>(service))
-        {
-            service->OnWorldInitialize(world);
-        }
+        if (IsA<IFeature>(service)) continue;
+        if (auto sessionService = Cast<ISessionService>(service))
+            sessionService->OnWorldInitialize(world);
     }
 
     SetFlagRef(world.Flags, EWorldFlags::Initialized, true);
@@ -427,12 +427,11 @@ void WorldManager::ShutdownWorld(WorldRef world) const
         feature->OnWorldShutdown(world);
     }
 
-    for (const std::shared_ptr<IService>& service : Session->GetServices())
+    for (const auto& service : Session->GetServiceContainer()->GetInstances())
     {
-        if (!IsA<IFeature>(service))
-        {
-            service->OnWorldShutdown(world);
-        }
+        if (IsA<IFeature>(service)) continue;
+        if (auto sessionService = Cast<ISessionService>(service))
+            sessionService->OnWorldShutdown(world);
     }
 
     SetFlagRef(world.Flags, EWorldFlags::ShutDown, true);

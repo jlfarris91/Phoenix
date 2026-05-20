@@ -1,8 +1,7 @@
 #pragma once
 
 #include "ApplicationFlags.h"
-#include "Services/ServiceContainer.h"
-#include "Services/ServiceLocator.h"
+#include "Phoenix/Services/ServiceContainer.h"
 
 namespace Phoenix
 {

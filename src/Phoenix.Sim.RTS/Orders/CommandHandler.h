@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Phoenix/Platform.h"
-#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 
 #include "Phoenix.Sim.RTS/Orders/Commands.h"
 #include "Phoenix.Sim.RTS/Orders/Orders.h"
@@ -25,9 +25,9 @@ namespace Phoenix::RTS
         std::shared_ptr<const LDS::ILDSQueryContext> LdsQueryContext;
     };
 
-    class PHOENIX_RTS_API ICommandHandler : public IService
+    class PHOENIX_RTS_API ICommandHandler : public ISessionService
     {
-        PHX_DECLARE_TYPE(ICommandHandler, IService)
+        PHX_DECLARE_TYPE(ICommandHandler, ISessionService)
 
     public:
 

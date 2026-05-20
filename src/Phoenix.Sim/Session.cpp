@@ -3,7 +3,8 @@
 #include "Phoenix.Sim/Config.h"
 #include "Phoenix.Sim/Features.h"
 #include "Phoenix/Profiling.h"
-#include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
+#include "Phoenix/Services/ServiceContainerBuilder.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 #include "Phoenix.Sim/Worlds.h"
 
 #include <algorithm>
@@ -15,7 +16,7 @@ Session::~Session()
 {
     FeatureSet.reset();
     WorldManager.reset();
-    ServiceContainer.reset();
+    Container.reset();
 }
 
 std::shared_ptr<Session> Session::Create(const SessionCtorArgs& args)
@@ -27,23 +28,21 @@ std::shared_ptr<Session> Session::Create(const SessionCtorArgs& args)
 
     if (args.ServiceContainerBuilder)
     {
-        (void)args.ServiceContainerBuilder->RegisterService<DefaultConfigService>().AsInterfaces();
-        session->ServiceContainer = args.ServiceContainerBuilder->Build();
+        (void)args.ServiceContainerBuilder->Register<DefaultConfigService>().AsInterfaces();
+        session->Container = args.ServiceContainerBuilder->Build();
     }
     else
     {
-        // TODO (jfarris): move default services somewhere else? Allow users to override default services?
         ServiceContainerBuilder builder;
-        (void)builder.RegisterService<DefaultConfigService>().AsInterfaces();
-
-        session->ServiceContainer = builder.Build();
+        (void)builder.Register<DefaultConfigService>().AsInterfaces();
+        session->Container = builder.Build();
     }
 
-    session->ConfigService = session->ServiceContainer->GetServiceAs<IConfigService>();
+    session->ConfigService = session->Container->ResolveService<IConfigService>();
     session->ConfigService->LoadConfig(args.DataDirectory, args.ConfigName);
 
     FeatureSetCtorArgs featureSetCtorArgs;
-    session->ServiceContainer->GetServices2<IFeature>(featureSetCtorArgs.Features);
+    session->Container->ResolveServices<IFeature>(featureSetCtorArgs.Features);
     session->FeatureSet = std::make_shared<Phoenix::FeatureSet>(featureSetCtorArgs);
 
     WorldManagerCtorArgs worldManagerArgs;
@@ -82,9 +81,10 @@ void Session::Initialize()
 {
     LoadConfig();
 
-    for (const std::shared_ptr<IService>& service : ServiceContainer->GetServices())
+    for (const auto& service : Container->GetInstances())
     {
-        service->Initialize(shared_from_this());
+        if (auto sessionService = Cast<ISessionService>(service))
+            sessionService->Initialize(shared_from_this());
     }
 
     StartTime = PHX_SYS_CLOCK_NOW();
@@ -97,9 +97,11 @@ void Session::Shutdown()
 {
     WorldManager->Shutdown();
 
-    for (const std::shared_ptr<IService>& service : ServiceContainer->GetServices())
+    auto instances = Container->GetInstances();
+    for (const auto& service : instances)
     {
-        service->Shutdown();
+        if (auto sessionService = Cast<ISessionService>(service))
+            sessionService->Shutdown();
     }
 }
 
@@ -209,10 +211,6 @@ WorldManager* Session::GetWorldManager() const
     return WorldManager.get();
 }
 
-ServiceContainer* Session::GetServiceContainer() const
-{
-    return ServiceContainer.get();
-}
 
 std::string Session::GetDataDirectory() const
 {
@@ -227,21 +225,6 @@ std::string Session::GetWorldsDirectory() const
 std::string Session::GetWorldDirectory(const std::string& worldType) const
 {
     return (DataDirectory / "Worlds" / worldType).generic_string();
-}
-
-std::shared_ptr<IService> Session::GetService(const FName& typeId) const
-{
-    return ServiceContainer->GetService(typeId);
-}
-
-uint32 Session::GetServices(const FName& typeId, std::vector<std::shared_ptr<IService>>& outServices) const
-{
-    return ServiceContainer->GetServices(typeId, outServices);
-}
-
-const std::vector<std::shared_ptr<IService>>& Session::GetServices() const
-{
-    return ServiceContainer->GetServices();
 }
 
 void Session::LoadConfig() const

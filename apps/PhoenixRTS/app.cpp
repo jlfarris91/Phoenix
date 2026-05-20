@@ -38,7 +38,7 @@
 #include <Phoenix.Sim.ECS/FeatureECS.h>
 #include <Phoenix.Sim.Tasks/FeatureTask.h>
 #include <Phoenix.Sim.Nav/FeatureNavigation.h>
-#include "Phoenix.Sim/Services/ServiceContainerBuilder.h"
+#include "Phoenix/Services/ServiceContainerBuilder.h"
 #include <Phoenix.Sim.Physics/FeaturePhysics.h>
 #include <Phoenix.Sim.Physics/BodyComponent.h>
 #include <Phoenix.Sim.Steering/FeatureSteering.h>
@@ -199,35 +199,35 @@ void InitSession()
 
     // Register features
     // ReSharper disable CppExpressionWithoutSideEffects
-    serviceContainerBuilder->RegisterService<FeatureString>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureDebug>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureBlackboard>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureLDS>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureECS>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureTask>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureNavigation>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeaturePhysics>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureSteering>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureLua>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<FeatureScript>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::FeatureUnit>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::FeatureAbilities>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::FeatureEffects>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::FeatureOrders>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::FeatureSelection>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::FeatureProjectiles>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureString>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureDebug>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureBlackboard>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureLDS>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureECS>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureTask>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureNavigation>().AsInterfaces();
+    serviceContainerBuilder->Register<FeaturePhysics>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureSteering>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureLua>().AsInterfaces();
+    serviceContainerBuilder->Register<FeatureScript>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::FeatureUnit>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::FeatureAbilities>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::FeatureEffects>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::FeatureOrders>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::FeatureSelection>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::FeatureProjectiles>().AsInterfaces();
 
     // Register ability handlers
-    serviceContainerBuilder->RegisterService<RTS::MoveAbilityHandler>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::AttackAbilityHandler>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::MoveAbilityHandler>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::AttackAbilityHandler>().AsInterfaces();
 
     // Register effect handlers
-    serviceContainerBuilder->RegisterService<RTS::EffectDamageHandler>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::EffectLaunchProjectileHandler>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::EffectDamageHandler>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::EffectLaunchProjectileHandler>().AsInterfaces();
 
     // Register response handlers
-    serviceContainerBuilder->RegisterService<RTS::ResponseHandlerBase>().AsInterfaces();
-    serviceContainerBuilder->RegisterService<RTS::ResponseDamageHandler>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::ResponseHandlerBase>().AsInterfaces();
+    serviceContainerBuilder->Register<RTS::ResponseDamageHandler>().AsInterfaces();
 
     SessionCtorArgs sessionArgs;
     sessionArgs.DataDirectory = "./Data";

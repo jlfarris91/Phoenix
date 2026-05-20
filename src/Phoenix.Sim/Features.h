@@ -4,7 +4,7 @@
 
 #include "Phoenix.Sim/Actions.h"
 #include "Phoenix.Sim/BlockBuffer/BlockBufferRegistration.h"
-#include "Phoenix.Sim/Services/Service.h"
+#include "Phoenix.Sim/Services/ISessionService.h"
 
 namespace Phoenix
 {
@@ -105,9 +105,9 @@ namespace Phoenix
         }
     };
 
-    class PHOENIX_SIM_API IFeature : public IService
+    class PHOENIX_SIM_API IFeature : public ISessionService
     {
-        PHX_DECLARE_TYPE(IFeature, IService)
+        PHX_DECLARE_TYPE(IFeature, ISessionService)
 
     public:
 

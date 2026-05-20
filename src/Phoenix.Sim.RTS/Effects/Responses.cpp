@@ -14,14 +14,14 @@ using namespace Phoenix::RTS;
 
 void IResponseHandler::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
-    IService::Initialize(session);
+    ISessionService::Initialize(session);
     EffectsFeature = session->GetFeature<FeatureEffects>();
 }
 
 void IResponseHandler::Shutdown()
 {
     EffectsFeature.reset();
-    IService::Shutdown();
+    ISessionService::Shutdown();
 }
 
 FName IResponseHandler::GetResponseId() const

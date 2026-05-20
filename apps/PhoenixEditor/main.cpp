@@ -13,7 +13,7 @@
 #include "Docking/ImGuiDockRenderer.h"
 #include "Docking/ImGuiDockTab.h"
 #include "Application/Application.h"
-#include "Services/ServiceContainerBuilder.h"
+#include "Phoenix/Services/ServiceContainerBuilder.h"
 #include "UI/Menu/MenuManager.h"
 
 #if defined(__APPLE__)
@@ -343,8 +343,8 @@ void InitializeApplication()
 {
     // ReSharper disable CppExpressionWithoutSideEffects
     Phoenix::ServiceContainerBuilder serviceContainerBuilder;
-    serviceContainerBuilder.RegisterService<Phoenix::UI::MenuManager>().AsInterfaces().InstancePerScope();
-    serviceContainerBuilder.RegisterService<Phoenix::UI::ImGuiDockManager>().AsInterfaces().InstancePerScope();
+    serviceContainerBuilder.Register<Phoenix::UI::MenuManager>().AsInterfaces().InstancePerScope();
+    serviceContainerBuilder.Register<Phoenix::UI::ImGuiDockManager>().AsInterfaces().InstancePerScope();
 
     Phoenix::Editor::CtorArgs editorArgs;
     editorArgs.Builder = &serviceContainerBuilder;
