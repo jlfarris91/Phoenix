@@ -72,17 +72,20 @@
     {
       "name": "Debug",
       "configurePreset": "windows",
-      "configuration": "Debug"
+      "configuration": "Debug",
+      "nativeToolOptions": ["/maxcpucount"]
     },
     {
       "name": "Release",
       "configurePreset": "windows",
-      "configuration": "Release"
+      "configuration": "Release",
+      "nativeToolOptions": ["/maxcpucount"]
     },
     {
       "name": "ReleaseWithSymbols",
       "configurePreset": "windows",
-      "configuration": "ReleaseWithSymbols"
+      "configuration": "ReleaseWithSymbols",
+      "nativeToolOptions": ["/maxcpucount"]
     },
     {
       "name": "EmscriptenRelease",
