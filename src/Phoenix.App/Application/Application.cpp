@@ -4,7 +4,9 @@
 #include <memory>
 
 #include "AppService.h"
+#include "IPlatformService.h"
 #include "Phoenix/Flags.h"
+#include "Phoenix/Reflection/TypeDescriptor.h"
 #include "Phoenix/Services/ServiceContainerBuilder.h"
 
 using namespace Phoenix;
@@ -51,8 +53,40 @@ void Application::Shutdown()
     SetFlagRef(StateFlags, EAppStateFlags::ShutDown);
 }
 
+void Application::Run()
+{
+    Initialize();
+    while (!WantsQuit())
+        Tick();
+    Shutdown();
+}
+
+void Application::RequestQuit()
+{
+    SetFlagRef(StateFlags, EAppStateFlags::QuitRequested);
+}
+
+bool Application::WantsQuit() const
+{
+    if (HasAnyFlags(StateFlags, EAppStateFlags::QuitRequested))
+        return true;
+    if (auto platform = GetService<IPlatformService>())
+        return platform->WantsQuit();
+    return false;
+}
+
 void Application::Tick()
 {
+    auto services = Container->GetInstances();
+
+    for (const auto& service : services)
+        if (auto s = Cast<IAppService>(service)) s->PreTick();
+
+    for (const auto& service : services)
+        if (auto s = Cast<IAppService>(service)) s->Tick();
+
+    for (const auto& service : services)
+        if (auto s = Cast<IAppService>(service)) s->PostTick();
 }
 
 bool Application::IsInitializing() const

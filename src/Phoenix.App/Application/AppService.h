@@ -14,5 +14,9 @@ namespace Phoenix
 
         virtual void Initialize(const std::shared_ptr<Application>& application);
         virtual void Shutdown();
+
+        virtual void PreTick();
+        virtual void Tick();
+        virtual void PostTick();
     };
 }

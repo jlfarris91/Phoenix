@@ -21,8 +21,11 @@ namespace Phoenix
 
         virtual void Initialize();
         virtual void Shutdown();
-
         virtual void Tick();
+
+        void Run();
+        void RequestQuit();
+        bool WantsQuit() const;
 
         bool IsInitializing() const;
         bool IsInitialized() const;

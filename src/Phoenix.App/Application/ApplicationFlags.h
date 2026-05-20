@@ -10,6 +10,7 @@ namespace Phoenix
         Initializing = 1,
         Initialized = 2,
         ShuttingDown = 4,
-        ShutDown = 8
+        ShutDown = 8,
+        QuitRequested = 16
     };
 }

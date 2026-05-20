@@ -46,6 +46,7 @@ option(PHX_USE_PCH           "Use precompiled headers"                      ON)
 option(PHX_BUILD_TESTAPP     "Build PhoenixRTS demo application"            ON)
 option(PHX_BUILD_TESTS       "Build unit tests"                             OFF)
 option(PE_BUILD_STANDALONE   "Build the standalone Phoenix Editor app"      OFF)
+option(PHX_BUILD_ENGINE      "Build Phoenix.Engine and PhoenixEngine app"   ON)
 
 # ── Packages ──────────────────────────────────────────────────────────────────
 
@@ -55,7 +56,7 @@ if(NOT EMSCRIPTEN)
     find_package(inja CONFIG REQUIRED)
 endif()
 
-if((PHX_BUILD_TESTAPP OR PE_BUILD_STANDALONE) AND NOT EMSCRIPTEN)
+if((PHX_BUILD_TESTAPP OR PE_BUILD_STANDALONE OR PHX_BUILD_ENGINE) AND NOT EMSCRIPTEN)
     find_package(SDL3  CONFIG REQUIRED)
     find_package(imgui CONFIG REQUIRED)
 endif()
@@ -100,6 +101,12 @@ add_subdirectory(src/Phoenix.Scene)
 
 if(NOT EMSCRIPTEN)
     add_subdirectory(src/Phoenix.Scene.EnTT)
+endif()
+
+if(PHX_BUILD_ENGINE AND NOT EMSCRIPTEN)
+    add_subdirectory(src/Phoenix.Platform.SDL3)
+    add_subdirectory(src/Phoenix.UI.ImGui)
+    add_subdirectory(src/Phoenix.UI.ImGui.SDL3)
 endif()
 
 if(PE_BUILD_STANDALONE)

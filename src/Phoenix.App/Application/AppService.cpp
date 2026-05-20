@@ -9,3 +9,7 @@ void Phoenix::IAppService::Shutdown()
 {
     WeakApp.reset();
 }
+
+void Phoenix::IAppService::PreTick() {}
+void Phoenix::IAppService::Tick() {}
+void Phoenix::IAppService::PostTick() {}
