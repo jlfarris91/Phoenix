@@ -13,6 +13,8 @@ set(CMAKE_TOOLCHAIN_FILE "${CMAKE_SOURCE_DIR}/vcpkg/scripts/buildsystems/vcpkg.c
 
 project(Phoenix LANGUAGES C CXX)
 
+include(cmake/PhoenixGame.cmake)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -45,8 +47,8 @@ set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.nat
 option(PHX_USE_PCH           "Use precompiled headers"                      ON)
 option(PHX_BUILD_TESTAPP     "Build PhoenixRTS demo application"            ON)
 option(PHX_BUILD_TESTS       "Build unit tests"                             OFF)
+option(PHX_BUILD_ENGINE      "Build PhoenixEngine and game projects"        OFF)
 option(PE_BUILD_STANDALONE   "Build the standalone Phoenix Editor app"      OFF)
-option(PHX_BUILD_ENGINE      "Build Phoenix.Engine and PhoenixEngine app"   ON)
 
 # ── Packages ──────────────────────────────────────────────────────────────────
 
@@ -107,6 +109,7 @@ if(PHX_BUILD_ENGINE AND NOT EMSCRIPTEN)
     add_subdirectory(src/Phoenix.Platform.SDL3)
     add_subdirectory(src/Phoenix.UI.ImGui)
     add_subdirectory(src/Phoenix.UI.ImGui.SDL3)
+    add_subdirectory(src/Phoenix.Engine)
 endif()
 
 if(PE_BUILD_STANDALONE)
@@ -128,6 +131,11 @@ endif()
 
 if(PHX_BUILD_TESTAPP AND NOT EMSCRIPTEN)
     add_subdirectory(apps/PhoenixRTS)
+endif()
+
+if(PHX_BUILD_ENGINE AND NOT EMSCRIPTEN)
+    add_subdirectory(apps/PhoenixEngine)
+    add_subdirectory(apps/PhoenixRTS2)
 endif()
 
 if(PHX_BUILD_TESTS)

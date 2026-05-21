@@ -1,11 +1,11 @@
 #pragma once
 
 #include "RenderScene.h"
-#include "Services/Service.h"
+#include "Phoenix/Services/IService.h"
 
 namespace Phoenix::Renderer
 {
-    class IRenderer : public Phoenix::IService
+    class IRenderer : public IService
     {
         PHX_DECLARE_TYPE_DERIVED(IRenderer, Phoenix::IService)
 

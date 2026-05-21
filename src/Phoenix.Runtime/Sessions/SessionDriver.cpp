@@ -7,7 +7,7 @@ namespace Phoenix {
 SessionHandle SessionDriver::CreateSession(const SessionCtorArgs& args)
 {
     auto handle = ++SessionIdGen;
-    auto sessionInstance = std::make_unique<SessionInstance>(handle, args);
+    auto sessionInstance = std::make_shared<SessionInstance>(handle, args);
     auto result = Sessions.emplace(handle, std::move(sessionInstance));
     if (result.second)
     {

@@ -5,6 +5,8 @@
 
 namespace Phoenix
 {
+    class ServiceContainerBuilder;
+
     class ModuleInitContext : public ContextObjectContainer
     {
     };
@@ -19,6 +21,7 @@ namespace Phoenix
 
     public:
 
+        virtual void Register(ServiceContainerBuilder& builder) {}
         virtual void Initialize(ModuleInitContext& context) {}
         virtual void Load(ModuleLoadContext& context) {}
         virtual void Shutdown() {}

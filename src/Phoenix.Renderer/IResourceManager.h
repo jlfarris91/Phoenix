@@ -1,9 +1,9 @@
 #pragma once
 
-#include "RendererTypes.h"
-#include "Services/Service.h"
-
 #include <cstdint>
+
+#include "RendererTypes.h"
+#include "Phoenix/Services/IService.h"
 
 namespace Phoenix::Renderer
 {

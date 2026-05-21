@@ -45,6 +45,7 @@ PhoenixSim          (core: ECS, Session, Features, LDS, memory, threading)
 | [WasmScriptingInternals.md](docs/WasmScriptingInternals.md) | wasm3 stack convention, Emscripten STANDALONE_WASM, invoke_* dispatch, file-based Lua loading, diagnostics |
 | [ThreadingModel.md](docs/ThreadingModel.md) | Sim / game / render thread split, WorldDoubleBuffer as sim→game bridge, SessionInstance::Tick / GetWorldView |
 | [SceneLayer.md](docs/SceneLayer.md) | Phoenix.Scene + Phoenix.Scene.EnTT: SceneEntitySync, IEntitySyncHandler, EnTTScene, engine-agnostic design |
+| [ApplicationLayer.md](docs/ApplicationLayer.md) | Application, IAppService tick phases, IPlatformService, SDL3PlatformService delegates, SDL3ImGuiService wiring |
 
 ## Key Files
 

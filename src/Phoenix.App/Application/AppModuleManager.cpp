@@ -2,6 +2,18 @@
 
 #include "AppModule.h"
 
+void Phoenix::AppModuleManager::Initialize(const std::shared_ptr<Application> &application)
+{
+    IAppService::Initialize(application);
+
+    for (auto&& module : Modules)
+    {
+        ModuleInitContext context;
+        OnModuleInitialize(module.get());
+        module->Initialize(context);
+    }
+}
+
 bool Phoenix::AppModuleManager::CanRegisterModule(const Phoenix::TypeDescriptor& moduleType) const
 {
     return moduleType.IsA<IAppModule>();

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <memory>
 #include <optional>
 
 #include "Phoenix/Name.h"
@@ -85,9 +86,13 @@ namespace Phoenix
 
         bool IsTemplate(const char* templateName) const;
 
+        bool CanDefaultConstruct() const;
+
         void DefaultConstruct(void* data) const;
 
         void Destruct(void* data) const;
+
+        std::shared_ptr<void> MakeShared() const;
 
         std::string ToString(const void* obj) const;
 

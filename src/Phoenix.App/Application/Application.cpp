@@ -3,6 +3,7 @@
 #include <cassert>
 #include <memory>
 
+#include "AppModuleManager.h"
 #include "AppService.h"
 #include "IPlatformService.h"
 #include "Phoenix/Flags.h"
@@ -117,6 +118,15 @@ void Application::InitializeInternal()
     for (const auto& service : services)
     {
         service->Initialize(shared_from_this());
+    }
+
+    if (auto&& moduleManager = Container->ResolveService<AppModuleManager>())
+    {
+        for (auto&& module : moduleManager->GetModules())
+        {
+            ModuleLoadContext context;
+            module->Load(context);
+        }
     }
 }
 

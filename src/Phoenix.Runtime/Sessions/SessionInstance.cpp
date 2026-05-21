@@ -25,11 +25,11 @@ void SessionInstance::Initialize()
     }
 
     Phoenix::SessionCtorArgs args2 = SessionArgs;
-    args2.OnPostWorldUpdate = [weakThis = shared_from_this()](Phoenix::WorldConstRef world)
+    args2.OnPostWorldUpdate = [weakThis = weak_from_this()](Phoenix::WorldConstRef world)
     {
-        if (weakThis)
+        if (auto self = weakThis.lock())
         {
-            weakThis->OnPostWorldUpdateImpl(world);
+            self->OnPostWorldUpdateImpl(world);
         }
     };
 
@@ -47,7 +47,7 @@ void SessionInstance::Initialize()
 
 void SessionInstance::Start()
 {
-    if (Session)
+    if (SessionThread)
     {
         return;
     }

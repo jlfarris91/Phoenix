@@ -29,7 +29,7 @@ std::shared_ptr<IService> ServiceContainer::ResolveService(FName typeId)
     if (parentContainer && !firstRegistration->InstancePerScope)
         return parentContainer->ResolveService(typeId);
 
-    auto instance = firstRegistration->FactoryFunc(shared_from_this());
+    auto instance = firstRegistration->FactoryFunc(*this);
     if (!instance)
         return {};
 

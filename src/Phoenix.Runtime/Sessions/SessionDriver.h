@@ -29,7 +29,7 @@ namespace Phoenix
 
     private:
 
-        std::unordered_map<uint32_t, std::unique_ptr<SessionInstance>> Sessions;
+        std::unordered_map<uint32_t, std::shared_ptr<SessionInstance>> Sessions;
         SessionHandle SessionIdGen = 0;
     };
 }

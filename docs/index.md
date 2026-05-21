@@ -22,6 +22,7 @@ A high-performance, modular simulation engine for real-time strategy games.
 
 ## Architecture
 
+- [Application Layer](ApplicationLayer) — Application, IAppService, IPlatformService, SDL3 platform, ImGui backend
 - [PhoenixSim Core](PhoenixSimDeepDive) — Session, World, LDS, memory, threading
 - [PhoenixPhysics](PhoenixPhysics) — 2D rigid-body physics
 - [PhoenixSteering](PhoenixSteering) — pathfinding and unit movement

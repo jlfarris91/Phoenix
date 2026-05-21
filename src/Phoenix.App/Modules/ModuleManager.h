@@ -49,8 +49,6 @@ namespace Phoenix
         virtual void OnModuleInitialize(IModule* module);
         virtual void OnModuleShutdown(IModule* module);
 
-    private:
-
         IModule* RegisterModuleInternal(const std::shared_ptr<IModule>& module);
         bool UnregisterModuleInternal(const std::shared_ptr<IModule>& module);
 

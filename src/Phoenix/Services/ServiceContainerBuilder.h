@@ -10,7 +10,7 @@ namespace Phoenix
     class ServiceContainerBuilder;
 
     template <class TFactory>
-    concept ServiceFactory = requires(TFactory f, const std::shared_ptr<IServiceLocator>& loc)
+    concept ServiceFactory = requires(TFactory f, IServiceLocator& loc)
     {
         { f(loc) } -> std::convertible_to<std::shared_ptr<IService>>;
     };
@@ -68,13 +68,13 @@ namespace Phoenix
         {
             Registration->FactoryFunc =
                 [valuesTuple = std::make_tuple(std::forward<TValues>(values)...)]
-                (const std::shared_ptr<IServiceLocator>& loc) -> std::shared_ptr<IService>
+                (IServiceLocator& loc) -> std::shared_ptr<IService>
                 {
                     return std::apply(
-                        [&loc](TValues&&... args) -> std::shared_ptr<IService>
+                        [&loc](auto&&... args) -> std::shared_ptr<IService>
                         {
                             return std::make_shared<T>(
-                                loc->ResolveService<TDeps>()...,
+                                loc.ResolveService<TDeps>()...,
                                 std::forward<decltype(args)>(args)...);
                         },
                         valuesTuple);
@@ -93,7 +93,7 @@ namespace Phoenix
             FName typeId = StaticTypeName<TService>::TypeId;
             std::weak_ptr weakInstance = instance;
             auto registration = MakeRegistration(typeId,
-                [weakInstance](const std::shared_ptr<IServiceLocator>&) -> std::shared_ptr<IService>
+                [weakInstance](IServiceLocator&) -> std::shared_ptr<IService>
                 {
                     return weakInstance.lock();
                 });
@@ -108,10 +108,10 @@ namespace Phoenix
         {
             auto registration = MakeRegistration(StaticTypeName<TService>::TypeId,
                 [valuesTuple = std::make_tuple(std::forward<TValues>(values)...)]
-                (const std::shared_ptr<IServiceLocator>&) -> std::shared_ptr<IService>
+                (IServiceLocator&) -> std::shared_ptr<IService>
                 {
                     return std::apply(
-                        [](TValues&&... args) -> std::shared_ptr<IService>
+                        [](auto&&... args) -> std::shared_ptr<IService>
                         {
                             return std::make_shared<TService>(std::forward<decltype(args)>(args)...);
                         },
@@ -126,7 +126,7 @@ namespace Phoenix
         {
             auto registration = MakeRegistration(StaticTypeName<TService>::TypeId,
                 [f = std::forward<TFactory>(factory)]
-                (const std::shared_ptr<IServiceLocator>& loc) -> std::shared_ptr<IService>
+                (IServiceLocator& loc) -> std::shared_ptr<IService>
                 {
                     return f(loc);
                 });

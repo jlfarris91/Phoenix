@@ -11,7 +11,7 @@ namespace Phoenix
     class IService;
     class IServiceLocator;
 
-    using ServiceFactoryFunc = std::function<std::shared_ptr<IService>(const std::shared_ptr<IServiceLocator>&)>;
+    using ServiceFactoryFunc = std::function<std::shared_ptr<IService>(IServiceLocator&)>;
 
     struct ServiceRegistration
     {

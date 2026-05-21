@@ -1,7 +1,8 @@
 #pragma once
 
 #include <SDL3/SDL.h>
-#include "Services/Service.h"
+
+#include "Phoenix/Services/IService.h"
 
 namespace Phoenix::Renderer::SDL3
 {

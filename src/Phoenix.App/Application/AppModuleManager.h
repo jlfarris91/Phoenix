@@ -9,6 +9,10 @@ namespace Phoenix
     {
         PHX_DECLARE_TYPE_DERIVED(AppModuleManager, IAppService)
 
+    public:
+
+        void Initialize(const std::shared_ptr<Application> &application) override;
+
     protected:
 
         virtual bool CanRegisterModule(const TypeDescriptor& moduleType) const override;

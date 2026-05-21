@@ -14,7 +14,6 @@ namespace Phoenix
         std::string Title   = "Phoenix";
         int         Width   = 1280;
         int         Height  = 720;
-        bool        UseOpenGL = true;
     };
 
     PHX_DECLARE_MULTICAST_DELEGATE(FOnSDL3Event, SDL_Event&);
@@ -29,21 +28,29 @@ namespace Phoenix
 
         void Initialize(const std::shared_ptr<Application>& app) override;
         void Shutdown() override;
+
         void PreTick() override;
 
         bool WantsQuit() const override;
 
-        SDL_Window*   GetWindow()    const;
-        SDL_GLContext GetGLContext() const;
+        SDL_Window*   GetWindow()       const;
+        SDL_GLContext GetGLContext()    const;
+        float         GetDisplayScale() const;
 
         FOnSDL3Event       OnEvent;
         FOnAfterPollEvents OnAfterPollEvents;
 
+        PHX_DECLARE_MULTICAST_DELEGATE(FOnDisplayScaleChanged, float);
+        FOnDisplayScaleChanged OnDisplayScaleChanged;
+
     private:
 
+        void PollEvents();
+
         SDL3WindowArgs Args;
-        SDL_Window*    Window      = nullptr;
-        SDL_GLContext  GLContext   = nullptr;
-        bool           QuitFlag   = false;
+        SDL_Window*    Window        = nullptr;
+        SDL_GLContext  GLContext     = nullptr;
+        bool           QuitFlag      = false;
+        float          DisplayScale  = 1.0f;
     };
 }

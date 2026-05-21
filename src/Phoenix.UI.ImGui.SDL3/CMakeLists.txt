@@ -9,5 +9,8 @@ target_include_directories(Phoenix.UI.ImGui.SDL3 PUBLIC
 target_link_libraries(Phoenix.UI.ImGui.SDL3 PUBLIC
     Phoenix.UI.ImGui
     Phoenix.Platform.SDL3
-    imgui
+    imgui::imgui
+    $<$<PLATFORM_ID:Windows>:opengl32>
+    $<$<PLATFORM_ID:Linux>:GL>
+    $<$<PLATFORM_ID:Darwin>:-framework OpenGL>
 )

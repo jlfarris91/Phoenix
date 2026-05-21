@@ -183,6 +183,14 @@ bool Phoenix::TypeDescriptor::IsTemplate(const char* templateName) const
     return FName(TypeName.GetTemplateName()) == FName(templateName);
 }
 
+bool Phoenix::TypeDescriptor::CanDefaultConstruct() const
+{
+    for (const auto& ctor : Constructors)
+        if (ctor.GetParams().empty())
+            return true;
+    return false;
+}
+
 void Phoenix::TypeDescriptor::DefaultConstruct(void* data) const
 {
     for (const auto& ctor : Constructors)
@@ -198,6 +206,18 @@ void Phoenix::TypeDescriptor::DefaultConstruct(void* data) const
 void Phoenix::TypeDescriptor::Destruct(void* data) const
 {
     Destructor.Execute(data);
+}
+
+std::shared_ptr<void> Phoenix::TypeDescriptor::MakeShared() const
+{
+    if (Size == 0 || !CanDefaultConstruct())
+        return nullptr;
+    void* raw = ::operator new(Size);
+    DefaultConstruct(raw);
+    return std::shared_ptr<void>(raw, [this](void* p) {
+        Destruct(p);
+        ::operator delete(p);
+    });
 }
 
 std::string Phoenix::TypeDescriptor::ToString(const void* obj) const
