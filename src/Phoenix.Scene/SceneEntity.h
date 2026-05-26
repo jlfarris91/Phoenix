@@ -2,13 +2,13 @@
 
 #include <cstdint>
 
-namespace Phoenix
+namespace Phoenix::Scene
 {
-    struct EngineEntity
+    struct SceneEntity
     {
         uint64_t Id = 0;
 
         bool IsValid() const { return Id != 0; }
-        bool operator==(const EngineEntity&) const = default;
+        bool operator==(const SceneEntity&) const = default;
     };
 }

@@ -50,15 +50,9 @@ bool Phoenix::ModuleManager::HasModule(FName moduleTypeId) const
     return ModulesByType.contains(moduleTypeId);
 }
 
-std::vector<Phoenix::IModule*> Phoenix::ModuleManager::GetModules() const
+std::vector<std::shared_ptr<Phoenix::IModule>> Phoenix::ModuleManager::GetModules() const
 {
-    std::vector<IModule*> modules;
-    modules.reserve(Modules.size());
-    for (const std::shared_ptr<IModule>& module : Modules)
-    {
-        modules.push_back(module.get());
-    }
-    return modules;
+    return Modules;
 }
 
 bool Phoenix::ModuleManager::CanRegisterModule(const TypeDescriptor& moduleType) const

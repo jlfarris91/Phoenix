@@ -24,11 +24,9 @@ void PhoenixRTS2Module::Register(ServiceContainerBuilder& builder)
     builder.Register<UI::SDL3ImGuiService>().AsInterfaces();
 }
 
-void PhoenixRTS2Module::Initialize(Phoenix::ModuleInitContext &context)
+void PhoenixRTS2Module::Initialize(ModuleInitContext &context)
 {
     IAppModule::Initialize(context);
-
-    auto app = GetApplication();
 
 #ifndef __EMSCRIPTEN__
     Profiling::SetProfiler(&GTracyProfiler);
@@ -41,7 +39,7 @@ void PhoenixRTS2Module::Initialize(Phoenix::ModuleInitContext &context)
 #endif
 }
 
-void PhoenixRTS2Module::Load(Phoenix::ModuleLoadContext &context)
+void PhoenixRTS2Module::Load(ModuleLoadContext &context)
 {
     IAppModule::Load(context);
 }

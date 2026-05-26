@@ -2,9 +2,8 @@ function(phx_add_game TARGET)
     cmake_parse_arguments(GAME "" "" "SOURCES;DATA" ${ARGN})
 
     set(GENERATED_MAIN "${CMAKE_CURRENT_BINARY_DIR}/${TARGET}_main.cpp")
-    file(WRITE "${GENERATED_MAIN}"
-        "#include \"PhoenixMain.h\"\n"
-        "int main(int argc, char** argv) { return Phoenix::PhoenixMain(argc, argv); }\n"
+    file(CONFIGURE OUTPUT "${GENERATED_MAIN}" CONTENT
+        "#include \"PhoenixMain.h\"\nint main(int argc, char** argv) { return Phoenix::PhoenixMain(argc, argv); }\n"
     )
 
     add_executable(${TARGET} ${GENERATED_MAIN} ${GAME_SOURCES})
@@ -19,6 +18,8 @@ function(phx_add_game TARGET)
         Phoenix.Platform.SDL3
         Phoenix.UI.ImGui.SDL3
         Phoenix.Renderer.SDL3
+        Phoenix.Scene.EnTT
+        glm::glm
     )
 
     set_property(TARGET ${TARGET} PROPERTY FOLDER "Apps")

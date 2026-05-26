@@ -159,6 +159,7 @@ namespace Phoenix
         MethodDescriptor                                    Destructor;
         std::unordered_map<std::string, std::string>        Metadata;
         std::function<std::string(const void*)>             ToStringFunc;
+        std::function<std::shared_ptr<void>()>             MakeSharedFn;
 
         // Enum specific fields
         FName                               EnumUnderlyingTypeId;

@@ -17,7 +17,7 @@
         "PHX_BUILD_TESTS": "ON",
         "PHX_BUILD_ENGINE": "ON",
         "PE_BUILD_STANDALONE": "ON",
-        "VCPKG_MANIFEST_FEATURES": "testapp;tests;standalone"
+        "VCPKG_MANIFEST_FEATURES": "testapp;tests;standalone;engine"
       }
     },
     {

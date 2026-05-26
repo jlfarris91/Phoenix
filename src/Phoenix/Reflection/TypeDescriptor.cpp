@@ -210,6 +210,8 @@ void Phoenix::TypeDescriptor::Destruct(void* data) const
 
 std::shared_ptr<void> Phoenix::TypeDescriptor::MakeShared() const
 {
+    if (MakeSharedFn)
+        return MakeSharedFn();
     if (Size == 0 || !CanDefaultConstruct())
         return nullptr;
     void* raw = ::operator new(Size);

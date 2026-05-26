@@ -87,6 +87,11 @@ namespace Phoenix
                         descriptor.ReturnType = &Get<void>();
                         descriptor.Function = MakeGenericFunctionTakingSelf(std::function(ctor));
                         desc.Constructors.push_back(std::move(descriptor));
+
+                        desc.MakeSharedFn = []() -> std::shared_ptr<void>
+                        {
+                            return std::make_shared<TDecay>();
+                        };
                     }
 
                     // Destructor

@@ -11,6 +11,9 @@
 #ifdef GetObject
 #undef GetObject
 #endif
+#ifdef DrawText
+#undef DrawText
+#endif
 #endif
 
 #include <string>

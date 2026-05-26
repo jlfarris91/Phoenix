@@ -11,5 +11,7 @@ find_package(EnTT CONFIG REQUIRED)
 
 target_link_libraries(Phoenix.Scene.EnTT PUBLIC
     Phoenix.Scene
+    Phoenix.Math
     EnTT::EnTT
+    glm::glm
 )

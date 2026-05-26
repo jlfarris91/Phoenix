@@ -16,9 +16,9 @@ namespace Phoenix::Renderer::SDL3
         explicit SDL3ResourceManager(std::shared_ptr<SDL3Context> context);
         ~SDL3ResourceManager() override;
 
-        HTexture LoadTexture(const char* path) override;
-        void     ReleaseTexture(HTexture handle) override;
-        Vec2f    GetTextureSize(HTexture handle) const override;
+        HTexture    LoadTexture(const char* path) override;
+        void        ReleaseTexture(HTexture handle) override;
+        glm::vec2   GetTextureSize(HTexture handle) const override;
 
         HMesh2D CreateMesh(const Vertex2D* vertices, uint32_t vertexCount,
                            const uint16_t* indices,  uint32_t indexCount) override;
@@ -42,8 +42,8 @@ namespace Phoenix::Renderer::SDL3
     private:
         struct TextureEntry
         {
-            SDL_Texture* Texture = nullptr;
-            Vec2f        Size;
+            SDL_Texture*    Texture = nullptr;
+            glm::vec2       Size;
         };
 
         struct RenderTargetEntry

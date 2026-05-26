@@ -15,7 +15,13 @@ namespace Phoenix
 
         SessionDriver& GetSessionDriver() const;
 
+        Phoenix::SessionDriver::FSessionCreated SessionCreated;
+        Phoenix::SessionDriver::FSessionDestroyed SessionDestroyed;
+
     private:
+
+        void OnSessionCreated(SessionInstance* instance);
+        void OnSessionDestroyed(SessionInstance* instance);
 
         std::unique_ptr<Phoenix::SessionDriver> SessionDriver;
     };

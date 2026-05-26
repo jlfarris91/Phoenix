@@ -12,7 +12,7 @@ SessionHandle SessionDriver::CreateSession(const SessionCtorArgs& args)
     if (result.second)
     {
         SessionInstance* instance = result.first->second.get();
-        OnSessionCreated.Broadcast(instance);
+        SessionCreated.Broadcast(instance);
     }
     return handle;
 }
@@ -24,7 +24,7 @@ void SessionDriver::DestroySession(SessionHandle handle)
     {
         SessionInstance* instance = iter->second.get();
         instance->Shutdown(true);
-        OnSessionDestroyed.Broadcast(instance);
+        SessionDestroyed.Broadcast(instance);
         Sessions.erase(iter);
     }
 }

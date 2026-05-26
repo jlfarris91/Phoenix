@@ -133,6 +133,11 @@ const char* FName::GetNameEntry(hash32_t hash)
 #endif
 }
 
+const char* FName::ToString() const
+{
+    return GetNameEntry(Value);
+}
+
 #if PHOENIX_SIM_NAME_ENTRIES
 
 const char* FName::RecordNameEntryAs(const char* chars, size_t len, hash32_t asHash)

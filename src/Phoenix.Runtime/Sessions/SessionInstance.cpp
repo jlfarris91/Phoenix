@@ -4,9 +4,9 @@
 #include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 
-namespace Phoenix {
+using namespace Phoenix;
 
-SessionInstance::SessionInstance(uint32_t id, const Phoenix::SessionCtorArgs& args)
+SessionInstance::SessionInstance(uint32_t id, const SessionCtorArgs& args)
     : Id(id)
     , SessionArgs(args)
 {
@@ -24,8 +24,8 @@ void SessionInstance::Initialize()
         return;
     }
 
-    Phoenix::SessionCtorArgs args2 = SessionArgs;
-    args2.OnPostWorldUpdate = [weakThis = weak_from_this()](Phoenix::WorldConstRef world)
+    SessionCtorArgs args2 = SessionArgs;
+    args2.OnPostWorldUpdate = [weakThis = weak_from_this()](WorldConstRef world)
     {
         if (auto self = weakThis.lock())
         {
@@ -33,11 +33,11 @@ void SessionInstance::Initialize()
         }
     };
 
-    Session = Phoenix::Session::Create(args2);
+    Session = Session::Create(args2);
 
     Session->Initialize();
 
-    Phoenix::WorldManager* worldManager = Session->GetWorldManager();
+    WorldManager* worldManager = Session->GetWorldManager();
 
     worldManager->NewWorld({
         .WorldType = "DefaultWorld"_n,
@@ -101,7 +101,7 @@ uint32_t SessionInstance::GetId() const
     return Id;
 }
 
-Phoenix::Session* SessionInstance::GetSession() const
+Session* SessionInstance::GetSession() const
 {
     return Session.get();
 }
@@ -118,10 +118,18 @@ void SessionInstance::TickSession()
     // FrameMarkNamed("Sim");
 #endif
 
-    Phoenix::SessionStepArgs stepArgs;
+    ExecuteDispatchQueue();
+
+    SessionStepArgs stepArgs;
     stepArgs.SpeedMultiplier = SimSpeed;
 
     Session->Tick(stepArgs);
+}
+
+void SessionInstance::Dispatch(std::function<void()> &&func)
+{
+    std::scoped_lock lock(DispatchQueueMutex);
+    DispatchQueue.emplace(std::move(func));
 }
 
 void SessionInstance::SessionWorker(SessionInstance* instance)
@@ -151,38 +159,39 @@ void SessionInstance::SessionWorker(SessionInstance* instance)
 
 void SessionInstance::Tick()
 {
-    for (auto& [worldId, world] : Worlds)
+    for (auto &world: Worlds | std::views::values)
     {
         world->Sink();
     }
 }
 
-WorldInstance* SessionInstance::GetWorldInstance(Phoenix::FName worldId) const
+WorldInstance* SessionInstance::GetWorldInstance(FName worldId) const
 {
     auto it = Worlds.find(worldId);
-    if (it == Worlds.end())
-        return nullptr;
-    return it->second.get();
+    return it != Worlds.end() ? it->second.get() : nullptr;
 }
 
-const Phoenix::World* SessionInstance::GetWorldView(Phoenix::FName worldId) const
+const World* SessionInstance::GetWorldView(FName worldId) const
 {
     const WorldInstance* world = GetWorldInstance(worldId);
     return world ? world->GetWorldView() : nullptr;
 }
 
-void SessionInstance::OnPostWorldUpdateImpl(Phoenix::WorldConstRef world)
+void SessionInstance::OnPostWorldUpdateImpl(WorldConstRef world)
 {
     auto it = Worlds.find(world.GetId());
     if (it == Worlds.end())
     {
-        auto result = Worlds.emplace(world.GetId(), std::make_unique<WorldInstance>(world.GetId()));
+        auto worldInstance = std::make_unique<WorldInstance>(world.GetId());
+        auto result = Worlds.emplace(world.GetId(), std::move(worldInstance));
         it = result.first;
+
+        WorldInstanceCreated.Broadcast(it->second.get(), world);
     }
 
     it->second->OnSimUpdate(world);
 
-    OnPostWorldUpdate.Broadcast(this, world);
+    WorldInstanceUpdated.Broadcast(it->second.get(), world);
 }
 
 void SessionInstance::OnShutdown()
@@ -190,4 +199,15 @@ void SessionInstance::OnShutdown()
     Session->Shutdown();
 }
 
-} // namespace Phoenix
+void SessionInstance::ExecuteDispatchQueue()
+{
+    std::scoped_lock lock(DispatchQueueMutex);
+
+    size_t count = DispatchQueue.size();
+    for (size_t i = 0; i < count; ++i)
+    {
+        const auto& func = DispatchQueue.front();
+        func();
+        DispatchQueue.pop();
+    }
+}

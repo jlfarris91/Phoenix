@@ -2,12 +2,13 @@
 
 #include <cassert>
 #include <memory>
+#include <mutex>
+#include <shared_mutex>
 
 #include "AppModuleManager.h"
 #include "AppService.h"
 #include "IPlatformService.h"
 #include "Phoenix/Flags.h"
-#include "Phoenix/Reflection/TypeDescriptor.h"
 #include "Phoenix/Services/ServiceContainerBuilder.h"
 
 using namespace Phoenix;
@@ -58,7 +59,10 @@ void Application::Run()
 {
     Initialize();
     while (!WantsQuit())
+    {
+        ExecuteDispatchQueue();
         Tick();
+    }
     Shutdown();
 }
 
@@ -70,24 +74,32 @@ void Application::RequestQuit()
 bool Application::WantsQuit() const
 {
     if (HasAnyFlags(StateFlags, EAppStateFlags::QuitRequested))
+    {
         return true;
+    }
     if (auto platform = GetService<IPlatformService>())
+    {
         return platform->WantsQuit();
+    }
     return false;
 }
 
 void Application::Tick()
 {
-    auto services = Container->GetInstances();
+    for (const auto& service : AppServices)
+    {
+        service->PreTick();
+    }
 
-    for (const auto& service : services)
-        if (auto s = Cast<IAppService>(service)) s->PreTick();
+    for (const auto& service : AppServices)
+    {
+        service->Tick();
+    }
 
-    for (const auto& service : services)
-        if (auto s = Cast<IAppService>(service)) s->Tick();
-
-    for (const auto& service : services)
-        if (auto s = Cast<IAppService>(service)) s->PostTick();
+    for (const auto& service : AppServices)
+    {
+        service->PostTick();
+    }
 }
 
 bool Application::IsInitializing() const
@@ -110,12 +122,17 @@ bool Application::IsShutDown() const
     return HasAnyFlags(StateFlags, EAppStateFlags::ShutDown);
 }
 
+void Application::Dispatch(std::function<void()>&& function)
+{
+    std::scoped_lock lock(DispatchQueueMutex);
+    DispatchQueue.emplace(std::move(function));
+}
+
 void Application::InitializeInternal()
 {
-    std::vector<std::shared_ptr<IAppService>> services;
-    Container->ResolveServices<IAppService>(services);
+    Container->ResolveServices<IAppService>(AppServices);
 
-    for (const auto& service : services)
+    for (const auto& service : AppServices)
     {
         service->Initialize(shared_from_this());
     }
@@ -132,11 +149,22 @@ void Application::InitializeInternal()
 
 void Application::ShutdownInternal()
 {
-    std::vector<std::shared_ptr<IAppService>> services;
-    Container->ResolveServices<IAppService>(services);
-
-    for (const auto& service : services)
+    for (const auto& service : AppServices)
     {
         service->Shutdown();
+    }
+    AppServices.clear();
+}
+
+void Application::ExecuteDispatchQueue()
+{
+    std::scoped_lock lock(DispatchQueueMutex);
+
+    size_t count = DispatchQueue.size();
+    for (size_t i = 0; i < count; i++)
+    {
+        const auto& func = DispatchQueue.front();
+        func();
+        DispatchQueue.pop();
     }
 }

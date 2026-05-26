@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <atomic>
+#include <queue>
 #include <thread>
 
 #include <Phoenix/Name.h>
@@ -42,8 +43,17 @@ namespace Phoenix
         // Returns the stable world view for a given world ID, or null if not yet ready.
         const Phoenix::World* GetWorldView(Phoenix::FName worldId) const;
 
-        PHX_DECLARE_MULTICAST_DELEGATE(FPostWorldUpdate, SessionInstance*, Phoenix::WorldConstRef);
-        FPostWorldUpdate OnPostWorldUpdate;
+        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceCreated, WorldInstance*, Phoenix::WorldConstRef);
+        FWorldInstanceCreated WorldInstanceCreated;
+
+        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceUpdated, WorldInstance*, Phoenix::WorldConstRef);
+        FWorldInstanceUpdated WorldInstanceUpdated;
+
+        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceDestroyed, WorldInstance*);
+        FWorldInstanceDestroyed WorldInstanceDestroyed;
+
+        // Enqueue a function to be executed on the session thread.
+        void Dispatch(std::function<void()>&& func);
 
     private:
 
@@ -52,6 +62,8 @@ namespace Phoenix
         void OnPostWorldUpdateImpl(Phoenix::WorldConstRef world);
 
         void OnShutdown();
+
+        void ExecuteDispatchQueue();
 
         uint32_t Id;
 
@@ -64,6 +76,9 @@ namespace Phoenix
         std::atomic<bool> bSessionThreadExited = false;
         std::atomic<bool> bTickSession = true;
         std::atomic<uint32_t> WantsSessionStep = 0u;
+
+        std::queue<std::function<void()>> DispatchQueue;
+        std::recursive_mutex DispatchQueueMutex;
 
         double SimSpeed = 1.0;
     };

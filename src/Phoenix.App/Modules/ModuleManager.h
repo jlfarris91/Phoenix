@@ -35,7 +35,7 @@ namespace Phoenix
             return HasModule(StaticTypeName<T>::TypeId);
         }
 
-        std::vector<IModule*> GetModules() const;
+        std::vector<std::shared_ptr<IModule>> GetModules() const;
 
         PHX_DECLARE_MULTICAST_DELEGATE(ModuleEvent, IModule*);
         ModuleEvent ModuleRegistered;

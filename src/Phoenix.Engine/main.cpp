@@ -17,7 +17,9 @@ static void DiscoverAppModules(std::vector<std::shared_ptr<IAppModule>>& outModu
     for (auto* desc : TypeRegistry::GetAllDerivedFrom<IAppModule>())
     {
         if (auto module = std::static_pointer_cast<IAppModule>(desc->MakeShared()))
+        {
             outModules.push_back(module);
+        }
     }
 }
 

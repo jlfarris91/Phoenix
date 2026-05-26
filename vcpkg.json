@@ -24,6 +24,12 @@
         "tracy"
       ]
     },
+    "engine": {
+      "description": "Dependencies for the Phoenix.Engine game framework",
+      "dependencies": [
+        "glm"
+      ]
+    },
     "standalone": {
       "description": "Dependencies for the standalone Phoenix Editor desktop application",
       "dependencies": [

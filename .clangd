@@ -1,0 +1,9 @@
+CompileFlags:
+  Add:
+    - -fms-extensions
+    - -fms-compatibility
+    - -fdelayed-template-parsing
+
+Diagnostics:
+  Suppress:
+    - err_constexpr_var_requires_const_init

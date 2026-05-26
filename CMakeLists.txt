@@ -61,6 +61,7 @@ endif()
 if((PHX_BUILD_TESTAPP OR PE_BUILD_STANDALONE OR PHX_BUILD_ENGINE) AND NOT EMSCRIPTEN)
     find_package(SDL3  CONFIG REQUIRED)
     find_package(imgui CONFIG REQUIRED)
+    find_package(glm   CONFIG REQUIRED)
 endif()
 
 if(PHX_BUILD_TESTS)
@@ -102,6 +103,7 @@ add_subdirectory(src/Phoenix.Renderer)
 add_subdirectory(src/Phoenix.Scene)
 
 if(NOT EMSCRIPTEN)
+    add_subdirectory(src/Phoenix.Math)
     add_subdirectory(src/Phoenix.Scene.EnTT)
 endif()
 

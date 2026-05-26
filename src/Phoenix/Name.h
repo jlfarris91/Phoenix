@@ -141,6 +141,10 @@ namespace Phoenix
         // Requires that PHOENIX_SIM_NAME_ENTRIES be defined.
         static const char* GetNameEntry(hash32_t hash);
 
+        // This is not safe for stateful use. Only use for visualizations!
+        // Requires that PHOENIX_SIM_NAME_ENTRIES be defined.
+        const char* ToString() const;
+
     private:
 
 #if PHOENIX_SIM_NAME_ENTRIES

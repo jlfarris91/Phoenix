@@ -1,5 +1,6 @@
 ﻿#include "SessionModule.h"
 
+#include "SceneManager.h"
 #include "Application/Application.h"
 #include "Phoenix/Services/ServiceContainerBuilder.h"
 #include "Phoenix.Runtime/Sessions/SessionDriverService.h"
@@ -39,6 +40,14 @@ void SessionModule::Register(ServiceContainerBuilder &builder)
 void SessionModule::Initialize(ModuleInitContext &context)
 {
     IAppModule::Initialize(context);
+
+    auto app = GetApplication();
+
+    auto thisSP = std::static_pointer_cast<SessionModule>(shared_from_this());
+
+    auto sessionDriver = app->GetService<SessionDriverService>();
+    sessionDriver->SessionCreated.AddSP(thisSP, &SessionModule::OnSessionInstanceCreated);
+    sessionDriver->SessionDestroyed.AddSP(thisSP, &SessionModule::OnSessionInstanceDestroyed);
 }
 
 void SessionModule::Load(ModuleLoadContext &context)
@@ -50,6 +59,12 @@ void SessionModule::Load(ModuleLoadContext &context)
 
 void SessionModule::Shutdown()
 {
+    auto app = GetApplication();
+
+    auto sessionDriver = app->GetService<SessionDriverService>();
+    sessionDriver->SessionCreated.RemoveAll(this);
+    sessionDriver->SessionDestroyed.RemoveAll(this);
+
     IAppModule::Shutdown();
 }
 
@@ -103,9 +118,35 @@ SessionHandle SessionModule::CreateInitialSession()
 
     if (auto session = sessionDriver.FindInstance(handle))
     {
+        auto thisSP = std::static_pointer_cast<SessionModule>(shared_from_this());
+        session->WorldInstanceCreated.AddSP(thisSP, &SessionModule::OnWorldInstanceCreated);
+        session->WorldInstanceDestroyed.AddSP(thisSP, &SessionModule::OnWorldInstanceDestroyed);
+
         session->Initialize();
         session->Start();
     }
 
     return handle;
+}
+
+void SessionModule::OnSessionInstanceCreated(SessionInstance* instance)
+{
+    auto thisSP = std::static_pointer_cast<SessionModule>(shared_from_this());
+    instance->WorldInstanceCreated.AddSP(thisSP, &SessionModule::OnWorldInstanceCreated);
+    instance->WorldInstanceDestroyed.AddSP(thisSP, &SessionModule::OnWorldInstanceDestroyed);
+}
+
+void SessionModule::OnSessionInstanceDestroyed(SessionInstance* instance)
+{
+    instance->WorldInstanceCreated.RemoveAll(this);
+    instance->WorldInstanceDestroyed.RemoveAll(this);
+}
+
+void SessionModule::OnWorldInstanceCreated(WorldInstance* instance, WorldConstRef world)
+{
+}
+
+void SessionModule::OnWorldInstanceDestroyed(WorldInstance* instance)
+{
+
 }

@@ -6,7 +6,7 @@
 
 namespace Phoenix::Renderer::SDL3
 {
-    class SDL3Context : public Phoenix::IService
+    class SDL3Context : public IService
     {
         PHX_DECLARE_TYPE_DERIVED(SDL3Context, Phoenix::IService)
     public:

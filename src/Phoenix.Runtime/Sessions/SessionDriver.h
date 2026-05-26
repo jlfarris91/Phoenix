@@ -22,10 +22,10 @@ namespace Phoenix
         std::vector<SessionInstance*> GetSessions() const;
 
         PHX_DECLARE_MULTICAST_DELEGATE(FSessionCreated, SessionInstance*);
-        FSessionCreated OnSessionCreated;
+        FSessionCreated SessionCreated;
 
         PHX_DECLARE_MULTICAST_DELEGATE(FSessionDestroyed, SessionInstance*);
-        FSessionDestroyed OnSessionDestroyed;
+        FSessionDestroyed SessionDestroyed;
 
     private:
 

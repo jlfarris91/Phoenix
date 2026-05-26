@@ -14,12 +14,6 @@ namespace Phoenix
 
         FName GetId() const;
 
-        // Called by the sim thread after each world step completes.
-        void OnSimUpdate(WorldConstRef world);
-
-        // Called by the game thread each frame to advance the double buffer.
-        void Sink();
-
         // Returns the stable world view for the game thread. Null until the first sim step.
         const World* GetWorldView() const;
 
@@ -27,6 +21,16 @@ namespace Phoenix
         uint32 GetAccumulatedDirtyPageCount() const;
 
     private:
+
+        // For calling OnSimUpdate & Sink
+        friend class SessionInstance;
+
+        // Called by the game thread each frame to advance the double buffer.
+        void Sink();
+
+        // Called by the sim thread after each world step completes.
+        void OnSimUpdate(WorldConstRef world);
+
         FName             Id;
         WorldDoubleBuffer DoubleBuffer;
     };

@@ -40,10 +40,10 @@ namespace Phoenix::Renderer::SDL3
         Textures.erase(it);
     }
 
-    Vec2f SDL3ResourceManager::GetTextureSize(HTexture handle) const
+    glm::vec2 SDL3ResourceManager::GetTextureSize(HTexture handle) const
     {
         auto it = Textures.find(handle.Id);
-        return it != Textures.end() ? it->second.Size : Vec2f{};
+        return it != Textures.end() ? it->second.Size : glm::vec2{};
     }
 
     HMesh2D SDL3ResourceManager::CreateMesh(const Vertex2D* vertices, uint32_t vertexCount,

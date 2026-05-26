@@ -2,6 +2,7 @@
 
 #include "Application/AppModule.h"
 #include "Sessions/SessionHandle.h"
+#include "Worlds/WorldInstance.h"
 
 class SessionModule : public Phoenix::IAppModule
 {
@@ -16,4 +17,10 @@ public:
 private:
 
     SessionHandle CreateInitialSession();
+
+    void OnSessionInstanceCreated(Phoenix::SessionInstance *instance);
+    void OnSessionInstanceDestroyed(Phoenix::SessionInstance *instance);
+
+    void OnWorldInstanceCreated(Phoenix::WorldInstance*, Phoenix::WorldConstRef world);
+    void OnWorldInstanceDestroyed(Phoenix::WorldInstance *instance);
 };

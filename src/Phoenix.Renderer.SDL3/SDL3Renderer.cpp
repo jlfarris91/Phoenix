@@ -14,7 +14,7 @@ namespace Phoenix::Renderer::SDL3
     {
     }
 
-    static SDL_FPoint ToSDL(Vec2f v) { return { v.X, v.Y }; }
+    static SDL_FPoint ToSDL(glm::vec2 v) { return { v.x, v.y }; }
 
     void SDL3Renderer::BeginFrame()
     {
@@ -69,10 +69,10 @@ namespace Phoenix::Renderer::SDL3
         SDL_SetTextureColorModFloat(texture, call.Tint.R / 255.f, call.Tint.G / 255.f, call.Tint.B / 255.f);
         SDL_SetTextureAlphaModFloat(texture, call.Tint.A / 255.f);
 
-        SDL_FRect src = { call.SourceRect.X, call.SourceRect.Y, call.SourceRect.W, call.SourceRect.H };
+        SDL_FRect src = { call.SourceRect.Min.x, call.SourceRect.Min.y, call.SourceRect.GetWidth(), call.SourceRect.GetHeight() };
 
-        float dstW = call.SourceRect.W * call.Scale.X * view.PixelsPerUnit;
-        float dstH = call.SourceRect.H * call.Scale.Y * view.PixelsPerUnit;
+        float dstW = call.SourceRect.GetWidth() * call.Scale.x * view.PixelsPerUnit;
+        float dstH = call.SourceRect.GetHeight() * call.Scale.y * view.PixelsPerUnit;
         SDL_FPoint center = ToSDL(view.WorldToScreen(call.WorldPos));
         SDL_FRect dst = { center.x - dstW * 0.5f, center.y - dstH * 0.5f, dstW, dstH };
 
@@ -176,8 +176,8 @@ namespace Phoenix::Renderer::SDL3
         for (const Vertex2D& v : mesh->Vertices)
         {
             // Scale, then CW rotate in world Y-up space, then Y-flip for screen.
-            float lx = v.Pos.X * call.Scale.X * ppu;
-            float ly = v.Pos.Y * call.Scale.Y * ppu;
+            float lx = v.Pos.x * call.Scale.x * ppu;
+            float ly = v.Pos.y * call.Scale.y * ppu;
             float rx  =  lx * cosR + ly * sinR;  // CW rotation in world Y-up
             float ry  = -lx * sinR + ly * cosR;
             transformed.push_back({
@@ -186,7 +186,7 @@ namespace Phoenix::Renderer::SDL3
                   v.Color.G / 255.f * (call.Tint.G / 255.f),
                   v.Color.B / 255.f * (call.Tint.B / 255.f),
                   v.Color.A / 255.f * (call.Tint.A / 255.f) },
-                { v.UV.X, v.UV.Y }
+                { v.UV.x, v.UV.y }
             });
         }
 
