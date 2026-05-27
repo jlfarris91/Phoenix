@@ -25,7 +25,8 @@
 #include <Phoenix/Color.h>
 #include <Phoenix/MortonCode.h>
 #include <Phoenix/FPSCalc.h>
-#include <Phoenix/Parallel.h>
+#include <Phoenix/ParallelExecutor.h>
+#include <Phoenix.Parallel.enkiTS/EnkiTSExecutor.h>
 #include <Phoenix.Sim/Session.h>
 #include <Phoenix.Sim/Worlds.h>
 #include <Phoenix.Sim/Features.h>
@@ -89,9 +90,12 @@
 #include "imgui/JobGraphPanel.h"
 
 // Profiling
-#include "tracy/PhoenixTracyImpl.h"
+#include <Phoenix/CompositeProfiler.h>
+#include <Phoenix.Profilers.Tracy/TracyProfiler.h>
+#include <Phoenix.Profilers.Structured/StructuredProfiler.h>
 
 #include "WorldDoubleBuffer.h"
+#include "Phoenix.Parallel/TaskPoolExecutor.h"
 
 using namespace Phoenix;
 using namespace Phoenix::LDS;
@@ -130,7 +134,16 @@ ImVec2 GWorldRenderSize = { 800.0f, 600.0f };
 bool GGameWindowHovered = false;
 
 // ===== Profiling =====
-TracyProfiler GTracyProfiler;
+Phoenix::Profiling::TracyProfiler      GTracyProfiler;
+Phoenix::Profiling::StructuredProfiler GStructuredProfiler("capture.phxcap", 4096, /*clearOnOpen=*/true);
+Phoenix::Profiling::CompositeProfiler  GProfiler({ &GTracyProfiler, &GStructuredProfiler });
+
+// ===== Parallel executor =====
+// Initialized in OnAppInit; nullptr until then.
+std::unique_ptr<Phoenix::EnkiTSExecutor> GParallelExecutor;
+
+std::unique_ptr<Phoenix::TaskPoolExecutor> GTaskPoolExecutor;
+std::unique_ptr<Phoenix::ThreadPool> GThreadPool;
 
 // ===== Logging =====
 std::shared_ptr<Logger> GLogger;
@@ -268,6 +281,13 @@ void SessionWorker()
 {
     PHX_PROFILE_SET_THREAD_NAME("Sim", 0);
 
+    // Register this thread with enkiTS so it can call Submit() (AddTaskSetToPipe
+    // requires gtl_threadNum to be set; plain std::threads have NO_THREAD_NUM).
+    if (GParallelExecutor)
+    {
+        GParallelExecutor->RegisterExternalThread();
+    }
+
     GSessionThreadWantsExit = false;
     while (!GSessionThreadWantsExit)
     {
@@ -280,6 +300,11 @@ void SessionWorker()
                 --GWantsSessionStep;
             }
         }
+    }
+
+    if (GParallelExecutor)
+    {
+        GParallelExecutor->DeregisterExternalThread();
     }
 }
 
@@ -311,12 +336,18 @@ bool LoadLineModel(
 void OnAppInit(SDL_Window* window, SDL_Renderer* renderer)
 {
 #ifndef __EMSCRIPTEN__
-    //Profiling::SetProfiler(&GTracyProfiler);
+    Profiling::SetProfiler(&GProfiler);
 
     unsigned int numThreads = std::min(std::thread::hardware_concurrency(), 8u);
     if (numThreads > 1)
     {
-        SetThreadPool("SimThreadPool", numThreads - 1, 1024);
+        GParallelExecutor = std::make_unique<Phoenix::EnkiTSExecutor>(numThreads - 1);
+
+        GThreadPool = std::make_unique<Phoenix::ThreadPool>("SimThreadPool", numThreads - 1, 1024);
+        GTaskPoolExecutor = std::make_unique<Phoenix::TaskPoolExecutor>(*GThreadPool);
+
+        Phoenix::SetParallelExecutor(GTaskPoolExecutor.get());
+        //Phoenix::SetParallelExecutor(GParallelExecutor.get());
     }
 #endif
 
@@ -1361,5 +1392,13 @@ void OnAppShutdown()
         GSession->Shutdown();
         GSession.reset();
     }
+
+    // Join all worker threads before closing the profiler so no thread
+    // can race against Close() while it writes the string table + footer.
+    GThreadPool.reset();
+    GTaskPoolExecutor.reset();
+    GParallelExecutor.reset();
+
+    GStructuredProfiler.Close();
 }
 

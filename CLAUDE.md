@@ -7,11 +7,23 @@ This file is loaded automatically by Claude Code. It contains architecture notes
 ## Module Stack
 
 ```
-PhoenixLua          (scripting bridge — depends on all)
-PhoenixRTS          (units, abilities, orders, effects, vitals, projectiles)
-PhoenixSteering     (pathfinding and unit steering)
-PhoenixPhysics      (2D rigid-body physics)
-PhoenixSim          (core: ECS, Session, Features, LDS, memory, threading)
+apps/PhoenixRTS                  (demo app: units, abilities, orders, effects, vitals)
+─── Phoenix.Profilers.Tracy      (Tracy IProfiler backend)
+─── Phoenix.Profilers.Structured (SQLite IProfiler backend)
+src/Phoenix.Sim.Lua              (scripting bridge via wasm3 + Lua 5.4)
+src/Phoenix.Sim.RTS              (RTS domain: units, abilities, orders, effects, vitals, projectiles)
+src/Phoenix.Sim.Script           (scripting glue / IScriptBindings registry)
+src/Phoenix.Sim.Steering         (pathfinding and unit steering)
+src/Phoenix.Sim.Physics          (2D rigid-body physics)
+src/Phoenix.Sim.ECS              (archetype ECS, JobScheduler, systems)
+src/Phoenix.Sim.LDS              (hierarchical game data / catalog)
+src/Phoenix.Sim.Tasks            (task queue, thread pool, parallel jobs)
+src/Phoenix.Sim.Nav              (navigation mesh)
+src/Phoenix.Sim.Blackboard       (per-frame cross-feature key-value store)
+src/Phoenix.Sim.Strings          (string table / FName string recovery)
+src/Phoenix.Sim.Debug            (debug drawing, overlays)
+src/Phoenix.Sim                  (Session, World, Features, BlockBuffer)
+src/Phoenix                      (Platform, Profiling/IProfiler, FName, math types)
 ```
 
 ## Core Patterns

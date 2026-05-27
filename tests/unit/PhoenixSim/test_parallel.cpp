@@ -7,7 +7,9 @@
 #include <thread>
 #include <vector>
 
-#include "Phoenix/Parallel.h"
+#include "Phoenix.Parallel/ParallelExecutor.h"
+#include "Phoenix.Parallel/TaskQueue.h"
+#include "Phoenix.Parallel/TaskPoolExecutor.h"
 
 using namespace Phoenix;
 using namespace std::chrono_literals;
@@ -16,11 +18,10 @@ using namespace std::chrono_literals;
 // Pinning tests for the job system.
 //
 // These tests capture the externally observable contract of the current
-// ThreadPool / Task / ParallelRange implementation. They exist so that the
-// upcoming refactors (cache-line padding, task pool, work stealing, fibers)
-// can be applied without silently regressing behavior. Each test should
-// continue to pass through every step of the JobSystemRoadmap, even though
-// the implementation changes underneath.
+// ThreadPool / Task / TaskQueue / ParallelRange implementation. They exist so
+// that future refactors can be applied without silently regressing behavior.
+// Each test should continue to pass through every step of the refactor, even
+// though the implementation changes underneath.
 // ─────────────────────────────────────────────────────────────────────────────
 
 namespace
@@ -31,8 +32,9 @@ namespace
 
     struct ScopedPool
     {
-        ThreadPool Pool;
-        ScopedPool() : Pool("TestPool", kWorkers, kQueueCapacity) {}
+        ThreadPool      Pool;
+        TaskPoolExecutor Executor;
+        ScopedPool() : Pool("TestPool", kWorkers, kQueueCapacity), Executor(Pool) {}
     };
 }
 
@@ -214,7 +216,7 @@ TEST_SUITE("ParallelRange")
         std::vector<std::atomic<int>> hits(N);
         for (auto& a : hits) a.store(0);
 
-        ParallelRange(s.Pool, N, /*minRange*/ 32, [&](uint32 start, uint32 len) {
+        ParallelRange(s.Executor, N, /*minRange*/ 32, [&](uint32 start, uint32 len) {
             for (uint32 i = start; i < start + len; ++i)
             {
                 hits[i].fetch_add(1, std::memory_order_relaxed);
@@ -237,7 +239,7 @@ TEST_SUITE("ParallelRange")
         constexpr uint32 N = 4;
         std::atomic<int> batchCount{0};
         std::atomic<uint32> totalLen{0};
-        ParallelRange(s.Pool, N, /*minRange*/ 100, [&](uint32 /*start*/, uint32 len) {
+        ParallelRange(s.Executor, N, /*minRange*/ 100, [&](uint32 /*start*/, uint32 len) {
             batchCount.fetch_add(1, std::memory_order_relaxed);
             totalLen.fetch_add(len, std::memory_order_relaxed);
         });
@@ -249,7 +251,7 @@ TEST_SUITE("ParallelRange")
     {
         ScopedPool s;
         std::atomic<int> calls{0};
-        ParallelRange(s.Pool, 0u, 1u, [&](uint32, uint32) {
+        ParallelRange(s.Executor, 0u, 1u, [&](uint32, uint32) {
             calls.fetch_add(1, std::memory_order_relaxed);
         });
         CHECK(calls.load() == 0);
@@ -265,7 +267,7 @@ TEST_SUITE("ParallelForEach")
         std::vector<std::atomic<int>> hits(N);
         for (auto& a : hits) a.store(0);
 
-        ParallelForEach(s.Pool, N, [&](uint32 i) {
+        ParallelForEach(s.Executor, N, [&](uint32 i) {
             hits[i].fetch_add(1, std::memory_order_relaxed);
         });
 
@@ -281,7 +283,7 @@ TEST_SUITE("ParallelForEach")
         constexpr uint32 N = 4; // smaller than kDefaultParallelForEachMinBatch
         std::vector<std::atomic<int>> hits(N);
         for (auto& a : hits) a.store(0);
-        ParallelForEach(s.Pool, N, [&](uint32 i) {
+        ParallelForEach(s.Executor, N, [&](uint32 i) {
             hits[i].fetch_add(1, std::memory_order_relaxed);
         });
         for (auto& a : hits) CHECK(a.load() == 1);
@@ -293,7 +295,7 @@ TEST_SUITE("ParallelForEach")
         constexpr uint32 N = 4096;
         std::vector<std::atomic<int>> hits(N);
         for (auto& a : hits) a.store(0);
-        ParallelForEach(s.Pool, N, [&](uint32 i) {
+        ParallelForEach(s.Executor, N, [&](uint32 i) {
             hits[i].fetch_add(1, std::memory_order_relaxed);
         });
         for (auto& a : hits) CHECK(a.load() == 1);
@@ -303,7 +305,7 @@ TEST_SUITE("ParallelForEach")
     {
         ScopedPool s;
         std::atomic<int> calls{0};
-        ParallelForEach(s.Pool, 0u, [&](uint32) {
+        ParallelForEach(s.Executor, 0u, [&](uint32) {
             calls.fetch_add(1, std::memory_order_relaxed);
         });
         CHECK(calls.load() == 0);
@@ -312,22 +314,12 @@ TEST_SUITE("ParallelForEach")
 
 TEST_SUITE("TaskQueue")
 {
-    TEST_CASE("Enqueue accepts a const Task& without wrapping it as a callable")
+    TEST_CASE("Enqueue runs a single task through Flush")
     {
-        // Regression: the TInlineCallable<void(), 128> hot-path body refuses
-        // to store anything ≥ 128 B. sizeof(Task) is ~160 B, so binding a
-        // const Task& to the variadic Enqueue overloads must NOT fall
-        // through to Enqueue(TTaskFunc&&) (which would try to wrap the
-        // Task itself as a callable and trip the static_assert). This
-        // happened in CI on every platform on the initial #4 commit. See
-        // WorldTaskQueue::Schedule(WorldRef, const Task&) at the original
-        // call site.
         ScopedPool s;
-        TaskQueue q(/*id*/ 7u, &s.Pool);
+        TaskQueue q(/*id*/ 7u, &s.Executor);
         std::atomic<int> hit{0};
-        Task t([&] { hit.fetch_add(1, std::memory_order_relaxed); });
-        const Task& cref = t; // bind a const lvalue ref, as WorldTaskQueue does
-        q.Enqueue(cref);
+        q.Enqueue([&] { hit.fetch_add(1, std::memory_order_relaxed); });
         q.Flush();
         CHECK(hit.load() == 1);
     }
@@ -335,7 +327,7 @@ TEST_SUITE("TaskQueue")
     TEST_CASE("Flush runs groups sequentially, tasks within a group run in parallel")
     {
         ScopedPool s;
-        TaskQueue q(/*id*/ 42u, &s.Pool);
+        TaskQueue q(/*id*/ 42u, &s.Executor);
 
         std::atomic<int> phase{0};
         std::atomic<int> group1Hits{0};

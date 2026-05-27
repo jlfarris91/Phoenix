@@ -45,6 +45,7 @@ set(CMAKE_VS_DEBUGGER_VISUALIZER_FILES "${CMAKE_SOURCE_DIR}/tools/PhoenixSim.nat
 option(PHX_USE_PCH           "Use precompiled headers"                      ON)
 option(PHX_BUILD_TESTAPP     "Build PhoenixRTS demo application"            ON)
 option(PHX_BUILD_TESTS       "Build unit tests"                             OFF)
+option(PHX_BUILD_BENCH       "Build job-system benchmarks"                  OFF)
 option(PE_BUILD_STANDALONE   "Build the standalone Phoenix Editor app"      OFF)
 
 # ── Packages ──────────────────────────────────────────────────────────────────
@@ -58,6 +59,12 @@ endif()
 if((PHX_BUILD_TESTAPP OR PE_BUILD_STANDALONE) AND NOT EMSCRIPTEN)
     find_package(SDL3  CONFIG REQUIRED)
     find_package(imgui CONFIG REQUIRED)
+endif()
+
+if((PHX_BUILD_TESTAPP OR PHX_BUILD_BENCH) AND NOT EMSCRIPTEN)
+    find_package(Tracy CONFIG REQUIRED)
+    find_package(unofficial-sqlite3 CONFIG REQUIRED)
+    find_package(enkiTS CONFIG REQUIRED)
 endif()
 
 if(PHX_BUILD_TESTS)
@@ -87,6 +94,21 @@ add_subdirectory(src/Phoenix.Sim.Steering)
 add_subdirectory(src/Phoenix.Sim.RTS)
 add_subdirectory(src/Phoenix.Sim.Script)
 add_subdirectory(src/Phoenix.Sim.Lua)
+
+# ── Parallel executor backends ────────────────────────────────────────────────
+
+add_subdirectory(src/Phoenix.Parallel)
+
+if((PHX_BUILD_TESTAPP OR PHX_BUILD_BENCH) AND NOT EMSCRIPTEN)
+    add_subdirectory(src/Phoenix.Parallel.enkiTS)
+endif()
+
+# ── Profiler backends (testapp/bench only — require native platform) ─────────
+
+if((PHX_BUILD_TESTAPP OR PHX_BUILD_BENCH) AND NOT EMSCRIPTEN)
+    add_subdirectory(src/Phoenix.Profilers.Tracy)
+    add_subdirectory(src/Phoenix.Profilers.Structured)
+endif()
 
 # ── App / Editor / Runtime framework ─────────────────────────────────────────
 
@@ -119,4 +141,8 @@ if(PHX_BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests/unit)
     add_subdirectory(tests/Phoenix.Editor)
+endif()
+
+if(PHX_BUILD_BENCH AND NOT EMSCRIPTEN)
+    add_subdirectory(tests/bench)
 endif()

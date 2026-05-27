@@ -7,12 +7,8 @@
 
 #include "JobBatch.h"
 #include "SystemJob.h"
+#include "Phoenix/ParallelExecutor.h"
 #include "Phoenix.Sim/WorldsFwd.h"
-
-namespace Phoenix
-{
-    class TaskQueue;
-}
 
 namespace Phoenix::ECS
 {
@@ -70,7 +66,7 @@ namespace Phoenix::ECS
         void Build(const ArchetypeManager& archetypes);
 
         void RebuildBatchesIfDirty(const ArchetypeManager& archetypes);
-        void Execute(WorldConstRef world, TaskQueue& queue, const std::vector<CommandBuffer*>& commandBuffers);
+        void Execute(WorldConstRef world, IParallelExecutor& executor, const std::vector<CommandBuffer*>& commandBuffers);
         void ExecuteSerial(WorldConstRef world, const std::vector<CommandBuffer*>& commandBuffers);
 
         // Access a node after Build() — e.g. to read Batches from a dependent task.

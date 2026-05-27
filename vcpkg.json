@@ -20,7 +20,9 @@
           "features": ["sdl3-binding", "sdl3-renderer-binding", "freetype", "freetype-svg", "docking-experimental"]
         },
         "sdl3",
-        "tracy"
+        "tracy",
+        "sqlite3",
+        "enkits"
       ]
     },
     "standalone": {

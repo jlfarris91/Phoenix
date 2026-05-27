@@ -6,7 +6,7 @@
 #include <atomic>
 #include <numeric>
 
-#include "Phoenix/Containers/MPMCQueue.h"
+#include "Phoenix.Parallel/MPMCQueue.h"
 
 using namespace Phoenix;
 

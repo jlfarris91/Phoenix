@@ -1,10 +1,10 @@
 #include "Phoenix.Sim/BlockBuffer/BlockBuffer.h"
 
 #include <algorithm>
+#include <cstring>
 #include <malloc.h>
 
 #include "Phoenix/Profiling.h"
-#include "Phoenix/Utils.h"
 
 using namespace Phoenix;
 
@@ -214,15 +214,7 @@ void BlockBuffer::CopyTo(BlockBuffer& other) const
     other.BlockSize = BlockSize;
     other.AllocSize = AllocSize;
 
-    size_t pageSize = 4096;
-
-#ifdef _WIN32
-    SYSTEM_INFO sysInfo;
-    GetSystemInfo(&sysInfo);
-    pageSize = sysInfo.dwPageSize;
-#endif
-
-    ChunkedParallelCopy(other.Data.get(), Data.get(), Size, pageSize * 256);
+    std::memcpy(other.Data.get(), Data.get(), Size);
 }
 
 void BlockBuffer::BeginTracking()

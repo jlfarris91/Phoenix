@@ -1,6 +1,7 @@
-local SPAWN_INTERVAL     = 0.05
-local ROTATION_SPEED     = 2 * math.pi  -- one full revolution per second of sim time
-local spawnTimer         = 0
+local TARGET_UNIT_COUNT  = 4000   -- total units to spawn before stopping
+local SPAWN_PER_FRAME    = 50     -- units spawned per sim tick until target is reached
+local SPAWN_RADIUS       = 80.0
+local ROTATION_SPEED     = 2 * math.pi
 local waveIndex          = 0
 local spawnEnabled       = false
 local towerUnit
@@ -20,31 +21,30 @@ function OnWorldUpdate()
     if not spawnEnabled then return end
 
     local dt = Phoenix.DeltaTime
-    spawnTimer = spawnTimer + dt
     angle1 = angle1 + ROTATION_SPEED * dt
 
     Phoenix.Debug.DrawRay({0.0, 0.0}, Phoenix.Vec2.FromPolar(angle1, 10), {R=255, G=0, B=0, A=255})
 
-    if spawnTimer > SPAWN_INTERVAL then
-        spawnTimer = spawnTimer - SPAWN_INTERVAL
-        waveIndex = waveIndex + 1
-
-        local unitData = "Archer" -- (waveIndex % 2 == 0) and "Lancer" or "Archer"
-        local owner = (waveIndex % 9) + 1
-        local angle = math.random() * 2 * math.pi
-        local pos = Phoenix.Vec2.FromPolar(angle, 10.0)
-
-        local unit = Phoenix.Unit.SpawnUnit(unitData, owner, pos, 0.0)
-        print(string.format("Spawned Unit: %d", unit._id))
-
-        local command = Phoenix.RTS.Command.new
-        {
-            Sender = 0,
-            TargetEntity = towerUnit._id,
-            TargetLocation = { X=0.0, Y=0.0},
-            CommandId = "AttackAbility"
-        }
-        unit:IssueCommand(command)
+    if waveIndex < TARGET_UNIT_COUNT then
+        local batch = math.min(SPAWN_PER_FRAME, TARGET_UNIT_COUNT - waveIndex)
+        for i = 1, batch do
+            waveIndex = waveIndex + 1
+            local owner = (waveIndex % 9) + 1
+            local angle = math.random() * 2 * math.pi
+            local pos   = Phoenix.Vec2.FromPolar(angle, math.random() * SPAWN_RADIUS)
+            local unit  = Phoenix.Unit.SpawnUnit("Archer", owner, pos, 0.0)
+            local command = Phoenix.RTS.Command.new
+            {
+                Sender         = 0,
+                TargetEntity   = towerUnit._id,
+                TargetLocation = { X=0.0, Y=0.0 },
+                CommandId      = "AttackAbility"
+            }
+            unit:IssueCommand(command)
+        end
+        if waveIndex >= TARGET_UNIT_COUNT then
+            print(string.format("All %d units spawned", TARGET_UNIT_COUNT))
+        end
     end
 end
 

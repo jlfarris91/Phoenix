@@ -8,8 +8,9 @@
 #include "Phoenix.Sim.ECS/ArchetypeManager.h"
 #include "Phoenix.Sim.ECS/CommandBuffer.h"
 #include "Phoenix.Sim.ECS/SystemJob.h"
-#include "Phoenix/Parallel.h"
+#include "Phoenix/ParallelExecutor.h"
 #include "Phoenix.Sim/Worlds.h"
+#include "Phoenix/SpinBackoff.h"
 
 using namespace Phoenix;
 using namespace Phoenix::ECS;
@@ -198,7 +199,7 @@ uint32 JobScheduler::GetJobPredecessorCount(uint32 index) const
     return Nodes[index].TotalPredecessors;
 }
 
-void JobScheduler::Execute(WorldConstRef world, TaskQueue& queue, const std::vector<CommandBuffer*>& commandBuffers)
+void JobScheduler::Execute(WorldConstRef world, IParallelExecutor& executor, const std::vector<CommandBuffer*>& commandBuffers)
 {
     const char* schedulerName = GetName().c_str();
     size_t schedulerNameLen = std::strlen(schedulerName);
@@ -209,14 +210,13 @@ void JobScheduler::Execute(WorldConstRef world, TaskQueue& queue, const std::vec
     if (Nodes.empty())
         return;
 
-    if (queue.GetNumWorkers() == 0)
+    if (executor.GetNumWorkers() == 0)
     {
         ExecuteSerial(world, commandBuffers);
         return;
     }
 
     const uint32 numNodes = static_cast<uint32>(Nodes.size());
-    ThreadPool* pool = queue.GetThreadPool();
 
     // totalRemaining counts every batch that has been submitted and not yet completed.
     // It is incremented inside submitNode (after any predecessor may have modified Batches)
@@ -247,9 +247,9 @@ void JobScheduler::Execute(WorldConstRef world, TaskQueue& queue, const std::vec
 
         for (const JobBatch& batch : node->Batches)
         {
-            pool->Submit([&, node, batch, nodeIdx]
+            executor.Submit([&, node, batch, nodeIdx]
             {
-                CommandBuffer* cb = commandBuffers[GetCurrentThreadIndex()];
+                CommandBuffer* cb = commandBuffers[executor.GetCurrentThreadIndex()];
                 node->Job->RunBatch(world, batch, *cb);
 
                 // Last batch for this node → release successors
@@ -279,8 +279,12 @@ void JobScheduler::Execute(WorldConstRef world, TaskQueue& queue, const std::vec
     // Spin until every batch lambda has completed.
     // totalRemaining is only decremented after all successor submissions within a lambda,
     // so zero means the full call graph is done and stack locals are safe to destroy.
-    while (totalRemaining.load(std::memory_order_acquire) != 0)
-        std::this_thread::yield();
+    // PAUSE-first: avoid the yield→sleep latency spike at the tail of each scheduler phase.
+    {
+        SpinBackoff backoff(200'000); // ~1 ms of PAUSE before yielding
+        while (totalRemaining.load(std::memory_order_acquire) != 0)
+            backoff.Tick();
+    }
 }
 
 void JobScheduler::ExecuteSerial(WorldConstRef world, const std::vector<CommandBuffer*>& commandBuffers)

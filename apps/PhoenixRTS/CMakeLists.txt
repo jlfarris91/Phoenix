@@ -9,13 +9,10 @@ target_link_libraries(PhoenixRTS PRIVATE imgui::imgui)
 find_package(SDL3 CONFIG REQUIRED)
 target_link_libraries(PhoenixRTS PRIVATE SDL3::SDL3)
 
-find_package(Tracy CONFIG REQUIRED)
-target_link_libraries(PhoenixRTS PRIVATE Tracy::TracyClient)
-
 find_package(nlohmann_json CONFIG REQUIRED)
 target_link_libraries(PhoenixRTS PRIVATE nlohmann_json::nlohmann_json)
 
-target_compile_definitions(PhoenixRTS PUBLIC TRACY_ENABLE PHX_PROFILE_ENABLE IMGUI_DEFINE_MATH_OPERATORS)
+target_compile_definitions(PhoenixRTS PUBLIC PHX_PROFILE_ENABLE IMGUI_DEFINE_MATH_OPERATORS)
 if(MSVC)
     target_compile_options(PhoenixRTS PRIVATE /bigobj)
 endif()
@@ -34,6 +31,9 @@ target_link_libraries(PhoenixRTS PUBLIC
     Phoenix.Sim.Lua
     Phoenix.Sim.RTS
     Phoenix.Sim.Script
+    Phoenix.Profilers.Tracy
+    Phoenix.Profilers.Structured
+    Phoenix.Parallel.enkiTS
 )
 
 # Force the linker to include all object files from libs that self-register via

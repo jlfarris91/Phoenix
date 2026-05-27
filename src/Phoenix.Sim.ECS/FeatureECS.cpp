@@ -3,6 +3,7 @@
 #include "Phoenix/Reflection/Registration.h"
 
 #include "Phoenix/MortonCode.h"
+#include "Phoenix/ParallelExecutor.h"
 #include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 #include "Phoenix.Sim/WorldTaskQueue.h"
@@ -735,15 +736,10 @@ void FeatureECS::ExecuteScheduler(WorldRef world, JobScheduler& scheduler)
     for (const std::unique_ptr<CommandBuffer>& cb : feature->CommandBuffers)
         threadCbs.push_back(cb.get());
 
-    if (feature->bAllowParallelJobs)
-    {
-        std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
-        scheduler.Execute(world, *taskQueue, threadCbs);
-    }
+    if (feature->bAllowParallelJobs && HasParallelExecutor())
+        scheduler.Execute(world, GetParallelExecutor(), threadCbs);
     else
-    {
         scheduler.ExecuteSerial(world, threadCbs);
-    }
 }
 
 const JobScheduler& FeatureECS::GetScheduler(WorldConstRef world, EJobPhase phase)
@@ -938,11 +934,9 @@ void FeatureECS::Initialize(const std::shared_ptr<Phoenix::Session>& session)
 {
     IFeature::Initialize(session);
 
-    const uint32 n = HasThreadPool() ? GetThreadPool()->GetNumWorkers() + 1 : 1;
+    const uint32 n = HasParallelExecutor() ? GetParallelExecutor().GetNumWorkers() + 1 : 1;
     for (uint32 i = 0; i < n; ++i)
-    {
         CommandBuffers.push_back(std::make_unique<CommandBuffer>());
-    }
 }
 
 void FeatureECS::OnPreUpdate(const FeatureUpdateArgs& args)
@@ -1145,9 +1139,8 @@ void FeatureECS::OnWorldShutdown(WorldRef world)
         system->OnWorldShutdown(world);
     }
 
-    WorldData.erase(world.GetId());
-
     TaskQueue::ReleaseTaskQueue((uint32)world.GetId());
+    WorldData.erase(world.GetId());
 }
 
 void FeatureECS::OnPreWorldUpdate(WorldRef world, const FeatureUpdateArgs& args)
@@ -1451,15 +1444,10 @@ void FeatureECS::ExecuteScheduler(WorldRef world, EJobPhase phase)
     for (const std::unique_ptr<CommandBuffer>& cb : CommandBuffers)
         threadCbs.push_back(cb.get());
 
-    if (bAllowParallelJobs)
-    {
-        std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
-        scheduler.Execute(world, *taskQueue, threadCbs);
-    }
+    if (bAllowParallelJobs && HasParallelExecutor())
+        scheduler.Execute(world, GetParallelExecutor(), threadCbs);
     else
-    {
         scheduler.ExecuteSerial(world, threadCbs);
-    }
 }
 
 void FeatureECS::RegisterECSCommandHandlers()

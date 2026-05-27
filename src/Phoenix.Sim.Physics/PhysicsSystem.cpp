@@ -538,30 +538,37 @@ void PhysicsSystem::OnPostWorldUpdate(WorldRef world, const SystemUpdateArgs& ar
             WorldTaskQueue::Flush(world);
     
             WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::CalculateContactsTask, dt);
-    
+
             // Multi-pass solver
             for (uint32 i = 0; i < NumSolverSteps; ++i)
             {
                 PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
                 PHX_PROFILE_ZONE_VALUE(i);
-    
+
                 WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::PGSTask, i);
             }
-    
+
+            // Run CalculateContacts + all PGS steps now so workers stay busy.
+            // Integrate depends on the corrected velocities produced by PGS.
+            WorldTaskQueue::Flush(world);
+
             // Integrate positions
             IntegrateJob->DeltaTime = dt;
             IntegrateJob->bAllowSleep = AllowSleep;
             FeatureECS::ExecuteScheduler(world, IntegrateScheduler);
-    
+
             // Multi-pass overlap separation
             for (uint32 i = 0; i < NumSeparationSteps; ++i)
             {
                 PHX_PROFILE_ZONE_SCOPED_N("OverlapSeparationLoop");
                 PHX_PROFILE_ZONE_VALUE(i);
-    
+
                 WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.SortedEntities.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask);
                 WorldTaskQueue::ScheduleParallelRange(world, scratchBlock.Contacts.GetNum(), 128, &PhysicsSystemDetail::OverlapSeparationTask2, PenetrationThreshold, PenetrationCorrection);
             }
+
+            // Run overlap separation now rather than leaving it for the external flush.
+            WorldTaskQueue::Flush(world);
         }
     }
 }

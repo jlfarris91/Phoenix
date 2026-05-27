@@ -5,7 +5,7 @@
 #include <memory>
 #include <utility>
 
-#include "Phoenix.Sim/InlineCallable.h"
+#include "Phoenix.Parallel/InlineCallable.h"
 
 using namespace Phoenix;
 

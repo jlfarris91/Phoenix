@@ -9,6 +9,7 @@
 #include "Phoenix/Logging.h"
 #include "Phoenix.Sim/Features.h"
 #include "Phoenix/Flags.h"
+#include "Phoenix/ParallelExecutor.h"
 #include "Phoenix/Profiling.h"
 #include "Phoenix.Sim/Session.h"
 
@@ -449,6 +450,12 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time) const
     FeatureUpdateArgs updateArgs;
     updateArgs.SimTime = time;
 
+    // Keep workers spinning for the entire world update so task batches within
+    // each phase are picked up immediately without OS wake latency. Reference-
+    // counted: safe when multiple worlds tick in parallel on different threads.
+    if (HasParallelExecutor())
+        GetParallelExecutor().BeginBusyPeriod();
+
     // Pre-update
     {
         PHX_PROFILE_ZONE_SCOPED_N("PreWorldUpdate");
@@ -481,6 +488,9 @@ void WorldManager::UpdateWorld(WorldRef world, simtime_t time) const
             feature->OnPostWorldUpdate(world, updateArgs);
         }
     }
+
+    if (HasParallelExecutor())
+        GetParallelExecutor().EndBusyPeriod();
 }
 
 void WorldManager::SendActionToWorld(WorldRef world, const Action& action) const

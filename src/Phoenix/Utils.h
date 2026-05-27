@@ -144,5 +144,4 @@ namespace Phoenix
         b = temp;
     }
 
-    void ChunkedParallelCopy(uint8_t* dst, const uint8_t* src, size_t bufferSize, size_t chunkSize);
 }

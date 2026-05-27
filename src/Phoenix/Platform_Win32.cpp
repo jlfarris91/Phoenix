@@ -5,7 +5,7 @@
 #include <string>
 #include <locale>
 
-#include "Phoenix/Platform.h"
+#include "Platform.h"
 #include "Phoenix/Logging.h"
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)

@@ -1,8 +1,9 @@
 ﻿#pragma once
 
-#include "Phoenix.Sim/Worlds.h"
-#include "Phoenix/Parallel.h"
 #include "Phoenix/Profiling.h"
+#include "Phoenix.Sim/Worlds.h"
+#include "Phoenix.Parallel/Task.h"
+#include "Phoenix.Parallel/TaskQueue.h"
 
 namespace Phoenix
 {
@@ -15,12 +16,6 @@ namespace Phoenix
         {
             std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
             taskQueue->Enqueue(std::move(func));
-        }
-
-        static void Schedule(WorldRef world, const Task& task)
-        {
-            std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
-            taskQueue->Enqueue(task);
         }
 
         static void Schedule(WorldRef world, TWorldTaskFunc&& func)
@@ -49,22 +44,36 @@ namespace Phoenix
             });
         }
 
-        static void ScheduleParallelRange(WorldRef world, uint32 total, uint32 minRange, TParallelRangeFunc&& func)
+        static void ScheduleParallelRange(WorldRef world, uint32 total, uint32 chunkSize, TParallelRangeFunc&& func)
         {
             auto worldPtr = &world;
             std::shared_ptr<TaskQueue> taskQueue = TaskQueue::GetTaskQueue((uint32)world.GetId());
 
-            // No thread pool? Just run synchronously.
+            // No workers? Just run synchronously.
             if (taskQueue->GetNumWorkers() == 0)
             {
                 func(*worldPtr, 0, total);
                 return;
             }
 
-            std::vector<Task>& taskGroup = taskQueue->BeginGroup();
+            // Use chunkSize directly so we create ceil(total/chunkSize) tasks — many more
+            // than the worker count. Work-stealing rebalances naturally when per-item cost
+            // is uneven (e.g. spatially-clustered contact pairs). Previously this divided
+            // by numWorkers first, producing exactly N tasks for N workers and stalling the
+            // group barrier whenever one chunk was significantly more expensive than others.
+            const uint32 actualRange = chunkSize;
 
-            uint32 desiredRange = total / taskQueue->GetNumWorkers();
-            uint32 actualRange = desiredRange < minRange ? minRange : desiredRange;
+            // Only one task would be created — no parallelism benefit, skip the
+            // executor round-trip and run inline.
+            if (total == 0 || actualRange >= total)
+            {
+                if (total > 0)
+                    func(*worldPtr, 0, total);
+                return;
+            }
+
+            std::vector<TTaskFunc>& taskGroup = taskQueue->BeginGroup();
+
             uint32 start = 0;
             while (start != total)
             {
@@ -78,13 +87,13 @@ namespace Phoenix
         }
 
         template <class _Fx, class ...TArgs>
-        static void ScheduleParallelRange(WorldRef world, uint32 total, uint32 minRange, _Fx&& fx, TArgs&&... args)
+        static void ScheduleParallelRange(WorldRef world, uint32 total, uint32 chunkSize, _Fx&& fx, TArgs&&... args)
         {
             using namespace std::placeholders;
             TParallelRangeFunc wrapper = std::bind(std::forward<_Fx>(fx), _1, _2, _3, std::forward<TArgs>(args)...);
-            ScheduleParallelRange(world, total, minRange, std::move(wrapper));
+            ScheduleParallelRange(world, total, chunkSize, std::move(wrapper));
         }
-        
+
         static void Flush(WorldRef world)
         {
             PHX_PROFILE_ZONE_SCOPED;

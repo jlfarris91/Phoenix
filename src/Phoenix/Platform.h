@@ -125,4 +125,7 @@ namespace Phoenix
 
     size_t PHOENIX_SIM_API GetNowLocalTimeString(char* buffer, size_t sizeInBytes);
     size_t PHOENIX_SIM_API GetNowUnixTimeString(char* buffer, size_t sizeInBytes);
+
+    PHOENIX_SIM_API uint32 GetCurrentThreadIndex();
+    PHOENIX_SIM_API void SetCurrentThreadIndex(uint32 idx);
 }
