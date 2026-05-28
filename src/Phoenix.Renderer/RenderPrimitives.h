@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RendererTypes.h"
+#include "Transform2D.h"
 #include "Phoenix.Math/Rect2D.h"
 
 namespace Phoenix::Renderer
@@ -55,5 +56,13 @@ namespace Phoenix::Renderer
         float       Rotation = 0.f;        // radians, clockwise
         glm::vec2   Scale = {1.f, 1.f};
         Color4b     Tint = Color4b::White();
+    };
+
+    struct LineMesh2DCall
+    {
+        HLineMesh2D         Mesh;
+        HTexture            Texture;
+        Math::Transform2D   Transform;
+        Color4b             Tint = Color4b::White();
     };
 }

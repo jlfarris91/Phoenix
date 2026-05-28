@@ -11,11 +11,11 @@
 
 using namespace Phoenix;
 
-void UnitComponent::OnSpawn(const EnTT::SceneComponentHandlerArgs &args)
+void UnitComponent::OnSpawn(const EnTT::SceneComponentSyncArgs &args)
 {
 }
 
-void UnitComponent::OnUpdate(const EnTT::SceneComponentHandlerArgs& args)
+void UnitComponent::OnUpdate(const EnTT::SceneComponentSyncArgs& args)
 {
     auto simComp = static_cast<const RTS::UnitComponent*>(args.SimComponentData);
 
@@ -36,7 +36,7 @@ void UnitComponent::OnUpdate(const EnTT::SceneComponentHandlerArgs& args)
     }
 }
 
-void UnitComponent::OnDestroy(const EnTT::SceneComponentHandlerArgs &args)
+void UnitComponent::OnDestroy(const EnTT::SceneComponentSyncArgs &args)
 {
     auto& registry = args.Scene->GetRegistry();
     if (registry.any_of<EnTT::LineMesh2DComponent>(args.SceneEntity))

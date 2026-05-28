@@ -118,18 +118,12 @@ void SessionInstance::TickSession()
     // FrameMarkNamed("Sim");
 #endif
 
-    ExecuteDispatchQueue();
+    FlushDispatchQueue();
 
     SessionStepArgs stepArgs;
     stepArgs.SpeedMultiplier = SimSpeed;
 
     Session->Tick(stepArgs);
-}
-
-void SessionInstance::Dispatch(std::function<void()> &&func)
-{
-    std::scoped_lock lock(DispatchQueueMutex);
-    DispatchQueue.emplace(std::move(func));
 }
 
 void SessionInstance::SessionWorker(SessionInstance* instance)
@@ -197,17 +191,4 @@ void SessionInstance::OnPostWorldUpdateImpl(WorldConstRef world)
 void SessionInstance::OnShutdown()
 {
     Session->Shutdown();
-}
-
-void SessionInstance::ExecuteDispatchQueue()
-{
-    std::scoped_lock lock(DispatchQueueMutex);
-
-    size_t count = DispatchQueue.size();
-    for (size_t i = 0; i < count; ++i)
-    {
-        const auto& func = DispatchQueue.front();
-        func();
-        DispatchQueue.pop();
-    }
 }

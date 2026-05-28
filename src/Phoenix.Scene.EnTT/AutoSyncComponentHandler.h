@@ -10,38 +10,105 @@ namespace Phoenix::EnTT
     {
         PHX_DECLARE_TYPE_DERIVED(AutoSceneComponentHandler, ISceneComponentHandler)
     public:
-
-        bool CanHandleSimComponent(const SceneComponentHandlerArgs& args) override
+        ~AutoSceneComponentHandler() override
         {
+            AutoSceneComponentHandler::Unregister();
+        }
+
+        void Register(const std::weak_ptr<Scene>& weakScenePtr) override
+        {
+            WeakScenePtr = weakScenePtr;
+            if (auto scenePtr = weakScenePtr.lock())
+            {
+                auto& registry = scenePtr->GetRegistry();
+                registry.on_construct<TSceneComponent>().connect<&AutoSceneComponentHandler::OnConstruct>(this);
+                registry.on_update<TSceneComponent>().connect<&AutoSceneComponentHandler::OnUpdate>(this);
+                registry.on_destroy<TSceneComponent>().connect<&AutoSceneComponentHandler::OnDestroy>(this);
+            }
+        }
+
+        void Unregister() override
+        {
+            if (auto scenePtr = WeakScenePtr.lock())
+            {
+                auto& registry = scenePtr->GetRegistry();
+                registry.on_construct<TSceneComponent>().disconnect<&AutoSceneComponentHandler::OnConstruct>(this);
+                registry.on_update<TSceneComponent>().disconnect<&AutoSceneComponentHandler::OnUpdate>(this);
+                registry.on_destroy<TSceneComponent>().disconnect<&AutoSceneComponentHandler::OnDestroy>(this);
+            }
+            WeakScenePtr.reset();
+        }
+
+        void OnConstruct(entt::registry& registry, entt::entity entity)
+        {
+            if constexpr (requires (TSceneComponent& c, Scene& s, entt::entity e) { c.OnConstruct(s, e); })
+            {
+                if (auto scenePtr = WeakScenePtr.lock())
+                {
+                    registry.get<TSceneComponent>(entity).OnConstruct(*scenePtr, entity);
+                }
+            }
+        }
+
+        void OnUpdate(entt::registry& registry, entt::entity entity)
+        {
+            if constexpr (requires (TSceneComponent& c, Scene& s, entt::entity e) { c.OnUpdate(s, e); })
+            {
+                if (auto scenePtr = WeakScenePtr.lock())
+                {
+                    registry.get<TSceneComponent>(entity).OnUpdate(*scenePtr, entity);
+                }
+            }
+        }
+
+        void OnDestroy(entt::registry& registry, entt::entity entity)
+        {
+            if constexpr (requires (TSceneComponent& c, Scene& s, entt::entity e) { c.OnDestroy(s, e); })
+            {
+                if (auto scenePtr = WeakScenePtr.lock())
+                {
+                    registry.get<TSceneComponent>(entity).OnDestroy(*scenePtr, entity);
+                }
+            }
+        }
+
+        bool CanSync(const SceneComponentSyncArgs& args) override
+        {
+            PHX_ASSERT(args.Scene == WeakScenePtr.lock().get());
             return args.SimComponentTypeId == StaticTypeName<TSimComponent>::TypeId;
         }
 
-        void OnSpawnComponent(const SceneComponentHandlerArgs& args) override
+        void OnSync(const SceneComponentSyncArgs& args) override
         {
-            if constexpr (requires (TSceneComponent& c, const SceneComponentHandlerArgs& a) { c.OnSpawn(a); })
+            PHX_ASSERT(args.Scene == WeakScenePtr.lock().get());
+            if constexpr (requires (TSceneComponent& c, const SceneComponentSyncArgs& a) { c.OnSync(a); })
             {
                 auto& sceneComp = args.Scene->GetRegistry().get_or_emplace<TSceneComponent>(args.SceneEntity);
-                sceneComp.OnSpawn(args);
+                sceneComp.OnSync(args);
             }
         }
 
-        void OnUpdateComponent(const SceneComponentHandlerArgs& args) override
+        void OnDesync(const SceneComponentSyncArgs& args) override
         {
-            if constexpr (requires (TSceneComponent& c, const SceneComponentHandlerArgs& a) { c.OnUpdate(a); })
+            PHX_ASSERT(args.Scene == WeakScenePtr.lock().get());
+            auto& registry = args.Scene->GetRegistry();
+            auto hasSceneComp = registry.any_of<TSceneComponent>(args.SceneEntity);
+            if constexpr (requires (TSceneComponent& c, const SceneComponentSyncArgs& a) { c.OnDesync(a); })
             {
-                auto& sceneComp = args.Scene->GetRegistry().get_or_emplace<TSceneComponent>(args.SceneEntity);
-                sceneComp.OnUpdate(args);
+                if (hasSceneComp)
+                {
+                    auto& sceneComp = registry.get<TSceneComponent>(args.SceneEntity);
+                    sceneComp.OnDesync(args);
+                }
+            }
+            if (hasSceneComp)
+            {
+                registry.erase<TSceneComponent>(args.SceneEntity);
             }
         }
 
-        void OnDestroyComponent(const SceneComponentHandlerArgs& args) override
-        {
-            if constexpr (requires (TSceneComponent& c, const SceneComponentHandlerArgs& a) { c.OnDestroy(a); })
-            {
-                auto& sceneComp = args.Scene->GetRegistry().get_or_emplace<TSceneComponent>(args.SceneEntity);
-                sceneComp.OnDestroy(args);
-            }
-        }
+    private:
+        std::weak_ptr<Scene> WeakScenePtr;
     };
 }
 

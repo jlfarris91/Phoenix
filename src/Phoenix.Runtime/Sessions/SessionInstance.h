@@ -9,15 +9,18 @@
 #include <Phoenix.Sim/Session.h>
 #include <Phoenix/Delegates.h>
 
+#include "Dispatch.h"
+
 namespace Phoenix
 {
     class WorldInstance;
 
     class SessionInstance : public std::enable_shared_from_this<SessionInstance>
+                          , public Dispatcher
     {
     public:
         SessionInstance(uint32_t id, const Phoenix::SessionCtorArgs& args);
-        ~SessionInstance();
+        ~SessionInstance() override;
 
         void Initialize();
 
@@ -52,9 +55,6 @@ namespace Phoenix
         PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceDestroyed, WorldInstance*);
         FWorldInstanceDestroyed WorldInstanceDestroyed;
 
-        // Enqueue a function to be executed on the session thread.
-        void Dispatch(std::function<void()>&& func);
-
     private:
 
         static void SessionWorker(SessionInstance* instance);
@@ -62,8 +62,6 @@ namespace Phoenix
         void OnPostWorldUpdateImpl(Phoenix::WorldConstRef world);
 
         void OnShutdown();
-
-        void ExecuteDispatchQueue();
 
         uint32_t Id;
 
@@ -76,9 +74,6 @@ namespace Phoenix
         std::atomic<bool> bSessionThreadExited = false;
         std::atomic<bool> bTickSession = true;
         std::atomic<uint32_t> WantsSessionStep = 0u;
-
-        std::queue<std::function<void()>> DispatchQueue;
-        std::recursive_mutex DispatchQueueMutex;
 
         double SimSpeed = 1.0;
     };

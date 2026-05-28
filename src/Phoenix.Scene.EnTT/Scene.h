@@ -7,6 +7,7 @@
 #include <WorldSceneSync.h>
 
 #include "IScene.h"
+#include "SceneProxyManager.h"
 
 namespace Phoenix::EnTT
 {
@@ -25,9 +26,10 @@ namespace Phoenix::EnTT
 
         void Sync(WorldConstRef world) override;
 
-        Renderer::RenderScene Gather(WorldConstRef world) const override;
+        Renderer::ISceneProxyManager& GetProxyManager() const override;
 
         void RegisterSyncComponentHandler(const std::shared_ptr<ISceneComponentHandler>& handler);
+        bool UnregisterSyncComponentHandler(const std::shared_ptr<ISceneComponentHandler>& handler);
 
         template <class T, class ...TArgs>
         void RegisterSyncComponentHandler(TArgs&& ...args)
@@ -53,5 +55,6 @@ namespace Phoenix::EnTT
         Phoenix::Scene::WorldSceneSync EntitySync;
         std::vector<std::shared_ptr<ISceneComponentHandler>> SceneComponentHandlers;
         entt::registry Registry;
+        std::unique_ptr<Renderer::SceneProxyManager> ProxyManager;
     };
 }

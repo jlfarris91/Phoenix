@@ -11,6 +11,7 @@ namespace Phoenix::Renderer
     using DrawCall = std::variant<
         Sprite2DCall,
         Mesh2DCall,
+        LineMesh2DCall,
         Line2DCall,
         Circle2DCall,
         Rect2DCall,

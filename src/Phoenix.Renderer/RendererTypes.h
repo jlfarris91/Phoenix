@@ -25,6 +25,15 @@ namespace Phoenix::Renderer
         bool operator==(const HMesh2D&) const = default;
     };
 
+    // Opaque handle to a GPU-resident 2D line mesh. The backend owns the memory.
+    struct HLineMesh2D
+    {
+        uint32_t Id = 0;
+
+        bool IsValid() const { return Id != 0; }
+        bool operator==(const HLineMesh2D&) const = default;
+    };
+
     // Opaque handle to an off-screen render target. The backend owns the memory.
     struct HRenderTarget
     {

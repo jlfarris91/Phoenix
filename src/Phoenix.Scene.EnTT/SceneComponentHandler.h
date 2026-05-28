@@ -5,17 +5,33 @@
 #include "Phoenix/Reflection/Registration.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
 
+namespace Phoenix::Renderer
+{
+    class ISceneProxyManager;
+}
+
 namespace Phoenix::EnTT
 {
     class Scene;
 
-    struct SceneComponentHandlerArgs
+    struct SceneComponentSyncArgs
     {
+        // The world containing the sim entity.
         WorldConstPtr World = nullptr;
+
+        // The scene containing the scene entity.
         Scene* Scene = nullptr;
+
+        // The entity in the scene.
         entt::entity SceneEntity;
+
+        // The entity in the sim.
         ECS::EntityId SimEntity;
+
+        // The type id of the component.
         FName SimComponentTypeId;
+
+        // The raw data of the component.
         const void* SimComponentData = nullptr;
     };
 
@@ -25,16 +41,17 @@ namespace Phoenix::EnTT
     public:
         virtual ~ISceneComponentHandler() = default;
 
+        virtual void Register(const std::weak_ptr<Scene>& scene) = 0;
+
+        virtual void Unregister() = 0;
+
         // Return true if the handler can handle the component for a given entity.
-        virtual bool CanHandleSimComponent(const SceneComponentHandlerArgs& args) = 0;
+        virtual bool CanSync(const SceneComponentSyncArgs& args) = 0;
 
         //
-        virtual void OnSpawnComponent(const SceneComponentHandlerArgs& args) = 0;
+        virtual void OnSync(const SceneComponentSyncArgs& args) = 0;
 
         //
-        virtual void OnUpdateComponent(const SceneComponentHandlerArgs& args) = 0;
-
-        //
-        virtual void OnDestroyComponent(const SceneComponentHandlerArgs& args) = 0;
+        virtual void OnDesync(const SceneComponentSyncArgs& args) = 0;
     };
 }

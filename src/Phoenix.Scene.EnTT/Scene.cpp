@@ -54,24 +54,39 @@ void EnTT::Scene::Sync(WorldConstRef world)
     EntitySync.Sync(world);
 }
 
-Renderer::RenderScene EnTT::Scene::Gather(WorldConstRef world) const
+Renderer::ISceneProxyManager& EnTT::Scene::GetProxyManager() const
 {
-    Renderer::RenderScene scene;
-    // scene.View   = Camera.GetView();
-    // scene.Target = Target;
-    return scene;
+    return *ProxyManager;
 }
 
 void EnTT::Scene::RegisterSyncComponentHandler(const std::shared_ptr<ISceneComponentHandler>& handler)
 {
+    auto iter = std::ranges::find(SceneComponentHandlers, handler);
+    if (iter != SceneComponentHandlers.end())
+    {
+        return;
+    }
     SceneComponentHandlers.push_back(handler);
+    handler->Register(shared_from_this());
+}
+
+bool EnTT::Scene::UnregisterSyncComponentHandler(const std::shared_ptr<ISceneComponentHandler>& handler)
+{
+    auto iter = std::ranges::find(SceneComponentHandlers, handler);
+    if (iter == SceneComponentHandlers.end())
+    {
+        return false;
+    }
+    SceneComponentHandlers.erase(iter);
+    handler->Unregister();
+    return true;
 }
 
 SceneEntity EnTT::Scene::OnSpawnEntity(WorldConstRef world, const WorldSceneSync::SyncEntry& entry)
 {
     auto sceneEntity = Registry.create();
 
-    SceneComponentHandlerArgs compArgs =
+    SceneComponentSyncArgs compArgs =
     {
         .World = &world,
         .Scene = this,
@@ -85,9 +100,9 @@ SceneEntity EnTT::Scene::OnSpawnEntity(WorldConstRef world, const WorldSceneSync
         compArgs.SimComponentData = comp;
         for (auto&& handler : SceneComponentHandlers)
         {
-            if (handler->CanHandleSimComponent(compArgs))
+            if (handler->CanSync(compArgs))
             {
-                handler->OnSpawnComponent(compArgs);
+                handler->OnSync(compArgs);
                 break;
             }
         }
@@ -100,7 +115,7 @@ SceneEntity EnTT::Scene::OnSpawnEntity(WorldConstRef world, const WorldSceneSync
 
 void EnTT::Scene::OnUpdateEntity(WorldConstRef world, const WorldSceneSync::SyncEntry& entry)
 {
-    SceneComponentHandlerArgs compArgs =
+    SceneComponentSyncArgs compArgs =
     {
         .World = &world,
         .Scene = this,
@@ -114,9 +129,9 @@ void EnTT::Scene::OnUpdateEntity(WorldConstRef world, const WorldSceneSync::Sync
         compArgs.SimComponentData = comp;
         for (auto&& handler : SceneComponentHandlers)
         {
-            if (handler->CanHandleSimComponent(compArgs))
+            if (handler->CanSync(compArgs))
             {
-                handler->OnUpdateComponent(compArgs);
+                handler->OnSync(compArgs);
                 break;
             }
         }
@@ -125,7 +140,7 @@ void EnTT::Scene::OnUpdateEntity(WorldConstRef world, const WorldSceneSync::Sync
 
 void EnTT::Scene::OnDestroyEntity(WorldConstRef world, const WorldSceneSync::SyncEntry& entry)
 {
-    SceneComponentHandlerArgs compArgs =
+    SceneComponentSyncArgs compArgs =
     {
         .World = &world,
         .Scene = this,
@@ -139,7 +154,7 @@ void EnTT::Scene::OnDestroyEntity(WorldConstRef world, const WorldSceneSync::Syn
         compArgs.SimComponentData = comp;
         for (auto&& handler : SceneComponentHandlers)
         {
-            if (handler->CanHandleSimComponent(compArgs))
+            if (handler->CanSync(compArgs))
             {
                 handler->OnDestroyComponent(compArgs);
                 break;

@@ -1,14 +1,15 @@
 #pragma once
 
-#include "RenderScene.h"
 #include "Phoenix/Services/IService.h"
+#include "Phoenix.App/Dispatch.h"
 
 namespace Phoenix::Renderer
 {
-    class IRenderer : public IService
-    {
-        PHX_DECLARE_TYPE_DERIVED(IRenderer, Phoenix::IService)
+    struct RenderScene;
 
+    class IRenderer : public IService, public IDispatcher
+    {
+        PHX_DECLARE_TYPE_DERIVED(IRenderer, Phoenix::IService, Phoenix::IDispatcher)
     public:
         virtual void BeginFrame() = 0;
         virtual void Submit(const RenderScene& scene) = 0;

@@ -6,7 +6,7 @@
 
 namespace Phoenix::EnTT
 {
-    struct SceneComponentHandlerArgs;
+    struct SceneComponentSyncArgs;
 }
 
 namespace Phoenix::ECS
@@ -18,9 +18,9 @@ class UnitComponent
 {
 public:
 
-    void OnSpawn(const Phoenix::EnTT::SceneComponentHandlerArgs& args);
-    void OnUpdate(const Phoenix::EnTT::SceneComponentHandlerArgs& args);
-    void OnDestroy(const Phoenix::EnTT::SceneComponentHandlerArgs& args);
+    void OnSpawn(const Phoenix::EnTT::SceneComponentSyncArgs& args);
+    void OnUpdate(const Phoenix::EnTT::SceneComponentSyncArgs& args);
+    void OnDestroy(const Phoenix::EnTT::SceneComponentSyncArgs& args);
 
 private:
 

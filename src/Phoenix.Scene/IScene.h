@@ -1,7 +1,11 @@
 #pragma once
 
-#include <RenderScene.h>
 #include "Phoenix.Sim/WorldsFwd.h"
+
+namespace Phoenix::Renderer
+{
+    class ISceneProxyManager;
+}
 
 namespace Phoenix::Scene
 {
@@ -11,6 +15,6 @@ namespace Phoenix::Scene
     public:
         virtual ~IScene() = default;
         virtual void Sync(WorldConstRef world) = 0;
-        virtual Renderer::RenderScene Gather(WorldConstRef world) const = 0;
+        virtual Renderer::ISceneProxyManager& GetProxyManager() const = 0;
     };
 }

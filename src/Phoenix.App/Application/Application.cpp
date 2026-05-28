@@ -2,7 +2,6 @@
 
 #include <cassert>
 #include <memory>
-#include <mutex>
 #include <shared_mutex>
 
 #include "AppModuleManager.h"
@@ -60,7 +59,7 @@ void Application::Run()
     Initialize();
     while (!WantsQuit())
     {
-        ExecuteDispatchQueue();
+        FlushDispatchQueue();
         Tick();
     }
     Shutdown();
@@ -122,12 +121,6 @@ bool Application::IsShutDown() const
     return HasAnyFlags(StateFlags, EAppStateFlags::ShutDown);
 }
 
-void Application::Dispatch(std::function<void()>&& function)
-{
-    std::scoped_lock lock(DispatchQueueMutex);
-    DispatchQueue.emplace(std::move(function));
-}
-
 void Application::InitializeInternal()
 {
     Container->ResolveServices<IAppService>(AppServices);
@@ -154,17 +147,4 @@ void Application::ShutdownInternal()
         service->Shutdown();
     }
     AppServices.clear();
-}
-
-void Application::ExecuteDispatchQueue()
-{
-    std::scoped_lock lock(DispatchQueueMutex);
-
-    size_t count = DispatchQueue.size();
-    for (size_t i = 0; i < count; i++)
-    {
-        const auto& func = DispatchQueue.front();
-        func();
-        DispatchQueue.pop();
-    }
 }

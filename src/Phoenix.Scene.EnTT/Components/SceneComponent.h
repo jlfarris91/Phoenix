@@ -6,7 +6,8 @@ namespace Phoenix::EnTT
 {
     struct SceneComponent
     {
-        Math::Transform2D LocalTransform;
-        Math::Transform2D WorldTransform;
+        int32_t             Layer = 0;
+        Math::Transform2D   LocalTransform;
+        glm::mat3           WorldTransform;
     };
 }
