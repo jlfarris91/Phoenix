@@ -8,13 +8,12 @@
 #include "AppService.h"
 #include "IPlatformService.h"
 #include "Phoenix/Flags.h"
-#include "Phoenix/Services/ServiceContainerBuilder.h"
 
 using namespace Phoenix;
 
-Application::Application(const CtorArgs& args)
+Application::Application(std::shared_ptr<IServiceLocator> locator)
 {
-    Container = args.Builder->Build();
+    Container = std::move(locator);
 }
 
 void Application::Initialize()
@@ -127,7 +126,7 @@ void Application::InitializeInternal()
 
     for (const auto& service : AppServices)
     {
-        service->Initialize(shared_from_this());
+        service->Initialize(GetSharedSelf());
     }
 
     if (auto&& moduleManager = Container->ResolveService<AppModuleManager>())

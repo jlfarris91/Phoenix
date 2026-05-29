@@ -28,7 +28,7 @@ private:
     void OnWorldInstanceUpdated(Phoenix::WorldInstance* instance, Phoenix::WorldConstRef world);
     void OnWorldInstanceDestroyed(Phoenix::WorldInstance* instance);
 
-    void RegisterSceneComponentHandlers(Phoenix::EnTT::Scene& scene);
+    void RegisterSceneComponentHandlers(Phoenix::App::Dev::Scene& scene);
 
     std::shared_ptr<Phoenix::Scene::ISceneManager> SceneManager;
 };

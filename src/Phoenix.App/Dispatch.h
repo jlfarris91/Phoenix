@@ -36,6 +36,8 @@ namespace Phoenix
         // Returns true if the current thread is the same as the owning thread.
         bool IsOnOwningThread() const override;
 
+        void SetOwningThread();
+
         // Dispatches a function to be called on the owning thread.
         // If the current thread is already the owning thread the function is executed immediately.
         void Dispatch(std::function<void()>&& func) override;

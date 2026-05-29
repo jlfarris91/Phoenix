@@ -407,7 +407,7 @@ void WorldManager::InitializeWorld(WorldRef world, simtime_t time) const
         feature->OnWorldInitialize(world);
     }
 
-    for (const auto& service : Session->GetServiceContainer()->GetInstances())
+    for (const auto& service : Session->GetServiceLocator()->GetAllServices())
     {
         if (IsA<IFeature>(service)) continue;
         if (auto sessionService = Cast<ISessionService>(service))
@@ -427,7 +427,7 @@ void WorldManager::ShutdownWorld(WorldRef world) const
         feature->OnWorldShutdown(world);
     }
 
-    for (const auto& service : Session->GetServiceContainer()->GetInstances())
+    for (const auto& service : Session->GetServiceLocator()->GetAllServices())
     {
         if (IsA<IFeature>(service)) continue;
         if (auto sessionService = Cast<ISessionService>(service))

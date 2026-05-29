@@ -15,10 +15,7 @@ function(phx_add_game TARGET)
 
     target_link_libraries(${TARGET} PRIVATE
         Phoenix.Engine
-        Phoenix.Platform.SDL3
-        Phoenix.UI.ImGui.SDL3
-        Phoenix.Renderer.SDL3
-        Phoenix.Scene.EnTT
+        Phoenix.App.Dev
         glm::glm
     )
 

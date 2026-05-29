@@ -26,10 +26,12 @@ static void DiscoverAppModules(std::vector<std::shared_ptr<IAppModule>>& outModu
 int Phoenix::PhoenixMain(int, char**)
 {
     ServiceContainerBuilder builder;
-
+    
     // Register default services
     // TODO (jfarris): implement service modules so we can bundle these and let apps decide the defaults
     {
+        // Default Application — modules may override by registering a subclass .As<Application>().
+        builder.Register<Application>().As<Application>();
         builder.Register<SessionDriverService>().AsInterfaces();
     }
 
@@ -51,8 +53,8 @@ int Phoenix::PhoenixMain(int, char**)
         return manager;
     }).AsInterfaces();
 
-    Application::CtorArgs args{&builder};
-    auto app = std::make_shared<Application>(args);
+    auto locator = builder.Build();
+    auto app = locator->ResolveService<Application>();
     app->Run();
 
     return 0;

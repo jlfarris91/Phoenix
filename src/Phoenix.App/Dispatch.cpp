@@ -15,6 +15,11 @@ bool Phoenix::Dispatcher::IsOnOwningThread() const
     return std::this_thread::get_id() == OwningThreadId;
 }
 
+void Phoenix::Dispatcher::SetOwningThread()
+{
+    OwningThreadId = std::this_thread::get_id();
+}
+
 void Phoenix::Dispatcher::Dispatch(std::function<void()>&& func)
 {
     if (std::this_thread::get_id() == OwningThreadId)

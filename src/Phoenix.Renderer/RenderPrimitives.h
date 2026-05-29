@@ -4,7 +4,7 @@
 #include "Transform2D.h"
 #include "Phoenix.Math/Rect2D.h"
 
-namespace Phoenix::Renderer
+namespace Phoenix::App
 {
     struct Sprite2DCall
     {

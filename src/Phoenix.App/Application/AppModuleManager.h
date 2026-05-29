@@ -15,8 +15,8 @@ namespace Phoenix
 
     protected:
 
-        virtual bool CanRegisterModule(const TypeDescriptor& moduleType) const override;
-        virtual void OnModuleInitialize(IModule* module) override;
-        virtual void OnModuleShutdown(IModule* module) override;
+        bool CanRegisterModule(const TypeDescriptor& moduleType) const override;
+        void OnModuleInitialize(IModule* module) override;
+        void OnModuleShutdown(IModule* module) override;
     };
 }

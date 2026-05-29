@@ -2,7 +2,9 @@
 
 #include <tuple>
 
+#include "ServiceConstruct.h"
 #include "ServiceContainer.h"
+#include "ServiceModule.h"
 
 namespace Phoenix
 {
@@ -19,6 +21,8 @@ namespace Phoenix
     {
     public:
         ServiceRegistrar(ServiceContainerBuilder* builder, const std::shared_ptr<ServiceRegistration>& registration);
+
+        const ServiceRegistrar& AsSelf() const;
 
         const ServiceRegistrar& As(FName typeId) const;
 
@@ -63,6 +67,7 @@ namespace Phoenix
             return *this;
         }
 
+        // Explicit dep list — use when T has multiple constructors and auto-detection picks the wrong one.
         template <class... TDeps, class... TValues>
         const TypedServiceRegistrar& WithConstructor(TValues&&... values) const
         {
@@ -73,9 +78,7 @@ namespace Phoenix
                     return std::apply(
                         [&loc](auto&&... args) -> std::shared_ptr<IService>
                         {
-                            return std::make_shared<T>(
-                                loc.ResolveService<TDeps>()...,
-                                std::forward<decltype(args)>(args)...);
+                            return MakeServiceExplicit<T, TDeps...>(loc, std::forward<decltype(args)>(args)...);
                         },
                         valuesTuple);
                 };
@@ -102,21 +105,23 @@ namespace Phoenix
             return TypedServiceRegistrar<TService>(this, registration);
         }
 
-        // 2. Value-arg construction (including zero-arg default construction)
+        // 2. Value-arg construction (including zero-arg default construction).
+        //    Automatically resolves T::Dependencies if present, then injects a child scope
+        //    if the constructor accepts one. Use WithConstructor<TDeps...>() to override.
         template <class TService, class... TValues>
         TypedServiceRegistrar<TService> Register(TValues&&... values)
         {
-            auto registration = MakeRegistration(StaticTypeName<TService>::TypeId,
-                [valuesTuple = std::make_tuple(std::forward<TValues>(values)...)]
-                (IServiceLocator&) -> std::shared_ptr<IService>
+            auto factory = [valuesTuple = std::make_tuple(std::forward<TValues>(values)...)]
+                (IServiceLocator& loc) -> std::shared_ptr<IService>
                 {
                     return std::apply(
-                        [](auto&&... args) -> std::shared_ptr<IService>
+                        [&loc](auto&&... args) -> std::shared_ptr<IService>
                         {
-                            return std::make_shared<TService>(std::forward<decltype(args)>(args)...);
+                            return MakeService<TService>(loc, std::forward<decltype(args)>(args)...);
                         },
                         valuesTuple);
-                });
+                };
+            auto registration = MakeRegistration(StaticTypeName<TService>::TypeId, factory);
             return TypedServiceRegistrar<TService>(this, registration);
         }
 
@@ -136,7 +141,17 @@ namespace Phoenix
         // Low-level escape hatch
         ServiceRegistrar RegisterService(FName typeId, const ServiceFactoryFunc& factory);
 
-        std::shared_ptr<ServiceContainer> Build(std::shared_ptr<ServiceContainer> parent = {});
+        void RegisterModule(const IServiceModule& module);
+
+        template <class T, class ...TArgs>
+        void RegisterModule(TArgs&& ...args)
+        {
+            T module(std::forward<TArgs>(args)...);
+            RegisterModuleInternal(module);
+        }
+
+        std::shared_ptr<IServiceLocator> Build(std::shared_ptr<IServiceLocator> parent = {});
+
 
     private:
         friend class ServiceRegistrar;
@@ -145,8 +160,11 @@ namespace Phoenix
         friend class TypedServiceRegistrar;
 
         std::shared_ptr<ServiceRegistration> MakeRegistration(FName typeId, const ServiceFactoryFunc& factory);
+        void RegisterServiceAsSelf(const std::shared_ptr<ServiceRegistration>& shared);
         void RegisterServiceAs(const std::shared_ptr<ServiceRegistration>& registration, FName typeId);
         void RegisterServiceAsInterfaces(const std::shared_ptr<ServiceRegistration>& registration);
+
+        void RegisterModuleInternal(const IServiceModule& module);
 
         ServiceContainer Container;
     };

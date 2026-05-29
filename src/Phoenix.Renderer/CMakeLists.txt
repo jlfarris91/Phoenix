@@ -8,5 +8,6 @@ target_include_directories(Phoenix.Renderer PUBLIC
 
 target_link_libraries(Phoenix.Renderer PUBLIC
     Phoenix.App
+    Phoenix.Math
     glm::glm
 )

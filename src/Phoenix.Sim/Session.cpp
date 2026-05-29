@@ -81,7 +81,7 @@ void Session::Initialize()
 {
     LoadConfig();
 
-    for (const auto& service : Container->GetInstances())
+    for (const auto& service : Container->GetAllServices())
     {
         if (auto sessionService = Cast<ISessionService>(service))
             sessionService->Initialize(shared_from_this());
@@ -97,8 +97,7 @@ void Session::Shutdown()
 {
     WorldManager->Shutdown();
 
-    auto instances = Container->GetInstances();
-    for (const auto& service : instances)
+    for (const auto& service : Container->GetAllServices())
     {
         if (auto sessionService = Cast<ISessionService>(service))
             sessionService->Shutdown();

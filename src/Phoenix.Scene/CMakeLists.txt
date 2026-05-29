@@ -9,5 +9,4 @@ target_include_directories(Phoenix.Scene PUBLIC
 target_link_libraries(Phoenix.Scene PUBLIC
     Phoenix.Runtime
     Phoenix.Sim.ECS
-    Phoenix.Renderer
 )

@@ -13,7 +13,7 @@ void SceneModule::Register(Phoenix::ServiceContainerBuilder &builder)
 {
     IAppModule::Register(builder);
 
-    builder.Register<Phoenix::EnTT::SceneManager>().AsInterfaces();
+    builder.Register<Phoenix::App::Dev::SceneManager>().AsInterfaces();
 }
 
 void SceneModule::Initialize(Phoenix::ModuleInitContext &context)
@@ -63,7 +63,7 @@ void SceneModule::OnWorldInstanceCreated(Phoenix::WorldInstance* instance, Phoen
 {
     if (auto scene = SceneManager->CreateScene(instance->GetId()))
     {
-        auto enttScene = std::static_pointer_cast<Phoenix::EnTT::Scene>(scene);
+        auto enttScene = std::static_pointer_cast<Phoenix::App::Dev::Scene>(scene);
         RegisterSceneComponentHandlers(*enttScene);
 
         scene->Sync(world);
@@ -83,7 +83,7 @@ void SceneModule::OnWorldInstanceDestroyed(Phoenix::WorldInstance* instance)
     SceneManager->DestroyScene(instance->GetId());
 }
 
-void SceneModule::RegisterSceneComponentHandlers(Phoenix::EnTT::Scene& scene)
+void SceneModule::RegisterSceneComponentHandlers(Phoenix::App::Dev::Scene& scene)
 {
-    scene.RegisterSyncComponentHandler<Phoenix::EnTT::AutoSceneComponentHandler<Phoenix::RTS::UnitComponent, UnitComponent>>();
+    scene.RegisterSyncComponentHandler<Phoenix::App::Dev::AutoSceneComponentHandler<Phoenix::RTS::UnitComponent, UnitComponent>>();
 }

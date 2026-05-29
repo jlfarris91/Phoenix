@@ -5,7 +5,7 @@
 
 #include "Color.h"
 
-namespace Phoenix::Renderer
+namespace Phoenix::App
 {
     // Opaque handle to a GPU-resident texture. The backend owns the memory.
     struct HTexture

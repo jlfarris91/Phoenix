@@ -5,7 +5,7 @@
 #include "RendererTypes.h"
 #include "Phoenix/Services/IService.h"
 
-namespace Phoenix::Renderer
+namespace Phoenix::App
 {
     class IResourceManager : public IService
     {
@@ -19,6 +19,9 @@ namespace Phoenix::Renderer
         virtual HMesh2D         CreateMesh(const Vertex2D* vertices, uint32_t vertexCount, const uint16_t* indices,  uint32_t indexCount) = 0;
         virtual HMesh2D         LoadMesh(const char* path) = 0;
         virtual void            ReleaseMesh(HMesh2D handle) = 0;
+
+        virtual HLineMesh2D     CreateLineMesh(const glm::vec2* points, uint32_t pointCount, const uint16_t* indices, uint32_t indexCount) = 0;
+        virtual void            ReleaseLineMesh(HLineMesh2D handle) = 0;
 
         virtual HRenderTarget   CreateRenderTarget(int width, int height) = 0;
         virtual void            ReleaseRenderTarget(HRenderTarget handle) = 0;

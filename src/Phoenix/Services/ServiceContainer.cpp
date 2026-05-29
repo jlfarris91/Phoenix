@@ -14,6 +14,11 @@ std::shared_ptr<ServiceContainer> ServiceContainer::GetParent() const
     return Parent.lock();
 }
 
+std::shared_ptr<IServiceLocator> ServiceContainer::CreateChildScope()
+{
+    return std::make_shared<ServiceContainer>(shared_from_this());
+}
+
 std::shared_ptr<IService> ServiceContainer::ResolveService(FName typeId)
 {
     if (auto existing = GetService(typeId))
@@ -23,7 +28,7 @@ std::shared_ptr<IService> ServiceContainer::ResolveService(FName typeId)
     if (FindRegistrations(typeId, registrations) == 0)
         return {};
 
-    const auto& firstRegistration = registrations.front();
+    const auto& firstRegistration = registrations.back();
     auto parentContainer = Parent.lock();
 
     if (parentContainer && !firstRegistration->InstancePerScope)
@@ -51,6 +56,14 @@ std::shared_ptr<IService> ServiceContainer::GetService(FName typeId) const
     auto it2 = BaseIdToInstances.find(typeId);
     if (it2 != BaseIdToInstances.end())
         return it2->second.front();
+
+    if (auto parent = Parent.lock())
+    {
+        if (auto serviceInParent = parent->GetService(typeId))
+        {
+            return serviceInParent;
+        }
+    }
 
     return {};
 }
@@ -174,9 +187,14 @@ uint32_t ServiceContainer::FindRegistrations(
 
 // ServiceContainerOwner
 
-const std::shared_ptr<ServiceContainer>& ServiceContainerOwner::GetServiceContainer() const
+const std::shared_ptr<IServiceLocator>& ServiceContainerOwner::GetServiceLocator() const
 {
     return Container;
+}
+
+std::shared_ptr<IServiceLocator> ServiceContainerOwner::CreateChildScope()
+{
+    return Container->CreateChildScope();
 }
 
 std::shared_ptr<IService> ServiceContainerOwner::ResolveService(FName typeId)

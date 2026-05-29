@@ -1,8 +1,7 @@
 #include "PhoenixRTS2Module.h"
 
-#include "SDL3ImGuiService.h"
-#include "SDL3PlatformService.h"
-#include "Application/Application.h"
+#include "SDL3AppServiceModule.h"
+#include "SDL3Renderer.h"
 #include "Logger/Logger.h"
 #include "Phoenix/Parallel.h"
 #include "Profiler/PhoenixTracyImpl.h"
@@ -20,8 +19,7 @@ bool GShowConsoleWindow = true;
 
 void PhoenixRTS2Module::Register(ServiceContainerBuilder& builder)
 {
-    builder.Register<SDL3PlatformService>().AsInterfaces();
-    builder.Register<UI::SDL3ImGuiService>().AsInterfaces();
+    builder.RegisterModule<App::Dev::SDL3AppServiceModule>();
 }
 
 void PhoenixRTS2Module::Initialize(ModuleInitContext &context)

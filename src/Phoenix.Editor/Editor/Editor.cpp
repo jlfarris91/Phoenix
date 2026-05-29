@@ -34,8 +34,8 @@ namespace
     std::shared_ptr<UI::CommandList> GCommandList;
 }
 
-Editor::Editor(const CtorArgs& args)
-    : Application({ args.Builder })
+Editor::Editor(std::shared_ptr<IServiceLocator> locator)
+    : Application(std::move(locator))
 {
 }
 

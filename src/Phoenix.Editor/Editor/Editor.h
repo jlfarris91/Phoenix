@@ -13,12 +13,7 @@ namespace Phoenix
     {
     public:
 
-        struct CtorArgs
-        {
-            ServiceContainerBuilder* Builder;
-        };
-
-        Editor(const CtorArgs& args);
+        explicit Editor(std::shared_ptr<IServiceLocator> locator);
 
         const UI::MenuContext& GetMainMenuContext();
 

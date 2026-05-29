@@ -3,6 +3,7 @@
 #include "Phoenix/Reflection/TypeRegistry.h"
 
 #include "IService.h"
+#include "ServiceModule.h"
 
 using namespace Phoenix;
 
@@ -10,6 +11,12 @@ ServiceRegistrar::ServiceRegistrar(ServiceContainerBuilder* builder, const std::
     : Builder(builder)
     , Registration(registration)
 {
+}
+
+const ServiceRegistrar& ServiceRegistrar::AsSelf() const
+{
+    Builder->RegisterServiceAsSelf(Registration);
+    return *this;
 }
 
 const ServiceRegistrar& ServiceRegistrar::As(FName typeId) const
@@ -42,14 +49,25 @@ std::shared_ptr<ServiceRegistration> ServiceContainerBuilder::MakeRegistration(F
 
 ServiceRegistrar ServiceContainerBuilder::RegisterService(FName typeId, const ServiceFactoryFunc& factory)
 {
-    return ServiceRegistrar(this, MakeRegistration(typeId, factory));
+    return { this, MakeRegistration(typeId, factory) };
 }
 
-std::shared_ptr<ServiceContainer> ServiceContainerBuilder::Build(std::shared_ptr<ServiceContainer> parent)
+void ServiceContainerBuilder::RegisterModule(const IServiceModule& module)
 {
+    RegisterModuleInternal(module);
+}
+
+std::shared_ptr<IServiceLocator> ServiceContainerBuilder::Build(std::shared_ptr<IServiceLocator> parent)
+{
+    auto parentSC = std::dynamic_pointer_cast<ServiceContainer>(std::move(parent));
     auto container = std::make_shared<ServiceContainer>(std::move(Container));
-    container->Parent = std::move(parent);
+    container->Parent = parentSC;
     return container;
+}
+
+void ServiceContainerBuilder::RegisterServiceAsSelf(const std::shared_ptr<ServiceRegistration>& shared)
+{
+    RegisterServiceAs(shared, shared->TypeId);
 }
 
 void ServiceContainerBuilder::RegisterServiceAs(const std::shared_ptr<ServiceRegistration>& registration, FName typeId)
@@ -64,4 +82,9 @@ void ServiceContainerBuilder::RegisterServiceAsInterfaces(const std::shared_ptr<
     {
         RegisterServiceAs(registration, baseDesc.GetTypeId());
     });
+}
+
+void ServiceContainerBuilder::RegisterModuleInternal(const IServiceModule& module)
+{
+    module.Register(*this);
 }

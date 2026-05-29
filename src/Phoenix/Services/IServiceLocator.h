@@ -15,6 +15,9 @@ namespace Phoenix
     public:
         virtual ~IServiceLocator() = default;
 
+        // Create a child scope whose parent is this locator.
+        virtual std::shared_ptr<IServiceLocator> CreateChildScope() = 0;
+
         // Resolve: get or lazily create an instance for the given type.
         virtual std::shared_ptr<IService> ResolveService(FName typeId) = 0;
 
@@ -61,5 +64,12 @@ namespace Phoenix
 
         // Return all resolved instances across this container and any parent.
         virtual uint32_t GetAllServices(std::vector<std::shared_ptr<IService>>& out) const = 0;
+
+        std::vector<std::shared_ptr<IService>> GetAllServices() const
+        {
+            std::vector<std::shared_ptr<IService>> out;
+            GetAllServices(out);
+            return out;
+        }
     };
 }

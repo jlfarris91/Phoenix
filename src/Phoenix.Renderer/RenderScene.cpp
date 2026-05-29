@@ -1,6 +1,6 @@
 #include "RenderScene.h"
 
-namespace Phoenix::Renderer
+namespace Phoenix::App
 {
     void RenderScene::Clear()
     {

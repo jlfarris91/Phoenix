@@ -6,7 +6,7 @@
 #include <variant>
 #include <vector>
 
-namespace Phoenix::Renderer
+namespace Phoenix::App
 {
     using DrawCall = std::variant<
         Sprite2DCall,

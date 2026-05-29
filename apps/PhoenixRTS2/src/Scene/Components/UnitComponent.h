@@ -4,7 +4,7 @@
 
 #include "Phoenix/Name.h"
 
-namespace Phoenix::EnTT
+namespace Phoenix::App::Dev
 {
     struct SceneComponentSyncArgs;
 }
@@ -18,9 +18,9 @@ class UnitComponent
 {
 public:
 
-    void OnSpawn(const Phoenix::EnTT::SceneComponentSyncArgs& args);
-    void OnUpdate(const Phoenix::EnTT::SceneComponentSyncArgs& args);
-    void OnDestroy(const Phoenix::EnTT::SceneComponentSyncArgs& args);
+    void OnSpawn(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
+    void OnUpdate(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
+    void OnDestroy(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
 
 private:
 

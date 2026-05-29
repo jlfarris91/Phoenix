@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-namespace Phoenix::Renderer
+namespace Phoenix::App
 {
     struct SceneView
     {

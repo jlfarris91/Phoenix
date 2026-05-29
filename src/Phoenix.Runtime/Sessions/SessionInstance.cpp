@@ -132,6 +132,7 @@ void SessionInstance::SessionWorker(SessionInstance* instance)
 
     instance->bSessionThreadWantsExit = false;
     instance->bSessionThreadExited = false;
+    instance->SetOwningThread();
 
     while (!instance->bSessionThreadWantsExit)
     {
