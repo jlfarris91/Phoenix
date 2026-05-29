@@ -1,0 +1,5 @@
+{
+    "id": "HealthVitalComponent",
+    "base": "VitalComponent",
+    "type_id": "Phoenix::RTS::HealthComponent"
+}

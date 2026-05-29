@@ -9,6 +9,10 @@
 #include "Viewport/ImGuiViewport.h"
 #include "Viewport/SceneViewport.h"
 
+#include "SceneManager.h"
+#include "Phoenix.Scene/IScene.h"
+#include "Phoenix.App.Dev/Scene.h"
+
 namespace Phoenix::App::Dev
 {
     SDL3App::SDL3App(std::shared_ptr<IServiceLocator> locator)
@@ -46,6 +50,15 @@ namespace Phoenix::App::Dev
         SDL_RenderClear(Platform->GetRenderer());
 
         // Render Worlds???
+
+        // Just for a test, render the first scene
+        for (auto&& scene : ResolveService<Phoenix::Scene::ISceneManager>()->GetAllScenes())
+        {
+            SceneVP->SetCenter({ 0.f, 0.f });
+            SceneVP->SetPixelsPerUnit(10.0f);
+            SceneVP->Render(*std::static_pointer_cast<Scene>(scene));
+            break;
+        }
 
         ImGuiSvc->BeginFrame();
 

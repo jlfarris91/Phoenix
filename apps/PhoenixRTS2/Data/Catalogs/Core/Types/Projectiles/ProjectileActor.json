@@ -1,0 +1,10 @@
+{
+    "id": "ProjectileActor",
+    "base": "Actor",
+    "type": "Object",
+    "properties": {
+        "asset": {
+            "type": "Asset#ProjectileActor"
+        }
+    }
+}

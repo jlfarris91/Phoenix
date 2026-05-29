@@ -1,0 +1,5 @@
+{
+    "id": "HoldPositionAbility",
+    "base": "Ability",
+    "type": "Object"
+}

@@ -1,0 +1,13 @@
+{
+    "id": "AttackAbilityButton",
+    "base": "CommandButton",
+    "icon": {
+        "asset": "Texture2D'/Game/UI/Assets/Icons/BasicCommands/UI_Icons_BasicCommands_Attack.UI_Icons_BasicCommands_Attack'",
+        "display_name": "Attack",
+        "tooltip": {
+            "title": "Attack",
+            "body": "Orders selected units to attack a target unit or attack-move to a target location."
+        }
+    },
+    "repeatable": false
+}

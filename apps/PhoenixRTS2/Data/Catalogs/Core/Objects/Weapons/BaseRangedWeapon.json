@@ -1,0 +1,19 @@
+{
+    "id": "BaseRangedWeapon",
+    "base": "Weapon",
+    "range_acquire": 10.0,
+    "acquire_filter": {
+        "alliance": "Enemy",
+        "tags": {
+            "excluded": [ "status_sleeping" ],
+            "required": []
+        }
+    },
+    "target_filter": {
+        "alliance": "Ally|Enemy|Neutral|Player",
+        "tags": {
+            "excluded": [ "status_invulnerable "],
+            "required": []
+        }
+    }
+}

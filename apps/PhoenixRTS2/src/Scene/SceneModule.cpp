@@ -4,7 +4,10 @@
 #include "Scene.h"
 #include "SceneManager.h"
 #include "Application/Application.h"
+#include "Components/ProjectileComponent.h"
+#include "Components/TransformComponentSyncHandler.h"
 #include "Components/UnitComponent.h"
+#include "Phoenix.Sim.RTS/Projectiles/ProjectileComponent.h"
 #include "Phoenix.Sim.RTS/Units/UnitComponent.h"
 #include "Sessions/SessionDriverService.h"
 #include "Worlds/WorldInstance.h"
@@ -13,7 +16,9 @@ void SceneModule::Register(Phoenix::ServiceContainerBuilder &builder)
 {
     IAppModule::Register(builder);
 
+    // ReSharper disable CppExpressionWithoutSideEffects
     builder.Register<Phoenix::App::Dev::SceneManager>().AsInterfaces();
+    // ReSharper restore CppExpressionWithoutSideEffects
 }
 
 void SceneModule::Initialize(Phoenix::ModuleInitContext &context)
@@ -85,5 +90,7 @@ void SceneModule::OnWorldInstanceDestroyed(Phoenix::WorldInstance* instance)
 
 void SceneModule::RegisterSceneComponentHandlers(Phoenix::App::Dev::Scene& scene)
 {
+    scene.RegisterSyncComponentHandler<TransformComponentSyncHandler>();
     scene.RegisterSyncComponentHandler<Phoenix::App::Dev::AutoSceneComponentHandler<Phoenix::RTS::UnitComponent, UnitComponent>>();
+    scene.RegisterSyncComponentHandler<Phoenix::App::Dev::AutoSceneComponentHandler<Phoenix::RTS::ProjectileComponent, ProjectileComponent>>();
 }

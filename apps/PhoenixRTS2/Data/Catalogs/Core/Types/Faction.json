@@ -1,0 +1,9 @@
+{
+    "id": "Faction",
+    "type": "Object",
+    "properties": {
+        "icon": {
+            "type": "Object#Icon"
+        }
+    }
+}

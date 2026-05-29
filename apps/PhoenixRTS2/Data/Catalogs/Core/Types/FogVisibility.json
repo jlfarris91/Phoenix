@@ -1,0 +1,10 @@
+{
+    "id": "FogVisibility",
+    "type": "Enum",
+    "items": [
+        "Hidden",
+        "Snapshot",
+        "Visible"
+    ],
+    "default": "Visible"
+}

@@ -103,7 +103,7 @@ SceneEntity App::Dev::Scene::OnSpawnEntity(WorldConstRef world, const WorldScene
         }
     });
 
-    LogVerbose("Spawning scene entity for sim entity {}", (uint32_t)entry.SimEntity);
+    LogVerbose("Spawning scene entity for sim entity {} of kind {}", (uint32_t)entry.SimEntity, entry.Kind.ToString());
 
     return Pack(sceneEntity);
 }
@@ -133,29 +133,8 @@ void App::Dev::Scene::OnUpdateEntity(WorldConstRef world, const WorldSceneSync::
     });
 }
 
-void App::Dev::Scene::OnDestroyEntity(WorldConstRef world, const WorldSceneSync::SyncEntry& entry)
+void App::Dev::Scene::OnDestroyEntity(WorldConstRef, const WorldSceneSync::SyncEntry& entry)
 {
-    SceneComponentSyncArgs compArgs =
-    {
-        .World = &world,
-        .Scene = this,
-        .SceneEntity = Unpack(entry.SceneEntity),
-        .SimEntity = entry.SimEntity
-    };
-
-    FeatureECS::ForEachComponent(world, entry.SimEntity, [&](const ComponentDefinition& compDef, const void* comp)
-    {
-        compArgs.SimComponentTypeId = compDef.TypeDescriptor->GetTypeId();
-        compArgs.SimComponentData = comp;
-        for (auto&& handler : SceneComponentHandlers)
-        {
-            if (handler->CanSync(compArgs))
-            {
-                handler->OnDesync(compArgs);
-                break;
-            }
-        }
-    });
-
-    LogVerbose("Destroyed scene entity for sim entity {}", (uint32_t)entry.SimEntity);
+    Registry.destroy(Unpack(entry.SceneEntity));
+    LogVerbose("Destroyed scene entity for sim entity {} of kind {}", (uint32_t)entry.SimEntity, entry.Kind.ToString());
 }

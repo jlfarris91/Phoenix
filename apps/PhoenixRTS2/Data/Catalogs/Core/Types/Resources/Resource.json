@@ -1,0 +1,9 @@
+{
+    "id": "Resource",
+    "type": "Object",
+    "properties": {
+        "icon": {
+            "type": "Object#Icon"
+        }
+    }
+}

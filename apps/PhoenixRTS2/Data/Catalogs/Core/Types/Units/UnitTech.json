@@ -1,0 +1,18 @@
+{
+    "id": "UnitTech",
+    "type": "Object",
+    "properties": {
+        "required": {
+            "type": "Array",
+            "items": {
+                "type": "ObjectRef#Tech"
+            }
+        },
+        "enables": {
+            "type": "Array",
+            "items": {
+                "type": "ObjectRef#Tech"
+            }
+        }
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "id": "Archer_Weapon",
+    "base": "BaseRangedWeapon",
+    "backswing_time": 0.28,
+    "effect": "Archer_Weapon_EffectLaunchProjectile",
+    "flags": "Melee|ScanForNewTargets",
+    "icon": {
+        "display_name": "Archer Weapon"
+    },
+    "period": 1.0,
+    "range_acquire": 10.0,
+    "range_max": 6.0,
+    "range_slop": 2.0,
+    "swing_time": 0.72,
+    "target_filter": {
+        "alliance": "Ally|Enemy|Neutral|Player",
+        "tags": {
+            "excluded": [ "status_invulnerable" ],
+            "required": [ "movement_ground" ]
+        }
+    }
+}

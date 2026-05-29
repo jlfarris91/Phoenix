@@ -1,0 +1,19 @@
+{
+    "id": "EffectTarget",
+    "type": "Object",
+    "properties": {
+        "effect_parent": {
+            "type": "ObjectRef#Effect"
+        },
+        "flags": {
+            "type": "EnumFlags",
+            "default": "Entity|Location|Target",
+            "items": [
+                "Entity",
+                "Location",
+                "Target",
+                "Source"
+            ]
+        }
+    }
+}

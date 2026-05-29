@@ -1,0 +1,41 @@
+{
+    "id": "WeaponAmmo",
+    "type": "Object",
+    "properties": {
+        "initial": {
+            "type": "Integer",
+            "default": 1,
+            "minimum": 1
+        },
+        "capacity": {
+            "type": "Integer",
+            "default": 1,
+            "minimum": 1
+        },
+        "recharge_count": {
+            "type": "Integer",
+            "default": 1,
+            "minimum": 1,
+            "attributes": {
+                "description": "Number of ammo units to recharge each recharge cycle."
+            }
+        },
+        "recharge_time": {
+            "type": "Time",
+            "default": 1.0,
+            "minimum": 0.0
+        },
+        "recharge_mode": {
+            "type": "Enum",
+            "items": [
+                "Sequential",
+                "Parallel",
+                "Never"
+            ],
+            "default": "Sequential"
+        },
+        "projectile": {
+            "type": "ObjectRef#Projectile"
+        }
+    }
+}

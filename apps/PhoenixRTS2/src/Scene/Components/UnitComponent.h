@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "Scene.h"
 #include "Phoenix/Name.h"
 
 namespace Phoenix::App::Dev
@@ -9,18 +10,13 @@ namespace Phoenix::App::Dev
     struct SceneComponentSyncArgs;
 }
 
-namespace Phoenix::ECS
-{
-    struct EntityId;
-}
-
 class UnitComponent
 {
 public:
 
-    void OnSpawn(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
-    void OnUpdate(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
-    void OnDestroy(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
+    void OnConstruct(Phoenix::App::Dev::Scene& scene, entt::entity entity);
+    void OnDestroy(Phoenix::App::Dev::Scene& scene, entt::entity entity);
+    void OnSync(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
 
 private:
 

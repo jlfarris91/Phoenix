@@ -1,0 +1,17 @@
+{
+    "id": "AttackAbility",
+    "base": "Ability",
+    "type": "Object",
+    "default": {
+        "smart_cast": {
+            "priority": 100,
+            "filter": {
+                "alliance": "Enemy|Neutral",
+                "tags": {
+                    "required": [],
+                    "excluded": [ "entity_resource" ]
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,5 @@
+{
+    "id": "StopAbility",
+    "base": "Ability",
+    "type": "Object"
+}

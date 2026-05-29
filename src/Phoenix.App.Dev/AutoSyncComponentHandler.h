@@ -88,25 +88,6 @@ namespace Phoenix::App::Dev
             }
         }
 
-        void OnDesync(const SceneComponentSyncArgs& args) override
-        {
-            PHX_ASSERT(args.Scene == WeakScenePtr.lock().get());
-            auto& registry = args.Scene->GetRegistry();
-            auto hasSceneComp = registry.any_of<TSceneComponent>(args.SceneEntity);
-            if constexpr (requires (TSceneComponent& c, const SceneComponentSyncArgs& a) { c.OnDesync(a); })
-            {
-                if (hasSceneComp)
-                {
-                    auto& sceneComp = registry.get<TSceneComponent>(args.SceneEntity);
-                    sceneComp.OnDesync(args);
-                }
-            }
-            if (hasSceneComp)
-            {
-                registry.erase<TSceneComponent>(args.SceneEntity);
-            }
-        }
-
     private:
         std::weak_ptr<Scene> WeakScenePtr;
     };

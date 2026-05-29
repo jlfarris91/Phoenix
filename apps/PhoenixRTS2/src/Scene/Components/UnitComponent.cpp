@@ -4,6 +4,7 @@
 
 #include "Scene.h"
 #include "SceneComponentHandler.h"
+#include "Components/Circle2DComponent.h"
 #include "Components/LineMesh2DComponent.h"
 
 #include "Phoenix.Sim.LDS/FeatureLDS.h"
@@ -12,11 +13,24 @@
 using namespace Phoenix;
 using namespace Phoenix::App::Dev;
 
-void UnitComponent::OnSpawn(const SceneComponentSyncArgs &args)
+void UnitComponent::OnConstruct(App::Dev::Scene &scene, entt::entity entity)
 {
+    auto& registry = scene.GetRegistry();
+    auto& circleComp = registry.get_or_emplace<Circle2DComponent>(entity);
+    circleComp.Color = Color4b::White();
+    circleComp.Radius = 0.5f;
 }
 
-void UnitComponent::OnUpdate(const SceneComponentSyncArgs& args)
+void UnitComponent::OnDestroy(App::Dev::Scene &scene, entt::entity entity)
+{
+    auto& registry = scene.GetRegistry();
+    if (registry.any_of<Circle2DComponent>(entity))
+    {
+        registry.erase<Circle2DComponent>(entity);
+    }
+}
+
+void UnitComponent::OnSync(const SceneComponentSyncArgs& args)
 {
     auto simComp = static_cast<const RTS::UnitComponent*>(args.SimComponentData);
 
@@ -34,14 +48,5 @@ void UnitComponent::OnUpdate(const SceneComponentSyncArgs& args)
         // auto& meshComp = args.Scene->GetRegistry().get_or_emplace<EnTT::LineMesh2DComponent>(args.SceneEntity);
         // meshComp.Asset = unitActorData.Asset().GetValue(lds);
         // meshComp.Scale = (float)unitActorData.Scale().GetValue(lds);
-    }
-}
-
-void UnitComponent::OnDestroy(const SceneComponentSyncArgs &args)
-{
-    auto& registry = args.Scene->GetRegistry();
-    if (registry.any_of<LineMesh2DComponent>(args.SceneEntity))
-    {
-        registry.erase<LineMesh2DComponent>(args.SceneEntity);
     }
 }

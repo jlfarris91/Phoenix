@@ -8,6 +8,7 @@
 #include "Components/SceneComponent.h"
 #include "Components/LineMesh2DComponent.h"
 #include "RenderPrimitives.h"
+#include "Components/Circle2DComponent.h"
 
 namespace Phoenix::App::Dev
 {
@@ -62,20 +63,20 @@ namespace Phoenix::App::Dev
 
         const entt::registry& reg = scene.GetRegistry();
 
-        auto lineMeshView = reg.view<SceneComponent, LineMesh2DComponent>();
+        auto lineMeshView = reg.view<SceneComponent, Circle2DComponent>();
         for (auto entity : lineMeshView)
         {
             const auto& sc  = lineMeshView.get<SceneComponent>(entity);
-            const auto& lm  = lineMeshView.get<LineMesh2DComponent>(entity);
+            const auto& circleComp  = lineMeshView.get<Circle2DComponent>(entity);
 
-            if (!lm.Mesh.IsValid())
-                continue;
+            auto pos3D = sc.WorldTransform * glm::vec4(circleComp.Center, 0, 1);
+            auto pos2D = glm::vec2(pos3D.x, pos3D.y);
 
-            LineMesh2DCall call;
-            call.Mesh      = lm.Mesh;
-            call.Texture   = lm.Texture;
-            call.Transform = sc.LocalTransform;
-            call.Tint      = lm.Tint;
+            Circle2DCall call;
+            call.Center = pos2D;
+            call.Radius = circleComp.Radius;
+            call.Color  = circleComp.Color;
+            call.Filled = circleComp.Filled;
 
             Scene.Commands.push_back({ sc.Layer, call });
         }

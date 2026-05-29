@@ -1,0 +1,15 @@
+﻿{
+    "id": "Vector3",
+    "type": "Object",
+    "properties": {
+        "x": {
+            "type": "Distance"
+        },
+        "y": {
+            "type": "Distance"
+        },
+        "z": {
+            "type": "Distance"
+        }
+    }
+}

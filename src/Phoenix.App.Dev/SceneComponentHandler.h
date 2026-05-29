@@ -1,6 +1,9 @@
 ﻿#pragma once
 
+#include <entt/entt.hpp>
+
 #include "Phoenix/Reflection/Registration.h"
+#include "Phoenix.Sim/WorldsFwd.h"
 #include "Phoenix.Sim.ECS/EntityId.h"
 
 namespace Phoenix::App::Dev
@@ -34,17 +37,14 @@ namespace Phoenix::App::Dev
     public:
         virtual ~ISceneComponentHandler() = default;
 
-        virtual void Register(const std::weak_ptr<Scene>& scene) = 0;
+        virtual void Register(const std::weak_ptr<Scene>& scene) {};
 
-        virtual void Unregister() = 0;
+        virtual void Unregister() {};
 
         // Return true if the handler can handle the component for a given entity.
         virtual bool CanSync(const SceneComponentSyncArgs& args) = 0;
 
         //
         virtual void OnSync(const SceneComponentSyncArgs& args) = 0;
-
-        //
-        virtual void OnDesync(const SceneComponentSyncArgs& args) = 0;
     };
 }

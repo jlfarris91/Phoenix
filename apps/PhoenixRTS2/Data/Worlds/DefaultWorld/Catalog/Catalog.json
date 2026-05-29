@@ -1,0 +1,9 @@
+{
+    "id": "DefaultWorld",
+    "types": [
+        "./Types"
+    ],
+    "objects": [
+        "./Objects"
+    ]
+}

@@ -2,6 +2,7 @@
 
 #include "Phoenix.Sim.ECS/Component.h"
 #include "Phoenix/FixedPoint/FixedTypes.h"
+#include "Phoenix/FixedPoint/FixedVector.h"
 
 #include "Phoenix.Sim.RTS/DLLExport.h"
 #include "Phoenix.Sim.RTS/Effects/EffectId.h"

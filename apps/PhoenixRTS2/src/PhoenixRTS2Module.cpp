@@ -35,6 +35,9 @@ void PhoenixRTS2Module::Initialize(ModuleInitContext &context)
         SetThreadPool("SimThreadPool", numThreads - 1, 1024);
     }
 #endif
+
+    GLogger = std::make_shared<Logger>("./Phoenix.log");
+    SetLogger(GLogger);
 }
 
 void PhoenixRTS2Module::Load(ModuleLoadContext &context)

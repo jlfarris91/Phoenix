@@ -1,0 +1,15 @@
+{
+    "id": "Icon",
+    "type": "Object",
+    "properties": {
+        "asset": {
+            "type": "Asset#Icon"
+        },
+        "display_name": {
+            "type": "Text"
+        },
+        "tooltip": {
+            "type": "Object#Tooltip"
+        }
+    }
+}

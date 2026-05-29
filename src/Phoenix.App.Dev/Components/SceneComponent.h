@@ -6,8 +6,7 @@ namespace Phoenix::App::Dev
 {
     struct SceneComponent
     {
-        int32_t             Layer = 0;
-        Math::Transform2D   LocalTransform;
-        glm::mat3           WorldTransform;
+        int32_t     Layer = 0;
+        glm::mat4   WorldTransform = glm::mat4(1.0f);
     };
 }

@@ -1,0 +1,18 @@
+{
+    "id": "Command",
+    "type": "Object",
+    "properties": {
+        "ability": {
+            "type": "ObjectRef#Ability"
+        },
+        "button": {
+            "type": "ObjectRef#CommandButton"
+        },
+        "command_index": {
+            "type": "Integer"
+        },
+        "grid_slot": {
+            "type": "Object#CommandGridSlot"
+        }
+    }
+}

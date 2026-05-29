@@ -1,0 +1,15 @@
+{
+    "id": "TooltipItem",
+    "type": "Object",
+    "properties": {
+        "label": {
+            "type": "String"
+        },
+        "value": {
+            "type": "String"
+        },
+        "validator": {
+            "type": "ObjectRef#Validator"
+        }
+    }
+}

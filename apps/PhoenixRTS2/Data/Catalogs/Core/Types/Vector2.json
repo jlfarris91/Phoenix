@@ -1,0 +1,12 @@
+{
+    "id": "Vector2",
+    "type": "Object",
+    "properties": {
+        "x": {
+            "type": "Distance"
+        },
+        "y": {
+            "type": "Distance"
+        }
+    }
+}

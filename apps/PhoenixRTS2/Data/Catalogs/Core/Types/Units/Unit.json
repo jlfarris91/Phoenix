@@ -1,0 +1,93 @@
+{
+    "id": "Unit",
+    "type": "Object",
+    "implements": [ "Tech" ],
+    "properties": {
+        "actor": {
+            "type": "ObjectRef#UnitActor"
+        },
+        "armor": {
+            "type": "Object#UnitArmor"
+        },
+        "buffs": {
+            "type": "Array",
+            "items": {
+                "type": "Object#Buff"
+            }
+        },
+        "build_stats": {
+            "type": "Object#UnitBuild"
+        },
+        "cargo_stats": {
+            "type": "Object#UnitCargo"
+        },
+        "collision": {
+            "type": "Object#CollisionFlags",
+            "default": "Ground"
+        },
+        "commands": {
+            "type": "Array",
+            "items": {
+                "type": "Object#Command"
+            }
+        },
+        "components": {
+            "type": "Array",
+            "items": {
+                "type": "Object#Component"
+            }
+        },
+        "death_stats": {
+            "type": "Object#UnitDeath"
+        },
+        "effects": {
+            "type": "Object#UnitEffects"
+        },
+        "faction": {
+            "type": "ObjectRef#Faction"
+        },
+        "flags": {
+            "type": "Object#UnitFlags"
+        },
+        "fog": {
+            "type": "Object#FogVisibility"
+        },
+        "info": {
+            "type": "Object#UnitInfo"
+        },
+        "movement": {
+            "type": "Object#UnitMovement"
+        },
+        "placement": {
+            "type": "Object#UnitPlacement"
+        },
+        "tags": {
+            "type": "Array",
+            "items": {
+                "type": "ObjectRef#Tag"
+            }
+        },
+        "selection_circle_scale": {
+            "type": "Value",
+            "default": 1.0
+        },
+        "supply": {
+            "type": "Object#UnitSupply"
+        },
+        "vision": {
+            "type": "Object#UnitVision"
+        },
+        "vitals": {
+            "type": "Array",
+            "items": {
+                "type": "Object#VitalStatsPair"
+            }
+        },
+        "weapons": {
+            "type": "Array",
+            "items": {
+                "type": "ObjectRef#Weapon"
+            }
+        }
+    }
+}
