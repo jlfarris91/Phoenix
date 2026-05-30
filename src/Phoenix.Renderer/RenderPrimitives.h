@@ -1,26 +1,25 @@
 #pragma once
 
-#include "RendererTypes.h"
-#include "Transform2D.h"
+#include "ResourceHandle.h"
 #include "Phoenix.Math/Rect2D.h"
 
 namespace Phoenix::App
 {
     struct Sprite2DCall
     {
-        HTexture        Texture;
-        Math::Rect2D    SourceRect;            // source region within the texture atlas (pixels)
-        glm::vec2       WorldPos;              // world-space center
-        float           Rotation = 0.f;        // radians, clockwise
-        glm::vec2       Scale = {1.f, 1.f};
-        Color4b         Tint = Color4b::White();
+        Renderer::HResource Texture;
+        Math::Rect2D        SourceRect;            // source region within the texture atlas (pixels)
+        glm::vec2           WorldPos;              // world-space center
+        float               Rotation = 0.f;        // radians, clockwise
+        glm::vec2           Scale = {1.f, 1.f};
+        glm::vec4           Tint = glm::vec4(1);
     };
 
     struct Line2DCall
     {
         glm::vec2   Start;
         glm::vec2   End;
-        Color4b     Color = Color4b::White();
+        glm::vec4   Color = glm::vec4(1);
         float       Thickness = 1.f;
     };
 
@@ -28,7 +27,7 @@ namespace Phoenix::App
     {
         glm::vec2   Center;
         float       Radius = 1.f;
-        Color4b     Color = Color4b::White();
+        glm::vec4   Color = glm::vec4(1);
         bool        Filled = false;
     };
 
@@ -36,7 +35,7 @@ namespace Phoenix::App
     {
         glm::vec2   Min;
         glm::vec2   Max;
-        Color4b     Color = Color4b::White();
+        glm::vec4   Color = glm::vec4(1);
         bool        Filled = false;
     };
 
@@ -44,7 +43,7 @@ namespace Phoenix::App
     {
         glm::vec2   WorldPos;
         char        Text[64] = {};
-        Color4b     Color = Color4b::White();
+        glm::vec4   Color = glm::vec4(1);
         float       Size = 12.f;
     };
 

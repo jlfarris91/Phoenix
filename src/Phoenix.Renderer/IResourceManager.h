@@ -1,30 +1,20 @@
 #pragma once
 
-#include <cstdint>
+#include "Resource.h"
+#include "ResourceHandle.h"
+#include "Phoenix.App/Application/AppService.h"
 
-#include "RendererTypes.h"
-#include "Phoenix/Services/IService.h"
-
-namespace Phoenix::App
+namespace Phoenix::Renderer
 {
-    class IResourceManager : public IService
+    class IResourceManager : public IAppService
     {
-        PHX_DECLARE_TYPE_DERIVED(IResourceManager, Phoenix::IService)
-
+        PHX_DECLARE_TYPE_DERIVED(IResourceManager, Phoenix::IAppService)
     public:
-        virtual HTexture        LoadTexture(const char* path) = 0;
-        virtual void            ReleaseTexture(HTexture handle) = 0;
-        virtual glm::vec2       GetTextureSize(HTexture handle) const = 0;
 
-        virtual HMesh2D         CreateMesh(const Vertex2D* vertices, uint32_t vertexCount, const uint16_t* indices,  uint32_t indexCount) = 0;
-        virtual HMesh2D         LoadMesh(const char* path) = 0;
-        virtual void            ReleaseMesh(HMesh2D handle) = 0;
-
-        virtual HLineMesh2D     CreateLineMesh(const glm::vec2* points, uint32_t pointCount, const uint16_t* indices, uint32_t indexCount) = 0;
-        virtual void            ReleaseLineMesh(HLineMesh2D handle) = 0;
-
-        virtual HRenderTarget   CreateRenderTarget(int width, int height) = 0;
-        virtual void            ReleaseRenderTarget(HRenderTarget handle) = 0;
-        virtual HTexture        GetRenderTargetTexture(HRenderTarget handle) const = 0;
+        virtual HResource           StoreResource(std::unique_ptr<IResource> resource) = 0;
+        virtual HResource           LoadResource(const char* path) = 0;
+        virtual size_t              LoadResources(const char* path, std::vector<HResource>& outHandles) = 0;
+        virtual const IResource*    GetResource(HResource handle) const = 0;
+        virtual bool                ReleaseResource(HResource handle) = 0;
     };
 }

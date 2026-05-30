@@ -200,7 +200,7 @@ namespace Phoenix::App::Dev
 
     void SDL3Renderer::DrawLineMesh(const SceneView& view, const LineMesh2DCall& call)
     {
-        const SDL3ResourceManager::LineMeshEntry* mesh = Resources->GetLineMeshEntry(call.Mesh);
+        const SDL3ResourceManager::LineMeshEntry* mesh = Resources->GetLineMesh2D(call.Mesh);
         if (!mesh || mesh->Indices.size() < 2)
             return;
 

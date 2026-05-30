@@ -1,141 +1,113 @@
 #include "SDL3ResourceManager.h"
 
-namespace Phoenix::App::Dev
+#include <filesystem>
+#include <fstream>
+
+#include "ResourceLoader.h"
+#include "Resources/RenderTarget2D.h"
+
+using namespace Phoenix::App::Dev;
+using namespace Phoenix::Renderer;
+
+SDL3ResourceManager::SDL3ResourceManager(std::shared_ptr<SDL3PlatformService> platform)
+    : Platform(std::move(platform))
 {
-    SDL3ResourceManager::SDL3ResourceManager(std::shared_ptr<SDL3PlatformService> platform)
-        : Platform(std::move(platform))
+}
+
+SDL3ResourceManager::~SDL3ResourceManager()
+{
+    for (auto& [id, entry] : Resources)
     {
+        entry->ReleaseResources();
+    }
+    Resources.clear();
+}
+
+HResource SDL3ResourceManager::StoreResource(std::unique_ptr<Renderer::IResource> resource)
+{
+    uint32_t resourceId = ++NextResourceId;
+    resource->SetId(resourceId);
+    Resources.emplace(resourceId, std::move(resource));
+    return { resourceId, resource->GetResourceType() };
+}
+
+HResource SDL3ResourceManager::LoadResource(const char* path)
+{
+    std::vector<Renderer::HResource> handles;
+    LoadResources(path, handles);
+    return handles.empty() ? Renderer::HResource() : handles.front();
+}
+
+size_t SDL3ResourceManager::LoadResources(const char* path, std::vector<Renderer::HResource>& outHandles)
+{
+    std::ifstream stream(path);
+    if (!stream.is_open())
+    {
+        return 0;
     }
 
-    SDL3ResourceManager::~SDL3ResourceManager()
+    auto ext = std::filesystem::path(path).extension().string();
+
+    Renderer::ResourceLoadArgs args = {
+        .PlatformService = *Platform.get(),
+        .FilePath = path,
+        .Stream = stream
+    };
+
+    Renderer::IResourceLoader* foundLoader = nullptr;
+    for (auto&& loader : ResourceLoaders)
     {
-        for (auto& [id, entry] : Textures)
-            SDL_DestroyTexture(entry.Texture);
+        if (loader->CanLoad(args))
+        {
+            foundLoader = loader.get();
+        }
     }
 
-    HTexture SDL3ResourceManager::LoadTexture(const char* path)
+    if (!foundLoader)
     {
-        SDL_Surface* surface = SDL_LoadBMP(path);
-        if (!surface)
-            return {};
-        SDL_Texture* texture = SDL_CreateTextureFromSurface(Platform->GetRenderer(), surface);
-        SDL_DestroySurface(surface);
-        if (!texture)
-            return {};
-
-        float w = 0.f, h = 0.f;
-        SDL_GetTextureSize(texture, &w, &h);
-
-        uint32_t id = NextTextureId++;
-        Textures[id] = { texture, { w, h } };
-        return { id };
+        return 0;
     }
 
-    void SDL3ResourceManager::ReleaseTexture(HTexture handle)
+    std::vector<std::unique_ptr<Renderer::IResource>> loadedResources;
+    if (!foundLoader->Load(args, loadedResources))
     {
-        auto it = Textures.find(handle.Id);
-        if (it == Textures.end())
-            return;
-        SDL_DestroyTexture(it->second.Texture);
-        Textures.erase(it);
+        return 0;
     }
 
-    glm::vec2 SDL3ResourceManager::GetTextureSize(HTexture handle) const
+    for (auto&& resource : loadedResources)
     {
-        auto it = Textures.find(handle.Id);
-        return it != Textures.end() ? it->second.Size : glm::vec2{};
+        auto handle = StoreResource(std::move(resource));
+        outHandles.push_back(handle);
     }
 
-    HMesh2D SDL3ResourceManager::CreateMesh(const Vertex2D* vertices, uint32_t vertexCount,
-                                             const uint16_t* indices,  uint32_t indexCount)
-    {
-        MeshEntry entry;
-        entry.Vertices.assign(vertices, vertices + vertexCount);
-        entry.Indices.resize(indexCount);
-        for (uint32_t i = 0; i < indexCount; ++i)
-            entry.Indices[i] = static_cast<int>(indices[i]);
+    return loadedResources.size();
+}
 
-        uint32_t id = NextMeshId++;
-        Meshes[id] = std::move(entry);
-        return { id };
+const IResource* SDL3ResourceManager::GetResource(Renderer::HResource handle) const
+{
+    auto iter = Resources.find(handle.Id);
+    return iter != Resources.end() ? iter->second.get() : nullptr;
+}
+
+bool SDL3ResourceManager::ReleaseResource(Renderer::HResource handle)
+{
+    auto iter = Resources.find(handle.Id);
+    if (iter == Resources.end())
+    {
+        return false;
     }
 
-    HMesh2D SDL3ResourceManager::LoadMesh(const char* path)
-    {
-        // TODO: implement mesh file format loading
-        return {};
-    }
+    Resources.erase(iter);
+    return true;
+}
 
-    void SDL3ResourceManager::ReleaseMesh(HMesh2D handle)
-    {
-        Meshes.erase(handle.Id);
-    }
-
-    HRenderTarget SDL3ResourceManager::CreateRenderTarget(int width, int height)
-    {
-        SDL_Texture* texture = SDL_CreateTexture(
-            Platform->GetRenderer(),
-            SDL_PIXELFORMAT_RGBA8888,
-            SDL_TEXTUREACCESS_TARGET,
-            width, height);
-        if (!texture)
-            return {};
-
-        uint32_t texId = NextTextureId++;
-        Textures[texId] = { texture, { static_cast<float>(width), static_cast<float>(height) } };
-
-        uint32_t rtId = NextRenderTargetId++;
-        RenderTargets[rtId] = { { texId } };
-        return { rtId };
-    }
-
-    void SDL3ResourceManager::ReleaseRenderTarget(HRenderTarget handle)
-    {
-        auto it = RenderTargets.find(handle.Id);
-        if (it == RenderTargets.end())
-            return;
-        ReleaseTexture(it->second.TextureHandle);
-        RenderTargets.erase(it);
-    }
-
-    HTexture SDL3ResourceManager::GetRenderTargetTexture(HRenderTarget handle) const
-    {
-        auto it = RenderTargets.find(handle.Id);
-        return it != RenderTargets.end() ? it->second.TextureHandle : HTexture{};
-    }
-
-    SDL_Texture* SDL3ResourceManager::GetSDLTexture(HTexture handle) const
-    {
-        auto it = Textures.find(handle.Id);
-        return it != Textures.end() ? it->second.Texture : nullptr;
-    }
-
-    const SDL3ResourceManager::MeshEntry* SDL3ResourceManager::GetMeshEntry(HMesh2D handle) const
-    {
-        auto it = Meshes.find(handle.Id);
-        return it != Meshes.end() ? &it->second : nullptr;
-    }
-
-    HLineMesh2D SDL3ResourceManager::CreateLineMesh(const glm::vec2* points, uint32_t pointCount,
-                                                     const uint16_t* indices,  uint32_t indexCount)
-    {
-        LineMeshEntry entry;
-        entry.Points.assign(points, points + pointCount);
-        entry.Indices.assign(indices, indices + indexCount);
-
-        uint32_t id = NextLineMeshId++;
-        LineMeshes[id] = std::move(entry);
-        return { id };
-    }
-
-    void SDL3ResourceManager::ReleaseLineMesh(HLineMesh2D handle)
-    {
-        LineMeshes.erase(handle.Id);
-    }
-
-    const SDL3ResourceManager::LineMeshEntry* SDL3ResourceManager::GetLineMeshEntry(HLineMesh2D handle) const
-    {
-        auto it = LineMeshes.find(handle.Id);
-        return it != LineMeshes.end() ? &it->second : nullptr;
-    }
+HResource SDL3ResourceManager::CreateRenderTarget(glm::vec2 size)
+{
+    SDL_Texture* texture = SDL_CreateTexture(
+        Platform->GetRenderer(),
+        SDL_PIXELFORMAT_RGBA8888,
+        SDL_TEXTUREACCESS_TARGET,
+        size.x, size.y);
+    auto resource = std::make_unique<RenderTarget2D>(texture, size);
+    return StoreResource(std::move(resource));
 }
