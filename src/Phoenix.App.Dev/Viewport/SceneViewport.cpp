@@ -22,7 +22,10 @@ namespace Phoenix::App::Dev
     SceneViewport::~SceneViewport()
     {
         if (RenderTarget.IsValid())
-            Resources->ReleaseRenderTarget(RenderTarget);
+        {
+            Resources->ReleaseResource(RenderTarget);
+            RenderTarget = {};
+        }
     }
 
     void SceneViewport::Resize(int width, int height)
@@ -31,15 +34,22 @@ namespace Phoenix::App::Dev
             return;
 
         if (RenderTarget.IsValid())
-            Resources->ReleaseRenderTarget(RenderTarget);
+        {
+            Resources->ReleaseResource(RenderTarget);
+            RenderTarget = {};
+        }
 
         View.Width  = width;
         View.Height = height;
 
         if (width > 0 && height > 0)
+        {
             RenderTarget = Resources->CreateRenderTarget(width, height);
+        }
         else
+        {
             RenderTarget = {};
+        }
     }
 
     void SceneViewport::SetCenter(glm::vec2 center)
@@ -63,11 +73,11 @@ namespace Phoenix::App::Dev
 
         const entt::registry& reg = scene.GetRegistry();
 
-        auto lineMeshView = reg.view<SceneComponent, Circle2DComponent>();
-        for (auto entity : lineMeshView)
+        auto circleView = reg.view<SceneComponent, Circle2DComponent>();
+        for (auto entity : circleView)
         {
-            const auto& sc  = lineMeshView.get<SceneComponent>(entity);
-            const auto& circleComp  = lineMeshView.get<Circle2DComponent>(entity);
+            const auto& sc  = circleView.get<SceneComponent>(entity);
+            const auto& circleComp  = circleView.get<Circle2DComponent>(entity);
 
             auto pos3D = sc.WorldTransform * glm::vec4(circleComp.Center, 0, 1);
             auto pos2D = glm::vec2(pos3D.x, pos3D.y);
@@ -77,6 +87,27 @@ namespace Phoenix::App::Dev
             call.Radius = circleComp.Radius;
             call.Color  = circleComp.Color;
             call.Filled = circleComp.Filled;
+
+            Scene.Commands.push_back({ sc.Layer, call });
+        }
+
+        auto lineMeshView = reg.view<SceneComponent, LineMesh2DComponent>();
+        for (auto entity : lineMeshView)
+        {
+            const auto& sc  = lineMeshView.get<SceneComponent>(entity);
+            const auto& meshComp  = lineMeshView.get<LineMesh2DComponent>(entity);
+
+            auto mesh = meshComp.Mesh.LoadResource(*Resources);
+            if (!mesh)
+            {
+                continue;
+            }
+
+            LineMesh2DCall call;
+            call.Mesh = mesh->GetHandle();
+            call.Tint = meshComp.Tint;
+            call.Scale = glm::vec2(meshComp.Scale);
+            call.Transform = sc.WorldTransform;
 
             Scene.Commands.push_back({ sc.Layer, call });
         }

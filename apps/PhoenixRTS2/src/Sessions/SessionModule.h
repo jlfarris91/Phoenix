@@ -10,17 +10,17 @@ class SessionModule : public Phoenix::IAppModule
 public:
 
     void Register(Phoenix::ServiceContainerBuilder& builder) override;
-    void Initialize(Phoenix::ModuleInitContext &context) override;
-    void Load(Phoenix::ModuleLoadContext &context) override;
+    void Initialize(Phoenix::ModuleInitContext& context) override;
+    void Load(Phoenix::ModuleLoadContext& context) override;
     void Shutdown() override;
 
 private:
 
     SessionHandle CreateInitialSession();
 
-    void OnSessionInstanceCreated(Phoenix::SessionInstance *instance);
-    void OnSessionInstanceDestroyed(Phoenix::SessionInstance *instance);
+    void OnSessionInstanceCreated(Phoenix::SessionInstance* instance);
+    void OnSessionInstanceDestroyed(Phoenix::SessionInstance* instance);
 
-    void OnWorldInstanceCreated(Phoenix::WorldInstance*, Phoenix::WorldConstRef world);
-    void OnWorldInstanceDestroyed(Phoenix::WorldInstance *instance);
+    void OnWorldInstanceCreated(Phoenix::WorldInstance* instance);
+    void OnWorldInstanceDestroyed(Phoenix::WorldInstance* instance);
 };

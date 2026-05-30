@@ -1,6 +1,8 @@
 #pragma once
 
+#include "ResourcePtr.h"
 #include "Scene.h"
+#include "Resources/LineMesh2D.h"
 
 namespace Phoenix::App::Dev
 {
@@ -14,5 +16,8 @@ public:
     void OnDestroy(Phoenix::App::Dev::Scene& scene, entt::entity entity);
     void OnSync(const Phoenix::App::Dev::SceneComponentSyncArgs& args);
 private:
-    bool Foobar = false;
+    Phoenix::FName ProjectileData;
+    Phoenix::Renderer::TResourcePtr<Phoenix::App::Dev::LineMesh2D> Mesh;
+    float Scale = 1.0f;
+    glm::vec4 Tint = glm::vec4(1.0f);
 };

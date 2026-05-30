@@ -60,10 +60,10 @@ size_t Phoenix::App::Dev::LineMesh2DLoader::Load(
         uint32 colorIdx = data[i++].get<int>();
         auto index = lineMesh2D.Vertices.size();
         auto& v0 = lineMesh2D.Vertices.emplace_back();
-        auto& v1 = lineMesh2D.Vertices.emplace_back();
         v0.Position.x = data[i++].get<float>();
         v0.Position.y = data[i++].get<float>();
         v0.Color = colors[colorIdx];
+        auto& v1 = lineMesh2D.Vertices.emplace_back();
         v1.Position.x = data[i++].get<float>();
         v1.Position.y = data[i++].get<float>();
         v1.Color = colors[colorIdx];

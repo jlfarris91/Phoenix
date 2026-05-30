@@ -1,10 +1,10 @@
 #include "ImGuiViewport.h"
 
 #include <imgui.h>
-#include <SDL3/SDL.h>
 
 #include "SceneViewport.h"
 #include "SDL3ResourceManager.h"
+#include "Resources/Texture2D.h"
 
 namespace Phoenix::App::Dev
 {
@@ -26,15 +26,15 @@ namespace Phoenix::App::Dev
         if (w > 0 && h > 0)
             Viewport->Resize(w, h);
 
-        HRenderTarget rt = Viewport->GetRenderTarget();
+        auto rt = Viewport->GetRenderTarget();
         if (!rt.IsValid())
             return;
 
-        HTexture tex = Resources->GetRenderTargetTexture(rt);
-        if (!tex.IsValid())
+        auto resource = Resources->GetResource<Texture2D>(rt);
+        if (!resource)
             return;
 
-        SDL_Texture* sdlTex = Resources->GetSDLTexture(tex);
+        SDL_Texture* sdlTex = resource->GetSDLTexture();
         if (!sdlTex)
             return;
 

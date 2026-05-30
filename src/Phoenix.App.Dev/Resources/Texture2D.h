@@ -8,11 +8,11 @@
 
 namespace Phoenix::App::Dev
 {
-    class Texture2D : public Renderer::Resource
+    class Texture2D : public Renderer::IResource
     {
-        PHX_DECLARE_TYPE_DERIVED(Texture2D, Renderer::Resource);
+        PHX_DECLARE_TYPE_DERIVED(Texture2D, Renderer::IResource);
     public:
-        Texture2D(SDL_Texture* texture, glm::vec2 size);
+        Texture2D(SDL_Texture* texture, glm::u32vec2 size);
         ~Texture2D() override;
 
         FName GetResourceType() const override
@@ -22,15 +22,15 @@ namespace Phoenix::App::Dev
 
         SDL_Texture* GetSDLTexture() const;
 
-        glm::vec2 GetSize() const;
-        float GetWidth() const;
-        float GetHeight() const;
+        glm::u32vec2 GetSize() const;
+        uint32_t GetWidth() const;
+        uint32_t GetHeight() const;
 
         void ReleaseResources() override;
 
     private:
         SDL_Texture* Texture = nullptr;
-        glm::vec2 Size = glm::vec2(0.0f);
+        glm::u32vec2 Size = glm::u32vec2(0);
     };
 
     class Texture2DLoader : public Renderer::IResourceLoader

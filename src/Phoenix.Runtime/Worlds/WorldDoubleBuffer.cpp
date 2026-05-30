@@ -2,7 +2,7 @@
 
 namespace Phoenix {
 
-void WorldDoubleBuffer::OnSimUpdate(Phoenix::WorldConstRef world)
+void WorldDoubleBuffer::OnUpdate_Sim(Phoenix::WorldConstRef world)
 {
     if (!Enabled)
         return;

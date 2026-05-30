@@ -32,12 +32,12 @@
 
 using namespace Phoenix;
 
-void SessionModule::Register(ServiceContainerBuilder &builder)
+void SessionModule::Register(ServiceContainerBuilder& builder)
 {
     IAppModule::Register(builder);
 }
 
-void SessionModule::Initialize(ModuleInitContext &context)
+void SessionModule::Initialize(ModuleInitContext& context)
 {
     IAppModule::Initialize(context);
 
@@ -50,7 +50,7 @@ void SessionModule::Initialize(ModuleInitContext &context)
     sessionDriver->SessionDestroyed.AddSP(thisSP, &SessionModule::OnSessionInstanceDestroyed);
 }
 
-void SessionModule::Load(ModuleLoadContext &context)
+void SessionModule::Load(ModuleLoadContext& context)
 {
     IAppModule::Load(context);
 
@@ -142,7 +142,7 @@ void SessionModule::OnSessionInstanceDestroyed(SessionInstance* instance)
     instance->WorldInstanceDestroyed.RemoveAll(this);
 }
 
-void SessionModule::OnWorldInstanceCreated(WorldInstance* instance, WorldConstRef world)
+void SessionModule::OnWorldInstanceCreated(WorldInstance* instance)
 {
 }
 

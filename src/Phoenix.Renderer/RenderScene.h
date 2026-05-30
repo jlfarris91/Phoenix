@@ -25,9 +25,9 @@ namespace Phoenix::App
 
     struct RenderScene
     {
-        SceneView     View;
-        HRenderTarget Target;    // invalid = window backbuffer
-        std::vector<RenderCommand> Commands;
+        SceneView                   View;
+        Renderer::HResource         Target;    // invalid = window backbuffer
+        std::vector<RenderCommand>  Commands;
 
         void Clear();
     };

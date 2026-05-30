@@ -5,6 +5,12 @@
 #include <numbers>
 #include <vector>
 
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/matrix_decompose.hpp>
+
+#include "Resources/LineMesh2D.h"
+#include "Resources/Texture2D.h"
+
 namespace Phoenix::App::Dev
 {
     SDL3Renderer::SDL3Renderer(std::shared_ptr<SDL3PlatformService>  platform,
@@ -22,8 +28,8 @@ namespace Phoenix::App::Dev
 
         if (scene.Target.IsValid())
         {
-            HTexture tex = Resources->GetRenderTargetTexture(scene.Target);
-            SDL_SetRenderTarget(r, Resources->GetSDLTexture(tex));
+            auto tex = Resources->GetResource<Texture2D>(scene.Target);
+            SDL_SetRenderTarget(r, tex->GetSDLTexture());
         }
 
         SDL_SetRenderDrawColorFloat(r, 0.f, 0.f, 0.f, 1.f);
@@ -65,12 +71,16 @@ namespace Phoenix::App::Dev
 
     void SDL3Renderer::DrawSprite(const SceneView& view, const Sprite2DCall& call)
     {
-        SDL_Texture* texture = Resources->GetSDLTexture(call.Texture);
+        auto resource = Resources->GetResource<Texture2D>(call.Texture);
+        if (!resource)
+            return;
+
+        SDL_Texture* texture = resource->GetSDLTexture();
         if (!texture)
             return;
 
-        SDL_SetTextureColorModFloat(texture, call.Tint.R / 255.f, call.Tint.G / 255.f, call.Tint.B / 255.f);
-        SDL_SetTextureAlphaModFloat(texture, call.Tint.A / 255.f);
+        SDL_SetTextureColorModFloat(texture, call.Tint.x, call.Tint.y, call.Tint.z);
+        SDL_SetTextureAlphaModFloat(texture, call.Tint.w);
 
         SDL_FRect src = { call.SourceRect.Min.x, call.SourceRect.Min.y, call.SourceRect.GetWidth(), call.SourceRect.GetHeight() };
 
@@ -88,8 +98,7 @@ namespace Phoenix::App::Dev
     void SDL3Renderer::DrawLine(const SceneView& view, const Line2DCall& call)
     {
         SDL_Renderer* r = Platform->GetRenderer();
-        SDL_SetRenderDrawColorFloat(r, call.Color.R / 255.f, call.Color.G / 255.f,
-                                       call.Color.B / 255.f, call.Color.A / 255.f);
+        SDL_SetRenderDrawColorFloat(r, call.Color.x, call.Color.y, call.Color.z, call.Color.w);
         SDL_FPoint s = ToSDL(view.WorldToScreen(call.Start));
         SDL_FPoint e = ToSDL(view.WorldToScreen(call.End));
         SDL_RenderLine(r, s.x, s.y, e.x, e.y);
@@ -98,8 +107,7 @@ namespace Phoenix::App::Dev
     void SDL3Renderer::DrawCircle(const SceneView& view, const Circle2DCall& call)
     {
         SDL_Renderer* r = Platform->GetRenderer();
-        SDL_SetRenderDrawColorFloat(r, call.Color.R / 255.f, call.Color.G / 255.f,
-                                       call.Color.B / 255.f, call.Color.A / 255.f);
+        SDL_SetRenderDrawColorFloat(r, call.Color.x, call.Color.y, call.Color.z, call.Color.w);
 
         SDL_FPoint sc = ToSDL(view.WorldToScreen(call.Center));
         float sr = call.Radius * view.PixelsPerUnit;
@@ -114,8 +122,7 @@ namespace Phoenix::App::Dev
 
         if (call.Filled)
         {
-            SDL_FColor col = { call.Color.R / 255.f, call.Color.G / 255.f,
-                               call.Color.B / 255.f, call.Color.A / 255.f };
+            SDL_FColor col = { call.Color.x, call.Color.y, call.Color.z, call.Color.w };
             std::vector<SDL_Vertex> verts;
             verts.reserve(kSeg * 3);
             for (int i = 0; i < kSeg; ++i)
@@ -135,8 +142,7 @@ namespace Phoenix::App::Dev
     void SDL3Renderer::DrawRect(const SceneView& view, const Rect2DCall& call)
     {
         SDL_Renderer* r = Platform->GetRenderer();
-        SDL_SetRenderDrawColorFloat(r, call.Color.R / 255.f, call.Color.G / 255.f,
-                                       call.Color.B / 255.f, call.Color.A / 255.f);
+        SDL_SetRenderDrawColorFloat(r, call.Color.x, call.Color.y, call.Color.z, call.Color.w);
 
         SDL_FPoint sMin = ToSDL(view.WorldToScreen(call.Min));
         SDL_FPoint sMax = ToSDL(view.WorldToScreen(call.Max));
@@ -155,84 +161,107 @@ namespace Phoenix::App::Dev
     void SDL3Renderer::DrawText(const SceneView& view, const Text2DCall& call)
     {
         SDL_Renderer* r = Platform->GetRenderer();
-        SDL_SetRenderDrawColorFloat(r, call.Color.R / 255.f, call.Color.G / 255.f,
-                                       call.Color.B / 255.f, call.Color.A / 255.f);
+        SDL_SetRenderDrawColorFloat(r, call.Color.x, call.Color.y, call.Color.z, call.Color.w);
         SDL_FPoint pos = ToSDL(view.WorldToScreen(call.WorldPos));
         SDL_RenderDebugText(r, pos.x, pos.y, call.Text);
     }
 
     void SDL3Renderer::DrawMesh(const SceneView& view, const Mesh2DCall& call)
     {
-        const SDL3ResourceManager::MeshEntry* mesh = Resources->GetMeshEntry(call.Mesh);
-        if (!mesh)
-            return;
-
-        SDL_Texture* texture = call.Texture.IsValid() ? Resources->GetSDLTexture(call.Texture) : nullptr;
-
-        SDL_FPoint screenPos = ToSDL(view.WorldToScreen(call.WorldPos));
-        float cosR = std::cos(call.Rotation);
-        float sinR = std::sin(call.Rotation);
-        float ppu  = view.PixelsPerUnit;
-
-        std::vector<SDL_Vertex> transformed;
-        transformed.reserve(mesh->Vertices.size());
-        for (const Vertex2D& v : mesh->Vertices)
-        {
-            // Scale, then CW rotate in world Y-up space, then Y-flip for screen.
-            float lx = v.Pos.x * call.Scale.x * ppu;
-            float ly = v.Pos.y * call.Scale.y * ppu;
-            float rx  =  lx * cosR + ly * sinR;  // CW rotation in world Y-up
-            float ry  = -lx * sinR + ly * cosR;
-            transformed.push_back({
-                { screenPos.x + rx, screenPos.y - ry },  // Y flip: subtract rotated Y
-                { v.Color.R / 255.f * (call.Tint.R / 255.f),
-                  v.Color.G / 255.f * (call.Tint.G / 255.f),
-                  v.Color.B / 255.f * (call.Tint.B / 255.f),
-                  v.Color.A / 255.f * (call.Tint.A / 255.f) },
-                { v.UV.x, v.UV.y }
-            });
-        }
-
-        SDL_RenderGeometry(Platform->GetRenderer(), texture,
-            transformed.data(), static_cast<int>(transformed.size()),
-            mesh->Indices.data(), static_cast<int>(mesh->Indices.size()));
+        // const SDL3ResourceManager::MeshEntry* mesh = Resources->GetMeshEntry(call.Mesh);
+        // if (!mesh)
+        //     return;
+        //
+        // SDL_Texture* texture = call.Texture.IsValid() ? Resources->GetSDLTexture(call.Texture) : nullptr;
+        //
+        // SDL_FPoint screenPos = ToSDL(view.WorldToScreen(call.WorldPos));
+        // float cosR = std::cos(call.Rotation);
+        // float sinR = std::sin(call.Rotation);
+        // float ppu  = view.PixelsPerUnit;
+        //
+        // std::vector<SDL_Vertex> transformed;
+        // transformed.reserve(mesh->Vertices.size());
+        // for (const Vertex2D& v : mesh->Vertices)
+        // {
+        //     // Scale, then CW rotate in world Y-up space, then Y-flip for screen.
+        //     float lx = v.Pos.x * call.Scale.x * ppu;
+        //     float ly = v.Pos.y * call.Scale.y * ppu;
+        //     float rx  =  lx * cosR + ly * sinR;  // CW rotation in world Y-up
+        //     float ry  = -lx * sinR + ly * cosR;
+        //     transformed.push_back({
+        //         { screenPos.x + rx, screenPos.y - ry },  // Y flip: subtract rotated Y
+        //         { v.Color.R / 255.f * (call.Tint.R / 255.f),
+        //           v.Color.G / 255.f * (call.Tint.G / 255.f),
+        //           v.Color.B / 255.f * (call.Tint.B / 255.f),
+        //           v.Color.A / 255.f * (call.Tint.A / 255.f) },
+        //         { v.UV.x, v.UV.y }
+        //     });
+        // }
+        //
+        // SDL_RenderGeometry(Platform->GetRenderer(), texture,
+        //     transformed.data(), static_cast<int>(transformed.size()),
+        //     mesh->Indices.data(), static_cast<int>(mesh->Indices.size()));
     }
 
     void SDL3Renderer::DrawLineMesh(const SceneView& view, const LineMesh2DCall& call)
     {
-        const SDL3ResourceManager::LineMeshEntry* mesh = Resources->GetLineMesh2D(call.Mesh);
-        if (!mesh || mesh->Indices.size() < 2)
+        auto resource = Resources->GetResource<LineMesh2D>(call.Mesh);
+        if (!resource)
             return;
 
-        SDL_Renderer* r = Platform->GetRenderer();
-        SDL_SetRenderDrawColorFloat(r, call.Tint.R / 255.f, call.Tint.G / 255.f,
-                                       call.Tint.B / 255.f, call.Tint.A / 255.f);
+        if (resource->Indices.size() < 2)
+            return;
 
-        const Math::Transform2D& t = call.Transform;
-        float cosR = std::cos(t.Rotation);
-        float sinR = std::sin(t.Rotation);
-        float ppu  = view.PixelsPerUnit;
+        glm::vec3 scale;
+        glm::quat rotation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        if (!glm::decompose(call.Transform, scale, rotation, translation, skew, perspective))
+        {
+            return;
+        }
+
+        glm::mat4 localScale = glm::scale(glm::vec3(call.Scale, 1.0f));
+        glm::mat4 localTransform = localScale;
+
+        auto originSocketIter = resource->Sockets.find("origin"_n);
+        if (originSocketIter != resource->Sockets.end())
+        {
+            auto& socketTrans = originSocketIter->second.Transform;
+            auto offset = glm::vec3(socketTrans[3]);
+            localTransform *= glm::translate(glm::mat4(1.0f), -offset);
+        }
+
+        glm::mat4 modelToWorld = call.Transform * localTransform;
+
+        SDL_Renderer* r = Platform->GetRenderer();
 
         auto TransformPoint = [&](glm::vec2 p) -> SDL_FPoint
         {
-            float lx =  p.x * t.Scale.x * ppu;
-            float ly =  p.y * t.Scale.y * ppu;
-            float rx =  lx * cosR + ly * sinR;
-            float ry = -lx * sinR + ly * cosR;
-            SDL_FPoint screen = ToSDL(view.WorldToScreen(t.Position));
-            return { screen.x + rx, screen.y - ry };
+            auto v = modelToWorld * glm::vec4(p, 0, 1);
+            SDL_FPoint screen = ToSDL(view.WorldToScreen({ v.x, v.y }));
+            return { screen.x + v.x, screen.y - v.y };
         };
 
         // Indices are pairs — each two indices form one line segment.
-        for (size_t i = 0; i + 1 < mesh->Indices.size(); i += 2)
+        for (size_t i = 0; i + 1 < resource->Indices.size(); i += 2)
         {
-            uint16_t ia = mesh->Indices[i];
-            uint16_t ib = mesh->Indices[i + 1];
-            if (ia >= mesh->Points.size() || ib >= mesh->Points.size())
+            uint16_t i0 = resource->Indices[i];
+            uint16_t i1 = resource->Indices[i + 1];
+
+            if (i0 >= resource->Vertices.size() || i1 >= resource->Vertices.size())
                 continue;
-            SDL_FPoint a = TransformPoint(mesh->Points[ia]);
-            SDL_FPoint b = TransformPoint(mesh->Points[ib]);
-            SDL_RenderLine(r, a.x, a.y, b.x, b.y);
+
+            SDL_FPoint p0 = TransformPoint(resource->Vertices[i0].Position);
+            SDL_FPoint p1 = TransformPoint(resource->Vertices[i1].Position);
+
+            const glm::vec4& color0 = resource->Vertices[i0].Color;
+            // const glm::vec4& color1 = resource->Vertices[i1].Color;
+            glm::vec4 colorFinal = color0 * call.Tint;
+
+            SDL_SetRenderDrawColorFloat(r, colorFinal.x, colorFinal.y, colorFinal.z, colorFinal.w);
+            SDL_RenderLine(r, p0.x, p0.y, p1.x, p1.y);
         }
     }
 }

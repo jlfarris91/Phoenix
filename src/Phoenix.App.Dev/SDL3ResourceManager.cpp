@@ -2,12 +2,29 @@
 
 #include <filesystem>
 #include <fstream>
+#include <ranges>
 
 #include "ResourceLoader.h"
-#include "Resources/RenderTarget2D.h"
+#include "Application/Application.h"
+#include "Phoenix/Logging.h"
+#include "Resources/Texture2D.h"
 
 using namespace Phoenix::App::Dev;
 using namespace Phoenix::Renderer;
+
+namespace
+{
+    Phoenix::FName MakeResourceFullName(const std::string& path)
+    {
+        auto testPath = std::filesystem::path(path.c_str()).lexically_normal();
+        if (testPath.is_absolute())
+        {
+            auto workingDir = std::filesystem::absolute("./Data/Catalogs/Core/Assets/");
+            testPath = std::filesystem::relative(testPath, workingDir);
+        }
+        return testPath.generic_string();
+    }
+}
 
 SDL3ResourceManager::SDL3ResourceManager(std::shared_ptr<SDL3PlatformService> platform)
     : Platform(std::move(platform))
@@ -23,23 +40,45 @@ SDL3ResourceManager::~SDL3ResourceManager()
     Resources.clear();
 }
 
-HResource SDL3ResourceManager::StoreResource(std::unique_ptr<Renderer::IResource> resource)
+void SDL3ResourceManager::Initialize(const std::shared_ptr<Application>& application)
+{
+    IResourceManager::Initialize(application);
+
+    // Resolve all resource loaders automatically
+    GetApplication()->ResolveServices<IResourceLoader>(ResourceLoaders);
+}
+
+HResource SDL3ResourceManager::StoreResource(std::unique_ptr<IResource> resource, FName fullName)
 {
     uint32_t resourceId = ++NextResourceId;
-    resource->SetId(resourceId);
+    ResourceInit::Init(*resource, resourceId, fullName);
+    HResource handle = resource->GetHandle();
     Resources.emplace(resourceId, std::move(resource));
-    return { resourceId, resource->GetResourceType() };
+    return handle;
 }
 
-HResource SDL3ResourceManager::LoadResource(const char* path)
+HResource SDL3ResourceManager::LoadResource(const std::string& path)
 {
-    std::vector<Renderer::HResource> handles;
+    FName fullName = MakeResourceFullName(path);
+    if (auto existing = FindResourceRaw(fullName))
+    {
+        return existing->GetHandle();
+    }
+
+    std::vector<HResource> handles;
     LoadResources(path, handles);
-    return handles.empty() ? Renderer::HResource() : handles.front();
+    return handles.empty() ? HResource() : handles.front();
 }
 
-size_t SDL3ResourceManager::LoadResources(const char* path, std::vector<Renderer::HResource>& outHandles)
+size_t SDL3ResourceManager::LoadResources(const std::string& path, std::vector<HResource>& outHandles)
 {
+    FName fullName = MakeResourceFullName(path);
+    if (auto existing = FindResourceRaw(fullName))
+    {
+        outHandles.push_back(existing->GetHandle());
+        return 1;
+    }
+
     std::ifstream stream(path);
     if (!stream.is_open())
     {
@@ -48,19 +87,23 @@ size_t SDL3ResourceManager::LoadResources(const char* path, std::vector<Renderer
 
     auto ext = std::filesystem::path(path).extension().string();
 
-    Renderer::ResourceLoadArgs args = {
+    ResourceLoadArgs args = {
         .PlatformService = *Platform.get(),
         .FilePath = path,
         .Stream = stream
     };
 
-    Renderer::IResourceLoader* foundLoader = nullptr;
+    IResourceLoader* foundLoader = nullptr;
     for (auto&& loader : ResourceLoaders)
     {
         if (loader->CanLoad(args))
         {
             foundLoader = loader.get();
+            break;
         }
+
+        // Seek back to zero in case CanLoad read any of the stream
+        stream.seekg(0);
     }
 
     if (!foundLoader)
@@ -68,29 +111,60 @@ size_t SDL3ResourceManager::LoadResources(const char* path, std::vector<Renderer
         return 0;
     }
 
-    std::vector<std::unique_ptr<Renderer::IResource>> loadedResources;
+    LogVerbose("Loading asset: {}", path);
+
+    // Seek back to zero in case CanLoad read any of the stream
+    stream.seekg(0);
+
+    std::vector<std::unique_ptr<IResource>> loadedResources;
     if (!foundLoader->Load(args, loadedResources))
     {
         return 0;
     }
 
+
+
+    LogVerbose("Loaded {} resources from asset {}", loadedResources.size(), path);
+
     for (auto&& resource : loadedResources)
     {
-        auto handle = StoreResource(std::move(resource));
+        auto handle = StoreResource(std::move(resource), fullName);
         outHandles.push_back(handle);
     }
 
     return loadedResources.size();
 }
 
-const IResource* SDL3ResourceManager::GetResource(Renderer::HResource handle) const
+const IResource* SDL3ResourceManager::GetResourceRaw(HResource handle) const
 {
+    if (!handle.IsValid())
+    {
+        return nullptr;
+    }
+
     auto iter = Resources.find(handle.Id);
     return iter != Resources.end() ? iter->second.get() : nullptr;
 }
 
-bool SDL3ResourceManager::ReleaseResource(Renderer::HResource handle)
+const IResource* SDL3ResourceManager::FindResourceRaw(FName name) const
 {
+    for (auto&& resource : Resources | std::views::values)
+    {
+        if (resource->GetFullName() == name)
+        {
+            return resource.get();
+        }
+    }
+    return nullptr;
+}
+
+bool SDL3ResourceManager::ReleaseResource(HResource handle)
+{
+    if (!handle.IsValid())
+    {
+        return false;
+    }
+
     auto iter = Resources.find(handle.Id);
     if (iter == Resources.end())
     {
@@ -101,13 +175,13 @@ bool SDL3ResourceManager::ReleaseResource(Renderer::HResource handle)
     return true;
 }
 
-HResource SDL3ResourceManager::CreateRenderTarget(glm::vec2 size)
+HResource SDL3ResourceManager::CreateRenderTarget(uint32_t w, uint32_t h)
 {
     SDL_Texture* texture = SDL_CreateTexture(
         Platform->GetRenderer(),
         SDL_PIXELFORMAT_RGBA8888,
         SDL_TEXTUREACCESS_TARGET,
-        size.x, size.y);
-    auto resource = std::make_unique<RenderTarget2D>(texture, size);
+        w, h);
+    auto resource = std::make_unique<Texture2D>(texture, glm::u32vec2{ w, h });
     return StoreResource(std::move(resource));
 }

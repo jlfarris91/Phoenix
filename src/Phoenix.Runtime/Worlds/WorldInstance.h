@@ -20,6 +20,9 @@ namespace Phoenix
         double GetUpdateRate() const;
         uint32 GetAccumulatedDirtyPageCount() const;
 
+        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceUpdated, WorldInstance*);
+        FWorldInstanceUpdated WorldInstanceUpdated;
+
     private:
 
         // For calling OnSimUpdate & Sink
@@ -29,7 +32,7 @@ namespace Phoenix
         void Sink();
 
         // Called by the sim thread after each world step completes.
-        void OnSimUpdate(WorldConstRef world);
+        void OnUpdate_Sim(WorldConstRef world);
 
         FName             Id;
         WorldDoubleBuffer DoubleBuffer;

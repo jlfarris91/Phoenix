@@ -6,7 +6,6 @@
 
 #include "RenderScene.h"
 #include "SceneView.h"
-#include "RendererTypes.h"
 
 namespace Phoenix::App::Dev
 {
@@ -29,11 +28,11 @@ namespace Phoenix::App::Dev
         void SetCenter(glm::vec2 center);
         void SetPixelsPerUnit(float ppu);
 
-        glm::vec2       GetCenter()        const { return View.Center; }
-        float           GetPixelsPerUnit() const { return View.PixelsPerUnit; }
-        int             GetWidth()         const { return View.Width; }
-        int             GetHeight()        const { return View.Height; }
-        HRenderTarget   GetRenderTarget() const { return RenderTarget; }
+        glm::vec2           GetCenter()        const { return View.Center; }
+        float               GetPixelsPerUnit() const { return View.PixelsPerUnit; }
+        int                 GetWidth()         const { return View.Width; }
+        int                 GetHeight()        const { return View.Height; }
+        Renderer::HResource GetRenderTarget() const { return RenderTarget; }
 
         // Gather draw calls from the scene registry and submit to the renderer.
         void Render(const Scene& scene);
@@ -42,8 +41,8 @@ namespace Phoenix::App::Dev
         std::shared_ptr<SDL3Renderer>        Renderer;
         std::shared_ptr<SDL3ResourceManager> Resources;
 
-        SceneView     View;
-        HRenderTarget RenderTarget;
-        RenderScene   Scene;
+        SceneView           View;
+        Renderer::HResource RenderTarget;
+        RenderScene         Scene;
     };
 }

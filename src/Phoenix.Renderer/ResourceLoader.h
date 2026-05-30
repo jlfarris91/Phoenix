@@ -2,6 +2,11 @@
 
 #include "Application/AppService.h"
 
+namespace Phoenix
+{
+    class IPlatformService;
+}
+
 namespace Phoenix::Renderer
 {
     class IResource;

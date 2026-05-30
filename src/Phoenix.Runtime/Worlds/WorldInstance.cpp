@@ -30,10 +30,11 @@ namespace Phoenix
     void WorldInstance::Sink()
     {
         DoubleBuffer.Sink();
+        WorldInstanceUpdated.Broadcast(this);
     }
 
-    void WorldInstance::OnSimUpdate(WorldConstRef world)
+    void WorldInstance::OnUpdate_Sim(WorldConstRef world)
     {
-        DoubleBuffer.OnSimUpdate(world);
+        DoubleBuffer.OnUpdate_Sim(world);
     }
 }

@@ -19,7 +19,7 @@ namespace Phoenix
                           , public Dispatcher
     {
     public:
-        SessionInstance(uint32_t id, const Phoenix::SessionCtorArgs& args);
+        SessionInstance(uint32_t id, const SessionCtorArgs& args);
         ~SessionInstance() override;
 
         void Initialize();
@@ -32,7 +32,7 @@ namespace Phoenix
         bool IsShutDown() const;
 
         uint32_t GetId() const;
-        Phoenix::Session* GetSession() const;
+        Session* GetSession() const;
 
         // Called on the sim thread to step the session forward.
         void TickSession();
@@ -41,16 +41,13 @@ namespace Phoenix
         void Tick();
 
         // Returns the WorldInstance for a given world ID, or null if not yet created.
-        WorldInstance* GetWorldInstance(Phoenix::FName worldId) const;
+        WorldInstance* GetWorldInstance(FName worldId) const;
 
         // Returns the stable world view for a given world ID, or null if not yet ready.
-        const Phoenix::World* GetWorldView(Phoenix::FName worldId) const;
+        const World* GetWorldView(FName worldId) const;
 
-        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceCreated, WorldInstance*, Phoenix::WorldConstRef);
+        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceCreated, WorldInstance*);
         FWorldInstanceCreated WorldInstanceCreated;
-
-        PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceUpdated, WorldInstance*, Phoenix::WorldConstRef);
-        FWorldInstanceUpdated WorldInstanceUpdated;
 
         PHX_DECLARE_MULTICAST_DELEGATE(FWorldInstanceDestroyed, WorldInstance*);
         FWorldInstanceDestroyed WorldInstanceDestroyed;
@@ -59,15 +56,17 @@ namespace Phoenix
 
         static void SessionWorker(SessionInstance* instance);
 
-        void OnPostWorldUpdateImpl(Phoenix::WorldConstRef world);
+        void OnPostWorldUpdateImpl_Sim(WorldConstRef world);
 
         void OnShutdown();
 
         uint32_t Id;
 
-        Phoenix::SessionCtorArgs SessionArgs;
-        std::shared_ptr<Phoenix::Session> Session;
-        std::unordered_map<Phoenix::FName, std::unique_ptr<WorldInstance>> Worlds;
+        SessionCtorArgs SessionArgs;
+        std::shared_ptr<Session> Session;
+
+        std::shared_mutex WorldsMutex;
+        std::unordered_map<FName, std::unique_ptr<WorldInstance>> Worlds;
 
         std::unique_ptr<std::thread> SessionThread;
         std::atomic<bool> bSessionThreadWantsExit = false;

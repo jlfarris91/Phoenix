@@ -24,8 +24,8 @@ private:
     void OnSessionInstanceCreated(Phoenix::SessionInstance* instance);
     void OnSessionInstanceDestroyed(Phoenix::SessionInstance* instance);
 
-    void OnWorldInstanceCreated(Phoenix::WorldInstance* instance, Phoenix::WorldConstRef world);
-    void OnWorldInstanceUpdated(Phoenix::WorldInstance* instance, Phoenix::WorldConstRef world);
+    void OnWorldInstanceCreated(Phoenix::WorldInstance* instance);
+    void OnWorldInstanceUpdated(Phoenix::WorldInstance* instance);
     void OnWorldInstanceDestroyed(Phoenix::WorldInstance* instance);
 
     void RegisterSceneComponentHandlers(Phoenix::App::Dev::Scene& scene);

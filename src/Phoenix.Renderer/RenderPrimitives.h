@@ -43,25 +43,25 @@ namespace Phoenix::App
     {
         glm::vec2   WorldPos;
         char        Text[64] = {};
-        glm::vec4   Color = glm::vec4(1);
+        glm::vec4   Color = glm::vec4(1.0f);
         float       Size = 12.f;
     };
 
     struct Mesh2DCall
     {
-        HMesh2D     Mesh;
-        HTexture    Texture;               // invalid = vertex color only
-        glm::vec2   WorldPos;
-        float       Rotation = 0.f;        // radians, clockwise
-        glm::vec2   Scale = {1.f, 1.f};
-        Color4b     Tint = Color4b::White();
+        Renderer::HResource Mesh;
+        Renderer::HResource Texture;               // invalid = vertex color only
+        glm::vec2           WorldPos;
+        float               Rotation = 0.f;        // radians, clockwise
+        glm::vec2           Scale = {1.f, 1.f};
+        glm::vec4           Tint = glm::vec4(1.0f);
     };
 
     struct LineMesh2DCall
     {
-        HLineMesh2D         Mesh;
-        HTexture            Texture;
-        Math::Transform2D   Transform;
-        Color4b             Tint = Color4b::White();
+        Renderer::HResource Mesh;
+        glm::vec2           Scale = glm::vec2(1.0f);
+        glm::vec4           Tint = glm::vec4(1.0f);
+        glm::mat4           Transform;
     };
 }

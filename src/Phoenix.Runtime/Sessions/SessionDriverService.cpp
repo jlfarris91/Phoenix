@@ -1,5 +1,7 @@
 ﻿#include "SessionDriverService.h"
 
+#include "SessionInstance.h"
+
 using namespace Phoenix;
 
 void SessionDriverService::Initialize(const std::shared_ptr<Application> &application)
@@ -21,6 +23,16 @@ void SessionDriverService::Shutdown()
 SessionDriver& SessionDriverService::GetSessionDriver() const
 {
     return *SessionDriver.get();
+}
+
+void SessionDriverService::Tick()
+{
+    IAppService::Tick();
+
+    for (auto&& session : SessionDriver->GetSessions())
+    {
+        session->Tick();
+    }
 }
 
 void SessionDriverService::OnSessionCreated(SessionInstance *instance)

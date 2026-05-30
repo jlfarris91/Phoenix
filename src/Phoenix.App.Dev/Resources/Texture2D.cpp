@@ -6,7 +6,7 @@
 #include "SDL3PlatformService.h"
 #include "Phoenix/Logging.h"
 
-Phoenix::App::Dev::Texture2D::Texture2D(SDL_Texture* texture, glm::vec2 size)
+Phoenix::App::Dev::Texture2D::Texture2D(SDL_Texture* texture, glm::u32vec2 size)
     : Texture(texture)
     , Size(size)
 {
@@ -26,17 +26,17 @@ SDL_Texture* Phoenix::App::Dev::Texture2D::GetSDLTexture() const
     return Texture;
 }
 
-glm::vec2 Phoenix::App::Dev::Texture2D::GetSize() const
+glm::u32vec2 Phoenix::App::Dev::Texture2D::GetSize() const
 {
     return Size;
 }
 
-float Phoenix::App::Dev::Texture2D::GetWidth() const
+uint32_t Phoenix::App::Dev::Texture2D::GetWidth() const
 {
     return Size.x;
 }
 
-float Phoenix::App::Dev::Texture2D::GetHeight() const
+uint32_t Phoenix::App::Dev::Texture2D::GetHeight() const
 {
     return Size.y;
 }
@@ -83,7 +83,7 @@ size_t Phoenix::App::Dev::Texture2DLoader::Load(
     float w = 0.f, h = 0.f;
     SDL_GetTextureSize(texture, &w, &h);
 
-    auto resource = std::make_unique<Texture2D>(texture, glm::vec2{ w, h });
+    auto resource = std::make_unique<Texture2D>(texture, glm::u32vec2{ w, h });
     outResources.push_back(std::move(resource));
     return 1;
 }

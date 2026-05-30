@@ -53,38 +53,41 @@ void SceneModule::OnSessionInstanceCreated(Phoenix::SessionInstance* instance)
 {
     auto thisSP = std::static_pointer_cast<SceneModule>(shared_from_this());
     instance->WorldInstanceCreated.AddSP(thisSP, &SceneModule::OnWorldInstanceCreated);
-    instance->WorldInstanceUpdated.AddSP(thisSP, &SceneModule::OnWorldInstanceUpdated);
     instance->WorldInstanceDestroyed.AddSP(thisSP, &SceneModule::OnWorldInstanceDestroyed);
 }
 
 void SceneModule::OnSessionInstanceDestroyed(Phoenix::SessionInstance* instance)
 {
     instance->WorldInstanceCreated.RemoveAll(this);
-    instance->WorldInstanceUpdated.RemoveAll(this);
     instance->WorldInstanceDestroyed.RemoveAll(this);
 }
 
-void SceneModule::OnWorldInstanceCreated(Phoenix::WorldInstance* instance, Phoenix::WorldConstRef world)
+void SceneModule::OnWorldInstanceCreated(Phoenix::WorldInstance* instance)
 {
     if (auto scene = SceneManager->CreateScene(instance->GetId()))
     {
         auto enttScene = std::static_pointer_cast<Phoenix::App::Dev::Scene>(scene);
         RegisterSceneComponentHandlers(*enttScene);
-
-        scene->Sync(world);
     }
+
+    auto thisSP = std::static_pointer_cast<SceneModule>(shared_from_this());
+    instance->WorldInstanceUpdated.AddSP(thisSP, &SceneModule::OnWorldInstanceUpdated);
 }
 
-void SceneModule::OnWorldInstanceUpdated(Phoenix::WorldInstance* instance, Phoenix::WorldConstRef world)
+void SceneModule::OnWorldInstanceUpdated(Phoenix::WorldInstance* instance)
 {
     if (auto scene = SceneManager->FindScene(instance->GetId()))
     {
-        scene->Sync(world);
+        if (auto world = instance->GetWorldView())
+        {
+            scene->Sync(*world);
+        }
     }
 }
 
 void SceneModule::OnWorldInstanceDestroyed(Phoenix::WorldInstance* instance)
 {
+    instance->WorldInstanceUpdated.RemoveAll(this);
     SceneManager->DestroyScene(instance->GetId());
 }
 

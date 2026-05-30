@@ -18,6 +18,8 @@ namespace Phoenix
         Phoenix::SessionDriver::FSessionCreated SessionCreated;
         Phoenix::SessionDriver::FSessionDestroyed SessionDestroyed;
 
+        void Tick() override;
+
     private:
 
         void OnSessionCreated(SessionInstance* instance);

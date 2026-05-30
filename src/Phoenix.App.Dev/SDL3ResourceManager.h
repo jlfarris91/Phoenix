@@ -25,17 +25,21 @@ namespace Phoenix::App::Dev
         explicit SDL3ResourceManager(std::shared_ptr<SDL3PlatformService> platform);
         ~SDL3ResourceManager() override;
 
-        Renderer::HResource StoreResource(std::unique_ptr<Renderer::IResource> resource) override;
+        void Initialize(const std::shared_ptr<Application>& application) override;
 
-        Renderer::HResource LoadResource(const char* path) override;
+        Renderer::HResource StoreResource(std::unique_ptr<Renderer::IResource> resource, FName name = {}) override;
 
-        size_t LoadResources(const char* path, std::vector<Renderer::HResource>& outHandles) override;
+        Renderer::HResource LoadResource(const std::string& path) override;
 
-        const Renderer::IResource* GetResource(Renderer::HResource handle) const override;
+        size_t LoadResources(const std::string& path, std::vector<Renderer::HResource>& outHandles) override;
+
+        const Renderer::IResource* GetResourceRaw(Renderer::HResource handle) const override;
+
+        const Renderer::IResource* FindResourceRaw(FName name) const override;
 
         bool ReleaseResource(Renderer::HResource handle) override;
 
-        Renderer::HResource CreateRenderTarget(glm::vec2 size);
+        Renderer::HResource CreateRenderTarget(uint32_t width, uint32_t height);
 
     private:
 

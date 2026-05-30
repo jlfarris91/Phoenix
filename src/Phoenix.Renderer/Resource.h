@@ -12,19 +12,25 @@ namespace Phoenix::Renderer
         PHX_DECLARE_TYPE_INTERFACE(IResource)
     public:
         virtual ~IResource() = default;
-        virtual void SetId(uint32_t id) = 0;
-        virtual HResource GetHandle() const = 0;
+
+        HResource GetHandle() const;
+
+        FName GetFullName() const;
+
         virtual FName GetResourceType() const = 0;
+
         virtual void ReleaseResources() {}
+
+    private:
+
+        friend struct ResourceInit;
+
+        uint32_t Id = 0;
+        FName FullName;
     };
 
-    class Resource : public IResource
+    struct ResourceInit
     {
-        PHX_DECLARE_TYPE_DERIVED(Resource, IResource);
-    public:
-        void SetId(uint32_t id) override;
-        HResource GetHandle() const override;
-    private:
-        uint32_t Id;
+        static void Init(IResource& resource, uint32_t id, FName fullName);
     };
 }

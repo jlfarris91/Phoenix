@@ -29,7 +29,7 @@ void SessionInstance::Initialize()
     {
         if (auto self = weakThis.lock())
         {
-            self->OnPostWorldUpdateImpl(world);
+            self->OnPostWorldUpdateImpl_Sim(world);
         }
     };
 
@@ -172,21 +172,32 @@ const World* SessionInstance::GetWorldView(FName worldId) const
     return world ? world->GetWorldView() : nullptr;
 }
 
-void SessionInstance::OnPostWorldUpdateImpl(WorldConstRef world)
+void SessionInstance::OnPostWorldUpdateImpl_Sim(WorldConstRef world)
 {
-    auto it = Worlds.find(world.GetId());
-    if (it == Worlds.end())
-    {
-        auto worldInstance = std::make_unique<WorldInstance>(world.GetId());
-        auto result = Worlds.emplace(world.GetId(), std::move(worldInstance));
-        it = result.first;
+    WorldInstance* worldInstance = nullptr;
 
-        WorldInstanceCreated.Broadcast(it->second.get(), world);
+    // Get or create a new world instance
+    {
+        std::scoped_lock lock(WorldsMutex);
+
+        auto it = Worlds.find(world.GetId());
+        if (it == Worlds.end())
+        {
+            auto newWorldInstance = std::make_unique<WorldInstance>(world.GetId());
+            auto result = Worlds.emplace(world.GetId(), std::move(newWorldInstance));
+            it = result.first;
+            worldInstance = it->second.get();
+
+            Dispatch([this, worldInstance]
+            {
+                WorldInstanceCreated.Broadcast(worldInstance);
+            });
+        }
+
+        worldInstance = it->second.get();
     }
 
-    it->second->OnSimUpdate(world);
-
-    WorldInstanceUpdated.Broadcast(it->second.get(), world);
+    worldInstance->OnUpdate_Sim(world);
 }
 
 void SessionInstance::OnShutdown()

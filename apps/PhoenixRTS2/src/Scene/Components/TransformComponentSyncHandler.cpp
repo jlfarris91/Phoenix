@@ -20,7 +20,7 @@ void TransformComponentSyncHandler::OnSync(const Phoenix::App::Dev::SceneCompone
     if (auto transformPtr = Phoenix::ECS::FeatureECS::GetWorldTransformPtr(*args.World, args.SimEntity))
     {
         glm::vec3 position = { (float)transformPtr->Position.X, (float)transformPtr->Position.Y, 0 };
-        auto rotation = glm::radians((float)transformPtr->Rotation);
+        float rotation = (float)transformPtr->Rotation;
         glm::vec3 scale = { (float)transformPtr->Scale, (float)transformPtr->Scale, 1 };
 
         glm::mat4 transMtx = glm::translate(glm::mat4(1.0f), position);

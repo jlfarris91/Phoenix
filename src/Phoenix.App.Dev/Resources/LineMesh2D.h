@@ -21,9 +21,9 @@ namespace Phoenix::App::Dev
         glm::mat4 Transform;
     };
 
-    class LineMesh2D : public Renderer::Resource
+    class LineMesh2D : public Renderer::IResource
     {
-        PHX_DECLARE_TYPE_DERIVED(LineMesh2D, Renderer::Resource);
+        PHX_DECLARE_TYPE_DERIVED(LineMesh2D, Renderer::IResource);
     public:
 
         FName GetResourceType() const override;

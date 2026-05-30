@@ -169,13 +169,13 @@ namespace Phoenix
     template <class TBase, class TClass>
     bool IsA(const TClass* ptr)
     {
-        return ptr->GetTypeDescriptor().template IsA<TBase>();
+        return ptr && ptr->GetTypeDescriptor().template IsA<TBase>();
     }
 
     template <class TBase, class TClass>
     bool IsA(const std::shared_ptr<TClass>& ptr)
     {
-        return ptr->GetTypeDescriptor().template IsA<TBase>();
+        return ptr && ptr->GetTypeDescriptor().template IsA<TBase>();
     }
 
     template <class TBase, class TClass>

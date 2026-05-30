@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RendererTypes.h"
+#include <glm/glm.hpp>
 
 namespace Phoenix::App::Dev
 {
@@ -8,8 +8,8 @@ namespace Phoenix::App::Dev
     {
         int32_t     Layer = 0;
         glm::vec2   Center;
-        float       Radius = 1.f;
-        Color4b     Color = Color4b::White();
+        float       Radius = 1.0f;
+        glm::vec4   Color = glm::vec4(1.0f);
         bool        Filled = false;
     };
 }

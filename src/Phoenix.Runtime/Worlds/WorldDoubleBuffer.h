@@ -31,7 +31,7 @@ namespace Phoenix
     public:
 
         // Called by the sim thread after each world step completes.
-        void OnSimUpdate(Phoenix::WorldConstRef world);
+        void OnUpdate_Sim(Phoenix::WorldConstRef world);
 
         // Called by the game thread at the start of each frame.
         // Swaps SimView and WorldView if a new sim frame is ready.
